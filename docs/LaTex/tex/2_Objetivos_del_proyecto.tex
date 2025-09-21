@@ -1,5 +1,38 @@
 \capitulo{2}{Objetivos del proyecto}
 
-Este apartado explica de forma precisa y concisa cuales son los objetivos que se persiguen con la realización del proyecto. Se puede distinguir entre los objetivos marcados por los requisitos del software a construir y los objetivos de carácter técnico que plantea a la hora de llevar a la práctica el proyecto.
+El objetivo principal del proyecto es realizar un sistema de Retrieval-Augmented Generation (RAG) que permita enriquecer las respuestas de un modelo de lenguaje mediante la recuperación y utilización de información contextual proveniente de una colección documental. 
 
+\section{Objetivos específicos}
+
+\begin{itemize}
+\tightlist
+\item
+Preprocesar la colección documental.
+	\begin{itemize}
+		\item
+		Segmentar los documentos en fragmentos.
+		\item
+		Normalizar y limpiar el texto.
+		\item
+		Generar embeddings para representar semánticamente los fragmentos.
+\end{itemize}
+\item
+Implementar y gestionar un índice vectorial.
+	\begin{itemize}
+		\item
+		Almacenar los embeddings en una base de datos vectorial.
+		\item
+		Optimizar consultas de similitud para recuperar contexto relevante.
+	\end{itemize}
+\item
+Desarrollar la capa de interacción con el usuario
+	\begin{itemize}
+		\item
+		Transformar la consulta en su representación vectorial.
+		\item
+		Recuperar los fragmentos más relevantes del índice.
+		\item
+		Integrar los fragmentos en el prompt para enriquecer la respuesta del LLM.
+	\end{itemize}
+\end{itemize}
 
