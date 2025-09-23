@@ -8,13 +8,11 @@ Los Large Language Model (LLM) son los grades modelos del lenguaje. Es decir, so
 Algunos ejemplos de LLM son ChatGPT, Claude o Llama.
 
 \subsection{Características}
-
 - Naturaleza de predicción del próximo token: como he mencionado anteriormente los LLM seleccionan la palabra más probable de una distribución. La elección de esta palabra se basa en los patrones estadísticos que ha aprendido con los datos del entrenamiento.
 
 - Memoria paramétrica: es el conocimiento interno del LLM. Consiste en la información con la que ha sido entrenado y se basa únicamente en sus parámetros. Por lo cual es una memoria limitada y estática.
 
 \subsection{Limitaciones}
-
 - Desactualizado: los eventos posteriores al entrenamiento del LLM, es decir, la fecha de corte del cocimiento, no estarán disponibles para el modelo lo que puede hacer que la respuesta este desactualizada. Además, el entrenamiento de un LLM es muy costoso y lleva mucho tiempo, por lo cual no se reentrenan con mucha frecuencia. 
 
 - Alucinaciones: a veces los LLM dan respuestas incorrectas con gran confianza de manera que parece que la información que te está dando es verdadera. Esto se debe a su naturaleza de predicción del próximo token. 
@@ -22,11 +20,9 @@ Algunos ejemplos de LLM son ChatGPT, Claude o Llama.
 - Limitación de conocimiento: los LLM se entrenan con datos públicos esto limita su conocimiento, ya que no tienen conocimientos de información que no sea publica, como, por ejemplo, documentos internos de una empresa, información de los clientes o de los productos.
 
 \subsection{Solución}
-
 Para solventar las limitaciones que hemos comentado la solución es darle al LLM el contexto que le falta. Para proporcionarle este contexto podemos expandir la memoria del LLM mediante generación aumentada, es decir, incorporando un RAG.
 
 \section{RAG}
-
 Retrieval Augmented Generation (RAG), o en español, generación aumentada por recuperación es la técnica que consiste en recuperar la información que sea relevante de una fuente externa, con dicha información aumenta la entrada al LLM, lo que permite que el LLM genere una respuesta mucho más precisa, contextual y confiable. Para realizar esto el RAG usa tres pasos, recuperar, aumentar y generar. 
 
 EL RAG combina dos tipos de memoria:
@@ -38,7 +34,6 @@ EL RAG combina dos tipos de memoria:
 Por lo cual conociendo esto, podemos decir que la generación aumentada por recuperación (RAG) es una metodología que busca ampliar la memoria paramétrica de un LLM incorporando una memoria no paramétrica explícita. A través de un recuperador, se obtiene información relevante de esta memoria externa, la cual se añade al prompt y luego se envía al LLM. De esta forma, el modelo puede producir respuestas más contextuales, confiables y precisas \citep{book:RAG_SimpleGuide}.
 
 \subsection{Objetivos del RAG}
-
 - Hacer que los LLM respondan con información actualizada.
 
 - Hacer que los LLM respondan información precisa, contextual y confiable.
@@ -46,7 +41,6 @@ Por lo cual conociendo esto, podemos decir que la generación aumentada por recu
 - Hacer que los LLM conozcan información propietaria.
 
 \subsection{Ventajas}
-
 - Conocimiento del contexto profundo: esto se debe a que la información adicional ayuda al LLM a generar respuestas contextualmente apropiadas, ya que, las respuestas se basan en datos específicos. Esto aumenta la confianza del usuario.
 
 - Citar fuentes: como la información se extrae de fuentes conocidas las puede citar en su respuesta. Esto dispara la fiabilidad y permite a los usuarios comprobar la información obtenida.
@@ -54,5 +48,4 @@ Por lo cual conociendo esto, podemos decir que la generación aumentada por recu
 - Reduce las alucinaciones: el sistema esta anclado a los hechos, por lo que se reducen las respuestas inexactas o falsas. 
 
 \section{Conexión LLM con RAG}
-
 Cogemos los documentos externos y los convertimos en vectores numéricos (embeddings) y los almacenamos. Cuando llega una consulta, en lugar de buscar coincidencias por palabras buscamos en ese espacio vectorial los trozos que son semánticamente más parecidos, a esto se le conoce como búsqueda por significado. Esos fragmentos se incorporan como contexto al LLM, de modo que RAG combina la capacidad de razonamiento del modelo con una recuperación de información altamente precisa.
