@@ -3,7 +3,7 @@
 En este apartado considero importante definir que es un RAG y cuales son sus aportaciones más significativas a los LLM que ya existen, pero, también, considero importante contextualizar su origen, y para ello voy a empezar comentando que son los LLM y sus principales limitaciones. 
 
 \section{LLM}
-Los Large Language Model (LLM) son los grades modelos del lenguaje. Es decir, son modelos de aprendizaje automático que han sido entrenados con conjuntos de datos generados por humanos. Estos datos los usan para encontrar patrones estadísticos y replicar nuestras habilidades lingüísticas. Por lo cual podemos decir que en esencia son modelos de predicción del siguiente token o lo que es lo mismo de la siguiente palabra.
+Los Large Language Model (LLM) son los grades modelos del lenguaje. Es decir, son modelos de aprendizaje automático que han sido entrenados con conjuntos de datos generados por humanos. Estos datos los usan para encontrar patrones estadísticos y replicar nuestras habilidades lingüísticas. Por lo cual podemos decir que en esencia son modelos de predicción del siguiente token o lo que es lo mismo de la siguiente palabra \citep{book:RAG_SimpleGuide}.
 
 Algunos ejemplos de LLM son ChatGPT, Claude o Llama.
 
@@ -35,7 +35,7 @@ EL RAG combina dos tipos de memoria:
 
 - La memoria no paramétrica: es información externa al LLM que se le puede proporcionar. Es un conocimiento externo y dinámico que se puede extender tanto como queramos y que puede contener documentos propietarios.
 
-Por lo cual conociendo esto, podemos decir que la generación aumentada por recuperación (RAG) es una metodología que busca ampliar la memoria paramétrica de un LLM incorporando una memoria no paramétrica explícita. A través de un recuperador, se obtiene información relevante de esta memoria externa, la cual se añade al prompt y luego se envía al LLM. De esta forma, el modelo puede producir respuestas más contextuales, confiables y precisas.
+Por lo cual conociendo esto, podemos decir que la generación aumentada por recuperación (RAG) es una metodología que busca ampliar la memoria paramétrica de un LLM incorporando una memoria no paramétrica explícita. A través de un recuperador, se obtiene información relevante de esta memoria externa, la cual se añade al prompt y luego se envía al LLM. De esta forma, el modelo puede producir respuestas más contextuales, confiables y precisas \citep{book:RAG_SimpleGuide}.
 
 \subsection{Objetivos del RAG}
 
