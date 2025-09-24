@@ -49,3 +49,46 @@ Por lo cual conociendo esto, podemos decir que la generación aumentada por recu
 
 \section{Conexión LLM con RAG}
 Cogemos los documentos externos y los convertimos en vectores numéricos (embeddings) y los almacenamos. Cuando llega una consulta, en lugar de buscar coincidencias por palabras buscamos en ese espacio vectorial los trozos que son semánticamente más parecidos, a esto se le conoce como búsqueda por significado. Esos fragmentos se incorporan como contexto al LLM, de modo que RAG combina la capacidad de razonamiento del modelo con una recuperación de información altamente precisa.
+
+%Capitulo dos del libro
+\section{Diseño del RAG}
+Un sistema RAG se construye en dos pipelines complementarios, el de indexación, que es offline o asíncrono, y el de generación, que es online o en tiempo real. El primero crea y mantiene la memoria no paramétrica o base de conocimiento; el segundo gestiona la interacción con el usuario, realizando la recuperación, el aumento del prompt y la generación de la respuesta. Esta separación es estructural en el diseño de RAG y habilita tanto precisión como latencia controlada \citep{book:RAG_SimpleGuide}.
+
+\subsection{Pipeline de Indexación (offline)}
+Su objetivo es consolidar y preparar el conocimiento para que el pipeline de generación pueda consultarlo eficientemente. Consta de cinco pasos, el primero consiste en conectar a las fuentes externas, el segundo en extraer y parsear los documentos, el tercero en dividir textos largos en fragmentos más pequeños denominados chunks, el cuarto convierte esos chunks a un formato adecuado, típicamente los combatirte a embeddings vectoriales y el quinto almacena en una base de datos vectorial los embeddings. Además de crearlo, este pipeline mantiene y actualiza el conocimiento base, por lo que debe ejecutarse de forma periódica \citep{book:RAG_SimpleGuide}.
+
+\subsubsection{Componentes clave}
+\begin{itemize}
+\tightlist
+	\item Carga de datos (data loading): conectores a archivos o sistemas, por ejemplo, PDF, DOCX, JSON o HTML, extracción y parsing, preprocesado y gestión de metadatos.
+	\item División de texto (Chunking): segmentación en unidades manejables, los chunks, para mejorar la recuperación y el alineamiento con las capacidades de contexto LLM.
+	\item Conversión a vectores (Embeddings): representación numérica optimizada para búsqueda de similitud y operaciones de recuperación.
+	\item Almacenamiento: bases de datos vectoriales para la búsqueda eficiente sobre embeddings y metadatos.
+\end{itemize} 
+
+Cuando la recuperación se externaliza, no siempre es necesario construir un pipeline de indexación propio \citep{book:RAG_SimpleGuide}. 
+
+\subsection{Pipeline de Generación (online)}
+Gestiona la consulta del usuario de extremo a extremo. Este pipeline recibe la pregunta del usuario, recupera el contexto relevante de la base vectorial, los chunks, aumenta el prompt con ese contexto y genera la respuesta con el LLM \citep{book:RAG_SimpleGuide}. 
+
+\subsubsection{Componentes clave}
+\begin{itemize}
+\tightlist
+	\item Retriever: es el motor de búsqueda sobre la base vectorial. Es crítico para la precisión del sistema y contribuye a la latencia, su calidad condiciona el rendimiento del RAG.
+	\item Gestión del Prompt: combina la consulta y el contexto recuperado. Además, aplica estrategias de ingeniaría de prompt para maximizar la calidad de la respuesta.
+	\item Configuración LLM: es la selección del modelo que va a generar la respuesta final. Pueden ser modelos fundacionales, fine-tuned, abiertos o de servicio gestionado.
+\end{itemize} 
+
+\subsection{Capas de soporte}
+Además de los dos pipelines, un sistema en producción requiere orquestación, evaluación y monitorización continua, cache semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el prompt, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un RAGOps stack con capas de datos, modelos, prompting, evaluación, orquestación, despliegue, hosting y monitorización \citep{book:RAG_SimpleGuide}.
+
+\section{Evaluación de calidad del RAG}
+Se hará mediante la triada de evaluación propuesta por TruEra. Estructura la calidad en tres comprobaciones entre consulta (prompt), contexto recuperado y respuesta. Complementariamente, se emplean métricas como relevancia, precisión y recall, y conjuntos ground truth para validación objetiva y monitorización continua en producción \citep{book:RAG_SimpleGuide}.
+
+\subsection{Las tres dimensiones de la triada:}
+\begin{itemize}
+\tightlist
+	\item Relevancia del contexto: la información que hemos recuperado tiene que ver con la pregunta.
+	\item Groundedness o fidelidad: la respuesta que da el LLM se basa de verdad en el contexto que le hemos dado, sin alucinaciones ni omisiones clave.
+	\item Relevancia de la respuesta: la respuesta es útil y adecuada respecto a la intención y el contexto de la consulta original.
+\end{itemize}
