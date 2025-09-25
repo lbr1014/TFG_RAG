@@ -50,23 +50,36 @@ Por lo cual conociendo esto, podemos decir que la generación aumentada por recu
 \section{Conexión LLM con RAG}
 Cogemos los documentos externos y los convertimos en vectores numéricos (embeddings) y los almacenamos. Cuando llega una consulta, en lugar de buscar coincidencias por palabras buscamos en ese espacio vectorial los trozos que son semánticamente más parecidos, a esto se le conoce como búsqueda por significado. Esos fragmentos se incorporan como contexto al LLM, de modo que RAG combina la capacidad de razonamiento del modelo con una recuperación de información altamente precisa.
 
-%Capitulo dos del libro
+%Capitulos dos, tres y cuatro del libro
 \section{Diseño del RAG}
-Un sistema RAG se construye en dos pipelines complementarios, el de indexación, que es offline o asíncrono, y el de generación, que es online o en tiempo real. El primero crea y mantiene la memoria no paramétrica o base de conocimiento; el segundo gestiona la interacción con el usuario, realizando la recuperación, el aumento del prompt y la generación de la respuesta. Esta separación es estructural en el diseño de RAG y habilita tanto precisión como latencia controlada \citep{book:RAG_SimpleGuide}.
+Un sistema RAG se construye en dos pipelines complementarios, el de indexación, que es offline, es decir, asíncrono, y el de generación, que es online, es decir, en tiempo real. El primero crea y mantiene la memoria no paramétrica o base de conocimiento. El segundo gestiona la interacción con el usuario, realizando la recuperación, el aumento del prompt y la generación de la respuesta. Esta separación es estructural en el diseño de RAG y permite optimizar la precisión y la latencia del sistema \citep{book:RAG_SimpleGuide}.
 
 \subsection{Pipeline de Indexación (offline)}
-Su objetivo es consolidar y preparar el conocimiento para que el pipeline de generación pueda consultarlo eficientemente. Consta de cinco pasos, el primero consiste en conectar a las fuentes externas, el segundo en extraer y parsear los documentos, el tercero en dividir textos largos en fragmentos más pequeños denominados chunks, el cuarto convierte esos chunks a un formato adecuado, típicamente los combatirte a embeddings vectoriales y el quinto almacena en una base de datos vectorial los embeddings. Además de crearlo, este pipeline mantiene y actualiza el conocimiento base, por lo que debe ejecutarse de forma periódica \citep{book:RAG_SimpleGuide}.
+Su objetivo es consolidar y preparar el conocimiento para que el pipeline de generación pueda consultarlo eficientemente. Consta de cinco pasos, el primero consiste en conectarse a las fuentes externas, el segundo en extraer y parsear los documentos, el tercero en dividir textos largos en fragmentos más pequeños denominados chunks, el cuarto convierte esos chunks a un formato adecuado, típicamente los combatirte a embeddings vectoriales y el quinto almacena en una base de datos vectorial los embeddings. Además de crearlo, este pipeline mantiene y actualiza el conocimiento base, por lo que debe ejecutarse de forma periódica \citep{book:RAG_SimpleGuide}.
 
 \subsubsection{Componentes clave}
 \begin{itemize}
 \tightlist
-	\item Carga de datos (data loading): conectores a archivos o sistemas, por ejemplo, PDF, DOCX, JSON o HTML, extracción y parsing, preprocesado y gestión de metadatos.
-	\item División de texto (Chunking): segmentación en unidades manejables, los chunks, para mejorar la recuperación y el alineamiento con las capacidades de contexto LLM.
-	\item Conversión a vectores (Embeddings): representación numérica optimizada para búsqueda de similitud y operaciones de recuperación.
-	\item Almacenamiento: bases de datos vectoriales para la búsqueda eficiente sobre embeddings y metadatos.
+	\item Carga de datos (data loading): consiste en conectarse a las fuentes, por ejemplo, sistemas de ficheros, data lakers, CMS o APIs, para la extracción del texto en bruto y el parsing de este en formatos heterogeneos, como pueden ser PDF, DOCX, JSON o HTML. Luego se le añaden metadatos y finalmente se hace limpieza quitando código, etiquetas raras y enmascarando datos confidenciales.
+	\item División de texto (Chunking): segmentación en unidades manejables, los chunks, para mejorar la recuperación y el alineamiento con las capacidades de contexto LLM. Ayuda a respetar la ventana de contexto, mitiga el problema de perdida en el medio y facilita la búsqueda eficiente. Para dividir el texto puede usar diversos métodos:
+	\begin{itemize}
+		\item Tamaño fijo: divide el texto en longitudes uniformes, como un número de caracteres o tokens.
+		\item Especializados: divide le texto basándose en su estructura como encabezados o párrafos. 
+		\ Semántico: divide el texto basándose en su similitud de significado usando embeddings, aunque este método aun es experimental.
+	\end{itemize}
+	La estrategia elegida va a depender del tipo de contenido, la longitud y complejidad de la consulta, el caso de uso y el modelo de embeddings.
+	\item Conversión a vectores (Embeddings): transforma el texto a representaciones numéricas de n dimensiones. Para conocer si los chunks se parecen a la consulta el sistema mide la distancia entre sus vectores, ya que la proximidad refleja similitud semántica . Hay diversas técnicas para medir la distancia entre los vectores, una de las más utilizadas es la similitud coseno que consiste en que si el ángulo entre dos vectores es muy pequeño su similitud es casi 1, pero hay otras como la distancia euclidiana. Hay modelos preentrenados abiertos y propietarios, la elección dependerá de su uso, rendimiento, recuperación y coste.
+	\item Almacenamiento: los embeddings se almacenan en bases de datos vectoriales diseñadas para vectores de altas dimensiones. Estas bases de datos vectoriales permiten la búsqueda eficiente sobre embeddings y metadatos. Hay diversas opciones:
+	\begin{itemize}
+		\item Indices vectoriales: son bibliotecas mínimas centradas en indexación y búsqueda de alta dimensión, no gestionan datos ni ofrecen consultas ricas o interfaces de bases de datos. Ejemplos: FAISS, NMSLIB, ANNOY, ScaNN. Son útiles cuando quieres máximo control y rendimiento sin sobrecarga de base de datos
+		\item Bases de datos vectoriales especializadas: añaden a lo anterior gestión de datos, seguridad, escalado, extensibilidad y metadatos, manteniendo búsqueda/similitud vectorial eficiente. Ejemplos: Pinecone, ChromaDB, Milvus, Qdrant.
+		\item Plataformas de búsqueda: son motores de texto tradicional (Solr, Elasticsearch, OpenSearch, Lucene) que han incorporado similitud vectorial a sus capacidades.
+		\item Motores SQL/NoSQL con capacidad vectorial: son bases de datos ya existentes que añaden tipos y operadores vectoriales. Ejemplos: Azure SQL, PostgreSQL/pgvector o en NoSQL MongoDB. Son útiles para consolidar datos, pero son menos especialización que una vector DB dedicada.
+		\item Bases de datos gráficas con funciones vectoriales: grafos como Neo4j que añaden búsqueda vectorial. Permiten combinar relaciones explícitas (grafos) con similitud semántica (vectores). Ejemplos: path finding sujeto a similitud
+	\end{itemize}
 \end{itemize} 
 
-Cuando la recuperación se externaliza, no siempre es necesario construir un pipeline de indexación propio \citep{book:RAG_SimpleGuide}. 
+Cuando la recuperación se externaliza, no siempre es necesario construir un pipeline de indexación propio, sin embargo, para los RAG clásicos se recomienda construir y mantener una base vectorial interna \citep{book:RAG_SimpleGuide}. 
 
 \subsection{Pipeline de Generación (online)}
 Gestiona la consulta del usuario de extremo a extremo. Este pipeline recibe la pregunta del usuario, recupera el contexto relevante de la base vectorial, los chunks, aumenta el prompt con ese contexto y genera la respuesta con el LLM \citep{book:RAG_SimpleGuide}. 
