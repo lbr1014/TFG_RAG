@@ -92,7 +92,7 @@ Los componentes clave del pipeline de indexación son:
 	\end{itemize}
 \end{itemize} 
 
-Cuando la recuperación se externaliza, no siempre es necesario construir un pipeline de indexación propio, sin embargo, para los RAG clásicos se recomienda construir y mantener una base vectorial interna~\cite{book:RAG_SimpleGuide}. 
+Cuando la recuperación se externaliza, es decir, cuando la búsqueda y obtención de información no la realiza el sistema sobre su propia base vectorial, sino que se delegan en un tercero (como por ejemplo una API) o en el documento que aporta el usuario, no es imprescindible construir un pipeline de indexación ni mantener una base vectorial. En cambio, en un RAG clásico, donde el sistema recupera conocimiento de su repositorio interno, sí se recomienda diseñar el pipeline de indexación y mantener una base vectorial propia~\cite{book:RAG_SimpleGuide}.
 
 \subsection{Pipeline de Generación (online)}
 Gestiona la consulta del usuario de extremo a extremo. Este pipeline recibe la pregunta del usuario, recupera el contexto relevante de la base vectorial, los \textit{chunks}, aumenta el \textit{prompt} con ese contexto y genera la respuesta con el LLM~\cite{book:RAG_SimpleGuide}. 
