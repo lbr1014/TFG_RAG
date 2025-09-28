@@ -57,10 +57,10 @@ El primer paso es el de recopilar los documentos externos y convertirlos a vecto
 
 %Capitulos dos, tres y cuatro del libro
 \section{Diseño del RAG}
-Un sistema RAG se construye en dos pipelines complementarios, el de indexación (\textit{offline}/asíncrono), y el de generación (\textit{online}/ tiempo real). El primero crea y mantiene la memoria no paramétrica o base de conocimiento. El segundo gestiona la interacción con el usuario, realizando la recuperación, el aumento del \textit{prompt} y la generación de la respuesta. Esta separación es estructural en el diseño de RAG y permite optimizar la precisión y la latencia del sistema~\cite{book:RAG_SimpleGuide}.
+Un sistema RAG se construye en dos \textit{pipelines} complementarios, el de indexación (\textit{offline}/asíncrono), y el de generación (\textit{online}/ tiempo real). El primero crea y mantiene la memoria no paramétrica o base de conocimiento. El segundo gestiona la interacción con el usuario, realizando la recuperación, el aumento del \textit{prompt} y la generación de la respuesta. Esta separación es estructural en el diseño de RAG y permite optimizar la precisión y la latencia del sistema~\cite{book:RAG_SimpleGuide}.
 
-\subsection{Pipeline de Indexación (offline)}
-Su objetivo es consolidar y preparar el conocimiento para que el pipeline de generación pueda consultarlo eficientemente. Consta de cinco pasos:
+\subsection{\textit{Pipeline} de Indexación (\textit{offline})}
+Su objetivo es consolidar y preparar el conocimiento para que el \textit{pipeline} de generación pueda consultarlo eficientemente. Consta de cinco pasos:
 \begin{enumerate}
 	\item Conectarse a las fuentes externas.
 	\item Extraer y \textit{parsear} los documentos.
@@ -68,9 +68,9 @@ Su objetivo es consolidar y preparar el conocimiento para que el pipeline de gen
 	\item Convierte los \textit{chunks} a un formato adecuado
 	\item Almacena en una base de datos vectorial los \textit{embeddings}
 \end{enumerate}
-Además de crearlo, este pipeline mantiene y actualiza el conocimiento base, por lo que debe ejecutarse de forma periódica~\cite{book:RAG_SimpleGuide}.
+Además de crearlo, este \textit{pipeline} mantiene y actualiza el conocimiento base, por lo que debe ejecutarse de forma periódica~\cite{book:RAG_SimpleGuide}.
 
-Los componentes clave del pipeline de indexación son:
+Los componentes clave del \textit{pipeline} de indexación son:
 \begin{itemize}
 \tightlist
 	\item Carga de datos (\textit{data loading}): consiste en conectarse a las fuentes, por ejemplo, sistemas de ficheros, data lakers, CMS o APIs, para la extracción del texto en bruto y el parsing de este en formatos heterogéneos, como pueden ser PDF, DOCX, JSON o HTML. Luego se le añaden metadatos y finalmente se hace limpieza quitando código, etiquetas raras y enmascarando datos confidenciales.
@@ -92,21 +92,34 @@ Los componentes clave del pipeline de indexación son:
 	\end{itemize}
 \end{itemize} 
 
-Cuando la recuperación se externaliza, es decir, cuando la búsqueda y obtención de información no la realiza el sistema sobre su propia base vectorial, sino que se delegan en un tercero (como por ejemplo una API) o en el documento que aporta el usuario, no es imprescindible construir un pipeline de indexación ni mantener una base vectorial. En cambio, en un RAG clásico, donde el sistema recupera conocimiento de su repositorio interno, sí se recomienda diseñar el pipeline de indexación y mantener una base vectorial propia~\cite{book:RAG_SimpleGuide}.
+Cuando la recuperación se externaliza, es decir, cuando la búsqueda y obtención de información no la realiza el sistema sobre su propia base vectorial, sino que se delegan en un tercero (como por ejemplo una API) o en el documento que aporta el usuario, no es imprescindible construir un \textit{pipeline} de indexación ni mantener una base vectorial. En cambio, en un RAG clásico, donde el sistema recupera conocimiento de su repositorio interno, sí se recomienda diseñar el \textit{pipeline} de indexación y mantener una base vectorial propia~\cite{book:RAG_SimpleGuide}.
 
-\subsection{Pipeline de Generación (online)}
-Gestiona la consulta del usuario de extremo a extremo. Este pipeline recibe la pregunta del usuario, recupera el contexto relevante de la base vectorial, los \textit{chunks}, aumenta el \textit{prompt} con ese contexto y genera la respuesta con el LLM~\cite{book:RAG_SimpleGuide}. 
+\subsection{\textit{Pipeline} de Generación (\textit{online})}
+Gestiona la consulta del usuario de extremo a extremo. Este \textit{pipeline} recibe la pregunta del usuario, recupera el contexto relevante de la base vectorial, los \textit{chunks}, aumenta el \textit{prompt} con ese contexto y genera la respuesta con el LLM. Se compone de tres fases: \textit{retrieval}, \textit{augmentation} y \textit{generation}~\cite{book:RAG_SimpleGuide}. 
 
-Los componentes clave del pipeline de generación son:
+Los componentes clave del \textit{pipeline} de generación son:
 \begin{itemize}
 \tightlist
-	\item Retriever: es el motor de búsqueda sobre la base vectorial. Es crítico para la precisión del sistema y contribuye a la latencia, su calidad condiciona el rendimiento del RAG.
-	\item Gestión del \textit{Prompt}: combina la consulta y el contexto recuperado. Además, aplica estrategias de ingeniaría de \textit{prompt} para maximizar la calidad de la respuesta.
-	\item Configuración LLM: es la selección del modelo que va a generar la respuesta final. Pueden ser modelos fundacionales, fine-tuned, abiertos o de servicio gestionado.
+	\item Retriever: es el motor de búsqueda sobre la base vectorial, es decir, la base de conocimiento. Devuelve los documentos más relevantes. Es crítico para la precisión del sistema y contribuye a la latencia, su calidad condiciona el rendimiento del RAG. El método más frecuente son los \textit{embeddings} gracias a su capacidad semántica.
+	\item Gestión del \textit{Prompt} (\textit{Augmentation}): combina la consulta y el contexto recuperado. Además, aplica estrategias de ingeniaría de \textit{prompt} para maximizar la calidad de la respuesta. Las estrategias recomendadas son:
+	\begin{itemize}
+	\tightlist
+		\item \textit{Contextual prompting}: consiste en instruir al modelo para que solo responda con el contexto proporcionado.
+		\item \textit{Controlled generation prompting}: consiste en indicarle al modelo que no conteste si el contexto no permite responder a la pregunta.
+		\item \textit{Few-shot prompting}: consiste en incluir ejemplos para forzar el formato de la respuesta.
+		\item \textit{Chain-of-Thought}: consiste en pedir pasos intermedios cuando los razonamientos son complejos.
+	\end{itemize}
+	\item Configuración LLM (\textit{Generation}): es la selección del modelo que va a generar la respuesta final. Pueden ser modelos:
+	\begin{itemize}
+	\tightlist
+		\item Originales o \textit{fine-tuned}: los originales facilitan un arranque rápido, mientras que los \textit{fine-tuned} mejoran la adaptación de dominio, la integración del contexto y formato de salida.
+		\item Abiertos o propietarios: los abiertos ofrecen control y despliegue flexible, mientras que los propietarios simplifican el uso y el mantenimiento.
+		\item Tamaño del modelo: los grandes tienen un razonamiento mejor y un contexto más amplio. Los pequeños tienen un coste y latencia menor.
+	\end{itemize}
 \end{itemize} 
 
 \subsection{Capas de soporte}
-Además de los dos pipelines, un sistema en producción requiere orquestación, evaluación y monitorización continua, cache semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \textit{prompt}, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un RAGOps stack con capas de datos, modelos, \textit{prompting}, evaluación, orquestación, despliegue, hosting y monitorización~\cite{book:RAG_SimpleGuide}.
+Además de los dos \textit{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, cache semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \textit{prompt}, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un RAGOps stack con capas de datos, modelos, \textit{prompting}, evaluación, orquestación, despliegue, hosting y monitorización~\cite{book:RAG_SimpleGuide}.
 
 \section{Evaluación de calidad del RAG}
 Se hará mediante la triada de evaluación propuesta por TruEra~\cite{RAG:triad}. Estructura la calidad en tres comprobaciones entre consulta (\textit{prompt}), contexto recuperado y respuesta. Complementariamente, se emplean métricas como relevancia, precisión y \textit{recall}, y conjuntos ground truth para validación objetiva y monitorización continua en producción~\cite{book:RAG_SimpleGuide}.

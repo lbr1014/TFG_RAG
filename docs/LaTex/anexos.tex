@@ -9,6 +9,12 @@
 \usepackage{microtype}
 \usepackage{placeins}
 
+%Cabeceras
+\copypagestyle{capitulo-en-cab}{headings}
+\makeoddhead{capitulo-en-cab}{\itshape\leftmark}{}{\thepage}
+\makeevenhead{capitulo-en-cab}{\thepage}{}{\itshape\leftmark} 
+\pagestyle{capitulo-en-cab}
+
 \RequirePackage{booktabs}
 \RequirePackage[table]{xcolor}
 \RequirePackage{xtab}
