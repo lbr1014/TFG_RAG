@@ -80,7 +80,7 @@ Los componentes clave del \textit{pipeline} de indexación son:
 		\item Especializados: divide el texto basándose en su estructura como encabezados o párrafos. 
 		\item Semántico: divide el texto basándose en su similitud de significado usando \textit{embeddings}, aunque este método aun es experimental.
 	\end{itemize}
-	La estrategia elegida va a depender del tipo de contenido, la longitud y complejidad de la consulta, el caso de uso y el modelo de \textit{embeddings}.
+	La estrategia elegida dependerá del tipo de contenido, la longitud y complejidad de la consulta, el caso de uso y el modelo de \textit{embeddings}.
 	\item Conversión a vectores (\textit{embeddings}): transforma el texto a representaciones numéricas de $n$ dimensiones. Para conocer si los \textit{chunks} se parecen a la consulta, el sistema mide la distancia entre sus vectores, ya que la proximidad refleja similitud semántica. Hay diversas técnicas para medir la distancia entre los vectores, una de las más utilizadas es la similitud coseno que consiste en que si el ángulo entre dos vectores es muy pequeño su similitud es casi uno, pero hay otras como la distancia euclidiana. Hay modelos preentrenados abiertos y propietarios, la elección dependerá de su uso, rendimiento, recuperación y coste.
 	\item Almacenamiento: los \textit{embeddings} se almacenan en bases de datos vectoriales diseñadas para vectores de altas dimensiones. Estas bases de datos vectoriales permiten la búsqueda eficiente sobre \textit{embeddings} y metadatos. Hay diversas opciones:
 	\begin{itemize}
@@ -127,10 +127,10 @@ Se hará mediante la triada de evaluación propuesta por TruEra~\cite{RAG:triad}
 Las tres dimensiones de la triada son:
 \begin{itemize}
 \tightlist
-	\item Relevancia del contexto: la información que hemos recuperado tiene que ver con la pregunta.
-	\item Groundedness o fidelidad: la respuesta que da el LLM se basa de verdad en el contexto que le hemos dado, sin alucinaciones ni omisiones clave.
+	\item Relevancia del contexto: la información que se haya recuperado tiene que ver con la pregunta.
+	\item \textit{Groundedness} o fidelidad: la respuesta que da el LLM se basa de verdad en el contexto que le hemos dado, sin alucinaciones ni omisiones clave.
 	\item Relevancia de la respuesta: la respuesta es útil y adecuada respecto a la intención y el contexto de la consulta original.
 \end{itemize}
 
 \section{\textit{Web Scraping}}
-\textit{Web Scraping} es el proceso automatizado de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\textit{crawling}), \textit{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
+\textit{Web Scraping} es el proceso automatizado de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\textit{crawling}), \textit{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
