@@ -144,10 +144,11 @@ Aparte de las dimensiones de la triada, otos aspectos relevantes que el sistema 
 Hay dos herramientas principales de evaluación:
 \begin{itemize}
 \tightlist
-	\item \textit{Retrieval-Augmented Generation Assessment} (RAGAs): es un \textit{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclo rápidos. 
-	\item \textit{Automated RAG Evaluation System}(ARES): es un \textit{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto.
+	\item \textit{Retrieval-Augmented Generation Assessment} (RAGAs): es un \textit{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclo rápidos~\cite{ragas:docs}. 
+	\item \textit{Automated RAG Evaluation System}(ARES): es un \textit{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto~\cite{saadfalcon2023ares}.
 \end{itemize}
 
-
 \section{\textit{Web Scraping}}
-\textit{Web Scraping} es el proceso automatizado de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\textit{crawling}), \textit{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
+\textit{Web Scraping} es el proceso automático de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\textit{crawling}), \textit{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
+
+Existe una convención estándar, llamada \textit{Robots Exclusion Protocol} (\textit{robots.txt}), mediante la cual un servidor web indica que \textit{URLs} se deben evitar rastrear. En este archivo se especifica que partes del sistema están permitidas o prohibidas para cada tipo de \textit{bot}. Aunque, el incumplimiento de este protocolo no tiene consecuencias legales es éticamente correcto cumplirlo~\cite{rfc9309}. 
