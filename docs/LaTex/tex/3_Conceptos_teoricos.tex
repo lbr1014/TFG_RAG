@@ -132,5 +132,22 @@ Las tres dimensiones de la triada son:
 	\item Relevancia de la respuesta: la respuesta es útil y adecuada respecto a la intención y el contexto de la consulta original.
 \end{itemize}
 
+Aparte de las dimensiones de la triada, otos aspectos relevantes que el sistema debe incorporar son:
+\begin{itemize}
+\tightlist
+	\item Robustez al ruido: el sistema debe distinguir aquellos documentos relacionados pero que sean poco útiles.
+	\item Rechazo en negativo: el sistema no debe responder cuando no hay evidencias relevantes.
+	\item Integración de información: el sistema debe ser capaz de sintetizar múltiples documentos que posean información relevante.
+	\item Robustez contrafactual: el sistema tiene que detectar y evitar la información inexacta en el propio \textit{knowledge base}
+\end{itemize}
+
+Hay dos herramientas principales de evaluación:
+\begin{itemize}
+\tightlist
+	\item \textit{Retrieval-Augmented Generation Assessment} (RAGAs): es un \textit{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclo rápidos. 
+	\item \textit{Automated RAG Evaluation System}(ARES): es un \textit{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto.
+\end{itemize}
+
+
 \section{\textit{Web Scraping}}
 \textit{Web Scraping} es el proceso automatizado de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\textit{crawling}), \textit{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
