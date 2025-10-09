@@ -10,7 +10,32 @@ En este documento se va a incluir la planificación temporal de las fases y tare
 También, se va a valorar la viabilidad del proyecto. En concreto, la viabilidad económica y la legal. En la viabilidad económica se estiman los costes y los beneficios del proyecto. Mientras que en la viabilidad legal analizan las leyes y licencias que afecten al desarrollo.  
 
 \section{Planificación temporal}
-Para la planificación se utiliza una metodología Scrum, aplicando iteraciones (\textit{sprints}). Al finalizar cada \textit{sprint} se realiza una reunión para la revisión del incremento y la planificación del siguiente. En la planificación se seleccionan y valoran las tareas (\textit{issues}) a realizar en el siguiente \textit{sprint}. Estas tareas se han valorado usando los \textit{story points} de ZenHub. 
+Para la planificación se utiliza una metodología Scrum, aplicando iteraciones (\textit{sprints}). Al finalizar cada \textit{sprint} se realiza una reunión para la revisión del incremento y la planificación del siguiente. En la planificación se seleccionan y valoran las tareas (\textit{issues}) a realizar en el siguiente \textit{sprint}. Estas tareas se han valorado usando los \textit{story points} de ZenHub. A las tareas que se subdividen en otras se les ha asignado solo los puntos extras respecto a sus subtareas, los \textit{story points} no se han considerado acumulativos.
+
+Para simplificar la asignación de los \textit{story points} se les ha asignado una estimación temporal recogida en la siguiente tabla~\ref{tabla:storypoints}:
+
+\begin{table}[h]
+	\centering
+	\begin{tabularx}{\linewidth}{
+    		>{\centering\arraybackslash}p{0.46\linewidth}
+    		>{\centering\arraybackslash}p{0.46\linewidth}}
+		\toprule
+		\textbf{\textit{Story Points}}    & \textbf{Tiempo invertido}\\
+		\midrule
+		1 \textit{Story Point} & 0,5 hora \\
+		2 \textit{Story Points} & 1 hora \\
+		3 \textit{Story Points} & 2 horas \\
+		5 \textit{Story Points} & 4 horas \\
+		8 \textit{Story Points} & 6 horas \\
+		13 \textit{Story Points} & 9 horas \\
+		21 \textit{Story Points} & 15 horas \\
+		40 \textit{Story Points} & más de 20 horas\\
+		\bottomrule
+	\end{tabularx}
+	\caption{Asignación temporal de los \textit{Story Points}.}
+	\label{tabla:storypoints}
+\end{table}
+
 
 \subsection{Sprint 0 (11/09/2025 - 18/09/2025)}
 Este \textit{sprint} marco el comienzo del proyecto. Los objetivos fueron realizar una primera toma de contacto con los RAG y los LLM, investigando sobre qué son, cómo funcionan y qué ventajas aportan los RAG. También, se planteó empezar a escribir los conceptos teóricos relevantes y crear el repositorio \href{https://github.com/lbr1014/TFG_RAG.git}{GitHub} para el proyecto. Como el \textit{sprint} se diseñó antes de la creación del repositorio, no se creó el \textit{milestone} asociado como se ha hecho en los \textit{sprints} posteriores. 
@@ -46,7 +71,7 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 	\end{itemize}
 \end{itemize}
 
-Para realizar estas tareas se estimaron 7 horas de trabajo pero en realidad fueron 10. Al finalizar el \textit{sprint} se completaron todas las tareas.
+Para realizar estas tareas se estimaron 8,5 horas de trabajo pero en realidad fueron 10. Al finalizar el \textit{sprint} se completaron todas las tareas.
 
 El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint1}
 \imagen{Burndown/Sprint1}{Sprint 1.}
@@ -78,20 +103,25 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Añadir las correcciones a la memoria.
-	\item Realización de aplicación de web scraping
+	\item Realización del comienzo de la aplicación de web scraping.
 	\begin{itemize}
 	\tightlist
-		\item Investigar web scraping con Selenium
-		\item Investigar web scraping con Playwright
+		\item Investigar web scraping con Selenium.
+		\item Investigar web scraping con Playwright.
 	\end{itemize}
-	\item Escribir conceptos teóricos en la memoria
+	\item Escribir conceptos teóricos en la memoria.
 	\begin{itemize}
 	\tightlist
-		\item Leer el capítulo 5 del libro: \textit{A simple guide to retrieval augmented generation}~\cite{book:RAG_SimpleGuide}
+		\item Leer el capítulo 5 del libro: \textit{A simple guide to retrieval augmented generation}~\cite{book:RAG_SimpleGuide}.
 	\end{itemize}
 \end{itemize}
 
-Para realizar estas tareas se estimaron 18 horas de trabajo pero en realidad fueron 
+Para realizar estas tareas se estimaron 15 horas de trabajo pero en realidad fueron 18. Al finalizar el \textit{sprint} se completaron todas las tareas.
+
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint3}
+\imagen{Burndown/Sprint3}{Sprint 3.}
+
+\subsection{Sprint 4 (9/10/2025 - 16/10/2025)}
 
 \section{Estudio de viabilidad}
 
