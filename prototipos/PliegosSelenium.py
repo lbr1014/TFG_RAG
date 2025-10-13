@@ -22,7 +22,10 @@ from selenium.common.exceptions import (TimeoutException, StaleElementReferenceE
 # ======== Constantes ========
 BASE_URL = "https://contrataciondelestado.es/wps/portal/plataforma"
 TIMEOUT = 30            # segundos por espera
+OUTPUT_JSON = "resultados_playwright.json"
 query = "licitacion"
+objetivo = "Junta de Gobierno de la Diputación Provincial de Burgos"
+
 
 # ======== Utilidades de espera ========
 
@@ -466,7 +469,6 @@ def main():
         print("Sector Público pulsado")
 
         #Buscar la Junta de gobierno de la diputación de Burgos en el listado
-        objetivo = "Junta de Gobierno de la Diputación Provincial de Burgos"
         eleccionOrgano(driver, frame_arbol, objetivo)
         print("Junta")
 
