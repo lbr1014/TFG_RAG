@@ -7,18 +7,13 @@ El script abre la plataforma, navega al "Perfil Contratante", localiza el buscad
 
 """
 # ======== Imports de playwright ========
-import asyncio
-import csv
 import json
-import random
-import sys
-import unicodedata
 import re, time
 from urllib.parse import urljoin, urlparse
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Tuple, Optional
 from datetime import datetime
 
 from playwright.sync_api import expect
@@ -27,16 +22,28 @@ from playwright.sync_api import Page, sync_playwright, TimeoutError as PWTimeout
 
 # ======== Constantes ========
 BASE_URL = "https://contrataciondelestado.es/wps/portal/plataforma"
-DELAY_MS = (350, 900)  # min/max para pausas semi-aleatorias
-API_DELAY = 0.35
 TIMEOUT = 30000        # 30s por acción
 OUTPUT_JSON = "resultados_playwright.json"
 QUERY = "licitacion" 
 OBJETIVO = "Junta de Gobierno de la Diputación Provincial de Burgos"
 
 # ======== Utilidades de espera ========
-def esperarFrame(page, selector, timeout=60000):
-    """Devuelve (frame, locator) del primer selector visible encontrado en cualquier iframe."""
+def esperarFrame(page, selector, timeout=60000)-> Tuple[Optional[object], object]:
+    """
+    Espera hasta encontrar un elemento visible por selector en la raíz o en un iframes.
+    Mantiene el foco en el frame donde está el elemento para devolverlo.
+
+    Argumentos:
+        page: Pagina en la que se va a bs¡uscar el frame.
+        selector: Selector CSS a localizar.
+        timeout: Tiempo máximo de espera.
+
+    Return:
+        el frame_web_element_or_None y el locator_web_element, como dupla
+
+    Excepción:
+        PWTimeoutError: Si no se localiza a tiempo.
+    """
     deadline = time.time() + timeout/1000
     while time.time() < deadline:
         for f in page.frames:
@@ -50,10 +57,23 @@ def esperarFrame(page, selector, timeout=60000):
     raise PWTimeoutError(f"No encontré '{selector}' visible en ningún iframe.")
 
 # ======== Reintentos de clic para abrir ventana ========
-def clickReintentos(boton, ventana, page, timeout=30_000, espera=400):
+def clickReintentos(boton, ventana, page, timeout=30_000, espera=400)-> bool:
     """
-    Hace click sobre boton con reintentos hasta que aparezca la ventana del árbol visible
-    o hasta que se alcance el timeout.Devuelve True si se abrió.
+    Hace click sobre el boton con reintentos hasta que el locator `ventana_by_sel` sea visible
+    o hasta alcanzar el timeout.    
+
+     Argumentos:
+        boton: WebElement del botón a pulsar.
+        ventana: identificador la ventana/panel esperado.
+        timeout: Tiempo máximo total de reintentos.
+        espera: Pausa entre intentos.
+
+    Return: 
+        Devuelve True si se abrió.
+    
+    Raises:
+        PWTimeoutError: Si no se abrió a tiempo.
+
     """
     start = time.monotonic()
     intento = 1
@@ -96,7 +116,17 @@ def clickReintentos(boton, ventana, page, timeout=30_000, espera=400):
 # ======== Flujos específicos de la página ========
 
 def abrirSeleccionar(page,frame, timeout=15_000):
-    """Pulsa Seleccionar y devuelve (frame_arbol, locator_arbol) cuando el árbol esté visible."""
+    """
+    Pulsa 'Seleccionar' y espera el árbol del popup.
+
+    Argumentos:
+        page: Pagina en la que se encuentra el botón seleccionar.
+        frame: Frame donde se encuentra el botón 'Seleccionar'. Puede ser None.
+        timeout: Tiempo máximo de espera del popup.
+
+    Return:
+        Devuelve la dupla (frame_arbol, locator_arbol) cuando el árbol esté visible. Es decir, el frame y el localizador del arbol.
+    """
     boton = frame.locator(r'#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:listaperfiles\:idSeleccionarOCLink').first
     boton.wait_for(state="visible")
     boton.click()
@@ -113,33 +143,44 @@ def abrirSeleccionar(page,frame, timeout=15_000):
     return frame_arbol, loc_arbol
         
 
-def eleccionOrgano(frame_arbol, texto_objetivo):
+def eleccionOrgano(frame_arbol, texto_objetivo) -> None:
     """
-    Selecciona en el listbox inferior (comboNombreOrgano) la opción cuyo texto
-    contiene texto_objetivo y pulsa Añadir.
+    Selecciona en el listbox inferior (comboNombreOrgano) la option cuyo texto contiene texto_objetivo pulsa Añadir.
+    
+    Argumentos: 
+        frame_arbol: Frame donde se renderiza el árbol y el combo del órgano.
+        texto_objetivo: Cadena a buscar (insensible a mayúsculas/minúsculas).
     """
-    # 1) Localiza el <select> del recuadro inferior
+    # Localiza el <select> del recuadro inferior
     sel = frame_arbol.locator(r'[id$="\:comboNombreOrgano"]').first
     sel.wait_for(state="visible")
 
-    # 2) Espera a que tenga opciones cargadas
+    # Espera a que tenga opciones cargadas
     frame_arbol.wait_for_selector(r'[id$="\:comboNombreOrgano"] option')
 
-   # 3) Busca la <option> por texto
+   # Busca la <option> por texto
     opcion = sel.locator("option", has_text=re.compile(re.escape(texto_objetivo), re.I)).first
     opcion.wait_for(state="attached")
 
-    # 4) Selecciona por value 
+    # Selecciona por value 
     value = opcion.get_attribute("value")
     if not value:
         raise RuntimeError(f"No se encontró value para la opción '{texto_objetivo}'")
     sel.select_option(value=value)
 
-    # 5) Pulsa 'Añadir'
+    # Pulsa 'Añadir'
     frame_arbol.get_by_role("button", name=re.compile(r"^Añadir$", re.I)).click()
     
 def pestanaDiputacion(busqueda: str) -> str:
-    """Devuelve la clave de pestaña a abrir según el texto de búsqueda."""
+    """
+    Devuelve la clave de pestaña a abrir según el texto de búsqueda.
+
+    Argumentos:
+        busqeuda: texto que de búsqueda segun el cual se va a seleccioanr la pestaña.
+    Returns:
+        nombre de pestaña a abrir
+
+    """
     b = (busqueda or "").lower()
     print (busqueda)
     print(any(k in b for k in ("pliego", "pliegos", "doc", "documento", "documentos")))
@@ -186,14 +227,12 @@ def irPestana(page: Page, clave: str, timeout: float = 10_000) -> None:
         locator = page.locator(sel).first
         locator.wait_for(state="visible", timeout=timeout)
         locator.scroll_into_view_if_needed(timeout=timeout)
-        expect(locator).to_be_enabled(timeout=timeout)  # sustituto de "visible + clickable"
-        # Click "seguro": se puede probar el dispatch antes para detectar obstrucciones
+        expect(locator).to_be_enabled(timeout=timeout)  
         locator.click(timeout=timeout, trial=True)
         locator.click(timeout=timeout)
     except PlaywrightTimeoutError:
         raise PlaywrightTimeoutError(f"No se pudo abrir la pestaña: {clave}")
 
-    # Equivalentes aproximados a `espera(driver, 5)` y `PausaMilisegundos(400)`
     try:
         page.wait_for_timeout(5_000)
     except Exception:
@@ -202,7 +241,7 @@ def irPestana(page: Page, clave: str, timeout: float = 10_000) -> None:
 
 
 
-def extraerLicitaciones(page) -> dict:
+def extraerLicitaciones(page) -> list[dict]:
     """
     Recorre las licitaciones de la página entrando en cada una
     Argumentos:
@@ -211,7 +250,7 @@ def extraerLicitaciones(page) -> dict:
     Return: 
         Devuelve un diccionario con la información extraida.
     """
-    print("vy a descaragr licitaciones")
+    print("voy a descaragr licitaciones")
     url=page.url
     tabla = page.locator(r'#tableLicitacionesPerfilContratante')
     tabla.wait_for(state="visible", timeout=30_000)
@@ -227,6 +266,7 @@ def extraerLicitaciones(page) -> dict:
     pagina=1
     resultados=[]
     while True:
+        
         total=filas.count()
         print(f"Filas en la página {pagina} : {total}")
 
@@ -245,8 +285,8 @@ def extraerLicitaciones(page) -> dict:
 
             page.wait_for_timeout(400)
 
-            detalles = extraerDetallesLicitacion(page)
-            resultados.append(detalles)
+            datos, documentos = extraerDetallesLicitacion(page)
+            resultados.append({"datos": datos, "documentos": documentos})
 
             j+=1
             print(f"Licitación visitada #{i+1} Total {j}")
@@ -268,7 +308,7 @@ def extraerLicitaciones(page) -> dict:
 
     return resultados
 
-def extraerDetallesLicitacion(page: Page) -> dict:
+def extraerDetallesLicitacion(page: Page) -> tuple[dict, list[dict]]:
     """
     Extrae los campos visibles de la página actual de licitaciones en formato JSON
     Argumentos:
@@ -434,10 +474,14 @@ def extraerDetallesLicitacion(page: Page) -> dict:
 def guardarLicitacionJSON(resultados: List[Any]) -> None:
     """
     Guarda las licitaciones en OUTPUT_JSON como una lista de objetos { "datos": {…}, "documentos": [ … ] }
+
+    Argumentos: 
+        resultados: La lista con los resultados que se van a almacenar en el json
     """
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(resultados, f, ensure_ascii=False, indent=2)
 
+# ==== Main ====
 
 def main():
 
@@ -509,6 +553,8 @@ def main():
                 resultado=extraerLicitaciones(page)
 
             guardarLicitacionJSON(resultado)
+
+            print("HA ACABADO")
 
 
 

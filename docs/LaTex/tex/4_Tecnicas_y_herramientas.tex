@@ -3,12 +3,12 @@
 \section{Metodologías}
 
 \subsection{Scrum}
-La metodología Scrum es un marco de trabajo ágil orientado a la gestión y desarrollo de proyectos de manera iterativa e incremental. Se organiza en ciclos cortos denominados \textit{sprints}, al final de los cuales se entrega un incremento funcional del producto. Estos \textit{sprints} favorecen la mejora continua y la adaptación al cambio, además, aseguran una entrega temprana de valor. A diferencia de metodologías tradicionales, Scrum aporta mayor flexibilidad y retroalimentación constante~\citep{scrum:guide}. 
+La metodología Scrum es un marco de trabajo ágil orientado a la gestión y desarrollo de proyectos de manera iterativa e incremental. Se organiza en ciclos cortos denominados \textit{sprints}, al final de los cuales se entrega un incremento funcional del producto. Estos \textit{sprints} favorecen la mejora continua y la adaptación al cambio, además, aseguran una entrega temprana de valor. A diferencia de metodologías tradicionales, Scrum aporta mayor flexibilidad y retroalimentación constante~\cite{scrum:guide}. 
 
 \section{Repositorio}
 Para alojar el repositorio se han valorado distintas alternativas como \href{https://bitbucket.org/}{Bitbucket}, \href{https://github.com/}{GitHub}, \href{https://gitlab.com/}{GitLab} o \href{https://trello.com/}{Trello}. Finalmente se ha elegido GitHub que es una plataforma basada en la nube que permite alojar repositorios de código. GitHub ofrece funciones muy útiles como ramas (\textit{branches}), \textit{pull request}, seguimiento de cambios (\textit{commits}), historial del proyecto, gestión de incidencias (\textit{issues}). Además, permite la colaboración entre usuarios, lo que es muy útil para la revisión del proyecto.
 
-Otra ventaja es que GitHub se integra con herramientas de integración y despliegue continuo, lo que facilita la automatización de pruebas y la entrega de \textit{software}. Asimismo, permite incluir documentación directamente en el repositorio, ya sea mediante archivos \textit{README} o a través de \textit{Wikis}, lo que mejora la claridad y la reproducibilidad del trabajo. Finalmente, al tratarse de la plataforma más utilizada a nivel mundial, cuenta con abundante documentación, lo que la convierte en una alternativa sólida y con amplio soporte~\citep{gitHub}.
+Otra ventaja es que GitHub se integra con herramientas de integración y despliegue continuo, lo que facilita la automatización de pruebas y la entrega de \textit{software}. Asimismo, permite incluir documentación directamente en el repositorio, ya sea mediante archivos \textit{README} o a través de \textit{Wikis}, lo que mejora la claridad y la reproducibilidad del trabajo. Finalmente, al tratarse de la plataforma más utilizada a nivel mundial, cuenta con abundante documentación, lo que la convierte en una alternativa sólida y con amplio soporte~\cite{gitHub}.
 
 \section{Gestión de tareas}
 Para la gestión de las tareas del proyecto se han valorado diversas herramientas, como \href{https://www.zenhub.com/}{ZenHub}, \href{https://github.com/}{GitHub
@@ -19,7 +19,60 @@ Para la gestión de las tareas del proyecto se han valorado diversas herramienta
 Para la edición de los documentos en \LaTeX{} se ha considerado usar \href{http://www.xm1math.net/texmaker/}{\TeX{Maker}}, \href{https://www.texstudio.org/}{\TeX{Studio}}, \href{https://code.visualstudio.com/}{Visual Studio Code} y \href{https://es.overleaf.com/}{Overleaf}. Finalmente se ha optado por usar \TeX{Maker}, ya que es un editor multiplataforma, gratuito y de código abierto. Tiene un visor PDF integrado, así como herramientas para gestionar la bibliografía mediante Bib\TeX{}. Además, tiene una interfaz simple que facilita el aprendizaje, incorpora funciones como el autocompletado, el plegado de código y la detección de errores de compilación, sin necesidad de instalar complementos adicionales.
 
 \subsection{Distribución}
-Como distribución \LaTeX{} para procesar los documentos .tex se ha valorado el uso de \href{https://miktex.org/}{Mik\TeX{}} y \href{https://www.tug.org/texlive/}{\TeX{Live}}, al final se ha elegido usar Mik\TeX{} ya que permite realizar una instalación mínima e ir añadiendo automáticamente los paquetes necesarios durante la compilación. Además, presenta un buen soporte para Windows, lo que se adapta bien a mi entorno de trabajo~\citep{miktex:textlive}.
+Como distribución \LaTeX{} para procesar los documentos .tex se ha valorado el uso de \href{https://miktex.org/}{Mik\TeX{}} y \href{https://www.tug.org/texlive/}{\TeX{Live}}, al final se ha elegido usar Mik\TeX{} ya que permite realizar una instalación mínima e ir añadiendo automáticamente los paquetes necesarios durante la compilación. Además, presenta un buen soporte para Windows, lo que se adapta bien a mi entorno de trabajo~\cite{miktex:textlive}.
 
 \section{\textit{Web Scraping}}
-Para el \textit{web scraping} se ha valorado usar \href{https://beautiful-soup-4.readthedocs.io/en/latest/}{Beautiful Soup}, \href{https://selenium-python.readthedocs.io/}{Selenium}, \href{https://playwright.dev/}{Playwright} y \href{https://requests.readthedocs.io/en/latest/}{Requests}. Finalmente se ha elegido usar Playwright. Requests solo gestiona HTTP sin ejecutar JavaScript, Beautiful Soup es un parse de HTML/XML para extraer y navegar por el DOM descargado. Pero cuando la web es dinámica Selenium y Playwright son mejores opciones ya que hay que automatizar un navegador. Pese a que selenium controla navegadores reales y es un estándar veterano Playwright es más completo. Ya que ofrece automatización multi-navegador con contextos aislados, funcionamiento headless, espera automática de elementos y APIs consistentes, lo que lo vuelve más robusto y rápido para páginas con JS pesado y flujos de login.
+Para el \textit{web scraping} se ha valorado usar \href{https://selenium-python.readthedocs.io/}{Selenium} y \href{https://playwright.dev/}{Playwright}.
+Selenium controla navegadores reales y es un estándar veterano, pero Playwright es más completo. Ya que ofrece automatización multi-navegador con contextos aislados, funcionamiento headless, espera automática de elementos y APIs consistentes, lo que lo vuelve más robusto y rápido para páginas con JavaScript pesado y flujos de login. En la siguiente tabla se muestran las ventajas y desventajas de cada uno~\ref{tabla:SeleniumPlaywright}:
+
+\begin{table}[h]
+	\centering
+	\renewcommand{\arraystretch}{1.1}
+	\begin{tabularx}{\linewidth}{
+    		>{\centering\arraybackslash}p{0.18\linewidth}
+    		>{\centering\arraybackslash}X
+    		>{\centering\arraybackslash}X}
+		\toprule
+			& \textbf{Ventajas} & \textbf{Desventajas} \\
+		\midrule
+		\textbf{\textit{Selenium}}~\cite{selenium:docs} & 
+		
+			\begin{itemize}
+			\tightlist
+				\item Utiliza el estándar W3C \textit{WebDriver}~\cite{w3c:webdriver2}, lo que aporta interoperabilidad y soporte a largo plazo.
+				\item Multilenguaje y ecosistema maduro. Permite una integración fácil.
+				\item Es robusto para escalado distribuido. 
+			\end{itemize}  
+			& 			
+			 \begin{itemize}
+			\tightlist
+				\item Es propenso a fallos (\textit{flakiness}) si no se dominan las esperas.
+				\item La intercepción de red en menos homogénea entre navegadores.
+			\end{itemize}
+			
+			\\
+			
+		\textbf{\textit{Playwright}}~\cite{playwright:actionability} & 
+		 
+		 \begin{itemize}
+			\tightlist
+				\item Es muy estable y rápido en \textit{webs} con \textit{JavaScript} pesado.
+				\item Tiene multitud de herramientas integradas como \textit{Trace Viewer}, capturas de pantalla y videos.
+				\item Tiene selectores potentes y permite manejar los \textit{inframes} de forma sencilla. 
+				\item Tiene un control de contexto aislado muy cómodo.
+			\end{itemize}   
+			& 			
+			\begin{itemize}
+			\tightlist
+				\item No utiliza el estándar \textit{WebDriver}. 
+			\end{itemize}   
+			
+			\\
+		
+		\bottomrule
+	\end{tabularx}
+	\caption{Ventajas y desventajas de \textit{Selenium} y \textit{Playwright}.}
+	\label{tabla:SeleniumPlaywright}
+\end{table}
+
+Aunque \textit{Selenium} sigue siendo una apuesta segura.Para \textit{scraping} moderno con multipes sesiones y depuración rápida, \textit{Playwright} requiere menos código y es más robusto. 

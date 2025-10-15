@@ -10,8 +10,9 @@ El script abre la plataforma, navega al "Perfil Contratante", localiza el buscad
 # ======== Imports de selenium ========
 import re
 import time
+import json
 from datetime import datetime
-from typing import Tuple, Optional
+from typing import Any, List, Tuple, Optional
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -22,9 +23,9 @@ from selenium.common.exceptions import (TimeoutException, StaleElementReferenceE
 # ======== Constantes ========
 BASE_URL = "https://contrataciondelestado.es/wps/portal/plataforma"
 TIMEOUT = 30            # segundos por espera
-OUTPUT_JSON = "resultados_playwright.json"
-query = "licitacion"
-objetivo = "Junta de Gobierno de la Diputación Provincial de Burgos"
+OUTPUT_JSON = "resultados_Selenium.json"
+QUERY = "licitacion"
+OBJETIVO = "Junta de Gobierno de la Diputación Provincial de Burgos"
 
 
 # ======== Utilidades de espera ========
@@ -297,7 +298,7 @@ def abrirSeleccionar(driver, frame_context, timeout_ms=15_000):
     print(frame_arbol)
     return frame_arbol, loc_arbol
 
-def eleccionOrgano(driver, frame_arbol, texto_objetivo: str):
+def eleccionOrgano(driver, frame_arbol, texto_objetivo: str) -> None:
     """
     Selecciona en el listbox inferior (comboNombreOrgano) la option cuyo texto contiene texto_objetivo pulsa Añadir.
     
@@ -410,6 +411,245 @@ def irPestana(driver, clave: str):
         pass
     PausaMilisegundos(400)
 
+def extraerLicitaciones(driver) -> list[dict]:
+    """
+    Recorre las licitaciones de la página entrando en cada una
+    Argumentos:
+        driver: la página actual (Licitacion) de la cual queremos extrear el JSON
+
+    Return: 
+        Devuelve un diccionario con la información extraida.
+    """
+    url=driver.current_url
+
+    print("voy a descaragr licitaciones")
+    tabla = WebDriverWait(driver, TIMEOUT).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, r'#tableLicitacionesPerfilContratante'))
+    )   
+    
+
+    j=0
+    pagina=1
+    resultados=[]
+    while True:
+        
+        filas = tabla.find_elements(By.CSS_SELECTOR, "tbody tr")
+        total=len(filas)
+        print(f"Filas en la página {pagina} : {total}")
+
+        for i in range(total):
+            tabla = WebDriverWait(driver, TIMEOUT).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, r'#tableLicitacionesPerfilContratante'))
+            )   
+
+            fila = driver.find_element(By.CSS_SELECTOR, f"#tableLicitacionesPerfilContratante > tbody > tr:nth-child({i+1})")
+
+            enlace = WebDriverWait(fila, TIMEOUT).until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, 'td.tdExpediente a:not([target="_blank"])')
+                )
+            )
+
+            try:
+                driver.execute_script("arguments[0].scrollIntoView({block:'center'});", enlace)
+            except Exception:
+                pass
+            
+            clickSeguro(driver, enlace)
+
+            # Esperar a que cargue la página de detalle
+            WebDriverWait(driver, TIMEOUT).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, 'fieldset[id^="DetalleLicitacion"]'))
+            )
+
+            datos, documentos = extraerDetallesLicitacion(driver)
+            resultados.append({"datos": datos, "documentos": documentos})
+
+            j+=1
+            print(f"Licitación visitada #{i+1}. Total {j}")
+
+            driver.get(url)
+            espera(driver, 30)
+            irPestana(driver, "Licitaciones")
+            tabla = WebDriverWait(driver, TIMEOUT).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, r'#tableLicitacionesPerfilContratante'))
+            )
+            espera(driver, 30)
+
+
+        try:
+            botonSiguiente = WebDriverWait(driver, 3).until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, r'#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:form1\:siguienteLink')
+                )
+            )
+        except TimeoutException:
+            break 
+        
+
+        clickSeguro(driver, botonSiguiente)
+        espera(driver, 30)
+        
+        tabla = WebDriverWait(driver, TIMEOUT).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, r'#tableLicitacionesPerfilContratante'))
+        )
+        pagina+=1
+
+    return resultados
+
+
+def extraerDetallesLicitacion(driver) ->  tuple[dict, list[dict]]:
+    """
+    Extrae los campos visibles de la página actual de licitaciones en formato JSON
+    Argumentos:
+        driver: la página actual de la cual queremos extrear el JSON
+
+    Return: 
+        Devuelve un diccionario con la información extraida.
+    """
+    datos=[]
+
+    # Asegurar que el detalle está visible
+    WebDriverWait(driver, TIMEOUT).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, 'fieldset[id^="DetalleLicitacion"]'))
+    )
+
+    #información de la tabla DetalleLicitacionVIS_UOE
+    tabla_js = r"""
+        return (function () {
+          const root = document.querySelector('#DetalleLicitacionVIS_UOE');
+          if (!root) return {};
+          const out = {};
+          const filas = Array.from(root.querySelectorAll('ul'));
+          for (const ul of filas) {
+            const celdas = Array.from(ul.querySelectorAll('li'));
+            if (celdas.length < 2) continue;
+            const etiqueta = (celdas[0].textContent || '').trim();
+            if (!etiqueta) continue;
+            const valor = (celdas[1].textContent || '').replace(/\s+/g, ' ').trim();
+            if (valor) out[etiqueta] = valor;
+          }
+          return out;
+        })();
+    """
+    tabla = driver.execute_script(tabla_js) or {}
+
+    datos={}
+    tablaNormalizada={}
+    #Normalizar los datos obtenidos
+    for k,v in tabla.items():
+        #Quita los espacios dejando solo uno y quita los dos puntos
+        k = re.sub(r"\s+", " ",k).strip()
+        k = re.sub(r":\s*$", "", k)
+
+        v = re.sub(r"\s+", " ",v).strip()
+
+        tablaNormalizada[k]=v
+
+    datos.update(tablaNormalizada)
+
+    #información de la tabla InformacionLicitacionVIS_UOE
+    info_js = r"""
+        return (function () {
+          const root = document.querySelector('#InformacionLicitacionVIS_UOE');
+          if (!root) return {};
+          const out = {};
+          const filas = Array.from(root.querySelectorAll('ul'));
+          for (const ul of filas) {
+            const celdas = Array.from(ul.querySelectorAll('li'));
+            if (celdas.length < 2) continue;
+            const etiqueta = (celdas[0].textContent || '').trim();
+            if (!etiqueta) continue;
+            const valor = (celdas[1].textContent || '').replace(/\s+/g, ' ').trim();
+            if (valor) out[etiqueta] = valor;
+          }
+          return out;
+        })();
+    """
+    informacion = driver.execute_script(info_js) or {}
+
+    informacionNormalizada={}
+    for k, v in informacion.items():
+        k = re.sub(r"\s+", " ", k).strip()
+        k = re.sub(r":\s*$", "", k)
+        v = re.sub(r"\s+", " ", v).strip()
+        informacionNormalizada[k] = v
+
+    datos.update(informacionNormalizada)
+
+    print(f"\nDatos normalizados: {datos}")
+
+    #informaciónde la tabla #myTablaDetalleVISUOE
+    docs_js = r"""
+        return (function () {
+          const table = document.querySelector('#myTablaDetalleVISUOE');
+          if (!table) return [];
+          const out = [];
+          const filas = Array.from(table.querySelectorAll('#myTablaDetalleVISUOE > tbody tr'));
+          for (const tr of filas) {
+            const tds = tr.querySelectorAll('td');
+            const publicacion = (tds[0].textContent || '').replace(/\s+/g, ' ').trim();
+            const documento   = (tds[1].textContent || '').replace(/\s+/g, ' ').trim();
+            let html = null;
+            const links = Array.from(tds[2].querySelectorAll('a'));
+            const htmlLink = links.find(a => /\bhtml\b/i.test(a.textContent || ''));
+            if (htmlLink) {
+              html = new URL(htmlLink.getAttribute('href') || '', window.location.href).href;
+            }
+            out.push({ publicacion, documento, html });
+          }
+          return out;
+        })();
+    """
+    documentos = driver.execute_script(docs_js) or []
+    print (f"\n Documentos: {documentos}")  
+
+    #informaciónde la tabla #datosDocumentosGenerales
+    otros_js = r"""
+        return (function () {
+          const cont = document.querySelector('#datosDocumentosGenerales');
+          if (!cont) return [];
+          const table = cont.querySelector('[id="viewns_Z7_AVEQAI930OBRD02JPMTPG21006_:form1:TableEx1_Aux"]');
+          if (!table) return [];
+          const out = [];
+          const seen = new Set();
+          const rows = Array.from(table.querySelectorAll('tbody tr'));
+          for (const tr of rows) {
+            const tds = tr.querySelectorAll('td');
+            const publicacion = (tds[0].textContent || '').trim();
+            const documento   = (tds[1].textContent || '').trim();
+            const verLink = Array.from(tds[2].querySelectorAll('a'))
+              .find(a => /\bver\b/i.test((a.textContent || '').trim()));
+            if (!verLink) continue;
+            const html = new URL(verLink.getAttribute('href') || '', window.location.href).href;
+            const key = `${publicacion}||${documento}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            out.push({ publicacion, documento, html });
+          }
+          return out;
+        })();
+    """
+    otrosDocumentos = driver.execute_script(otros_js) or []
+    print (f"\n Otros Documentos: {otrosDocumentos}")    
+
+    documentos.extend(otrosDocumentos)
+    print(f"\nDOCUMENTOS FINAL: {documentos}")
+
+    return datos, documentos
+
+def guardarLicitacionJSON(resultados: List[Any]) -> None:
+    """
+    Guarda las licitaciones en OUTPUT_JSON como una lista de objetos { "datos": {…}, "documentos": [ … ] }
+
+    Argumentos: 
+        resultados: La lista con los resultados que se van a almacenar en el json
+    """
+    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
+        json.dump(resultados, f, ensure_ascii=False, indent=2)
+
+
+
 # ==== Main ====
 
 def main():
@@ -423,13 +663,10 @@ def main():
         "Chrome/124.0.0.0 Safari/537.36"
     )
     
-    # opts.add_argument("--headless=new")
-
     driver = webdriver.Chrome(options=opts)
     driver.set_page_load_timeout(45)
     driver.implicitly_wait(0)  
 
-    # Fijar timezone vía CDP 
     try:
         driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {"timezoneId": "Europe/Madrid"})
     except Exception:
@@ -469,7 +706,7 @@ def main():
         print("Sector Público pulsado")
 
         #Buscar la Junta de gobierno de la diputación de Burgos en el listado
-        eleccionOrgano(driver, frame_arbol, objetivo)
+        eleccionOrgano(driver, frame_arbol, OBJETIVO)
         print("Junta")
 
         driver.switch_to.default_content()
@@ -495,10 +732,17 @@ def main():
         print("Enlace junta")
 
         espera(driver, 15)
-        destino = pestanaDiputacion(query)
+        destino = pestanaDiputacion(QUERY)
         print(f"Iré a la pestaña: {destino}")
         irPestana(driver, destino)
         print("Pestaña abierta")
+
+        resultado=[]
+        if destino == "Licitaciones":
+            resultado=extraerLicitaciones(driver)
+
+        guardarLicitacionJSON(resultado)
+        print("HA ACABADO")
 
  
     except TimeoutException:

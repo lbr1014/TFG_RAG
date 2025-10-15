@@ -1,6 +1,33 @@
 [
-  [
-    {
+  {
+    "datos": {
+      "Expediente: 46E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
+      "ID de publicación en TED": "823d4b9f-b8ac-43d9-a01d-0113b15af5bb",
+      "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
+      "ID del Órgano de Contratación": "30487420086822",
+      "Estado de la Licitación": "Anuncio previo (reducción de plazos)",
+      "Objeto del contrato": "Suministro de 19 vehículos auxiliares de bomberos, destinados al servicio de Fomento, Protección Civil e Infraestructuras.",
+      "Financiación UE": "No hay financiación con fondos de la UE",
+      "Presupuesto base de licitación sin impuestos": "699.815,84 Euros",
+      "Valor estimado del contrato": "699.815,84 Euros",
+      "Tipo de Contrato": "Suministros",
+      "Código CPV": "34114100-Vehículos de emergencia.",
+      "Lugar de Ejecución": "España - Burgos",
+      "Sistema de contratación": "No aplica",
+      "Procedimiento de contratación": "Abierto",
+      "Tipo de tramitación": "Ordinaria",
+      "Método de presentación de la oferta": "Electrónica"
+    },
+    "documentos": [
+      {
+        "publicacion": "15/10/2025 10:01:12",
+        "documento": "Anuncio de información previa con reducción de plazos",
+        "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=FbzQ52iXquCzZagUGsZHcdYy0GWFCOsLSobr5Cw93QtEReOvO4xV%2BqkxmYROsIEuz6OKgBEMCYnPDto%2BFchELUHaVBRT20i2m%2B9Fvvhkt0S1aXEvq3KHa/AEHgtDrQw0&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
+      }
+    ]
+  },
+  {
+    "datos": {
       "Expediente: 39E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "e4cd1304-9927-450d-b304-5be83848783d",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -19,7 +46,7 @@
       "Método de presentación de la oferta": "Electrónica",
       "Fecha fin de presentación de oferta": "10/11/2025 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "13/10/2025 13:59:27",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -66,9 +93,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=ElK6H3MM8DcAqkdE0ju17/jsALVW%2BBaJIzYerimD68xWxqLWhHSx4lYeCy93Wdi6pvsIUk1Li91uAW2ZSyb%2Bf0iPgyx22Z5Wg/LH9jYkuwYC1/zDIE0Kw/PWNnLS0Z0z&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 31E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "d4540169-1ba2-4f4d-85f0-8d0d634ceb10",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -87,7 +114,7 @@
       "Método de presentación de la oferta": "Electrónica",
       "Fecha fin de presentación de oferta": "08/09/2025 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/08/2025 09:28:33",
         "documento": "Anuncio de Licitación",
@@ -129,9 +156,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=UprSoBbshCTJMq9q3rI7kxnVXSGoWuDLsK4m1ciaYSsevWhvfjGZYJ43G64moEqMj7NSGRT3Z4T5AH5oLohz5IXt89MUgbN0/qnU68XlXk5JOVDbGCDM%2BMigrvuVS7Rv&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 55E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "f8316a0a-773f-4f2c-9f11-0d6087d96459",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -150,7 +177,7 @@
       "Método de presentación de la oferta": "Electrónica",
       "Fecha fin de presentación de oferta": "17/09/2025 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "18/08/2025 08:20:05",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -232,9 +259,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Nb1se1G0VL6pQIZI06/h7m6FAGSWYDkRptuxhILlrPL4Ze4b9q9hg17J46Hy5rZdJ00XyNKRM9yGjrmyeVbNeWL2JXih/ImSmkakz4zKimwC1/zDIE0Kw/PWNnLS0Z0z&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 28E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -252,7 +279,7 @@
       "Método de presentación de la oferta": "Electrónica",
       "Fecha fin de presentación de oferta": "13/08/2025 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "29/07/2025 10:26:58",
         "documento": "Anuncio de Licitación",
@@ -334,9 +361,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=tB5PD3bAWLFvLXCJYpzRTKRoYAkd0RhIs7cUevWa8/VBvg7Fq25kwTCCsr7CYaEpfnX6xhfE/91%2BMBAUuNiaXh2OZHq595COgKKriRCtaUYC1/zDIE0Kw/PWNnLS0Z0z&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 30E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -357,7 +384,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "129.054,31 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "21/07/2025 09:44:34",
         "documento": "Anuncio de Licitación",
@@ -424,9 +451,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=AYiwcnSeeRTxnVLE9dk75gnJlcAOQmhnYh7Mqhtmg0EQNZibNNguhT086YahDEZ60bxDDhl4aHpJ2cr8D9eWMI6la6fSetrvN163qz44AiqHAj0WEJrB5sP7amrh2jBD&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 35E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "356a599a-6d27-43f5-9f2a-c1a693e86ba1",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -449,7 +476,7 @@
       "Nº de Licitadores Presentados": "5",
       "Importe de Adjudicación": "404.821,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/07/2025 10:29:59",
         "documento": "Anuncio de Licitación",
@@ -496,9 +523,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=T7gGHVYyucRvTUBd3OkXKF0a4zjw08Wh3W%2B5I7v2yurUq6DQRA/6%2Bh9yT5m7Js5wamVCsAnd2s0J7GNrK8relMHSl5Pl9oIRc/VDofs5ZiL6CYyL7SIrUOBFfNf52ZqA&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 9E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "8ad63e6b-24c4-416a-84f4-8c43ca97e811",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -517,7 +544,7 @@
       "Método de presentación de la oferta": "Electrónica",
       "Fecha fin de presentación de oferta": "18/08/2025 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "15/07/2025 09:59:05",
         "documento": "Anuncio de Licitación",
@@ -579,9 +606,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=ZdIxpLvpksXOz25EDf9rjpMELcq2WRC3/JsoHKOfJnNBhXX6/vDLYQurxjv0vijlJgX4NwVdaEloaF1i6rCwPnb1CFbfMfz/ty1gB%2B1HV9wZyAJWGsSt0OzTSTyw9JAs&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 27E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -603,7 +630,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/06/2025 15:19:09",
         "documento": "Anuncio de Licitación",
@@ -613,6 +640,11 @@
         "publicacion": "16/06/2025 15:19:28",
         "documento": "Pliego",
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=4Vo5NSjmBNwwEsP1QiLl8G7ta5CccaoUuC75MHROFCGV0duXXQDguKobrA2IjxzWm3TIzJADIBGHTNKzzSvvYlycitqWeG1I/BTp%2BY6E%2BEL6CYyL7SIrUOBFfNf52ZqA&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
+      },
+      {
+        "publicacion": "15/10/2025 11:01:26",
+        "documento": "Adjudicación",
+        "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=J304kE/c0sRbLKkotsdbEHegAQrG87ht4E6G/2H6IdXOt6JXCNm5%2BeReMtlf3lY0LL936VSCZ5PIeMaIQzUJPHrhWwFNZW5O8pJDjHy1M7n3GVhXrFFqN7yFncy7YfRK&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       },
       {
         "publicacion": "18/09/2025 10:29:11",
@@ -685,9 +717,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=OpK/eC8UwjY9nOcfEfv9gZaZrMTnZDyqr3Vpn6lJYZV0gxsqBMGYtCc5WTQ4paPYJ0W1%2B0rfx/wTwR9r0FipVAnPnuQvlswCaBsjE2aVhaT3GVhXrFFqN7yFncy7YfRK&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 36E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "7539786f-2522-4f0f-b52d-d1c3df825a99",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -706,7 +738,7 @@
       "Método de presentación de la oferta": "Electrónica",
       "Fecha fin de presentación de oferta": "17/10/2025 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "12/06/2025 09:58:06",
         "documento": "Anuncio de información previa con reducción de plazos",
@@ -753,9 +785,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=0ja3%2BX4z0kPgesIZDyUKx9HVwKz3ASgOqUSlW6w71ux6BEsAIzxNo0PH9KIP6OT0exUBbk3mCtsoQ5LJwSdG%2Bx6kiuJI0TRGyfzktYscLGuCx2e6p7hqtlp2aFupgHMr&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 25E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -775,7 +807,7 @@
       "Nº de Licitadores Presentados": "0",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/06/2025 11:59:08",
         "documento": "Anuncio de Licitación",
@@ -817,14 +849,14 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=ygcB0xMFm1bkEH7HqxUZTc82uY52nX7W275gMkifw/A5O%2BW2jGIQfpjB0Czq/ExeiSd7VB43ecmMc2Xxh5K2DCZvUbB5RnQDPRLXQuHTps3DdQD9RyhUmzT4jZ2In4zL&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 26E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "61ca2f7d-78bc-4d5a-939a-b26109d2dd4c",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
-      "Estado de la Licitación": "Adjudicada",
+      "Estado de la Licitación": "Resuelta",
       "Objeto del contrato": "Suministro e instalación de una solución técnica de conectividad IoT (Internet of Things) basada en LoRaWAN. PERTE Digitalización del ciclo del agua, 2.ª convocatoria. Plan de Recuperación, Transformación y Resiliencia - Financiado por la Unión Europea – NextGenerationEU",
       "Financiación UE": "Asociado al Plan de Recuperación, Transformación y Resiliencia",
       "Presupuesto base de licitación sin impuestos": "147.272,67 Euros",
@@ -836,13 +868,12 @@
       "Procedimiento de contratación": "Abierto",
       "Tipo de tramitación": "Urgente",
       "Método de presentación de la oferta": "Electrónica",
-      "Fecha fin de presentación de oferta": "18/06/2025 14:00",
-      "Resultado": "Adjudicado",
+      "Resultado": "Formalizado",
       "Adjudicatario": "REDYTEL IOT, SL-SEYS MEDIOAMBIENTE,S.L.-SOLUCIONES SMART DE TERRITORIO, S.L.",
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "134.826,74 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/06/2025 09:47:57",
         "documento": "Anuncio de Licitación",
@@ -857,6 +888,11 @@
         "publicacion": "16/09/2025 12:16:10",
         "documento": "Adjudicación",
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=n/XXEnQ70pAlrx%2BS30KxA%2BEbetRoaNUaBZHOTI0leuyAlXke0DLNoZGsdf8kJFBBPEWS1An4PFw/YEwS9/odgShJNc6qHdincNF4SIjn8vd45ClyWkoJ44mKM70IFcOu&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
+      },
+      {
+        "publicacion": "15/10/2025 09:18:28",
+        "documento": "Formalización",
+        "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=1UwSSkeSIxJojl9akGK6hI5JLraHFvOAbbcCQvbBAjEyxoOHCgZjgw%2Btthx8WlNQpap%2BP6CEpgXKqFZrwzCiuxKT4GLprQ%2BDYabMZwVizX9t/o8fNevwsujgRzaBbugn&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       },
       {
         "publicacion": "04/06/2025 10:31:49",
@@ -899,9 +935,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=KK82OT%2Bno8rW1HPfcSAEDylBKd42B1TYy65Q4yyHmZjYReqRCK3TDjHEBQQBUw8Rn93kFp8hRy0AWD9HM64PK18AJRb9y3V2wu8UEDZZlFMC1/zDIE0Kw/PWNnLS0Z0z&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "86bbc835-dcda-4cd6-a93a-3a09ac4796c4",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -923,7 +959,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "602.998,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "19/05/2025 12:22:56",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -1000,9 +1036,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=9SUCxl2eUr%2BHCZbuVNOWxiwt3oih3ebON8TGJGQINQ/UX/pvm59a3W5d261AKGz86VKu4yzwBZ018E7mzCLoqK1TRXDIJ%2BiCL3WdJ6h6xM73GVhXrFFqN7yFncy7YfRK&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 16E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -1023,7 +1059,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "143.966,94 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "02/05/2025 10:17:29",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -1100,9 +1136,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=JStY7UNXTpk2fKhLJeahzGG11MwaZdR6Eok91BoudqX%2BQ/waD/FTL2lXNpUpeqJ%2BB6ArIB8CVZdgzybfKmCkehUhxQEzoFQKYQF/Zh%2BuZrJt/o8fNevwsujgRzaBbugn&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC_AM_1/2025": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "105fdf16-eef3-4aac-85f0-19e0c62901ab",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -1121,7 +1157,7 @@
       "Método de presentación de la oferta": "Electrónica",
       "Fecha fin de presentación de oferta": "22/07/2025 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/04/2025 09:57:53",
         "documento": "Anuncio de información previa con reducción de plazos",
@@ -1193,9 +1229,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=7UDzeiNY9w4ZwEuwAa%2BeZNqt53TJ8UyyCLVAallsOR76PAdptTFa062atGZmYS47vWx9%2BwiCAWAAG8y9gcinqluoIkm1iDbtUyJcm8dMQqwZyAJWGsSt0OzTSTyw9JAs&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 7E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -1216,7 +1252,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "543.471,07 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "02/05/2025 10:26:43",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -1313,9 +1349,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=WuhCTUNJ9ddTmWDcUBwjo4QyVmKeYWm/PtYD%2BnOCflepU2/WOg2LaxVqvFS3Aq6mdbkmuqcLNDsE6Tv/TafRB692GGoO7TM/QPyP%2B0qin4mB0nvVKRzfe4rpHcnlPhSZ&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 19E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "edf8c38f-6191-4c67-a013-de0285abd125",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -1337,7 +1373,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "493.700,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "27/03/2025 10:07:24",
         "documento": "Rectificación de Anuncio de información previa con reducción de plazos",
@@ -1429,9 +1465,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=rBfK6fn4Fgq3G5AJJybNq5/pR8AO9rNFRMK8iOuZOp4l6YdE6ch%2BdYU9FbwsGk7187ks/9eEC/%2BVl3qW11lD0XuaFPqt42cH5aXYwYp/g5q1aXEvq3KHa/AEHgtDrQw0&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 18E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "9cb9d8db-f6c7-4739-abce-7d4ac604ba5b",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -1453,7 +1489,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "236.342,10 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "19/03/2025 09:50:54",
         "documento": "Anuncio de información previa con reducción de plazos",
@@ -1545,9 +1581,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=OQQpCJhvVn8VfqdMJB8dbZsAVExvU7bSB9Muqtdhrz8w1rYfCHzznP1%2BT1eMS8IB0t0sBeIMVb48XegJ1ecHdUcEobva7sCQ/Ih8Qz5Z2d2HAj0WEJrB5sP7amrh2jBD&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 17E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "04782ce9-8965-4b3e-b8a7-c18dc3e1d10b",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -1570,7 +1606,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "27/03/2025 10:28:30",
         "documento": "Rectificación de Anuncio de información previa con reducción de plazos",
@@ -1662,9 +1698,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=0A6t8J/QgFcrkWUMMn339KKPDhj8OFNHfD7q%2BSSjDAL%2BE4%2B9jNwh4siq7fH49VJw%2BzUkfxxPJeNq55xppcaAtrQlfhlDRy99zv00/GWQmh8ZyAJWGsSt0OzTSTyw9JAs&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 14E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -1685,7 +1721,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "13/03/2025 13:39:36",
         "documento": "Anuncio de Licitación",
@@ -1777,9 +1813,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=c9fGr9Emj%2B5RE4zI7Zm6J/%2Bl4cWWTrj9QHZuxNfXniJjtbuCVTSRzJVv5WHq7Qe19vd0vJtfChtDZrGOBei2v7s2dKOiVIEvS0fzYvLq3Kc//q7NB2iMZvNyf0xrJmjt&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 13E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -1800,7 +1836,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "13/03/2025 13:31:26",
         "documento": "Anuncio de Licitación",
@@ -1882,9 +1918,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=PejHEboun%2BKyLop6BQteCh4KyGDq61W%2BB719CI34dxRt3UxuQYu3AellcA%2BnXmFWDCc3viePNhePAsZsHcfebfcaJ9HOFXMKeOmkuLRLhq61aXEvq3KHa/AEHgtDrQw0&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 4E_25": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "c6273b26-b1cb-416d-840d-3b22c8e58b0f",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -1906,7 +1942,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "160.000,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/04/2025 11:25:37",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -1993,9 +2029,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=hZFHsYiGP6eyGqYXpCSVK476e3NJMQinP9QBe542D6n76qH%2B6Y6nQQuYukcL6m745YJxuvmldhhYT4jzTFVf9VzMWp80XBKXiGx3nomaEutt/o8fNevwsujgRzaBbugn&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 54E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "7128128c-8335-4e1e-a4fb-cd9d829dc785",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2017,7 +2053,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "264.900,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "18/02/2025 09:34:17",
         "documento": "Anuncio de Licitación",
@@ -2089,9 +2125,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=2mXyEhR/oW5uY7nQo0ZYrCdwXQrlMaQ6p4tg8ViQNx15quffeWTcdlXkhrqsT9DTtyc9R2qPrdDywz/Se/exNqQGiMnHnggSHWXMKC7JaJV45ClyWkoJ44mKM70IFcOu&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 53E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -2112,7 +2148,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "148.292,46 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/12/2024 10:39:46",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -2169,9 +2205,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=8akt3xMs7Y6y3OJQIyY0LGv9C9aFnj59IjDRB9%2Bl1hI%2BJ%2B4zpzYF0N6xveU3vuiRYWCX%2Bg2T4R3lWfAZvdtD3eQi1rKUyaqjtY8rnlrWB/QC1/zDIE0Kw/PWNnLS0Z0z&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 52E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "6ef476ed-47dc-4a42-bb81-ca3ce72b6c80",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2193,7 +2229,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "734.616,42 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "28/11/2024 10:12:12",
         "documento": "Anuncio de Licitación",
@@ -2255,9 +2291,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=H6CHiaD0caTDcqKFPXeH%2BwpIA%2BAUb02ZLXQte0xEHPv1VS015SIETnH8K7plkllfRiTsOhq5KBgtkjV5%2Bfszj8YMjEPZaMc0nt4CTR21DndJOVDbGCDM%2BMigrvuVS7Rv&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 31E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -2278,7 +2314,7 @@
       "Nº de Licitadores Presentados": "4",
       "Importe de Adjudicación": "142.000,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "27/11/2024 14:12:14",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -2385,9 +2421,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=945S5feB6wqKutO1IYH5EHV6r/rhVmxD0VHP/hv23Zr69iIUWZnLVxkJ%2B7Ok4uOTmtZnwzjDdnfGRyAttE/iJzptLeXnXywMZt7y2/PtzFc//q7NB2iMZvNyf0xrJmjt&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 42E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "ba472627-601a-4f99-9758-f50156b2f99f",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2409,7 +2445,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "383.829,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "20/11/2024 09:26:26",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -2476,9 +2512,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=6Z3ZaHX9/Z4IvpwG31d5RJOmublKwANVfJyi%2BSX%2BheRWHIXrOpwPmzkAOy9avu7D3VsSx6mtNHkmdWXaEcIcCRQNBoBXlXm75C7t9393EliHAj0WEJrB5sP7amrh2jBD&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 45E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "94fdc0ae-332b-4027-8dba-0e56b9ae5bfc",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2500,7 +2536,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "506.163,74 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "18/10/2024 11:14:23",
         "documento": "Anuncio de Licitación",
@@ -2577,9 +2613,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=zueb954q22Kt9xA6IUsRBpu0/lt6PA%2B%2BhUjf3hBewC/fqyTesh0e0hiXluqf3oHgVfj3d/fzlrRJg8YjAWXfZnNjWbMSxbgGmP0rI/RMEMuCx2e6p7hqtlp2aFupgHMr&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 44E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -2600,7 +2636,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "199.980,15 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/09/2024 10:52:46",
         "documento": "Anuncio de Licitación",
@@ -2652,9 +2688,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=B0rzo1ASsTiCyDNcb9%2BzAJ5fpwa7qe543sdxZ58Ync2bVkh2U8aheH3MTUWF6dPc9JyWtLkjl1ke5Ovk9U0vklkuKv8Py3X/lS3uBqwG7HNJOVDbGCDM%2BMigrvuVS7Rv&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 14E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "f0323076-6d2c-4b43-af04-df321dd2ee70",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2676,7 +2712,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "972.100,66 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/09/2024 10:44:55",
         "documento": "Anuncio de Licitación",
@@ -2753,9 +2789,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=WuhCTUNJ9ddTmWDcUBwjoxKkiSiq82Fx4lDnA8ohGwZIepfS2Juoa9SxPvjrJS2JZ3IfjWL7pJleyGy2wezZI1/8vQEMRGPpPW8twTMtP1CB0nvVKRzfe4rpHcnlPhSZ&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 34E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "d04a3451-6b46-4984-84f4-98e3c1be9142",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2777,7 +2813,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "214.376,83 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/09/2024 09:27:47",
         "documento": "Anuncio de Licitación",
@@ -2864,9 +2900,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=oDpBdShvyKOJqikN9MiSw9w3/n7/G9LdwlQUNI6oBw2MowpVA0MZixk6VsTLbCuG9gVPs7ygnIJ%2BGYfjyAJqjrQBHD2JXpYV/6p/P80ydF2B0nvVKRzfe4rpHcnlPhSZ&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 43E_23_BIS": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "f303569f-4679-45a8-934d-fff7a58af3fb",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2888,7 +2924,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "213.804,55 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "18/11/2024 12:50:25",
         "documento": "Adjudicación",
@@ -2900,9 +2936,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=43ezZDWmnBtm0H5BrO1KIQiZPjGERIDa8bSLTl/c04%2BkUn3FZIwrSX5V3YxnRyYqAvXJFvwI2J/CL%2BPvfmj4Q9bszDPBVc614SttGAh3MVc//q7NB2iMZvNyf0xrJmjt&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 21E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "d8b4c7a3-4f47-4bc6-a162-8f0a94aea4ea",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -2924,7 +2960,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "405.014,88 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/07/2024 09:50:21",
         "documento": "Anuncio de Licitación",
@@ -2976,9 +3012,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=CUxrVjkimfymCX3bXishSzYJ91ChnzKSVA/UjW5jWH3SQMiJ7OBDMxjANRPkNvm9kq%2BYGaSRwkpi0N4o%2BkVBxI5hj6sWghadG4fCFI20GM4%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 18E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "22f3c919-d158-496b-8ddb-05a123458cc4",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -3000,7 +3036,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "221.194,10 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/07/2024 07:53:56",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -3092,9 +3128,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=dbNl4kfIQicapJu4ukcuWL9E5BBQXotauCtPFJSlVKWHvHWp9FPYAdbooi48jIGJz9QgGwy7rZWKa3t2f7zT4zoBiVK%2Bxp7sBVa0/Oe0ZrFJOVDbGCDM%2BMigrvuVS7Rv&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 12E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "6eb0c45c-45b0-4a29-a15f-f0cd2d9db98f",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -3116,7 +3152,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "578.512,40 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/06/2024 14:11:05",
         "documento": "Anuncio de Licitación",
@@ -3193,9 +3229,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=gX6yRbH4hK3UKSh0eZTjTNdK3XcjMr%2BoK3x5KzJNKDiLT4qk%2Bo8G4FMGqPYIt4DwB38s9L/w19EmltdtMJzM7X5/EsFJvVWW1efvucPICemHAj0WEJrB5sP7amrh2jBD&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 26E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3216,7 +3252,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/06/2024 14:56:33",
         "documento": "Anuncio de Licitación",
@@ -3283,9 +3319,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=KtYeOFmBP2Ydzn/o8KmnM9LIN4/gzOahfYPO1g7ABkR7G67QjWNTthmJ5BoeT%2BcZjSVxfpIkPY85hAQPrg0KNFeVcdq0aqmXtx35b3w2hIc%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 19E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3306,7 +3342,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "189.483,72 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "31/05/2024 13:18:42",
         "documento": "Anuncio de Licitación",
@@ -3373,9 +3409,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=/NqByBnL6Qwy0Fsv60xVd80NvDScCKW5WWOXPZD/A6bTrj8ctmrk93jzwFaHSZW3I63uhbCw45Q4f2jEOEuXpAElPG50S8BzCf1XjlNuZPw%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 17E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3396,7 +3432,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/06/2024 08:41:48",
         "documento": "Anuncio de Licitación",
@@ -3443,9 +3479,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=WrbzXGe3rHGI4/n1JBV4R%2B/3VCSXYTtfnPocfbbQTnDT1d8e95ZgL/2qWx5e3JHmWMsejJpCHbcvFTJV65y69pEGwcNV3wcQeoVcg%2Bw2bao%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 16E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3466,7 +3502,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "389.994,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "09/05/2024 12:26:06",
         "documento": "Anuncio de Licitación",
@@ -3603,9 +3639,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=4LGLrt%2BTFdHcmQMsjeia%2B1yrWw/Aa3DPxuuaJSm4uVmhCDU4LNqM4Ir7N0YF4rmSy9rinA2g0bZ1B1CZqZ3F5/vwz8MfWIuDBeeOwDVl0V4%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 41E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3626,7 +3662,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "795.512,88 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "30/07/2024 09:07:00",
         "documento": "Adjudicación",
@@ -3673,9 +3709,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=vUU%2BgNSEDqBvFPAMOSZFnp9cQkkd6G97i2J8fPTVHITObYwwHmPUhrXjvTUA9P4R4P2s8LKoAOJbrF/I8LT1C/bJPX4PJLvjhL7k7%2Brg4UM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 6E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3696,7 +3732,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "31.645,64 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "06/03/2024 10:16:15",
         "documento": "Anuncio de Licitación",
@@ -3753,9 +3789,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=AfL7z6r1WqPRN3B9rd%2BfB/ejvgv%2Brpes6%2BM%2Bpn015IGT2s0KauOglgIBsr7HUtABI7xRC/OAmxUVZJhqkH9YKCfuQhFzzFUUTZ6apamDXLI%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 9E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3776,7 +3812,7 @@
       "Nº de Licitadores Presentados": "11",
       "Importe de Adjudicación": "86.000,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "06/03/2024 13:36:57",
         "documento": "Anuncio de Licitación",
@@ -3853,9 +3889,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=2KMbRYJKhVTxWAsjA0DYT8WIkzkillLZVZ9NO3HqSRQkfMnhaui5jgB69flAJU%2BKbR3NuL9hTs5mg%2BQUk1RsY%2BhrTZzFvFLPQj1OAkUVBvU%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 40E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -3876,7 +3912,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/03/2024 12:55:58",
         "documento": "Anuncio de Licitación",
@@ -3928,9 +3964,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=EnKD0INOmvMCPCPP75OAwE7jQPa/CGDExE2xsOCWKFGgWCZLm5Y6yqPhVJ7NcB0nslxvlJnuE3IZF/zJnQs5FsRebNwBvWlLB49Wt0Sn8hc%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 43E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "dda6640d-82f9-468b-a030-593002cd4318",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -3952,7 +3988,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "01/03/2024 14:19:58",
         "documento": "Anuncio de Licitación",
@@ -4009,9 +4045,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=HEq7gtf2f2mLLp%2Bob2oKd/9P4SUNYFJ%2BoDBiPZyB%2BOlUSJaTiv11n6DIKiFbk/coE8zkV4ge3C6Ff5VxmT1eF2NVzsswGAYno2ktAWFutzw%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 8E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -4032,7 +4068,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "404.999,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "29/02/2024 09:05:28",
         "documento": "Anuncio de Licitación",
@@ -4119,9 +4155,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Iu80Xfc6/ki/K87bjRAcGaeOrGKYBMFdWdL4FYbcOUHShy9l4jAktBRhfOInp5sogrhiQ7XDbNw4bVildOAEkXAyMisrhjf1w66BgcTMusI%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 7E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -4142,7 +4178,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "67.901,76 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "28/02/2024 10:54:11",
         "documento": "Anuncio de Licitación",
@@ -4194,9 +4230,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=VMVIwnavSOaZUfdpWvkyRw5jrwmVHoAUBYVhQNQAowwGGvMnhDvvwoyTM5V5z2Q1Mp/LVmngEiZ250XyMN1cRh0Izxr93r96jhhc8VgvU/c%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 3E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -4217,7 +4253,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "14/02/2024 09:52:02",
         "documento": "Anuncio de Licitación",
@@ -4319,9 +4355,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=zVmwoFJsnfyzspGClL8hCKW73gb0mhf8NbZULvvdwYzSGt%2BVW/jUCmPAkJpmzeZZ2T88aqSDHiv9NP99TC9wWIJyCutgSXti6cS5mCCcDMc%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 39E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "e35456e5-bd02-482f-8789-cfabf87f89d9",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -4343,7 +4379,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "159.130,83 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "14/02/2024 10:01:53",
         "documento": "Anuncio de Licitación",
@@ -4415,9 +4451,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=/Pl3WOO4cYoM107olezL3yh74KuutkACZ/TNz5SBuTJvEoxg4q%2BDCmrKOE00g4KZGInCQ69pz1%2Br8ODH1fUt%2BmXbQYyEAv3oo7WQNYKqKzk%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 45E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "563d8ece-64d5-4633-8e0c-4b7abf35e3ee",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -4439,7 +4475,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/01/2024 09:27:48",
         "documento": "Anuncio de Licitación",
@@ -4531,9 +4567,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=PqiQQEGXOFPwNiwvEIMH1ghbnRns9HXrj1lv65X8pwUNBo%2BWP0ags5VtGMwAmZZWRnfudDFgL8lYX5oYNZ7RgWfS6axIjYuVjqcNdTZcka8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_24": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "7d40e3db-4990-4d1b-b624-2b61af6c87b2",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -4555,7 +4591,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "13.424.709,14 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "27/12/2023 14:57:51",
         "documento": "Anuncio Previo",
@@ -4647,9 +4683,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=d3espFKDr/rH3lRZroKlUzgpP%2BRPc5l8KvI6JmX6igMHZqVBDgAtXTgOvlQxCiOtND5HkWcT3og%2BxY/lGKMn35m7ZtZc79YBeZCM172RRzM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 46E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "be5f33fc-8936-40d4-ac97-aebef8a921c4",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -4672,7 +4708,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/01/2024 09:43:58",
         "documento": "Anuncio de Licitación",
@@ -4744,9 +4780,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Ou7fm9gvK7fx2zf%2BybnJ4wwoyUmymhMVfcElEr/vTqhYnuzjkTc7PsQdWY6csQQZ7aQlqDH2WTuyJRgM/nvKznXtyPZ2fJAGQ%2BQWlFIRmx0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 44E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "fbfec5ec-a184-4af8-9ec5-536e3887eee0",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -4768,7 +4804,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "20/12/2023 13:21:32",
         "documento": "Anuncio Previo",
@@ -4850,9 +4886,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=howeVZxcV24JY4lQ1Wj3MPAWoKPJyrd2TAHOpYF0RyrthCip1wj1WLtUPvo3I36tl2XNVWOWoLOaszXjtDds4vTg5V/JScuIhlhficSIVzk%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 36E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "43b0ce95-1017-4036-bf75-41c8bd212e5a",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -4874,7 +4910,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/12/2023 11:27:16",
         "documento": "Anuncio de Licitación",
@@ -4966,9 +5002,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=WIOY4dxUdZRXxuznomUFBXA/vMRB3PmMQmgkcxzSb9x6KNvx/2zfibnNgOsclIdxhkPq89qR178G01rIjX5%2BxaHZE1Cgp/%2BortWTzeqhCMA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 32E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "ab92c58d-8308-4bc6-8fd0-23bde44952bf",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -4990,7 +5026,7 @@
       "Nº de Licitadores Presentados": "7",
       "Importe de Adjudicación": "135.118,44 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/11/2023 10:13:47",
         "documento": "Anuncio de Licitación",
@@ -5047,9 +5083,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=%2BWwZR17iAOMVLQWH1/Rlp5N3bXZ6fS9MCrV98uXDKr1/SbD/6coXH0UZ7qfplux%2BYS8cx2L8CYFB3I9QLh/%2B7Qg//YEix1jHgNS3BrlN0Es%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 29E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "10796d3a-04cc-47a8-a554-40f27b5ecd3d",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -5071,7 +5107,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "328.000,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "26/10/2023 12:33:43",
         "documento": "Anuncio de Licitación",
@@ -5123,9 +5159,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=FfwCskAJEjrdabEJAGBLl4oUOJDpI9Z%2BhiPIW19zUnzu4oNF20Ys9w6Yf6%2BKf00bJsEV4h/mvWSVHgmO3QE3fjREtviuABgB12MeSlG5kpE%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 30E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5146,7 +5182,7 @@
       "Nº de Licitadores Presentados": "6",
       "Importe de Adjudicación": "175.890,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/10/2023 14:00:25",
         "documento": "Anuncio de Licitación",
@@ -5223,9 +5259,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=tBmaWvgyvL9SPFNFUAq6wdx1w6on0JdYruhh6k4Wr59npXLLwRdZiVGGPo4pbEV/vIbDj2Nc0kKRYWI4XnhboPDH%2BrWY14qgHDmSm78t3Rs%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 27E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5246,7 +5282,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "160.482,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "11/10/2023 14:48:11",
         "documento": "Anuncio de Licitación",
@@ -5303,9 +5339,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=01dfDV6eT1TSy6k1GMxwMiLlS3lViL2Q8bx22EgcnCI1NAnceeUwQ6HSKJawZUxDmfojDo4mqyRlogXV9Bif61IvK0zIYuOPotxC6yQyAhw%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 26E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5326,7 +5362,7 @@
       "Nº de Licitadores Presentados": "8",
       "Importe de Adjudicación": "139.756,32 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "11/10/2023 11:09:44",
         "documento": "Anuncio de Licitación",
@@ -5403,9 +5439,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=9KaQ3%2BIO2eTu5Xx1A%2BlJBaGK4xl%2B%2BikkauhdYyEkZZicMoySCOwnzSeIEK0M/K8s/%2BtFpEo74HENdhWPzEUSZLfuPJLAUeqhkWqyHMhL5nk%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 21E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5426,7 +5462,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "132.631,20 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "18/10/2023 10:05:35",
         "documento": "Anuncio de Licitación",
@@ -5503,9 +5539,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=wYCLI7VgNYs5AhDnQ%2BhsRiw0rKapwz3nmkADyORH0D3VzA3olwepCtch7bLDoqep46g%2B1518ZoilMlWzYom8kz6fevEFWI3Jx99i6uI5yKI%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 16E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "520ceda9-0145-4430-8858-28e8d6e147a1",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -5527,7 +5563,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "12/10/2023 15:39:06",
         "documento": "Anuncio de Licitación",
@@ -5589,9 +5625,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=KLbJF%2B1RGh4870PGLkKALFJlvFo/B8ExUv1sWVhbTq/QGUVhduM3FWkI7zjc0tuWlFAthEP0oDj8AvYJPnOwpT5Aqdp0660xgyxiCkNPk94%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 18E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5612,7 +5648,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "11/10/2023 13:38:52",
         "documento": "Anuncio de Licitación",
@@ -5704,9 +5740,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=teDkZTE8unqHlE9KSTfr85e3jtPr01cstnvEuhlAixpRDjTgXrVX7F3e%2BJGM%2BIPgrOzPseLyFp45H0cyUzR61/Sib2GJ6hsWpkl%2B4Gol8P8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 12E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5727,7 +5763,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "88.392,68 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "28/06/2023 14:02:26",
         "documento": "Anuncio de Licitación",
@@ -5789,9 +5825,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=GC0MMBtUG6l0V7Rm1slw%2BOa8Jre2VBIAcP1mFY%2Bkqx35QEAbBLe1tLZkdUkgAiHqBfgOcdb5zpfPJcOLRRvLxeXl05BqBJWIsOrajjFQO44%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC_AM_1/2023": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5813,7 +5849,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "4.480.545,54 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "22/06/2023 10:15:40",
         "documento": "Anuncio de Licitación",
@@ -5885,9 +5921,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=a%2BhsFSl4tKzZQvxvdH/Wecvarm8yF6NBmm2CIjDLu0GWZSuwbbgIOS7kxs2JDA0skVee38/txg0t8oasUt7iZFL4kV4hDgAL2O1STHZ1JBM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 7E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -5908,7 +5944,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/05/2023 14:39:12",
         "documento": "Anuncio de Licitación",
@@ -5990,9 +6026,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=hXSaRtaLMqzHMZP73og6EtHtNs0/NpldecRxr/cGiL8vYAt0OG9N1KdEd%2BUzObIlVfRY30nCUHgdmivGuwN%2BSv9GCUJsnTMGA7TAV0e3gyQ%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 4E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -6013,7 +6049,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "20/04/2023 14:04:05",
         "documento": "Anuncio de Licitación",
@@ -6070,9 +6106,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=ogoJCICimutoerEjnC60PjanvGLitOkV/ATkdPCEDLCumV0145%2BCa9r0kkUtzy7Aq5mfBwenvLrOrx9Kqh%2BQ8ReI7ASsRkuVjubcjMOR9Rc%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 37E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -6093,7 +6129,7 @@
       "Nº de Licitadores Presentados": "15",
       "Importe de Adjudicación": "570.534,52 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "01/04/2023 12:35:14",
         "documento": "Anuncio de Licitación",
@@ -6165,9 +6201,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=5FkVrG2dw8v1tvzSrN3MkqMz2helXuKD7baM4JnVt8Rs0nSz6FudMISuiCS/oiXnVGY5KjxW%2BxId621uYf1%2BoFNxORs6GYK9hsm5xvBMFlY%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 34E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "f9550552-8b55-4ff3-a98e-cda17b1ea5a4",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -6189,7 +6225,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "206.611,57 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "31/03/2023 15:40:43",
         "documento": "Anuncio de Licitación",
@@ -6271,9 +6307,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=z4m8230xm/mS4Ixce10158UP9JQTKbQ/SdU7d2it4uHZ71XOJDso6rZkjUEA8kgBotOg4jw7qhDs0SeWjG8TLfp2wmXvtxkb/Ri3PHH41Mk%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_23": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -6294,7 +6330,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/04/2023 10:19:16",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -6376,9 +6412,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=TLmWq4yat/Rbbqx1XMEYP7VnmNP1rhvHV28/MaVDeOxd5qIDm6lyjeEGX/THJdEWQnIRPfsUi8u4/RkFL14J%2BidxVfZPMkWlQcxtsvlbLjc%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 36E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "a6eaa0ad-b613-4479-82ad-2fb27f48f395",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -6400,7 +6436,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "15/01/2023 15:36:12",
         "documento": "Anuncio de Licitación",
@@ -6472,9 +6508,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=N/qMR%2BZS1v4WCW8ukdtDYr96rNjX8Gtd/FDnckXrg7dmbq/VLIZ8Qe/UjCCWRyKIHOteQEEmisVtbZFLdmtRHvH8BfFZxaAky27L94QLeRY%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 30E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -6495,7 +6531,7 @@
       "Nº de Licitadores Presentados": "4",
       "Importe de Adjudicación": "329.777,15 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "19/10/2022 13:10:43",
         "documento": "Anuncio de Licitación",
@@ -6602,9 +6638,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=SjjygGteN3J0U%2BZEq5SCrKL7pDNuKjXTNXsKtLKbNgvuNtHPzG7TYwMGnm0MrrPx57lb%2Bkx3ZBTR2yE3DyDqDBhkTr%2BWlvsPyDApbrEXpuA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 28E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -6624,7 +6660,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "30/09/2022 12:18:24",
         "documento": "Anuncio de Licitación",
@@ -6716,9 +6752,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=kuR7fzzGT9ARuv0okVEK2h0/by6S2kuAPjU9fh5e/VsI4KJSAsjsUoRtPAjN9GglisIVD5OQ1WN1KsKziNfFo0dw/XkHo94EAfwRSe0HG%2BM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 24E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -6739,7 +6775,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "14/09/2022 12:00:47",
         "documento": "Anuncio de Licitación",
@@ -6831,9 +6867,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=5RrT8V1M4%2B94EPc%2BWKerbCfOi2/Y9uR2tuCEBaNQLMrOXD7x3s7Xwq5ge8hWwNapvuvv3J0hZjy/hZLsj3S0igbQzKnhNAb1J7dttU7p4/w%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 12E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -6854,7 +6890,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "25/08/2022 15:33:55",
         "documento": "Anuncio de Licitación",
@@ -6891,9 +6927,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=8P6ZaR/AR0X7MIYv0zxsN8KMT/%2BNW/pO1Q3ZTFZcjlcPPiLJzZAOYYnCecK2JXO64M76jJB4dB4QI9sxwxwCPVRFHeMYzWndvWZFznZ1Y7E%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 8E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "8360dcc2-8482-4960-90d0-74150e9c075d",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -6915,7 +6951,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "25/08/2022 12:37:39",
         "documento": "Anuncio de Licitación",
@@ -6987,9 +7023,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=wtnRpRIw90fHkApFA5VfJO9DxunPHMrBjsX/qPGtwLP8q8ghXaqDOjiNoryxN6RAXsr6Omhtv/Ee3JlgjA92XGx4gAa8%2Buz803FKDiNmV9w%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 4E_22 BIS": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "14b093de-5015-4817-b90f-ebcdd105fc6d",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -7011,7 +7047,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "207.269,87 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "19/01/2023 12:58:59",
         "documento": "Adjudicación",
@@ -7068,9 +7104,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=OuHtfD9uvV1KPrG0F92%2BJuIsLHq3PIpqrmKeJEaU%2BkGxBvFb1GYe6fd8k%2BQL/MzJk3%2Bv1kFpqAEonPi3chPeaCL7JKznZRULT0caZ1Uco2Y%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 10E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7091,7 +7127,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "299.900,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "08/07/2022 12:34:57",
         "documento": "Anuncio de Licitación",
@@ -7168,9 +7204,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=B6oLlxviWxGLSsWExHsGvT8VxJEZyIx5M8kebM5Xr4pR%2B/UwItxGO%2BT4GhmQdnVa4TdatWzUHfKkk6w4kLOlMdCWVJz6FDthqxepf3ZOre0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 6E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7190,7 +7226,7 @@
       "Nº de Licitadores Presentados": "0",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "29/04/2022 13:10:46",
         "documento": "Anuncio de Licitación",
@@ -7232,9 +7268,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=HorjnUlz/rcvNF8nUvidQjM2YhMsRVl3BHeDuOYMbL7HjMBpZ3Gh6M40WmSgSGqxeJ4l7Xj6Saq5dicfijJYHMOapGeZiZkNcbbjfV1ruso%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 7E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7255,7 +7291,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "30/03/2022 13:39:49",
         "documento": "Anuncio de Licitación",
@@ -7327,9 +7363,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=m8tBPdFuiJizXhPAegT08TopEhwBzaOZTzAiG2c/vBi3UHchrs3qmFa190VJC7UdeUHFK6SUr9XOBPNYw2AbP3XPVke3Gj5xZH0L9WOr20Y%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 3E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7350,7 +7386,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "233.400,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "10/03/2022 13:12:04",
         "documento": "Anuncio de Licitación",
@@ -7407,9 +7443,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=TLrn1KsTynJgEyzRII3IuQQ0KY70veycmVdYVnif%2B0TdRdfLGN1XcNDagUTkwoHkiHpbwxbh6g9LaVDmu1lbWqZmdDQYJ3MxFqPlH8UsSiI%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 4E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7429,7 +7465,7 @@
       "Nº de Licitadores Presentados": "0",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "10/03/2022 12:32:26",
         "documento": "Anuncio de Licitación",
@@ -7471,9 +7507,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=PE%2BQQaYl11q/Y1B8kqDR6ecN9KFczPPTF%2BeofQrwt6iCesN1GGBN4aJd%2BoxF%2BWVQaYDI2hdrsio%2BOaNagJ7JNLmKrlI4Drxa4wl%2BnqIHeZM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 2E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "2f701e35-d961-499a-97e9-efc74cc4bcc6",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -7495,7 +7531,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "24/02/2022 15:39:03",
         "documento": "Anuncio de Licitación",
@@ -7577,9 +7613,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=fUXPPYCP2S2mZiX5VGlI4/wF1Tl31RPDd80OcVJypIdKBH12pCphlKPd/EF7IXJ3kTftUkdIKs8RWgaqEcIJbOHflLDrdUtjAZvqGLiaSW0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_22": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7600,7 +7636,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/02/2022 13:22:29",
         "documento": "Anuncio de Licitación",
@@ -7677,9 +7713,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=kIeDYOSMKt60F3Fuqz2VD82cUe8W0YA1kr5ZCZb52FSEIwkizspSN/NevgunnPTo/kJtesbm1LzICQa1isRZgEyeGr599kW/1qydlIPK16I%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 24E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7699,7 +7735,7 @@
       "Nº de Licitadores Presentados": "0",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "20/12/2021 13:06:50",
         "documento": "Anuncio de Licitación",
@@ -7746,9 +7782,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=iBZiQOWFI04r4ezm5PdOuV206Ky8cW9682RK2Hz0B63iV7k/IciBlAHEb4yZ7AjVZJJyCfwa69T8V1uLC5Oe0CiuO0dqLGY1MHR39RjYuwA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 21E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7769,7 +7805,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "158.027,75 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/12/2021 10:55:51",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -7851,9 +7887,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=iLuuPwTxgb9vdbzth0hA1L7mRWvHJsBMEw5UPi9KE/pryJUag%2BuYKgHSY1di/nJIMvdn2%2BuhREDIygobRYyVs5UO5GXZvhy6KRBnOKljgkw%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 20E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7874,7 +7910,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "680.998,39 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "19/11/2021 09:23:02",
         "documento": "Anuncio de Licitación",
@@ -7946,9 +7982,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=MQzuAr5OhRf15LbLLxyI6%2BC2Pb4DVZUSpUaeE5qTLeq4jntPIpcjiaFE3/KfnMqBuW7kcEljplZ5VNhMMl6FJ0qOwsEI0cAv3gLcsWhkHRs%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 14E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -7969,7 +8005,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "14/11/2021 13:01:07",
         "documento": "Anuncio de Licitación",
@@ -8031,9 +8067,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=y3dFzrZzpq1CNmT7Dq3pcDKzJe/7VEmIwd1h6RlJjwjkK0ou7xzFV94aEdMPKJxHTtvbKsSEaBsWSQbgU3q9I/EpgJHWh6pMV7Ns0EvWtw0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 16E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8054,7 +8090,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "1.749.269,78 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "13/05/2022 10:10:10",
         "documento": "Adjudicación",
@@ -8131,9 +8167,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=lDVw7gagB/Lio4hNzt0xZ2OmYcszGcwVoL4YzwygJ/epZRWqIaBSJWG4c2X1f0w3oaL6lYPQKLW6EQ/dznuSDVOlyR69QL9hc8vNnso7qDo%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 29E_20_BIS": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8154,7 +8190,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "02/11/2021 13:24:41",
         "documento": "Anuncio de Licitación",
@@ -8211,9 +8247,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Gk9ntjBo11GBWXUILgF/bwR2mVKaATIIwvV%2BKJHKzMFQDUfWZl%2BDn5tVW6nkUyfAFbfUVkDFRUEbVH4tm%2BAmc0zvczYVoLI2rokQAE/09R0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 15E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8234,7 +8270,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "78.480,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "26/10/2021 11:40:56",
         "documento": "Anuncio de Licitación",
@@ -8301,9 +8337,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=glA2RO8TGbCodyK9iwnHNcCtaKf9oi%2BTQMzvJmMdySNtgPs/rDqlrwmfxWG7Sza%2B4p3dT3R3Ri4mqAju5L2H7zv4/D7S84XRZeBeN3XdyEY%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 12E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8324,7 +8360,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "515.540,16 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "29/08/2021 15:36:06",
         "documento": "Anuncio de Licitación",
@@ -8386,9 +8422,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=xXOv1tGfXfcic%2BrEfSaNk/wSOFpOz/XYiMu5JOu/g/YtuUvNg5DtEF4n6fdOdMC7W1GA/9Ii85JpPKzw/AVKYG18l3IYZfphhL/OLJJahIM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 17E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8409,7 +8445,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "02/09/2021 11:46:24",
         "documento": "Anuncio de Licitación",
@@ -8511,9 +8547,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=OlJPbtDg5/TvsSbk9XtfghmVZTD7D2SRPhdnFUWdFEsja8w/nz0FJqmzZiPT5JLz7JDbsTC2HdJuE2yf48dxu0FiBOH%2BA3OnGaThaYRjzcE%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 9E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8534,7 +8570,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "536.548,16 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/08/2021 12:34:29",
         "documento": "Anuncio de Licitación",
@@ -8596,9 +8632,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=/Z887fKki0KCrdqfLJQI20/1xbz8gD3PzS3zv6Li4UvERclPehvPbTbxmhRTwZoosSB/Hp7RASh1VsILAR26MoKXKgHX4sZCsTn7hskRhLs%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_21BIS": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8619,7 +8655,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "163,64 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/08/2021 12:34:05",
         "documento": "Anuncio de Licitación",
@@ -8661,9 +8697,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=c31DYIRRXBsDij9mcLbTtYlvnlIWhIWGY30rKD3UHBJcB%2BMB84ghXyaV9Yn0coK2ceWM%2BFKx4QwNb81BKFsUZnFWha54hLUruuZq9525yJU%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 13E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8684,7 +8720,7 @@
       "Nº de Licitadores Presentados": "13",
       "Importe de Adjudicación": "136.467,66 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "22/07/2021 10:51:29",
         "documento": "Anuncio de Licitación",
@@ -8756,9 +8792,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=e5bMXiKA1WtAJMZAlN75ltGnPfrU0PM1fZOxLGKo86ovLkLNrbqbrBmPvC/iagYZbJhX2Q%2BQVEv%2BEIu3WXhJJyFtTVzqipjouZBW8HZQSbA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 10E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8779,7 +8815,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "08/06/2021 13:58:28",
         "documento": "Anuncio de Licitación",
@@ -8841,9 +8877,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=kUYna/9V8DySOzFNxmMNXb/cHi9Ts4aHRWIurSknJsVY67ZJK3BgTZgOhgodlTkdy55EcbaZugbiMlXkE%2Bbexjh97KSSF%2B8FuHg3azFqhOQ%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 11E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8864,7 +8900,7 @@
       "Nº de Licitadores Presentados": "6",
       "Importe de Adjudicación": "1.527.635,41 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "10/06/2021 11:39:42",
         "documento": "Anuncio de Licitación",
@@ -8921,9 +8957,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=9DpGdu7R31PZLxsjDSiWBLql81nvytVdPL2ZWjX/BrJHLdsQwdyXrFmSg5blaAd1LXYJxTPUYlR/VUInKtb/77oUYBbTyo7X8Ac4X8knxzE%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 8E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -8944,7 +8980,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "278.896,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "09/06/2021 15:38:59",
         "documento": "Anuncio de Licitación",
@@ -8996,9 +9032,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=re0RnnvYXlnW6T49MGCuLp9246OpJiXrJ/UTcaRnwWo41o%2BRkiz6den8Cx%2BsmUJf/4qaeTlKngzFOafGDONQkCJxIuHzWaCd8U2iLaqmgos%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9017,7 +9053,7 @@
       "Nº de Licitadores Presentados": "0",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "27/05/2021 15:42:25",
         "documento": "Anuncio de Licitación",
@@ -9064,9 +9100,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Cx%2Br5BReVdGJCeN2ez31OKPZK0f7OR0pvqSZnEAwjDy1brPKFLUGX634h7WRUWwCTomEEQpXcJAI/DPf/TbjVCeEq1qhCkGL4uMlWSm0Ch4%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 29E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9087,7 +9123,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "28/04/2021 13:04:41",
         "documento": "Anuncio Previo",
@@ -9184,9 +9220,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=JJyUf54T/ktCkvrY69%2B23Ox3cYtSY2zY6uyXHbFQ5LE%2BOYNgXHvVNuSexnYbOt59RtxjhL17kgN3JfBoqhzzgWu9j0/rOIrpebIdrexe3TQ%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 28E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9207,7 +9243,7 @@
       "Nº de Licitadores Presentados": "4",
       "Importe de Adjudicación": "81.804,96 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "17/04/2021 15:47:10",
         "documento": "Anuncio de Licitación",
@@ -9274,9 +9310,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=UI/qNbPO68flM56x0mBJCITpu6lk2elym2X8aO4xucp0UGI6NMTK/DqS27%2B1GmDtoGN2ldL%2BifTdo4aHpcKdqYmaAAOgSy9Hy4p3vb4por8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 5E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9297,7 +9333,7 @@
       "Nº de Licitadores Presentados": "6",
       "Importe de Adjudicación": "185.433,98 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "13/04/2021 13:20:00",
         "documento": "Anuncio de Licitación",
@@ -9359,9 +9395,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=hBqQ4kaoQfop6zTUlgxGWTwyQn4RnfXVxbYlxyniIBjjlqkhzOlOaHBPsMSZpojzF04Taf0jJnHlkkbDRgoE9Use6esOeWIc4UUqTTsnCVk%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 4E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9382,7 +9418,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "142.560,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "09/04/2021 13:12:16",
         "documento": "Anuncio de Licitación",
@@ -9464,9 +9500,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=MuY6RlsGdNXYURDXNTIzf1/QKBbSWtms6WBmUmqOtWPYFrWkQdWsOQvbVKxZGAVUowcMyqO4Kb6n/PDaFhJkfeE1x6i1PHCzhcJd%2Bg1zFFo%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 3E_21": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9487,7 +9523,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "06/04/2021 13:30:13",
         "documento": "Anuncio de Licitación",
@@ -9544,9 +9580,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=NFg3%2BQEkG80xau0yg7oeC9V/4K9YB3LszI7rfwaefbnXYlHkMsoc%2BVclnK7Ve6qm1TuUKDoNBawC95pOo%2BJh9sK8%2BovbB80eD4GFt/esA%2Bs%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 24E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9567,7 +9603,7 @@
       "Nº de Licitadores Presentados": "5",
       "Importe de Adjudicación": "913.266,16 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/01/2021 12:06:09",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -9644,9 +9680,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=k4lyf%2B7DrwyXsMCxGzRlFSu7zGdq274wkNbTgxDOKFXMqYXacmjTp/rKClLNHLihG/cG5%2B8%2BMaHJkHAm179qpap8qUMGT/0YX6mwmWO4i18%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 16E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9667,7 +9703,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "71.200,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "11/11/2020 13:24:42",
         "documento": "Anuncio de Licitación",
@@ -9759,9 +9795,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Wj/IMMR9kZn0JgDdqc7uBh1WHsP7gfhnYd8fMA3akjrx8ou0ildcM7cSUDKkAVPkCQKtK2WqHPW/ofETBSHluJ1Qd1A6JquNxRF8XQYwzuk%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC_2/20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9781,7 +9817,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "302.233,32 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "11/09/2020 10:23:19",
         "documento": "Anuncio de Licitación",
@@ -9823,9 +9859,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=RHMFCP7Cag42vl5VjyEeuc/sWFchII2QoNQUkb3edesJFGyaUx3sliVQhDe5ng6ftZ37kSaF52I5cvKfgkzrQHO3mb2raNb/gYLyRaa6H/c%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 5E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9846,7 +9882,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "148.760,33 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "21/08/2020 09:39:59",
         "documento": "Anuncio de Licitación",
@@ -9923,9 +9959,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=XHOkRfWYP9urREMfR881EcM6SR0/ktgORGaRKP892d9E3OcX4Ar16XJgPZT2eANkPQxWt8I7i6LwfOeGC9owgHWPhafmvIIL7eTX42pOyeA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 12E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -9946,7 +9982,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "180.737,70 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "20/08/2020 09:43:32",
         "documento": "Anuncio de Licitación",
@@ -10003,9 +10039,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=ESOn6YMeypUKeVCvus%2BETNq3WMa3OOqHaXOXGgnur7DDCZGDHkUEEtY29EYWGDRzGsTzIPAwqZnDJmODd%2BP8aOcIx/RwPo3xypABBeqy6Fs%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC/A.M._2/2020": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10026,7 +10062,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/09/2020 09:42:07",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -10103,9 +10139,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Suno2DMAML/vql8z3SJTn7%2BRgNFRQFmBDLoDiiOdSCkUAQOcSRxsGmIYcJarWYxuDDUUDipS20qpgAssTgnefs2NG48IHwXOSHBkDH0w/3w%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10126,7 +10162,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/07/2020 13:42:37",
         "documento": "Anuncio de Licitación",
@@ -10213,9 +10249,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=kK1z5RJ%2BApFtp4UkCAhOFmqtMBCVpj3ZNyJpfAcBnRh60bHmw7nkb%2BDH7sBL3Yn0toEL5TT0/p6l5N%2BcSVy4YrNb6jhgPq9DFOoedFEO6Ko%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 20E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10236,7 +10272,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "196.404,96 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "28/05/2020 14:11:12",
         "documento": "Anuncio de Licitación",
@@ -10288,9 +10324,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=NQk9Iu3MMIdedK8LFOITq1X%2BG0YpsiSzcZ3ke7xf1PAmPppEb/ZS5wquqdNU2xcon1sjL8uRkAmGnEHl7Ha%2BHcDpiw5R7cFhCpVc5OwnOrs%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 17E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "ID de publicación en TED": "2157dd07-831f-4113-8c5d-b9ab35a3a221",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
@@ -10312,7 +10348,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "25/05/2020 09:52:26",
         "documento": "Anuncio de Licitación",
@@ -10369,9 +10405,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=V/ew3o8BbkVM70%2BHjQjn6WyBPt8p3s%2Ba/KZzL76moeWPw7AeK6uDIAjdqu%2BEIULkhfHrx7hl91ZUJOcFP7w1/grtnMZxuTlIiLJTsECDHV0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC/A.M._1/2020": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10389,7 +10425,7 @@
       "Resultado": "Desistimiento",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "20/07/2020 09:50:01",
         "documento": "Anuncio de Licitación",
@@ -10426,9 +10462,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=AHwtPC1fSrTRG6iAo6cp5ZPPq5Oe4OTU2AJB8Y0SDb5%2Bt0IzM4Ga/kTqxSc1y0GlrPt7QwrkyOXn%2Bs/p%2B/dpC5aygyhOJNGmGRAv99qV/eQ%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 6E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10443,16 +10479,16 @@
       "Tipo de tramitación": "Ordinaria",
       "Método de presentación de la oferta": "Electrónica"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/03/2020 12:27:49",
         "documento": "Anuncio Previo",
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=zw%2BEaQQ%2Bk6ZK2%2BtxZvGo2ojIMaULh8uL9Pgkfz7Orz8%2BwE/UybRqTdsxncYdK9878OeLUgg4fRkPgC/RN6LvEpPuPis9sBLzeRol30sM2SA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 7E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10473,7 +10509,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "12/06/2020 10:13:46",
         "documento": "Anuncio de Licitación",
@@ -10530,9 +10566,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=l0KrGZb9ebo2VbHNmlv3LQr3IsFtDq/FoZU4fpIYAXW%2BWssSv3GxFVGjMoJonHp7lFtsi2YIkT6c8nABp9uJlTdlA3el8Gngle4jG0hTIE0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 8E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10553,7 +10589,7 @@
       "Nº de Licitadores Presentados": "5",
       "Importe de Adjudicación": "13.356.872,93 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "21/08/2020 13:11:14",
         "documento": "Anuncio Previo",
@@ -10680,9 +10716,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=nqKmu1/bHd5byk79uDmTI1DVw8AFhHORdEjYooFqCpJOOdtfbrBxJrw5iimDQ3lelKRj4Io3Fwj190zR21iyc6us90wM7wTRASh0NmWbcxo%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 11E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10703,7 +10739,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "190.580,14 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "11/05/2020 12:17:17",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -10760,9 +10796,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=d2SOmAr92DXph6AceAt2leM84M1coqKfk92VSJVEZ/gbz2mVzJvYZ3Gk33Yl1J%2BnpdZQR/NemGBO45amQ%2BKKvr2r2rSAFlR7vCyy4gXJ8w0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 9E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10783,7 +10819,7 @@
       "Nº de Licitadores Presentados": "4",
       "Importe de Adjudicación": "424.386,52 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/03/2021 15:43:21",
         "documento": "Anuncio de Licitación",
@@ -10870,9 +10906,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=HbNjTYKFZ5qc6s8Swj8ab3HCzx1IY60xAbPxZiaDlAstLvbHJ/DRbM1wOjZ64P9P5latJZV%2Bn7ueLz4I4RVXIHtng978dHa5eYRxEV%2By9z4%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 4E_20": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10887,16 +10923,16 @@
       "Tipo de tramitación": "Ordinaria",
       "Método de presentación de la oferta": "Electrónica"
     },
-    [
+    "documentos": [
       {
         "publicacion": "12/02/2020 11:20:56",
         "documento": "Anuncio Previo",
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=jw45RCVOB8FDz6HId3mcLw9uaa%2BneHtXaS8Sp3RbtC2XfTgDkyDOwgmAq0tn1s8E20DsIstoX1NMVFG8qWQcy6JDMqoFjQDL%2BziafnFqkrk%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 15E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -10917,7 +10953,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "320.260,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "10/01/2020 09:54:19",
         "documento": "Anuncio de Licitación",
@@ -10994,9 +11030,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=eiSufUnikBBe3tIZGpJyp47uy7w28dhcoLVt9fQJJaA%2BoQUy05m16AZ2Ut/B1SqXbB4MQv%2Bi21PCBqpiVkMWuvHbMKUBLCBN6RMLK/4fnwU%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 28E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11017,7 +11053,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/01/2020 13:33:57",
         "documento": "Anuncio de Licitación",
@@ -11104,9 +11140,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Qi5pYaSrDtlkzwvnojXqOlQKgG6RrnT3JNTJRH96ka4uTayCPtuy0C72kr3F6j/SxL4i65AFUdtH8dBP0Ssq07/wg/p9rVVkg2xMDBCNe14%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 30E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11125,7 +11161,7 @@
       "Nº de Licitadores Presentados": "6",
       "Importe de Adjudicación": "378.029,23 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "30/12/2019 13:19:20",
         "documento": "Anuncio de Licitación",
@@ -11187,9 +11223,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=NuSpaCI1XhgbexqzLB9uF%2BnXgjFVKJf9IcxFg6L76ZQtM0foiZJy951vKl8i0QenoiVYmqA7fMBXDEfyOiYfAA0AX1BkIm69vcH8GSDt0Ww%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 19E_19_BIS": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11209,7 +11245,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/12/2019 10:16:04",
         "documento": "Anuncio de Licitación",
@@ -11271,9 +11307,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=MIox%2BgPwN7Zb4C4O7aAmu%2BrfluiF3PAJ8f/RnaJt8Q5FgBxfRPtOw4FW%2BBSvHGDGQyVK5dUGtMWegiuHV94rKdSrB5ggZLxc%2BkPUbxom5TM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 27E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11292,7 +11328,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "10/12/2019 12:10:20",
         "documento": "Anuncio de Licitación",
@@ -11369,9 +11405,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=PvrKN8wPbHqfaow12SHb0YCj5mpPs/%2Bnh%2BDw4q8D8RlAiIlhXh0/524hxr8ULEQ3SwfaBXlWqCbN7JGLcOs7LLOegoqIoPnQaf%2BNFQPAsko%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 26E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11390,7 +11426,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "28/11/2019 19:30:34",
         "documento": "Anuncio de Licitación",
@@ -11472,9 +11508,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=i8pzndljgS37MmBV/vwwdPrVyf9Of9B9RN10Y8tJcb0I2xkWPJrUXaxBHXbKHo4eoOzh8mtAACZrBQ4AwdBmwE31e1BpznIdzstTTEO5de8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11493,7 +11529,7 @@
       "Nº de Licitadores Presentados": "6",
       "Importe de Adjudicación": "218.246,60 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "21/10/2019 13:16:10",
         "documento": "Anuncio de Licitación",
@@ -11565,9 +11601,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=sBIOf0JS7Flv0r3IzTcOVlfvPYKZubcInFElz99ZSIbRD2WaMYfLQa/GXi5oACRH3vuPydH45LO%2BBlEx2%2BbpzSYQqPME7B7e9iL5fZOTupU%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 19E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11586,7 +11622,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/10/2019 09:44:59",
         "documento": "Anuncio de Licitación",
@@ -11623,9 +11659,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=8ETuwHD8cdv2/Kv32zr%2BNdPIh3xuNrobBh5rP2nvgVH%2BSztehIXwY8w%2BODnhajA3J2pX%2Bo5EbXDV7bme/2tqrTJ43IQVBZG6FgfwGdqEFaQ%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 17E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11644,7 +11680,7 @@
       "Nº de Licitadores Presentados": "8",
       "Importe de Adjudicación": "330.763,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/09/2019 13:19:01",
         "documento": "Anuncio de Licitación",
@@ -11716,9 +11752,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=r7FShCcrF9ukRFap7srWJYfRXRGUffb2zm1cAqmEC9P9SAkdALsprGMmSJG6usZ%2BRXIoEFAmjTz7bM9BLhNHk6dwbscQNSx0uwTPHh9VOvo%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 6E_19 (negociado)": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11735,7 +11771,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "12/09/2019 10:37:37",
         "documento": "Adjudicación",
@@ -11747,9 +11783,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=lj2216JCV1gOVJUuqm/kb/Xcx0cyWnP4lmqAaafzTWLjuAM%2BibgOH0zU8Me9E07vqnzCKWh4mmtwFPT0hUm2Be/IU8lys%2BFimFSSQjp%2BRSM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 9E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11768,7 +11804,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "12/08/2019 09:19:57",
         "documento": "Anuncio de Licitación",
@@ -11835,9 +11871,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=yU2u7q1e1wMOCcvfHrPoVjSsrmN%2BwzJH5A34Gt7PX0e5ewX/dnHThLWKrlXrHvv2N3hddqnmLgG%2Bpd56wiWdedt0wtBzujfVY4Al54fP42w%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC_AM_1/2019": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11853,16 +11889,16 @@
       "Tipo de tramitación": "Ordinaria",
       "Método de presentación de la oferta": "Electrónica"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/07/2019 13:58:39",
         "documento": "Anuncio Previo",
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=n/d6hfxsz9QanAvVMDGhWicAAVCKGZC5bojueEdklPvyGyHR/eBYzILEwQRikOuDhDFLFdaReeDhL2coFOjBZlwaYfWErTEkOQ%2B3YK0WKaU%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 6E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11880,7 +11916,7 @@
       "Nº de Licitadores Presentados": "0",
       "Importe de Adjudicación": "Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "16/05/2019 10:39:51",
         "documento": "Anuncio de Licitación",
@@ -11917,9 +11953,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=0i5hRr7D4AXsKGgUWi1oztQlR1e7iKq9vZoljHi4PJOHwLNL1f9AcH7Q6SB5xKZjZ6I1GkIWpZVXGy22VkSHRL/PZNsoBvZs1z5kAThyUsA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 5E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -11938,7 +11974,7 @@
       "Nº de Licitadores Presentados": "8",
       "Importe de Adjudicación": "355.152,18 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "15/05/2019 12:35:47",
         "documento": "Anuncio de Licitación",
@@ -12025,9 +12061,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=7mDaMsWQy8TyV27jxZkSHxPeH3gjrM%2B0YxvsMg3u/0l9GsfGzgMz2u4LcZlonPkTsEEom9w67GdSsOe6EqvbM0u311T0X/RsXYJWYhfGQtA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 3E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12046,7 +12082,7 @@
       "Nº de Licitadores Presentados": "4",
       "Importe de Adjudicación": "510.232,98 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "13/05/2019 09:55:18",
         "documento": "Anuncio de Licitación",
@@ -12108,9 +12144,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=55Qtuw/9QH4/XCbSgahQUP6KOg4uHPGM5C0P%2B535za%2ByiDE%2Bm/V44I7K8Xm08XrQAjVlFd9UJdnIT6XU2Lz3/9dIbf3UxyBLKF/y0C26WR4%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 8E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12129,7 +12165,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "14/03/2019 09:35:08",
         "documento": "Anuncio de Licitación",
@@ -12196,9 +12232,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=4It%2BnC55WH/AwNRGb1LtYR22uYOmCx%2Bdmy3MFi3C1bxwfOhYLj%2BU4SWnie8e2Vs7eP/1UWwwuRrQMpN1UwDr5VFPU%2BeuW4twhRtsYGgZWn8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 2E_19": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12217,7 +12253,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "25/02/2019 13:05:04",
         "documento": "Anuncio de Licitación",
@@ -12309,9 +12345,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=ewCLQZ3hjk08kNjh5P5fKMzAXvY0IXdjOa9THGxQwCKyjvUnG8yYQ0pxsKCIvNEKXDuq5Ii9Nl6r/TBNVMLYdvjr9FiT4hQ1z2tTD7q7L6k%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 28E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12330,7 +12366,7 @@
       "Nº de Licitadores Presentados": "4",
       "Importe de Adjudicación": "111.560,04 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "21/01/2019 11:53:29",
         "documento": "Anuncio de Licitación",
@@ -12402,9 +12438,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=%2BuKhHZxcubwQoAfvjwszkVj90q3m18mEsnkXmhhg5ZQi%2BDznqN%2BUuFyM9ohlp/ZUxjsCx2/jOOC/DeTq7LfRxO3d/A/5B%2BPQATBI1gSnkO0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 16E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12423,7 +12459,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "24/01/2019 10:56:41",
         "documento": "Anuncio de Licitación",
@@ -12510,9 +12546,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=eUAXPS2Gu2GlJ94Fdd7TPFZZKCH8HRl9l0ccK1Vm%2B5G0OYK7ykrXAzSoq%2B13lbks55SwsP/Fofj4wKQpX%2BI5CijEGO5FIdVd901LMwYvBX0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 13E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12531,7 +12567,7 @@
       "Nº de Licitadores Presentados": "5",
       "Importe de Adjudicación": "165.289,26 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "08/03/2019 12:52:14",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -12623,9 +12659,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=upK4wAK895cdrvIybRRgSkyG8q153oPrYsi7gQOyLZeZ9WPFiM71HdFW4DEDVilOCCRMMnqzYug%2B26l1ZtjoMIm/KmLNEpNSHx3vAaUrRz4%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 17E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12644,7 +12680,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "14/01/2019 09:55:41",
         "documento": "Anuncio de Licitación",
@@ -12751,9 +12787,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Ig9FMVILD/w8a4gmcXmHy%2BAJkGpsH42Xi58RIFB511QbNuXjbD9MEc9LHhm2hbz5ux3J9v7c%2BWoxRkXs9GQS8VTl6nbICkcYfu/sp/a46XM%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 11E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12772,7 +12808,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "1.977.494,40 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "08/01/2019 14:01:06",
         "documento": "Anuncio de Licitación",
@@ -12849,9 +12885,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=RpHulehAoMBVItZkqp0FS/B88IsmThe4uyDKWdjcIi8LkkYbc%2BQ8Phauwt%2BMecrPCsDikTbPArES7svT6SNAF07pbNe7tYiCCbi0LDp3tn8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 9E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12870,7 +12906,7 @@
       "Nº de Licitadores Presentados": "10",
       "Importe de Adjudicación": "96.592,28 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/01/2019 12:40:21",
         "documento": "Anuncio de Licitación",
@@ -12922,9 +12958,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Wa/L69WtvlgJ7USfb9/u9WRvkRXIk%2BWFwTU/4%2BizkKE8MnCWqFh2Xwp2H1pSngg0ojgmrs6hplP6wEZfVRvZ5cYnGiujByjMP4DAk3B5b0Y%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC/18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12940,7 +12976,7 @@
       "Método de presentación de la oferta": "Manual",
       "Fecha fin de presentación de oferta": "31/01/2019 10:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "09/01/2019 13:39:39",
         "documento": "Anuncio de Licitación",
@@ -12952,9 +12988,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=QclEs6ydhduQiZHxXbk3FeVn2iKnWMO79/ZKvNq%2BZLaKGadL9oirv4KOBVSE4i/fa%2Bdfseg4NHw%2B3IsN0cGJDxM8SgbyG3HPtZhEgetGWro%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 4E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -12973,7 +13009,7 @@
       "Nº de Licitadores Presentados": "2",
       "Importe de Adjudicación": "34.750,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "23/08/2018 13:54:54",
         "documento": "Anuncio de Licitación",
@@ -13045,9 +13081,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=dkb4qAjkxG2Bx0xyiX5lt/JtsZHOEYSBbOLgb5YyyUvo7xtjL/4Lq9UgkcgdcNh/yT/wzArifRDjCxvc91sv%2BWwdJHwkDWEGD59w4jhjDRg%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 7E_18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13066,7 +13102,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "166.800,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "21/08/2018 13:02:27",
         "documento": "Anuncio de Licitación",
@@ -13123,9 +13159,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=1vGQRVkPJpN6jrYntxkCWvZIrQoyr4A5hZaFVfpnrihn8ayTVIKF8p5A7W2WoQeJXLYcIkSR5oqOr%2BAOkV0mvZ8W0HO/gSvzv78uQm5rUnI%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 5E18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13144,7 +13180,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "39.669,42 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/07/2018 12:59:21",
         "documento": "Anuncio de Licitación",
@@ -13186,9 +13222,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=PNC9f0ZUAXK7LQ4w17fabK5rpJEiP43PeOn5ld0i2YeI2s%2BuT46h5BnkDyk%2BjUJUUz%2Bgzw1xXDZckZ6BHXH%2BLHQ0qaj75W86dES1Fc9Pp0g%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 20E/17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13207,7 +13243,7 @@
       "Nº de Licitadores Presentados": "3",
       "Importe de Adjudicación": "92.076,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "08/03/2018 15:08:05",
         "documento": "Anuncio de Licitación",
@@ -13244,9 +13280,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=ELg9AlibyozHuwu55AMk71PEHIynvN86iy7KqCF08mfzn6BoDRE%2BFhgVCNf2eNFoGWD2ZZyZrXTEPBUhjQ4aYlJztbadPEz33QvBPvk/swY%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 1E/18": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13267,7 +13303,7 @@
       "Nº de Licitadores Presentados": "6",
       "Importe de Adjudicación": "60.097,36 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/03/2018 12:12:55",
         "documento": "Anuncio de Licitación",
@@ -13299,9 +13335,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=OdWFGfxy8rjspz5xeb5FGxv/rxRyfJq5frgGV7HsH8zv6KFEZUqomGwn4DeirjZgt3bOkxJEp9Zqn21Kwifrwzl/lPhoL4MbgAATnKR%2Bi%2BQ%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 27E/17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13320,7 +13356,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "504.300,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "05/03/2018 09:41:03",
         "documento": "Anuncio de Licitación",
@@ -13382,9 +13418,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=Jh0lzjERLEhMeta0E2GhQnltA2v0bNF%2BHcBC7%2BTOA/e%2BmMETA6JNcMN8rzevMwY1yJumpDRXimadXnOJK18RCbwE4gJZR2aU%2BkmUEbGVH8E%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 16E_17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13400,7 +13436,7 @@
       "Método de presentación de la oferta": "Manual",
       "Fecha fin de presentación de oferta": "19/03/2018 14:00"
     },
-    [
+    "documentos": [
       {
         "publicacion": "02/03/2018 13:29:00",
         "documento": "Anuncio de Licitación",
@@ -13412,9 +13448,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=blaAkVg1/KEGgn3rADGQ3LA/6JPr9jQGpHdlyh0fzStEQQSKe02Dt0YHXyCb06HwhvyDWfsghViQIyo/ax5IagCEJjiqBHxtiqMbKifEZsY%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 30E/17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13433,7 +13469,7 @@
       "Nº de Licitadores Presentados": "1",
       "Importe de Adjudicación": "95.937,00 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "06/02/2018 11:00:13",
         "documento": "Anuncio de Licitación",
@@ -13470,9 +13506,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=2V4zfCUWtq2C2CO5QsGb0sw0BJDyf3ZPbEJA6VPUlCAHqTOWGueXfK0yIDMWaaui9LVScqF2S7NAUOyq4%2B3mKFvOqc60vroapbXCDIarReA%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 28E/17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13491,7 +13527,7 @@
       "Nº de Licitadores Presentados": "4",
       "Importe de Adjudicación": "98.134,61 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "03/01/2018 13:01:54",
         "documento": "Anuncio de Licitación",
@@ -13518,9 +13554,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=xxqAo8Q9zsP0mXUcb0l0vREychX/eUYFL51lTWsrQvhLZn%2BwaZguq/j8o%2B72cvNO%2BL0GZkDNyrt52HbwhgmahkLGqfmbseue7O2/rpW0MU8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 24E/17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13539,7 +13575,7 @@
       "Nº de Licitadores Presentados": "11",
       "Importe de Adjudicación": "890.715,37 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "27/12/2017 13:15:28",
         "documento": "Anuncio de Licitación",
@@ -13576,9 +13612,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=2Qo/dHshBzdw%2BITFJFXu1gur1PVkd6wEhUwi8Pw8DLJoxY/5jkVs9KnA%2BKTVC3ECX/oc1UD4K2yYB2cwQ%2Bap2%2BV5yMTQRwYKz9GBCYz6wW0%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 23E/17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13597,7 +13633,7 @@
       "Nº de Licitadores Presentados": "22",
       "Importe de Adjudicación": "878.925,62 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "22/12/2017 14:12:38",
         "documento": "Anuncio de Licitación",
@@ -13634,9 +13670,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=18BovR%2BBOGbN035lt6TUfY%2BWKnYQmO5RfF2vwrA79O5V3LmsmHCDPdZ0xAOtplOOW3844nM6Y97rBR8%2BDPTmRG5%2BCmuKPqyvT9dCZ8AUVv8%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 22E/17": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13655,7 +13691,7 @@
       "Nº de Licitadores Presentados": "19",
       "Importe de Adjudicación": "982.438,01 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "22/12/2017 14:24:58",
         "documento": "Rectificación de Anuncio de Licitación",
@@ -13697,9 +13733,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=roMXokcEEj1h0pj1EUI0EzSmq57YAsaBe11l/dqtDbxsQrw3JYeiUeQLiKePNCci6/USWU3g3Z3wPQQo8GOp/Gn05RofvvNGJTZVft/76js%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CC/1/2018": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13718,7 +13754,7 @@
       "Nº de Licitadores Presentados": "6",
       "Importe de Adjudicación": "7.655.409,98 Euros"
     },
-    [
+    "documentos": [
       {
         "publicacion": "06/11/2017 14:13:16",
         "documento": "Anuncio Previo",
@@ -13780,9 +13816,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=HSe7f7XCiUlHdYjiV8egba94Sa%2BJAb6Yy1xRvk3XVTCdXYpGd/T3r4WPhW7dq8/2yvPF38nloL0vhufd0cmExZweUxGLzCaCw12Rn%2Bw5x38%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: 7/16": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13798,10 +13834,10 @@
       "Tipo de tramitación": "Ordinaria",
       "Método de presentación de la oferta": "Manual"
     },
-    []
-  ],
-  [
-    {
+    "documentos": []
+  },
+  {
+    "datos": {
       "Expediente: CE/A.M.1/15": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13821,7 +13857,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "04/12/2014 09:09:29",
         "documento": "Anuncio Previo",
@@ -13848,9 +13884,9 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=HcABV7m2plrZtS3im1dXo%2BJVVpdpfHGAIV6rOOaaPK2dFzCfKNxjYO6qERuACLrYDGGthdNr7xtLNvofQoeD6JWjPaPRQxBrVjC5Vq01A7s%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ],
-  [
-    {
+  },
+  {
+    "datos": {
       "Expediente: CE/AM_4/14": "ENTIDADES LOCALES>Castilla y León>Burgos>Diputación Provincial de Burgos",
       "Órgano de Contratación": "Junta de Gobierno de la Diputación Provincial de Burgos",
       "ID del Órgano de Contratación": "30487420086822",
@@ -13870,7 +13906,7 @@
       "Nº de Licitadores Presentados": "Ver detalle de la adjudicación",
       "Importe de Adjudicación": "Ver detalle de la adjudicación"
     },
-    [
+    "documentos": [
       {
         "publicacion": "15/09/2014 14:14:55",
         "documento": "Anuncio Previo",
@@ -13902,5 +13938,5 @@
         "html": "https://contrataciondelestado.es/FileSystem/servlet/GetDocumentByIdServlet?DocumentIdParam=sXFkqQOpN/7jnqC5LzW30NyKKtRNziX2%2BtlUMolc0JMhbwF/ft9EFAWLnsiK%2BcTVBsG5QheEMDGth2W/bozoRsErKT0MaOQ7nMzaAGLwg6M%3D&cifrado=QUC1GjXXSiLkydRHJBmbpw%3D%3D"
       }
     ]
-  ]
+  }
 ]
