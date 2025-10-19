@@ -1,0 +1,24 @@
+{
+  "python.defaultInterpreterPath": ".venv\\Scripts\\python.exe",
+
+  // Formateo
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.defaultFormatter": "ms-python.black-formatter",
+  "python.formatting.provider": "none",
+
+  // Ruff (nativo, sin ruff-lsp)
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.lint.select": ["E", "W", "F", "I", "B"],
+  "ruff.lint.lineLength": 88,
+  "ruff.format.enable": true,
+  "ruff.format.lineLength": 88,
+
+  // Análisis de Pylance
+  "python.analysis.diagnosticMode": "workspace"
+
+}

@@ -1,0 +1,17 @@
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "W", "F", "I", "B"]
+ignore = []
+fix = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.isort]
+known-first-party = ["tu_paquete"]   # opcional, orden de imports
