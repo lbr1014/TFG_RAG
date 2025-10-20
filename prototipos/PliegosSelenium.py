@@ -106,7 +106,8 @@ def click_seguro(driver: webdriver.Chrome, element: WebElement) -> None:
         pass
     try:
         driver.execute_script(
-            "var ev=new MouseEvent('click',{bubbles:true,cancelable:true});arguments[0].dispatchEvent(ev);",
+            "var ev=new MouseEvent('click',{bubbles:true,cancelable:true});\
+            arguments[0].dispatchEvent(ev);",
             element,
         )
     except Exception:
@@ -459,12 +460,27 @@ def ir_pestana(driver: webdriver.Chrome, clave: str) -> None:
     driver.switch_to.default_content()
 
     mapping = {
-        "Perfil del Contratante": r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:perfilComp\:textLinkOff",
-        "Documentos": r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:perfilComp\:linkPrepDocs",
-        "Licitaciones": r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:perfilComp\:linkPrepLic",
-        "Contratos Menores": r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:perfilComp\:linkPrepContratosMenores",
-        "Encargos a medios propios": r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:perfilComp\:linkPrepEncargosMP",
-        "Consultas preliminares": r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:perfilComp\:linkPrepConsultasAnuncio",
+        "Perfil del Contratante": (
+            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_" + r"\:perfilComp\:textLinkOff"
+        ),
+        "Documentos": (
+            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_" + r"\:perfilComp\:linkPrepDocs"
+        ),
+        "Licitaciones": (
+            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_" + r"\:perfilComp\:linkPrepLic"
+        ),
+        "Contratos Menores": (
+            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
+            + r"\:perfilComp\:linkPrepContratosMenores"
+        ),
+        "Encargos a medios propios": (
+            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
+            + r"\:perfilComp\:linkPrepEncargosMP"
+        ),
+        "Consultas preliminares": (
+            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
+            + r"\:perfilComp\:linkPrepConsultasAnuncio"
+        ),
     }
 
     sel = mapping.get(clave)
@@ -475,8 +491,8 @@ def ir_pestana(driver: webdriver.Chrome, clave: str) -> None:
         btn = visible(driver, By.CSS_SELECTOR, sel, timeout=TIMEOUT)
         driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn)
         click_seguro(driver, btn)
-    except TimeoutException:
-        raise TimeoutException(f"No se pudo abrir la pestaña: {clave}")
+    except TimeoutException as err:
+        raise TimeoutException(f"No se pudo abrir la pestaña: {clave}") from err
 
     try:
         espera(driver, 5)
@@ -676,7 +692,8 @@ def extraer_detalles_licitacion(driver: webdriver.Chrome) -> tuple[dict, list[di
           const table = document.querySelector('#myTablaDetalleVISUOE');
           if (!table) return [];
           const out = [];
-          const filas = Array.from(table.querySelectorAll('#myTablaDetalleVISUOE > tbody tr'));
+          const filas = Array.from(table.querySelectorAll('#myTablaDetalleVISUOE >' \
+              'tbody tr'));
           for (const tr of filas) {
             const tds = tr.querySelectorAll('td');
             const publicacion = (tds[0].textContent || '').replace(/\s+/g, ' ').trim();
@@ -685,7 +702,8 @@ def extraer_detalles_licitacion(driver: webdriver.Chrome) -> tuple[dict, list[di
             const links = Array.from(tds[2].querySelectorAll('a'));
             const htmlLink = links.find(a => /\bhtml\b/i.test(a.textContent || ''));
             if (htmlLink) {
-              html = new URL(htmlLink.getAttribute('href') || '', window.location.href).href;
+              html = new URL(htmlLink.getAttribute('href')\
+                  || '', window.location.href).href;
             }
             out.push({ publicacion, documento, html });
           }
@@ -700,7 +718,8 @@ def extraer_detalles_licitacion(driver: webdriver.Chrome) -> tuple[dict, list[di
         return (function () {
           const cont = document.querySelector('#datosDocumentosGenerales');
           if (!cont) return [];
-          const table = cont.querySelector('[id="viewns_Z7_AVEQAI930OBRD02JPMTPG21006_:form1:TableEx1_Aux"]');
+          const table = cont.querySelector\
+              ('[id="viewns_Z7_AVEQAI930OBRD02JPMTPG21006_:form1:TableEx1_Aux"]');
           if (!table) return [];
           const out = [];
           const seen = new Set();
@@ -712,7 +731,8 @@ def extraer_detalles_licitacion(driver: webdriver.Chrome) -> tuple[dict, list[di
             const verLink = Array.from(tds[2].querySelectorAll('a'))
               .find(a => /\bver\b/i.test((a.textContent || '').trim()));
             if (!verLink) continue;
-            const html = new URL(verLink.getAttribute('href') || '', window.location.href).href;
+            const html = new URL(verLink.getAttribute('href')\
+                || '', window.location.href).href;
             const key = `${publicacion}||${documento}`;
             if (seen.has(key)) continue;
             seen.add(key);
@@ -784,7 +804,8 @@ def main() -> None:
         # Encontrar el frame con el buscador
         frame, _ = esperar_frame(
             driver,
-            r"#contenidoBuscador > fieldset:nth-child(1) > ul:nth-child(1) > li:nth-child(2)",
+            r"#contenidoBuscador > fieldset:nth-child(1)"
+            + r" > ul:nth-child(1) > li:nth-child(2)",
             timeout_ms=60_000,
         )
         print(frame)
@@ -824,7 +845,10 @@ def main() -> None:
         espera(driver, 15)
 
         # Enlace resultado
-        lnk_sel = r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:listaperfiles\:enlaceExpedienteBP_0_textoEnlace"
+        lnk_sel = (
+            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
+            + r"\:listaperfiles\:enlaceExpedienteBP_0_textoEnlace"
+        )
         lnk_junta = visible(driver, By.CSS_SELECTOR, lnk_sel, timeout=TIMEOUT)
         try:
             driver.execute_script(

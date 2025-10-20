@@ -20,5 +20,6 @@
 
   // Análisis de Pylance
   "python.analysis.diagnosticMode": "workspace"
+  
 
 }

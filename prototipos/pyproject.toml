@@ -1,3 +1,21 @@
+[tool.poetry]
+name = "tfg-rag-prototipos"
+version = "0.1.0"
+description = "Prototipos del TFG"
+authors = ["Tu Nombre <tu@email>"]
+readme = "README.md"
+packages = [{include = "src"}]  # si usas layout src/
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.32.0"
+playwright = "^1.55.0"
+selenium = "^4.37.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.0"
+ruff = "^0.5"
+
 [tool.black]
 line-length = 88
 target-version = ["py311"]
@@ -14,4 +32,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.ruff.lint.isort]
-known-first-party = ["tu_paquete"]   # opcional, orden de imports
+known-first-party = ["tfg_rag_prototipos"]  
+
+[tool.poetry.scripts]
+pliegos = "tfg_rag_prototipos.cli:main" 
