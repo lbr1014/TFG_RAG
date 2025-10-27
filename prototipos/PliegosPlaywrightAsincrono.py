@@ -11,7 +11,7 @@ from playwright.async_api import async_playwright, expect
 
 # ======== Constantes ========
 BASE_URL = "https://contrataciondelestado.es/wps/portal/plataforma"
-OUTPUT_JSON = "resultados_playwright_asincrono.json"
+OUTPUT_JSON = "resultados_playwright_asincrono_servidor.json"
 QUERY = "licitacion"
 OBJETIVO = "Junta de Gobierno de la Diputación Provincial de Burgos"
 
@@ -457,7 +457,7 @@ async def guardar_licitacion_json(resultados: List[Any]) -> None:
 # ========== MAIN ============
 async def run() -> None:
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
             locale="es-ES",
             timezone_id="Europe/Madrid",
@@ -543,7 +543,8 @@ async def run() -> None:
         except PWTimeoutError:
             print("Timeout al cargar o encontrar elementos.")
         finally:
-            await context.tracing.stop(path="trace.zip")
+
+            await context.tracing.close()
             await context.close()
             await browser.close()
 
