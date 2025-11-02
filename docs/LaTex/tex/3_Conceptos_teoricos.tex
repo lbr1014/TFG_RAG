@@ -119,7 +119,7 @@ Los componentes clave del \textit{pipeline} de generación son:
 \end{itemize} 
 
 \subsection{Capas de soporte}
-Además de los dos \textit{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, cache semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \textit{prompt}, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \textit{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
+Además de los dos \textit{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, \textit{cache} semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \textit{prompt}, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \textit{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
 \begin{enumerate}
 \tightlist
 	\item Capas críticas: son las capas imprescindibles del \textit{RAGOps stack}.
@@ -142,10 +142,10 @@ Además de los dos \textit{pipelines}, un sistema en producción requiere orques
 	\item Capas de mejora: son capas opcionales que pueden aportar beneficios dependiendo del caso de uso. Se centran en la eficiencia, usabilidad y escalabilidad del sistema.
 \end{enumerate}
 
-\section{Evaluación de calidad del RAG}
-Se hará mediante la triada de evaluación propuesta por TruEra~\cite{RAG:triad}. Estructura la calidad en tres comprobaciones entre consulta (\textit{prompt}), contexto recuperado y respuesta. Complementariamente, se emplean métricas como relevancia, precisión y \textit{recall}, y conjuntos ground truth para validación objetiva y monitorización continua en producción~\cite{book:RAG_SimpleGuide}.
+\section{Evaluación de la calidad del RAG}
+Se hará mediante la tríada de evaluación propuesta por TruEra~\cite{RAG:triad}. Estructura la calidad en tres comprobaciones entre consulta (\textit{prompt}), contexto recuperado y respuesta. Complementariamente, se emplean métricas como relevancia, precisión y \textit{recall}, y conjuntos \textit{ground truth} para validación objetiva y monitorización continua en producción~\cite{book:RAG_SimpleGuide}.
 
-Las tres dimensiones de la triada son:
+Las tres dimensiones de la tríada son:
 \begin{itemize}
 \tightlist
 	\item Relevancia del contexto: la información que se haya recuperado tiene que ver con la pregunta.
@@ -153,7 +153,7 @@ Las tres dimensiones de la triada son:
 	\item Relevancia de la respuesta: la respuesta es útil y adecuada respecto a la intención y el contexto de la consulta original.
 \end{itemize}
 
-Aparte de las dimensiones de la triada, otos aspectos relevantes que el sistema debe incorporar son:
+Aparte de las dimensiones de la tríada, otos aspectos relevantes que el sistema debe incorporar son:
 \begin{itemize}
 \tightlist
 	\item Robustez al ruido: el sistema debe distinguir aquellos documentos relacionados pero que sean poco útiles.
@@ -165,11 +165,11 @@ Aparte de las dimensiones de la triada, otos aspectos relevantes que el sistema 
 Hay dos herramientas principales de evaluación:
 \begin{itemize}
 \tightlist
-	\item \textit{Retrieval-Augmented Generation Assessment} (RAGAs): es un \textit{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclo rápidos~\cite{ragas:docs}. 
+	\item \textit{Retrieval-Augmented Generation Assessment} (RAGAs): es un \textit{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclos rápidos~\cite{ragas:docs}. 
 	\item \textit{Automated RAG Evaluation System}(ARES): es un \textit{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto~\cite{saadfalcon2023ares}.
 \end{itemize}
 
 \section{\textit{Web Scraping}}
 \textit{Web Scraping} es el proceso automático de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\textit{crawling}), \textit{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
 
-Existe una convención estándar, llamada \textit{Robots Exclusion Protocol} (\textit{robots.txt}), mediante la cual un servidor web indica que \textit{URLs} se deben evitar rastrear. En este archivo se especifica que partes del sistema están permitidas o prohibidas para cada tipo de \textit{bot}. Aunque, el incumplimiento de este protocolo no tiene consecuencias legales es éticamente correcto cumplirlo~\cite{rfc9309}. 
+Existe una convención estándar, llamada \textit{Robots Exclusion Protocol} (\texttt{robots.txt}), mediante la cual un servidor web indica qué \textit{URLs} se deben evitar rastrear. En este archivo se especifica qué partes del sistema están permitidas o prohibidas para cada tipo de \textit{bot}. Aunque, el incumplimiento de este protocolo no tiene consecuencias legales es éticamente correcto cumplirlo~\cite{rfc9309}. 
