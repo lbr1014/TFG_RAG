@@ -8,7 +8,6 @@ max_new_tokens = 256
 model_name="mistralai/Mistral-7B-v0.1"
 
 
-# Formatear el prompt con tu plantilla de chat
 def alpaca_format(instruction: str, response: str = "") -> str:
     return f"### Instruction:\n{instruction}\n\n### Response:\n{response}"
 

@@ -8,7 +8,6 @@ max_new_tokens = 256
 model_name="meta-llama/Meta-Llama-3.1-8B"
 
 
-# Formatear el prompt con tu plantilla de chat
 def alpaca_format(instruction: str, response: str = "") -> str:
     return f"### Instruction:\n{instruction}\n\n### Response:\n{response}"
 
@@ -23,11 +22,12 @@ def chunk(text: str, max_chars: int = 6000) -> str:
 
 
 pdf_path = "DOC20251103115131003_Proyecto_visado_11E25.pdf"
-pdf_text = chunk(read_pdf(pdf_path))
+pdf_text = read_pdf(pdf_path)
 
 promp = (
     "A continuación tienes el texto extraído de un PDF. "
-    "Haz un resumen claro y breve en un solo párrafo en español:\n\n"
+    "Conociendo el indice explica cada uno de sus apartados brevemente. "
+    "No copies los índices:\n\n"
     f"{pdf_text}"
 )
 
