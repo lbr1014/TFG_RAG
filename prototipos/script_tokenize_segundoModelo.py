@@ -53,7 +53,3 @@ save_dir.mkdir(exist_ok=True)
 model.save_pretrained(save_dir)
 tokenizer.save_pretrained(save_dir)
 
-# Guardar/push modelo + tokenizer juntos (consistencia en despliegue)
-model.save_pretrained_merged("model", tokenizer, save_method="merged_16bit")
-# model.push_to_hub_merged("tu-usuario/tu-modelo", tokenizer, save_method="merged_16bit")  # noqa: E501
-

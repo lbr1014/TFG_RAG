@@ -25,6 +25,14 @@ def chunk(text: str, max_chars: int = 6000) -> str:
 pdf_path = "DOC20251103115131003_Proyecto_visado_11E25.pdf"
 pdf_text = chunk(read_pdf(pdf_path))
 
+promp = (
+    "A continuación tienes el texto extraído de un PDF. "
+    "Haz un resumen claro y breve en un solo párrafo en español:\n\n"
+    f"{pdf_text}"
+)
+
+message = alpaca_format(promp, "")
+
 # Tokenizar con el tokenizer del modelo (clave para evitar errores de ids/espaciado)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -35,7 +43,6 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.float16 if device == "cuda" else torch.float32,
     device_map="auto" if device == "cuda" else None,
 )
-message = alpaca_format("Escribe un párrafo sobre SFT.", "")
 
 inputs = tokenizer([message], return_tensors="pt").to(device)
 
@@ -53,7 +60,4 @@ save_dir.mkdir(exist_ok=True)
 model.save_pretrained(save_dir)
 tokenizer.save_pretrained(save_dir)
 
-# Guardar/push modelo + tokenizer juntos (consistencia en despliegue)
-model.save_pretrained_merged("model", tokenizer, save_method="merged_16bit")
-# model.push_to_hub_merged("tu-usuario/tu-modelo", tokenizer, save_method="merged_16bit")  # noqa: E501
 
