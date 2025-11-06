@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 
 max_seq_length = 2048
 max_new_tokens = 256
-model_name="meta-llama/Meta-Llama-3.1-8B"
+model_name="meta-llama/Meta-Llama-3-8B"
 
 
 # Formatear el prompt con tu plantilla de chat
