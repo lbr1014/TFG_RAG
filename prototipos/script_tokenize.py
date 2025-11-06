@@ -1,18 +1,11 @@
 import torch
-from transformers import TextStreamer
-from unsloth import FastLanguageModel
-from pypdf import PdfReader
 from pathlib import Path
+from pypdf import PdfReader
+from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer
 
 max_seq_length = 2048
-model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="meta-llama/Meta-Llama-3.1-8B",
-    max_seq_length=max_seq_length,
-    load_in_4bit=False,
-)
-
-# Preparar modelo para inferencia
-FastLanguageModel.for_inference(model)
+max_new_tokens = 256
+model_name="meta-llama/Meta-Llama-3.1-8B",
 
 
 # Formatear el prompt con tu plantilla de chat
@@ -31,10 +24,19 @@ def chunk(text: str, max_chars: int = 6000) -> str:
 
 pdf_path = "DOC20251103115131003_Proyecto_visado_11E25.pdf"
 pdf_text = chunk(read_pdf(pdf_path))
-message = alpaca_format("Escribe un párrafo sobre SFT.", "")
 
 # Tokenizar con el tokenizer del modelo (clave para evitar errores de ids/espaciado)
 device = "cuda" if torch.cuda.is_available() else "cpu"
+
+# Carga de tokenizer y modelo
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+    device_map="auto" if device == "cuda" else None,
+)
+message = alpaca_format("Escribe un párrafo sobre SFT.", "")
+
 inputs = tokenizer([message], return_tensors="pt").to(device)
 
 # Generar (con streaming de tokens)
@@ -42,9 +44,14 @@ streamer = TextStreamer(tokenizer)
 _ = model.generate(
     **inputs,
     streamer=streamer,
-    max_new_tokens=256,
+    max_new_tokens=max_new_tokens,
     use_cache=True,
 )
+
+save_dir = Path("model")
+save_dir.mkdir(exist_ok=True)
+model.save_pretrained(save_dir)
+tokenizer.save_pretrained(save_dir)
 
 # Guardar/push modelo + tokenizer juntos (consistencia en despliegue)
 model.save_pretrained_merged("model", tokenizer, save_method="merged_16bit")
