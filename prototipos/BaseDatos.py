@@ -9,6 +9,7 @@ from typing import Any, Generic, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
+from pypdf.errors import PdfReadError, PdfStreamError
 from qdrant_client import QdrantClient
 from qdrant_client import models as qmodels
 from sentence_transformers import SentenceTransformer
@@ -265,16 +266,23 @@ if __name__ == "__main__":
 
     for pdf_path in sorted(pliegos_dir.glob("*.pdf")):
         print(f"Procesando {pdf_path.name} ...")
+        try:
+            reader = PdfReader(str(pdf_path))
+            full_text = ""
+            for page in reader.pages:
+                page_text = page.extract_text() or ""
+                full_text += page_text + "\n"
+        except (PdfReadError, PdfStreamError, Exception) as e:
+            print(f"Error leyendo {pdf_path.name}: {e}.")
+            continue
 
-        reader = PdfReader(str(pdf_path))
-        full_text = ""
-        for page in reader.pages:
-            page_text = page.extract_text() or ""
-            full_text += page_text + "\n"
-
+        if not full_text.strip():
+            print(f"{pdf_path.name}: sin texto extraído.")
+            continue
+            
         chunks = chunk_text(full_text)
         if not chunks:
-            print(f"{pdf_path.name}: sin texto extraído")
+            print(f"{pdf_path.name}: sin chunks válidos")
             continue
 
         # Embeddings para todos los chunks de este PDF
