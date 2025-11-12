@@ -31,3 +31,5 @@ Thumbs.db
 # --- Variables locales ---
 .env
 .env.*
+
+*.zip
