@@ -247,7 +247,12 @@ if __name__ == "__main__":
             if not line:
                 continue
 
-            tokens = tokenizer.tokenize(line)
+            try:
+                tokens = tokenizer.tokenize(line)
+            except Exception as e:
+                print(f"No puedo tokenizar una línea ({e})")
+                continue
+            
             if current_tokens + len(tokens) > max_len and current:
                 chunks.append(current.strip())
                 current = line
@@ -280,7 +285,11 @@ if __name__ == "__main__":
             print(f"{pdf_path.name}: sin texto extraído.")
             continue
             
-        chunks = chunk_text(full_text)
+        try:
+            chunks = chunk_text(full_text)
+        except Exception as e:
+            print(f"Error haciendo chunks en {pdf_path.name}: {e}.")
+            continue
         if not chunks:
             print(f"{pdf_path.name}: sin chunks válidos")
             continue
