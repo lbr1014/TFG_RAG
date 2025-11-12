@@ -100,9 +100,10 @@ embedding_model = EmbeddingModelSingleton()
 # Conexión Qdrant
 # =========================
 def _make_qdrant_client() -> QdrantClient:
-    if settings.USE_QDRANT_CLOUD:
-        return QdrantClient(url=settings.QDRANT_CLOUD_URL, api_key=settings.QDRANT_APIKEY)
-    return QdrantClient(host=settings.QDRANT_DATABASE_HOST, port=settings.QDRANT_DATABASE_PORT)
+    # Qdrant embebido en disco, sin Docker ni servidor
+    data_dir = Path(__file__).parent / "qdrant_data"
+    data_dir.mkdir(exist_ok=True)
+    return QdrantClient(path=str(data_dir))
 
 
 qdrant = _make_qdrant_client()
