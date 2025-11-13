@@ -79,3 +79,57 @@ Aunque \textit{Selenium} sigue siendo una apuesta segura, para \textit{scraping}
 
 \section{Gestión de dependencias y entornos \textit{Python}}
 El proyecto requiere entornos aislados y reproducibles que faciliten el trabajo local, la integración continua y la generación de entregables. Se ha valorado utilizar \href{http://python-poetry.org/docs/}{\textit{Poetry}} y \href{https://docs.astral.sh/uv/}{\textit{uv}}. \textit{Poetry} es una herramienta madura de gestión de dependencias y empaquetado que centraliza la configuración en \textit{pyproject.toml}. Crea y gestiona entornos virtuales de forma automática, mantiene un archivo de bloqueo (\textit{poetry.lock}) para asegurar instalaciones deterministas, permite definir grupos de dependencias, así como, generar de manera automática el \textit{requirements.txt}. Por su parte \textit{uv} es un gestor rápido que, al igual que \textit{Poetry}, tiene soporte para \textit{pyproject.toml}. Posee un buen rendimiento y una elevada velocidad gracias al uso de \textit{caches} eficientes. Finalmente, se ha optado por usar \textit{Poetry} por su cobertura integral del ciclo de vida dentro de un flujo coherente y estable.
+
+
+\section{Base de datos vectorial}
+Una parte fundamental del desarrollo del RAG es la implementación de la base de datos vectorial. Se han valorado emplear diversas bases de datos, pero las dos que más se han estudiado son \textit{Qdrant} y \textit{pgvector}. \textit{Qdrant} es una base de datos vectorial especializada, diseñada desde cero para búsquedas de similitud de alta concurrencia y baja latencia. Presenta equilibrio entre el rendimiento, la latencia y el tiempo de indexado~\cite{llmeng:handbook}. Por su parte, \textit{pgvector} es una extensión de PostgreSQL que permite almacenar embeddings en columnas vectoriales y realizar búsquedas de similitud sobre una base de datos relacional ya existente. Es útil cuando la aplicación ya se apoya en este gestor, ya que simplifica la infraestructura~\cite{Qdrant:pgvector}. En la tabla~\ref{tab:bases-vectoriales} se muestran las principales ventajas y desventajas de cada opción.
+
+\begin{table}[!htbp]
+	\scriptsize 
+  	\centering
+  	\begin{tabularx}{\linewidth}{
+      >{\centering\arraybackslash}p{0.26\linewidth}
+      >{\arraybackslash}X
+      >{\arraybackslash}X}
+    \toprule
+    & \textbf{Ventajas} & \textbf{Desventajas} \\
+    \midrule
+    \textbf{\textit{Qdrant}} &
+      \begin{itemize}
+        \tightlist
+        \item Diseñada específicamente como base de datos vectorial, con índices optimizados para búsquedas de similitud y buen compromiso entre RPS, latencia y tiempo de indexado~\cite{llmeng:handbook}.
+        \item Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en RAG.
+        \item Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y gRPC bien documentadas.
+        \item Integración directa con librerías y orquestadores de RAG, lo que reduce el código necesario para conectarla con el resto del sistema.
+      \end{itemize}
+      &
+      \begin{itemize}
+        \tightlist
+        \item Introduce un nuevo servicio en la arquitectura: es necesario administrar una base de datos adicional a la relacional.
+        \item Requiere aprender herramientas y mecanismos de operación específicos (copias de seguridad, monitorización, actualización de índices, etc.).
+        \item Para casos de uso pequeños puede resultar más compleja que reutilizar la base de datos transaccional existente.
+      \end{itemize}
+      \\
+    \midrule
+    \textbf{\textit{pgvector}} &
+      \begin{itemize}
+        \tightlist
+        \item Permite reutilizar una instancia de PostgreSQL ya desplegada, unificando datos transaccionales y embeddings en el mismo sistema.
+        \item Aprovecha todo el ecosistema SQL: transacciones, \textit{joins}, vistas, roles de usuario y mecanismos estándar de replicación y copia de seguridad.
+        \item Simplifica la operación en entornos reducidos o con restricciones de infraestructura, al requerir un único motor de base de datos.
+      \end{itemize}
+      &
+      \begin{itemize}
+        \tightlist
+        \item El rendimiento en búsquedas vectoriales a gran escala (millones de vectores y alta concurrencia) suele ser inferior al de motores especializados.
+        \item Dispone de menos funcionalidades específicas de bases de datos vectoriales (gestión de colecciones, métricas especializadas o afinado fino de índices).
+        \item La configuración óptima de índices y parámetros depende de la versión de PostgreSQL y de la extensión, y puede requerir un ajuste cuidadoso.
+      \end{itemize}
+      \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Ventajas y desventajas de \textit{Qdrant} y \textit{pgvector}.}
+  \label{tab:bases-vectoriales}
+\end{table}
+
+Para realizar el proyecto se ha optado por utilizar \textit{Qdrant}. Aunque \textit{pgvector} presenta características interesantes cuando se desea mantener toda a información en una única base de datos relacional, \textit{Qdrant} presenta un diseño especializado. Así como un mejor equilibrio entre rendimiento y latencia. Además, \textit{Qdrant} se utiliza en proyectos reales lo que lo convierte en una muy buena opción para implementar el sistema RAG.

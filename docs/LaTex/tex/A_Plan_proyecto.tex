@@ -199,7 +199,31 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 	\item Comparar las implementaciones de \textit{tokenize}.
 \end{itemize}
 
-Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron
+Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron 15. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas, pero sería destacable que en los \textit{scripts} de las diversas pruebas de \textit{tokenizers} no solo se han incluido estos. Si no que también se han incluido funciones para probar su uso, como pueden ser \textit{propts} y funciones para dividir los pdfs de las licitaciones.
+
+El \textit{burndown} de este \textit{sprint7} se ilustra en la figura~\ref{fig:Burndown/Sprint7}
+\imagen{Burndown/Sprint7}{Sprint 7.}
+
+\subsection{\textit{Sprint} 8 (6/11/2025 - 13/11/2025)}
+
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/8}{Sprint 8} fue implementar una base de datos para el RAG y juntarlo con uno de los \textit{tokenizers} ya implementados del \textit{sprint} anterior. Además, en este \textit{sprint} se planteó como objetivo obtener los pliegos definitivos de de la página de \href{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}. 
+
+Esto se debe a que los pliegos obtenidos anteriormente no eran correctos, se trataban de resúmenes incompletos que no servían para alimentar al RAG. Durante el \textit{sprint} 7, se encontraron los pliegos correctos y se fijo como objetivo del siguiente \textit{sprint} modificar los programa de \textit{Web Scraping} para descargarlos. 
+Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+\tightlist
+	\item Obtener pliegos correctos.
+	\item Estudiar sobre las distintas bases de datos.
+	\item Implementar la base de datos.
+	\item Explicar la comparativa de las bases de datos.
+\end{itemize}
+
+Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron 16. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha implementado la base de datos vectorial \textit{Qdranty} y se ha juntado con el diseño de \textit{tokenizer} del \textit{sprint} anterior, aunque se ha cambiado el modelo para usar el del libro \href{https://www.amazon.com/LLM-Engineers-Handbook-engineering-production/dp/1836200072}{LLM Engineer's Handbook}. Además, se han realizado los \textit{embeddings} para poder almacenarlos en la base de datos vectorial.
+
+El \textit{burndown} de este \textit{sprint8} se ilustra en la figura~\ref{fig:Burndown/Sprint8}
+\imagen{Burndown/Sprint8}{Sprint 8.}
+
+\subsection{\textit{Sprint} 9 (13/11/2025 - 20/11/2025)}
 
 \section{Estudio de viabilidad}
 
