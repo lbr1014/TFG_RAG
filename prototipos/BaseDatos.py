@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import logging
 import re
+import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
@@ -25,6 +27,24 @@ from sentence_transformers import SentenceTransformer
 
 # Logger
 logger = logging.getLogger(__name__)    
+
+
+# =========================
+# Función para medir los tiempos de ejecución
+# =========================
+@contextmanager
+def timed_block(name: str):
+    """
+    Metodo para medir el tiempo de un bloque de código.
+    Escribe el resultado en el logger.
+    """
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        elapsed = time.perf_counter() - start
+        logger.info("Tiempo %s: %.3f s", name, elapsed)
+
 
 # =========================
 # Settings: configuración del modelo de embeddings y de la base vectorial
@@ -149,8 +169,10 @@ class EmbeddingModelSingleton:
         return emb
 
 
+start_model = time.perf_counter()
 # Instancia única disponible para el resto del código
 embedding_model = EmbeddingModelSingleton()
+logger.info("Tiempo carga modelo embeddings: %.3f s", time.perf_counter() - start_model)
 
 
 # =========================
@@ -422,45 +444,52 @@ if __name__ == "__main__":
         
     # Recorremos todos los PDFs de la carpeta Pliegos
     for pdf_path in sorted(pliegos_dir.glob("*.pdf")):
-        logger.info("Procesando %s ...", pdf_path.name)
-        try:
-            reader = PdfReader(str(pdf_path))
-            full_text = ""
-            for page in reader.pages:
-                page_text = page.extract_text() or ""
-                full_text += page_text + "\n"
-        except (PdfReadError, PdfStreamError, Exception) as e:
-            # Se ignora el archivo si no es un PDF válido o está corrupto
-            logger.error("Error leyendo %s: %s", pdf_path.name, e)
-            continue
+        with timed_block(f"total {pdf_path.name}"):
+            logger.info("Procesando %s ...", pdf_path.name)
+            # Lectura del pdf
+            try:
+                with timed_block(f"leer pdf {pdf_path.name}"):
+                    reader = PdfReader(str(pdf_path))
+                    full_text = ""
+                    for page in reader.pages:
+                        page_text = page.extract_text() or ""
+                        full_text += page_text + "\n"
+            except (PdfReadError, PdfStreamError, Exception) as e:
+                # Se ignora el archivo si no es un PDF válido o está corrupto
+                logger.error("Error leyendo %s: %s", pdf_path.name, e)
+                continue
 
-        if not full_text.strip():
-            logger.warning("%s: sin texto extraído.", pdf_path.name)
-            continue
+            if not full_text.strip():
+                logger.warning("%s: sin texto extraído.", pdf_path.name)
+                continue
+                
+            # Generación de chunks controlando el número de tokens
+            try:
+                with timed_block(f"chunking {pdf_path.name}"):
+                    chunks = chunk_text(full_text)
+            except Exception as e:
+                logger.error("Error haciendo chunks en %s: %s", pdf_path.name, e)
+                continue
             
-        # Generación de chunks controlando el número de tokens
-        try:
-            chunks = chunk_text(full_text)
-        except Exception as e:
-            logger.error("Error haciendo chunks en %s: %s", pdf_path.name, e)
-            continue
-        if not chunks:
-            logger.warning("%s: sin chunks válidos", pdf_path.name)
-            continue
+            if not chunks:
+                logger.warning("%s: sin chunks válidos", pdf_path.name)
+                continue
 
-        # Embeddings para todos los chunks de este PDF
-        vectors = embedding_model(chunks, to_list=True)
+            # Embeddings para todos los chunks de este PDF
+            with timed_block(f"embeddings {pdf_path.name}"):
+                vectors = embedding_model(chunks, to_list=True)
 
-        # Se forman las entidades de dominio listas para guardar en Qdrant
-        docs: list[VectorBaseDocument] = []
-        for chunk, vec in zip(chunks, vectors):
-            docs.append(
-                VectorBaseDocument(
-                    content=chunk,
-                    embedding=vec,
-                    metadata={"filename": pdf_path.name},
-                )
-            )
-        # Se guardan en la colección correspondiente
-        VectorBaseDocument.save_many(docs)
-        logger.info("Guardados %d chunks en Qdrant", len(docs))
+            # Se forman las entidades de dominio listas para guardar en Qdrant
+            with timed_block(f"guardar qdrant {pdf_path.name}"):
+                docs: list[VectorBaseDocument] = []
+                for chunk, vec in zip(chunks, vectors):
+                    docs.append(
+                        VectorBaseDocument(
+                            content=chunk,
+                            embedding=vec,
+                            metadata={"filename": pdf_path.name},
+                        )
+                    )
+                # Se guardan en la colección correspondiente
+                VectorBaseDocument.save_many(docs)
+                logger.info("Guardados %d chunks en Qdrant", len(docs))
