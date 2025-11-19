@@ -8,6 +8,7 @@ Script para construir la base de datos vectorial de un sistema RAG.
 # =========================
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass
 from functools import cached_property
@@ -16,11 +17,14 @@ from typing import Any, Generic, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
+from pypdf import PdfReader
 from pypdf.errors import PdfReadError, PdfStreamError
 from qdrant_client import QdrantClient
 from qdrant_client import models as qmodels
 from sentence_transformers import SentenceTransformer
 
+# Logger
+logger = logging.getLogger(__name__)    
 
 # =========================
 # Settings: configuración del modelo de embeddings y de la base vectorial
@@ -371,7 +375,7 @@ def chunk_text(text: str) -> list[str]:
             tokens = tokenizer.tokenize(line)
         except Exception as e:
             # Si el tokenizer falla con una línea extraña, la ignoramos
-            print(f"No puedo tokenizar una línea ({e})")
+            logger.warning("No se puede tokenizar una línea: %s", e)
             continue
         
         # Si al añadir esta línea se supera el límite, se guarda el chunk actual
@@ -403,18 +407,22 @@ if __name__ == "__main__":
     Los guarda en Qdrant para poder hacer búsquedas vectoriales después.
     """
     
-    from pypdf import PdfReader
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
     # Carpeta del proyecto y carpeta con los pliegos
     base_dir = Path(__file__).parent
     pliegos_dir = base_dir / "pliegos"
 
     if not pliegos_dir.exists():
-        raise SystemExit(f"No encuentro la carpeta {pliegos_dir}")
+        logger.error("No se encuentra la carpeta %s", pliegos_dir)
+        raise SystemExit(1)
         
     # Recorremos todos los PDFs de la carpeta Pliegos
     for pdf_path in sorted(pliegos_dir.glob("*.pdf")):
-        print(f"Procesando {pdf_path.name} ...")
+        logger.info("Procesando %s ...", pdf_path.name)
         try:
             reader = PdfReader(str(pdf_path))
             full_text = ""
@@ -423,21 +431,21 @@ if __name__ == "__main__":
                 full_text += page_text + "\n"
         except (PdfReadError, PdfStreamError, Exception) as e:
             # Se ignora el archivo si no es un PDF válido o está corrupto
-            print(f"Error leyendo {pdf_path.name}: {e}.")
+            logger.error("Error leyendo %s: %s", pdf_path.name, e)
             continue
 
         if not full_text.strip():
-            print(f"{pdf_path.name}: sin texto extraído.")
+            logger.warning("%s: sin texto extraído.", pdf_path.name)
             continue
             
         # Generación de chunks controlando el número de tokens
         try:
             chunks = chunk_text(full_text)
         except Exception as e:
-            print(f"Error haciendo chunks en {pdf_path.name}: {e}.")
+            logger.error("Error haciendo chunks en %s: %s", pdf_path.name, e)
             continue
         if not chunks:
-            print(f"{pdf_path.name}: sin chunks válidos")
+            logger.warning("%s: sin chunks válidos", pdf_path.name)
             continue
 
         # Embeddings para todos los chunks de este PDF
@@ -455,4 +463,4 @@ if __name__ == "__main__":
             )
         # Se guardan en la colección correspondiente
         VectorBaseDocument.save_many(docs)
-        print(f"Guardados {len(docs)} chunks en Qdrant")
+        logger.info("Guardados %d chunks en Qdrant", len(docs))
