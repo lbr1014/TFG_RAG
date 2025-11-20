@@ -218,12 +218,29 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 	\item Explicar la comparativa de las bases de datos.
 \end{itemize}
 
-Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron 16. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha implementado la base de datos vectorial \textit{Qdranty} y se ha juntado con el diseño de \textit{tokenizer} del \textit{sprint} anterior, aunque se ha cambiado el modelo para usar el del libro \href{https://www.amazon.com/LLM-Engineers-Handbook-engineering-production/dp/1836200072}{LLM Engineer's Handbook}. Además, se han realizado los \textit{embeddings} para poder almacenarlos en la base de datos vectorial.
+Para realizar estas tareas se estimaron 12 horas de trabajo, pero en realidad fueron 16. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha implementado la base de datos vectorial \textit{Qdranty} y se ha juntado con el diseño de \textit{tokenizer} del \textit{sprint} anterior, aunque se ha cambiado el modelo para usar el del libro \href{https://www.amazon.com/LLM-Engineers-Handbook-engineering-production/dp/1836200072}{LLM Engineer's Handbook}. Además, se han realizado los \textit{embeddings} para poder almacenarlos en la base de datos vectorial.
 
 El \textit{burndown} de este \textit{sprint8} se ilustra en la figura~\ref{fig:Burndown/Sprint8}
 \imagen{Burndown/Sprint8}{Sprint 8.}
 
 \subsection{\textit{Sprint} 9 (13/11/2025 - 20/11/2025)}
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/9}{Sprint 9} fue realizar un \textit{script} que, dada una consulta, devuelva el \textit{chunk} más parecido. Junto con este \textit{chunk} debe devolver el nombre y el titulo del pdf, asi como una respuesta del LLM basándose en dicho \textit{chunk}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+\tightlist
+	\item Implementar funciones que devuelvan el nombre del pdf al que pertenece el \textit{chunk}.
+	\item Mejorar la partición de los \textit{chunks} añadiendo solapamiento (\textit{overlap}).
+	\item Obtención del fragmento del \textit{chunk}.
+	\item Implementar código para que el LLM de una respuesta a partir de una pregunta del usuario.
+	\item Añadir al código funciones para medir los tiempos
+	\item Usar loggers en el código	
+\end{itemize}
+
+Para realizar estas tareas se estimaron 18 horas y más o menos se ha cumplido dicha estimación. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha mejorado el código añadiendo medidas de los tiempos de ejecución e implementando el uso de \textit{loggers}. También, se ha añadido solapamiento en los \textit{chunks} lo que mejora la eficacia de estos. Por otro lado se ha implementado el objetivo principal, es decir, el \textit{script} que permite que el usuario realice una pregunta y el LLM conteste basándose en el \textit{chunk} más parecido a la pregunta. Además se indica el pdf del que ha sacado la información asi como el \textit{chunk} concreto.
+
+El \textit{burndown} de este \textit{sprint9} se ilustra en la figura~\ref{fig:Burndown/Sprint9}
+\imagen{Burndown/Sprint9}{Sprint 9.}
+
+\subsection{\textit{Sprint} 10 (20/11/2025 - 27/11/2025)}
 
 \section{Estudio de viabilidad}
 
