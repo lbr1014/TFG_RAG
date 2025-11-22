@@ -1,0 +1,100 @@
+{
+  "resumenes": [
+    {
+      "apartado": "3 EQUIPOS (por planta)",
+      "resumen": "<document>\nUnidad exterior VRV R-32\nMarca: DAIKIN\nModelo: RXYSA12A\nPotencia (Refrigeración): 33,5 kW\nPotencia (Calefacción): 37,5 kW\nSEER: 6,5\nSCOP: 4,5\nAlimentación electrica: III / 380V\nRefrigerante: 3,4 kg. de R-32\n</document>"
+    },
+    {
+      "apartado": "17 Unidades interior (cassette)",
+      "resumen": "<document>\nMarca: DAIKIN\nModelo: FXZA25A\nCaudal de aire: 540 m³/h\nPotencia (Refrigeración): 2,8 kW\nPotencia (Calefacción): 3,2 kW\nConsumo (Refrigeración): 43 kW\nConsumo (Calefacción): 36 W\n</document>"
+    },
+    {
+      "apartado": "17 Unidades interior (cassette)",
+      "resumen": "Eres un analista técnico. Te paso el texto de un PDF entre <document>…</document>.\nResume el contenido en 3–5 líneas, estilo telegráfico y preciso. Evita redundancias.\n\n<document>\nFusiona en 3–5 líneas los siguientes subresúmenes de la sección '17 Unidades interior (cassette)':\n- <document>\nMarca: DAIKIN\nModelo: FXZA32A\nCaudal de aire: 600 m³/h\nPotencia (Refrigeración): 3,6 kW\nPotencia (Calefacción): 4,0 kW\nConsumo (Refrigeración): 45 kW\nConsumo (Calefacción): 38 W\nJOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS)\nResidencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURGOS)\nInstalación de climatización. memoria -"
+    },
+    {
+      "apartado": "147.8 m²",
+      "resumen": "75.0 kcal/(h·m²) POTENCIA TÉRMICA TOTAL : 11082.4 kcal/h JOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS) Residencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURGOS) Instalación de climatización. memoria - 26 CARGA MÁXIMA (RECINTO AISLADO) Recinto Conjunto de recintos SALA DE ESTAR (Copia de Estar - comedor) RESIDENCIA DE ANCIANOS ASISTIDOS FUENTESBLANCAS Condiciones de proyecto Internas Externas Temperatura interior = 21.0 °C Temperatura exterior = -6.2 °C Humedad relativa interior = 50.0 % Humedad relativa exterior = 90.0 % Cargas térmicas de calefacción C. SENSIBLE (kcal/h) Cerramientos exteriores Tipo Orientació"
+    },
+    {
+      "apartado": "119.1 m²",
+      "resumen": "<document>\n91.5\nkcal/(h·m²)\nPOTENCIA TÉRMICA\nTOTAL :\n10899.2\nkcal/h\nJOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS)\nResidencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURGOS)\nInstalación de climatización. memoria - 27\nCARGA MÁXIMA (RECINTO AISLADO)\nRecinto Conjunto de recintos\nGALERÍA (Estar - comedor) RESIDENCIA DE ANCIANOS ASISTIDOS FUENTESBLANCAS\nCondiciones de proyecto\nInternas Externas\nTemperatura interior = 21.0 °C Temperatura exterior = -6.2 °C\nHumedad relativa interior = 50.0 % Humedad relativa exterior = 90.0 %\nCargas térmicas de calefacción\nC. SENSIBLE"
+    },
+    {
+      "apartado": "101.3 m²",
+      "resumen": "78.2 kcal/(h·m²) POTENCIA TÉRMICA TOTAL : 7928.3 kcal/h JOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS) Residencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURGOS) Instalación de climatización. memoria - 28 PLANTA PRIMERA CARGA MÁXIMA (RECINTO AISLADO) Recinto Conjunto de recintos SALÓN-COMEDOR ROJO (Copia de Estar - comedor) RESIDENCIA DE ANCIANOS ASISTIDOS FUENTESBLANCAS Condiciones de proyecto Internas Externas Temperatura interior = 21.0 °C Temperatura exterior = -6.2 °C Humedad relativa interior = 50.0 % Humedad relativa exterior = 90.0 % Cargas térmicas de calefacción C. SENSIBLE (kcal/h) C"
+    },
+    {
+      "apartado": "226.1 m²",
+      "resumen": "<document>\n88.3\nkcal/(h·m²)\nPOTENCIA TÉRMICA\nTOTAL :\n19956.8\nkcal/h\nJOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS)\nResidencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURGOS)\nInstalación de climatización. memoria - 29\nCARGA MÁXIMA (RECINTO AISLADO)\nRecinto Conjunto de recintos\nSALA DE ESTAR ROJO (Copia de Estar -\ncomedor) RESIDENCIA DE ANCIANOS ASISTIDOS\nFUENTESBLANCAS\nCondiciones de proyecto\nInternas Externas\nTemperatura interior = 21.0 °C Temperatura exterior = -6.2 °C\nHumedad relativa interior = 50.0 % Humedad relativa exterior = 90.0 %\nCargas térmicas de calef"
+    },
+    {
+      "apartado": "172.4 m²",
+      "resumen": "79.0 kcal/(h·m²) POTENCIA TÉRMICA TOTAL : 13614.6 kcal/h JOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS) Residencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURGOS) Instalación de climatización. memoria - 30 PLANTA SEGUNDA CARGA MÁXIMA (RECINTO AISLADO) Recinto Conjunto de recintos SALON COMEDOR AZUL (Copia de Estar - comedor) RESIDENCIA DE ANCIANOS ASISTIDOS FUENTESBLANCAS Condiciones de proyecto Internas Externas Temperatura interior = 21.0 °C Temperatura exterior = -6.2 °C Humedad relativa interior = 50.0 % Humedad relativa exterior = 90.0 % Cargas térmicas de calefacción C. SENSIBLE (kcal/h) Cerr"
+    },
+    {
+      "apartado": "226.3 m²",
+      "resumen": "Fusiona en 3–5 líneas los siguientes subresúmenes de la sección '226.3 m²':\n- 93.1 kcal/(h·m²) POTENCIA TÉRMICA TOTAL : 21069.7 kcal/h\nResidencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURGOS)\nInstalación de climatización. memoria - 32\nCalefacción\nConjunto: RESIDENCIA DE ANCIANOS ASISTIDOS FUENTESBLANCAS\nRecinto Planta\nCarga interna\nsensible\n(kcal/h)\nVentilación Potencia\nCaudal\n(m³/h)\nCarga total\n(kcal/h)\nPor\nsuperficie\n(kcal/(h·m²))\nMáxima\nsimultánea\n(kcal/h)\nMáxima\n(kcal/h)\nCOMEDOR PLANTA BAJA 5886.70 1497.6\n0 5195.71 75.01 11082.41 11082.4\n1\nSALA DE ESTAR"
+    },
+    {
+      "apartado": "2.2.1.1 Montaje y material en redes de fluidos",
+      "resumen": "<document>\nFusiona en 3–5 líneas los siguientes subresúmenes de la sección '2.2.1.1 Montaje y material en redes de fluidos':\n- <document>\nLa instalación de las tuberías y el montaje de los equipos serán realizada de acuerdo con\nel manual del fabricante.\nPrueba de presión\nUna vez terminado de montar una red de un fluido, se procederá a revisar y probar la\nmisma, comprobando apriete de tornillos de bridas, que existan todos los tornillos en las\nbridas, que existan las juntas entre ellas. En las uniones roscadas se comprobará la junta\nde unión (cinta de teflón). En las válvulas se comprobará su po sición correcta abierta o\ncerrada según los casos, luego se procederá de la siguiente forma. Llenado y pruebas de presión de las tuberías a efectuarse durante 60 minutos o el tiempo\nrequerido para verificar toda la conducción, a 1,50 veces la presión de"
+    },
+    {
+      "apartado": "2.2.1.2 Conductos de aire",
+      "resumen": "<document>\nFusiona en 3–5 líneas los siguientes subresúmenes de la sección '2.2.1.2 Conductos de aire':\n- <document>\nGeneral\nEs competencia del instalador el suministro, montaje y puesta en servicio de los conductos\nrectangulares y circulares tipo helicoidal en baja velocidad de acuerdo con las\ncaracterísticas técnicas, implantación y calidades previstas en documentos de proyecto. Cualquiera que sea el tipo de conductos de aire a utilizar, ést os estarán formados con\nmateriales que no propaguen el fuego, ni desprendan gases tóxicos en caso de incendio. Conductos de fibra de vidrio\nEs competencia del instalador el suministro, montaje y puesta en servicio de los conductos\nde fibra de vidrio de acuerdo con las características técnicas, implantación y calidades\nprevistas en documentos de proyecto. Estarán construidos en planchas debidamente conformadas de pane l rígido de fibras de\nvidrio, aglomeradas con resinas termoendurecibles. La"
+    },
+    {
+      "apartado": "2.2.1.3 Distribución de aire",
+      "resumen": "<document>\nFusiona en 3–5 líneas los siguientes subresúmenes de la sección '2.2.1.3 Distribución de aire':\n- <document>\nEs competencia del instalador el suministro, montaje y puesta en servicio de los elementos de distribución de aire de acuerdo con las características técnicas, implantación y calidades previstas en documentos de proyecto. Todos los elementos, tanto de impulsión como de retorno o extracción, deberán ir provistos de mecanismos para regulación del volumen del aire en los lugar es que se indique, con fácil control desde el exterior. Las rejillas, difusores o cualquier elemento terminal de distri bución de aire, una vez comprobado su correcto montaje, deberán protegerse en su parte exterior con papel adherido al marco de forma que cierre y proteja el movimiento d e aire por el elemento, impidiendo entrada de polvo o elementos extraños. Esta protección será retirada cuando se prueben los ventiladores correspondientes. Junto con cada unidad deberá suministrarse los marcos, clips o tornillos, varilla o angulares de su"
+    },
+    {
+      "apartado": "2.2.1.4 Control eléctrico o electrónico",
+      "resumen": "<document>\nFusiona en 3–5 líneas los siguientes subresúmenes de la sección '2.2.1.4 Control eléctrico o electrónico':\n- <document>\nEs competencia del instalador el suministro, montaje y puesta en servicio del control eléctrico o electrónico de acuerdo con las características técnicas, implantación y calidades previstas en documentos de proyecto. Queda incluido dentro del suministro, todo el cableado necesario para la actuación del control, desde el regleteado dispuesto a tal efecto en el cuadro eléctrico, hasta todos y cada uno de los terminales. El cableado irá canalizado en PVC rígido, flexible armado o acero según determine la Dirección, acorde con el resto de las canalizaciones eléctricas, con los registros necesarios. El dimensionado será tal que no afecte a la medición y en ningún caso inferior a 1,5 mm2 de sección. El aislamiento será de 750 V., estando aislado si la medida o acción lo requiriera. Los cuadros de control de cada subsistema serán metálicos,"
+    },
+    {
+      "apartado": "2.2.1.5 Aparatos de medida",
+      "resumen": "<document>\nEs competencia del instalador el montaje, suministro y puesta en servicio de los aparatos\nde medida de acuerdo con las características técnicas, implantación y calidades previstas\nen documentos de proyecto. El montaje de los aparatos será tal que refleje realmente la magnitud y el concepto medido,\nevitando puntos muertos o acciones indirectas que desvíen el pu nto de medición que\ninteresa consignar. Si el parámetro a medir estuviese automátic amente controlado o\ndispusiese de sonda de medida a distancia, tanto sondas como el punto de captación del\naparato de medida, estarán próximos, de forma que no pueda alud irse diferenciación de\nmedida o actuación por ubicación. La reposición, contraste o ca libración de los aparatos\npodrá realizarse estando los sistemas en activo por lo que el montaje deberá estar previsto\ncon éste condicionante.\n</document>"
+    },
+    {
+      "apartado": "2.2.1.6 Motores eléctricos",
+      "resumen": "<document>\nEl instalador suministrará toda la maquinaria con los motores eléctricos correspondientes. Los motores deberán estar equilibrados dinámica y estáticamente, disponiendo de ventilador de refrigeración. En bornes se indicarán e identificarán los conexionados de bobina. Los cojinetes y elementos de apoyo serán de primera calidad. La carcasa exterior será de fundición con aletas refrigeradoras. Su construcción y aplicación deberá cumplir la reglamentación vigente, adoptándose la normativa DIN, tanto en su construcción (42.950) como en la clase de protección (40.050). Las bobinas estarán preparadas para alcanzar temperaturas de 75ºC según normas VDE. Deberá admitir desviaciones sobre sus parámetros eléctricos (tensión y frecuencia) de un ± 10% sin que afecte a su repuesta funcional o componentes. Llevará placa de características en castellano, con unidades S.I. y marcadas de forma indeleble donde se indique. Marca y tipo Potencia (kW"
+    },
+    {
+      "apartado": "2.2.1.7 Ventiladores centrífugos",
+      "resumen": "<document>\nEs competencia del instalador el suministro, montaje y puesta en servicio de los ventiladores centrífugos tipo tejado, helicoidales murales o helicoidales colgados de acuerdo con las características técnicas, implantación y calidades previstas en documentos de proyecto. Estarán formados por cinco elementos principales: envolvente, ventilador, oído de aspiración, transmisión y motor. La envolvente estará construida en chapa de acero, reforzada con pasamuros o angulares si fuese necesario. Deberá presentarse exenta de rapaduras o abollamientos. Los álabes del ventilador serán de acción o reacción según se refleje en presupuesto o especificaciones técnicas, con forma alabeada y perfil de ala de avión. JOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS)\nResidencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C"
+    },
+    {
+      "apartado": "73 m/seg. si fuera a clase II. El apoyo del ventilador, deberá realizarse por medio de",
+      "resumen": "1. 3.00 10,162.92 30,488.76\n2. 18.00 1,682.39 30,283.02\n3. 28.00 154.05 4,313.40\n4. 1.00 1,682.39 1,682.39\n5. 1.00 1,682.39 1,682.39\n6. 1.00 1,682.39 1,682.39\n7. 1.00 1,682.39 1,682.39\n8. 1.00 1,682.39 1,682.39\n9. 1.00 1,682.39 1,682.39\n10. 1.00 1,682.39 1,682.39\n11. 1.00 1,682.39 1,682.39\n12. 1.00 1,682.39 1,682.39\n13. 1.00 1,682.39 1,682.39\n14. 1.00 1,682."
+    },
+    {
+      "apartado": "02.000010 Ml TUBERIA TIRA CIRCUITO FRIGORÍFICO EN COBRE 1/4\" AISLADA",
+      "resumen": "<document>\nSuministro y colocación de tubería frigorífica de cobre deshidratado de 1/4\" para gas/líquido aislada con espuma elastomérica tipo AF/ARMAFLEX de espesor, provisto en todo su recorrido de los elementos de anclaje necesarios, incluido parte proporcional de operación de vacio, mano de obra y medios mecánicos para su instalación, totalmente instalada, i/ medios y material de montaje. Incluido apertura de huecos para el paso de tubería, ayudas de albañilería y canaleta para tapado de tubos en los tramos que sea necesario. Se incluye tambien, desmontar y montar techo modular para su instalación.\n</document>"
+    },
+    {
+      "apartado": "02.00001 Ml TUBERIA TIRA CIRCUITO FRIGORÍFICO EN COBRE 3/8\" AISLADA",
+      "resumen": "<document>\nSuministro y colocación de tubería frigorífica de cobre deshidratado de 3/8\" para gas/líquido aislada con espuma elastomérica tipo AF/ARMAFLEX de espesor, provisto en todo su recorrido de los elementos de anclaje necesarios, incluido parte proporcional de operación de vacio, mano de obra y medios mecánicos para su instalación, totalmente instalada, i/ medios y material de montaje. Incluido apertura de huecos para el paso de tubería, ayudas de albañilería y canaleta para tapado de tubos en los tramos que sea necesario. Se incluye tambien desmontar y montar techo modular para su instalación.\n</document>"
+    },
+    {
+      "apartado": "02.00003 Ml TUBERIA TIRA CIRCUITO FRIGORÍFICO EN COBRE 1/2\" AISLADA",
+      "resumen": "<document>\nSuministro y colocación de tubería frigorífica de cobre deshidratado de 1/2\" para gas/líquido aislada con espuma elastomérica tipo AF/ARMAFLEX de espesor, provisto en todo su recorrido de los elementos de anclaje necesarios, incluido parte proporcional de operación de vacio, mano de obra y medios mecánicos para su instalación, totalmente instalada, i/ medios y material de montaje. Incluido apertura de huecos para el paso de tubería, ayudas de albañilería y canaleta para tapado de tubos en los tramos que sea necesario.Se incluye también desmontar y montar techo modular para su instalación.\n</document>"
+    },
+    {
+      "apartado": "02.00004 Ml TUBERIA TIRA CIRCUITO FRIGORÍFICO EN COBRE 5/8\" AISLADA",
+      "resumen": "<document>\nSuministro y colocación de tubería frigorífica de cobre deshidratado de 5/8\" para gas/líquido aislada con espuma elastomérica tipo AF/ARMAFLEX de espesor, provisto en todo su recorrido de los elementos de anclaje necesarios, incluido parte proporcional de operación de vacio, mano de obra y medios mecánicos para su instalación, totalmente instalada, i/ medios y material de montaje. Incluido apertura de huecos para el paso de tubería, ayudas de albañilería y canaleta para tapado de tubos en los tramos que sea necesario.Se incluye también desmontar y montar techo modular para su instalación.\n</document>"
+    },
+    {
+      "apartado": "02.00005 Ml TUBERIA TIRA CIRCUITO FRIGORÍFICO EN COBRE 3/4\" AISLADA",
+      "resumen": "<document>\nSuministro y colocación de tubería frigorífica de cobre deshidratado de 3/4\" para gas/líquido aislada con espuma elastomérica tipo AF/ARMAFLEX de espesor, provisto en todo su recorrido de los elementos de anclaje necesarios, incluido parte proporcional de operación de vacio, mano de obra y medios mecánicos para su instalación, totalmente instalada, i/ medios y material de montaje. Incluido apertura de huecos para el paso de tubería, ayudas de albañilería y canaleta para tapado de tubos en los tramos que sea necesario.Se incluye tambien desmontar y montar techo modular para su instalación.\n</document>"
+    },
+    {
+      "apartado": "02.00007 Ml TUBERIA TIRA CIRCUITO FRIGORÍFICO EN COBRE 7/8\" AISLADA",
+      "resumen": "<document>\nFusiona en 3–5 líneas los siguientes subresúmenes de la sección '02.00007 Ml TUBERIA TIRA CIRCUITO FRIGORÍFICO EN COBRE 7/8\" AISLADA':\n- <document>\nSuministro y colocación de tubería frigorífica de cobre deshidratado de 7/8\" para gas/líquido aislada con espuma elastomérica tipo AF/ARMAFLEX de espesor, provisto en todo su recorrido de los elementos de anclaje necesarios, incluido parte proporcional de operación de vacio, mano de obra y medios mecánicos para su instalación, totalmente instalada, i/ medios y material de montaje. Incluido apertura de huecos para el paso de tubería, ayudas de albañilería y canaleta para tapado de tubos en los tramos que sea necesario.Se incluye tambien desmontar y montar techo modular para su instalación. 56.00 32.00 1,792.00\nSuministro e instalación de"
+    },
+    {
+      "apartado": "02.1 Ud REGISTRO EN INDUSTRIA",
+      "resumen": "<document>\nFusiona en 3–5 líneas los siguientes subresúmenes de la sección '02.1 Ud REGISTRO EN INDUSTRIA':\n- <document>\nDocumentación necesaria para el registro de la instalación\nen la Delegación de Industria de la Junnta de\nCastilla y León. Boletin de instalación térmica y\nfrigorífica, se incluyen tasas. No se incluye proyecto. 1.00 303.00 303.00\nE30053 Ud GESTIÓN DE RESIDUOS\n1.00 593.39 593.39\nE30054 Ud SEGURIDAD Y SALUD EN OBRA\n1.00 407.59 407.59\n__________________________________________________________________________________________________________________________\n____________________________________________________________________________________________________________________________\nJOSÉ MARÍA MARCOS IBÁÑEZ – INGENIERO TEC. INDUSTRIAL - C/ CALZADAS 41, BAJO (09004-BUROS)\nR\nesidencia de Adultos Asistidos Fuentes Blancas. Paraje Fuentes Blancas, s/n C.P. 09193 Burgos (BURG"
+    }
+  ]
+}

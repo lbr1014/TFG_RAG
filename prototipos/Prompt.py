@@ -1,5 +1,5 @@
 
-from BaseDatosPromp import obtener_mejor_chunk
+from PrototipoRAG import obtener_mejor_chunk
 
 if __name__ == "__main__":
     while True:

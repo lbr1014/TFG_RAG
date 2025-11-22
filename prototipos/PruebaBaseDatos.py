@@ -1,4 +1,4 @@
-from BaseDatosPromp import VectorBaseDocument
+from PrototipoRAG import VectorBaseDocument
 
 docs, _ = VectorBaseDocument.bulk_find(limit=1000)
 
