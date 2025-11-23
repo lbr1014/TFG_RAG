@@ -7,6 +7,21 @@ from pathlib import Path
 
 from markitdown import MarkItDown
 
+# Títulos (líneas en mayusculas)
+TITULOS = re.compile(
+    r"^[A-ZÁÉÍÓÚÜÑ0-9 .,:;/()\-]{8,}$"
+)
+
+# Secciones
+SECCIONES = re.compile(
+    r"^(?P<num>[IVXLCDM]+)\.\s*$"
+)
+
+# Subtítulos
+SUBTITULOS = re.compile(
+    r"^(?P<num>\d+(?:\.\d+)*)\.\s+(?P<title>.+)$"
+)
+
 
 def posprocesado_markdown(text: str) -> str:
     """
@@ -22,12 +37,80 @@ def posprocesado_markdown(text: str) -> str:
     text = re.sub(r"(\w+)-\n(\w+)", r"\1\2", text)
 
     # Colapsar saltos de línea múltiples
-    text = re.sub(r"\n{2,}", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
 
     # Quitar espacios en blanco al final de línea
     text = re.sub(r"[ \t]+\n", "\n", text)
+    
+    # Detectar títulos y secciones y marcarlos como headings
+    text = titulos_markdown(text)
 
     return text
+
+
+def titulos_markdown(text: str) -> str:
+    lines = text.splitlines()
+    out: list[str] = []
+    main_title_done = False
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        raw = line.rstrip("\n")
+        stripped = raw.strip()
+
+        # Las línea vacías las dejamos tal cual
+        if not stripped:
+            out.append(line)
+            i += 1
+            continue
+
+        # Si ya es un heading markdown
+        if stripped.startswith("# "):
+            out.append(line)
+            i += 1
+            continue
+
+        # Secciones inluyen números romanos
+        m_rom = SECCIONES.match(stripped)
+        if m_rom and i + 1 < len(lines):
+            next_line = lines[i + 1]
+            next_stripped = next_line.strip()
+
+            if TITULOS.match(next_stripped):
+                # Sección de nivel 2
+                sec_num = m_rom.group("num")
+                out.append(f"\n## {sec_num}. {next_stripped}\n")
+                # Saltamos la línea siguiente
+                i += 2
+                continue
+
+        # Subtítulos (1., 1.1,...)
+        m_num = SUBTITULOS.match(stripped)
+        if m_num:
+            out.append(f"### {stripped}")
+            i += 1
+            continue
+
+        # Líneas en mayúsculas
+        if TITULOS.match(stripped):
+            # Primer título lo tomamos como H1
+            if not main_title_done and i < 15:
+                level = 1
+                main_title_done = True
+            else:
+                # El resto H2
+                level = 2  
+
+            out.append(f"\n{'#' * level} {stripped}\n")
+            i += 1
+            continue
+
+        # En cualquier otro caso, lo dejamos tal cual
+        out.append(line)
+        i += 1
+
+    return "\n".join(out)
 
 
 def convertir_pdf(
