@@ -11,7 +11,7 @@ You are converting a Spanish PDF (often legal / administrative) into clean Markd
 
 Rules:
 - Use Markdown headings:
-  - Level 1: section numbers like "1. OBJETO DEL CONTRATO"
+  - Level 1: section numbers like "1. OBJETO DEL CONTRATO", etc.
   - Level 2: "1.1.", "1.2.", etc.
   - Level 3: "1.1.1.", etc.
 - Preserve bold text using **negrita** when the original text is visually bold
