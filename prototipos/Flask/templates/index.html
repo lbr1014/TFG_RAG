@@ -11,5 +11,16 @@
 <body>
     <h1>{{ titulo }}</h1>
     <p>{{ autor }}</p>
+
+    <!-- Botón de inicio de sesión -->
+    <a href="{{ url_for('login') }}">
+        <button>Iniciar sesión</button>
+    </a>
+
+    <!-- Botón de registro -->
+    <a href="{{ url_for('singup') }}">
+        <button>Registrarse</button>
+    </a>
+
 </body>
 </html>
