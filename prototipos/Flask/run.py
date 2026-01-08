@@ -1,4 +1,4 @@
-from flask import Flask,flash, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, session  
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from forms import LoginForm, SignupForm
@@ -39,10 +39,11 @@ def login():
         user = USERS_BY_EMAIL.get(email)
 
         if user and user.check_password(password):
+            user.update_last_login()
             login_user(user) 
             return redirect(url_for("pag_principal"))
 
-        flash("Email o contraseña incorrectos.", "error")
+        form.password.errors.append("Email o contraseña incorrectos.")
         
     return render_template("login.html", form=form)
 
@@ -50,7 +51,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Has cerrado sesión.", "info")
+
     return redirect(url_for("inicio"))
 
 @app.route("/singup", methods=["GET", "POST"])
@@ -63,7 +64,7 @@ def singup():
         password = form.password.data
         
         if email in USERS_BY_EMAIL:
-            flash("Ya existe un usuario con ese email.", "error")
+            form.email.errors.append("Ya existe un usuario con ese email.")
             return render_template("singup.html", form=form)
         
         # Se crea el usuario (id incremental)
@@ -72,7 +73,6 @@ def singup():
 
         USERS_BY_ID[user.id] = user
         USERS_BY_EMAIL[user.email] = user
-        flash("Cuenta creada", "success")
         login_user(user)
         
         return redirect(url_for("pag_principal"))

@@ -8,7 +8,8 @@
 <body>
     <h1>Página principal</h1>
     
-    <p>Hola, {{ user.nombre }} ({{ user.email }})</p>
+    <p>Hola, {{ user.nombre }}</p>
+    <p>Último inicio de sesión: {{ user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}</p>
     <a href="{{ url_for('logout') }}">Cerrar sesión</a>
 </body>
 </html>
