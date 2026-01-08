@@ -8,7 +8,6 @@
 <body>
 
     <h1>Gestión de usuarios</h1>
-    <p><a href="{{ url_for('pag_principal') }}">Volver</a></p>
 
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
@@ -64,6 +63,13 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <br>
+    <form action="{{ url_for('admin_create_user') }}" method="get">
+        <button type="submit">Añadir usuario</button>
+    </form>
+
+    <p><a href="{{ url_for('pag_principal') }}">Volver</a></p>
 
 </body>
 </html>

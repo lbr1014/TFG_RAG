@@ -5,7 +5,7 @@ from functools import wraps
 import os
 
 from extensions import db, login_manager, migrate
-from forms import LoginForm, SignupForm
+from forms import LoginForm, SignupForm, AdminCreateUserForm
 from usuario import User
 
 app = Flask(__name__)
@@ -140,6 +140,33 @@ def admin_delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     return redirect(url_for("users"))
+
+@app.route("/admin/users/new", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_create_user():
+    form = AdminCreateUserForm()
+
+    if form.validate_on_submit():
+        nombre = form.nombre.data.strip()
+        email = form.email.data.lower().strip()
+        password = form.password.data
+        is_admin = form.is_admin.data
+
+        if User.get_by_email(email):
+            form.email.errors.append("Ya existe un usuario con ese email.")
+            return render_template("admin_create_user.html", form=form)
+
+        user = User(nombre=nombre, email=email)
+        user.set_password(password)
+        user.is_admin = is_admin
+
+        db.session.add(user)
+        db.session.commit()
+
+        return redirect(url_for("users"))
+
+    return render_template("admin_create_user.html", form=form)
 
 
 if __name__ == "__main__":
