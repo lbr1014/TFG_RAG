@@ -9,18 +9,22 @@
 
 </head>
 <body>
-    <h1>{{ titulo }}</h1>
-    <p>{{ autor }}</p>
 
-    <!-- Botón de inicio de sesión -->
-    <a href="{{ url_for('login') }}">
-        <button>Iniciar sesión</button>
-    </a>
+    <header class="main-header">
 
-    <!-- Botón de registro -->
-    <a href="{{ url_for('singup') }}">
-        <button>Registrarse</button>
-    </a>
+        <div class="user-info">
+            <h1>{{ titulo }}</h1>
+            <p class="home-author" style="margin:5px 0 0;">{{ autor }}</p>
+        </div>
 
+        <div  class="header-actions">
+            <!-- Botón de inicio de sesión -->
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesión</a>
+
+            <!-- Botón de registro -->
+            <a href="{{ url_for('singup') }}" class="btn btn-secondary">Registrarse</a>
+    
+        </div>
+    </header>
 </body>
 </html>

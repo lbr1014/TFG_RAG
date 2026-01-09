@@ -5,71 +5,109 @@
     <title>Administración de usuarios</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
 </head>
+
 <body>
 
+  <!-- CABECERA -->
+  <header class="main-header">
+    <div class="user-info">
+      <p class="welcome">Hola, <strong>{{ current_user.nombre }}</strong></p>
+
+      {% if current_user.is_admin %}
+        <span class="badge admin">Administrador</span>
+      {% else %}
+        <span class="badge user">Usuario</span>
+      {% endif %}
+
+      <p class="last-login">
+        Último inicio:
+        {% if current_user.last_login %}
+          {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+        {% else %}
+          —
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <a href="{{ url_for('pag_principal') }}" class="btn btn-secondary">Página principal</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar sesión</a>
+    </div>
+  </header>
+
+  <!-- CONTENIDO -->
+  <main class="main-content">
     <h1>Gestión de usuarios</h1>
 
-    <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Admin</th>
-            <th>Último login</th>
-            <th>Acciones</th>
-        </tr>
-        </thead>
+    <div style="max-width:900px; margin: 0 auto 20px; text-align:right;">
+      <a href="{{ url_for('admin_create_user') }}" class="btn btn-secondary" style="text-decoration:none;">
+        Añadir usuario
+      </a>
+    </div>
 
-        <tbody>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Admin</th>
+          <th>Último login</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
         {% for u in users %}
         <tr>
-            <td>{{ u.id }}</td>
-            <td>{{ u.nombre }}</td>
-            <td>{{ u.email }}</td>
-            <td>{% if u.is_admin %}Sí{% else %}No{% endif %}</td>
-            <td>
+          <td>{{ u.id }}</td>
+          <td>{{ u.nombre }}</td>
+          <td>{{ u.email }}</td>
+          <td>{% if u.is_admin %}Sí{% else %}No{% endif %}</td>
+          <td>
             {% if u.last_login %}
-                {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+              {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
             {% else %}
-                —
+              —
             {% endif %}
-            </td>
+          </td>
 
-            <td>
+          <td>
             {% if u.id == current_user.id %}
-                <em>Tú</em>
+              <em>Tú</em>
             {% else %}
 
-                <form method="POST" action="{{ url_for('admin_change_type', user_id=u.id) }}" style="display:inline;">
-                <button type="submit">
-                    {% if u.is_admin %}
+              <form method="POST"
+                    action="{{ url_for('admin_change_type', user_id=u.id) }}"
+                    style="display:inline;">
+                <button type="submit" class="btn btn-secondary" style="padding:8px 10px;">
+                  {% if u.is_admin %}
                     Quitar admin
-                    {% else %}
+                  {% else %}
                     Hacer admin
-                    {% endif %}
+                  {% endif %}
                 </button>
-                </form>
+              </form>
 
-                <form method="POST" action="{{ url_for('admin_delete_user', user_id=u.id) }}" style="display:inline;">
-                <button type="submit" onclick="return confirm('¿Seguro que quieres borrar este usuario?');">
-                    Borrar
+              <form method="POST"
+                    action="{{ url_for('admin_delete_user', user_id=u.id) }}"
+                    style="display:inline;">
+                <button type="submit"
+                        class="btn btn-danger"
+                        style="padding:8px 10px;"
+                        onclick="return confirm('¿Seguro que quieres borrar este usuario?');">
+                  Borrar
                 </button>
-                </form>
+              </form>
 
             {% endif %}
-            </td>
+          </td>
         </tr>
         {% endfor %}
-        </tbody>
+      </tbody>
     </table>
 
-    <br>
-    <form action="{{ url_for('admin_create_user') }}" method="get">
-        <button type="submit">Añadir usuario</button>
-    </form>
-
-    <p><a href="{{ url_for('pag_principal') }}">Volver</a></p>
+  </main>
 
 </body>
 </html>

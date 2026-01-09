@@ -7,47 +7,76 @@
 </head>
 <body>
 
-    <h1>Crear nuevo usuario</h1>
+  <!-- CABECERA -->
+  <header class="main-header">
+    <div class="user-info">
+      <p class="welcome">Hola, <strong>{{ current_user.nombre }}</strong></p>
 
-    <form method="POST">
+      {% if current_user.is_admin %}
+        <span class="badge admin">Administrador</span>
+      {% else %}
+        <span class="badge user">Usuario</span>
+      {% endif %}
+
+      <p class="last-login">
+        Último inicio: {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+        <a href="{{ url_for('pag_principal') }}" class="btn btn-secondary">Página principal</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar sesión</a>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="auth-page">
+    <div class="auth-container">
+      <h1>Crear nuevo usuario</h1>
+
+      <form method="POST">
         {{ form.hidden_tag() }}
 
-        <p>
-        {{ form.nombre.label }}<br>
-        {{ form.nombre }}
-        {% for error in form.nombre.errors %}
-            <span class="error">{{ error }}</span>
-        {% endfor %}
-        </p>
+        <div class="form-group">
+          {{ form.nombre.label }}
+          {{ form.nombre(class="form-input") }}
+          {% for error in form.nombre.errors %}
+            <p class="error">{{ error }}</p>
+          {% endfor %}
+        </div>
 
-        <p>
-        {{ form.email.label }}<br>
-        {{ form.email }}
-        {% for error in form.email.errors %}
-            <span class="error">{{ error }}</span>
-        {% endfor %}
-        </p>
+        <div class="form-group">
+          {{ form.email.label }}
+          {{ form.email(class="form-input") }}
+          {% for error in form.email.errors %}
+            <p class="error">{{ error }}</p>
+          {% endfor %}
+        </div>
 
-        <p>
-        {{ form.password.label }}<br>
-        {{ form.password }}
-        {% for error in form.password.errors %}
-            <span class="error">{{ error }}</span>
-        {% endfor %}
-        </p>
+        <div class="form-group">
+          {{ form.password.label }}
+          {{ form.password(class="form-input") }}
+          {% for error in form.password.errors %}
+            <p class="error">{{ error }}</p>
+          {% endfor %}
+        </div>
 
-        <p>
-        {{ form.is_admin }} {{ form.is_admin.label }}
-        </p>
+        <div class="form-group">
+          <label class="checkbox-row">
+            {{ form.is_admin }} {{ form.is_admin.label.text }}
+          </label>
+        </div>
 
-        <p>
-        {{ form.submit }}
-        </p>
-    </form>
+        {{ form.submit(class="btn btn-primary") }}
+      </form>
 
-    <p>
-        <a href="{{ url_for('users') }}">Volver a gestión de usuarios</a>
-    </p>
+      <div class="links">
+        <form action="{{ url_for('users') }}" method="get">
+          <button type="submit" class="btn btn-muted">Volver a gestión de usuarios</button>
+        </form>
+      </div>
+    </div>
+  </main>
 
 </body>
 </html>

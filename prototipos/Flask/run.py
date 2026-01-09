@@ -39,7 +39,7 @@ def admin_required(view_func):
 def inicio():
     return render_template(
         "index.html",
-        titulo="Implementación de un RAG sobre las licitacioens del estado",
+        titulo="Implementación de un RAG sobre las licitaciones del estado",
         autor="Autora: Lydia Blanco Ruiz"
     )
     
