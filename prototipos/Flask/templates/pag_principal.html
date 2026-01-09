@@ -1,45 +1,7 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Página principal</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-    <!-- CABECERA -->
-    <header class="main-header">
-        <div class="user-info">
-        <p class="welcome">Hola, <strong>{{ user.nombre }}</strong></p>
+{% block title %}Página principal{% endblock %}
 
-        {% if user.is_admin %}
-            <span class="badge admin">Administrador</span>
-        {% else %}
-            <span class="badge user">Usuario</span>
-        {% endif %}
-
-        <p class="last-login">
-            Último inicio: {{ user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-        </p>
-        </div>
-
-        <div class="header-actions">
-        {% if user.is_admin %}
-            <a href="{{ url_for('users') }}" class="btn btn-secondary">
-            Administrar usuarios
-            </a>
-        {% endif %}
-
-        <a href="{{ url_for('logout') }}" class="btn btn-danger">
-            Cerrar sesión
-        </a>
-        </div>
-    </header>
-
-    <!-- CONTENIDO -->
-    <main class="main-content">
-        <h1>Página principal</h1>
-    </main>
-
-</body>
-</html>
+{% block content %}
+  <h1>Página principal</h1>
+{% endblock %}

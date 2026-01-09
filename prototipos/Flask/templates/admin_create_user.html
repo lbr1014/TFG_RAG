@@ -1,36 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Crear usuario</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-  <!-- CABECERA -->
-  <header class="main-header">
-    <div class="user-info">
-      <p class="welcome">Hola, <strong>{{ current_user.nombre }}</strong></p>
+{% block title %}Crear usuario{% endblock %}
 
-      {% if current_user.is_admin %}
-        <span class="badge admin">Administrador</span>
-      {% else %}
-        <span class="badge user">Usuario</span>
-      {% endif %}
-
-      <p class="last-login">
-        Último inicio: {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-      </p>
-    </div>
-
-    <div class="header-actions">
-        <a href="{{ url_for('pag_principal') }}" class="btn btn-secondary">Página principal</a>
-        <a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar sesión</a>
-    </div>
-  </header>
-
-  <!-- CONTENIDO PRINCIPAL -->
-  <main class="auth-page">
+{% block content %}
+  <div class="auth-page">
     <div class="auth-container">
       <h1>Crear nuevo usuario</h1>
 
@@ -69,14 +42,12 @@
 
         {{ form.submit(class="btn btn-primary") }}
       </form>
-
-      <div class="links">
-        <form action="{{ url_for('users') }}" method="get">
-          <button type="submit" class="btn btn-muted">Volver a gestión de usuarios</button>
-        </form>
+      <br>
+      <div>
+        <a href="{{ url_for('users') }}" class="btn btn-muted">
+          Volver a gestión de usuarios
+        </a>
       </div>
     </div>
-  </main>
-
-</body>
-</html>
+  </div>
+{% endblock %}

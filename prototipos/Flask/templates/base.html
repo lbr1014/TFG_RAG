@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mi web{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+
+    <!-- CABECERA COMÚN -->
+    <header class="main-header">
+        <div class="user-info">
+        {% if current_user.is_authenticated %}
+            <p class="welcome">Hola, <strong>{{ current_user.nombre }}</strong></p>
+
+            {% if current_user.is_admin %}
+            <span class="badge admin">Administrador</span>
+            {% else %}
+            <span class="badge user">Usuario</span>
+            {% endif %}
+
+            <p class="last-login">
+            Último inicio:
+            {% if current_user.last_login %}
+                {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+            {% else %}
+                —
+            {% endif %}
+            </p>
+        {% else %}
+            <p class="welcome"><strong>{{ titulo or "Bienvenido" }}</strong></p>
+        {% endif %}
+        </div>
+
+        <div class="header-actions">
+      {% if current_user.is_authenticated %}
+
+        {# === SOLO en la página principal === #}
+        {% if request.endpoint == 'pag_principal' and current_user.is_admin %}
+          <a href="{{ url_for('users') }}" class="btn btn-secondary">
+            Administrar usuarios
+          </a>
+        {% endif %}
+
+        {# === En cualquier otra página autenticada === #}
+        {% if request.endpoint != 'pag_principal' %}
+          <a href="{{ url_for('pag_principal') }}" class="btn btn-secondary">
+            Página principal
+          </a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">
+          Cerrar sesión
+        </a>
+
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesión</a>
+        <a href="{{ url_for('singup') }}" class="btn btn-secondary">Registrarse</a>
+      {% endif %}
+    </div>
+  </header>
+
+    <!-- CONTENIDO VARIABLE -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

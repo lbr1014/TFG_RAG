@@ -1,113 +1,79 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <title>Administración de usuarios</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block title %}Gestión de usuarios{% endblock %}
 
-  <!-- CABECERA -->
-  <header class="main-header">
-    <div class="user-info">
-      <p class="welcome">Hola, <strong>{{ current_user.nombre }}</strong></p>
+{% block content %}
+  <h1>Gestión de usuarios</h1>
+  <div style="max-width:900px; margin: 0 auto 20px; text-align:right;">
+    <a href="{{ url_for('admin_create_user') }}" class="btn btn-secondary" style="text-decoration:none;">Añadir usuario</a>
+  </div>
 
-      {% if current_user.is_admin %}
-        <span class="badge admin">Administrador</span>
-      {% else %}
-        <span class="badge user">Usuario</span>
-      {% endif %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Admin</th>
+        <th>Último login</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
 
-      <p class="last-login">
-        Último inicio:
-        {% if current_user.last_login %}
-          {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-        {% else %}
-          —
-        {% endif %}
-      </p>
-    </div>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.nombre }}</td>
+        <td>{{ u.email }}</td>
+        <td>{% if u.is_admin %}Sí{% else %}No{% endif %}</td>
+        <td>
+          {% if u.last_login %}
+            {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
 
-    <div class="header-actions">
-      <a href="{{ url_for('pag_principal') }}" class="btn btn-secondary">Página principal</a>
-      <a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar sesión</a>
-    </div>
-  </header>
+        <td>
+          {% if u.id == current_user.id %}
+            <em>Tú</em>
+          {% else %}
 
-  <!-- CONTENIDO -->
-  <main class="main-content">
-    <h1>Gestión de usuarios</h1>
+            <form method="POST"
+                  action="{{ url_for('admin_change_type', user_id=u.id) }}"
+                  style="display:inline;">
+              <button type="submit" class="btn btn-secondary" style="padding:8px 10px;">
+                {% if u.is_admin %}
+                  Quitar admin
+                {% else %}
+                  Hacer admin
+                {% endif %}
+              </button>
+            </form>
 
-    <div style="max-width:900px; margin: 0 auto 20px; text-align:right;">
-      <a href="{{ url_for('admin_create_user') }}" class="btn btn-secondary" style="text-decoration:none;">
-        Añadir usuario
-      </a>
-    </div>
+            <form method="POST"
+                  action="{{ url_for('admin_delete_user', user_id=u.id) }}"
+                  style="display:inline;">
+              <button type="submit"
+                      class="btn btn-danger"
+                      style="padding:8px 10px;"
+                      onclick="return confirm('¿Seguro que quieres borrar este usuario?');">
+                Borrar
+              </button>
+            </form>
 
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Admin</th>
-          <th>Último login</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-      <tbody>
-        {% for u in users %}
-        <tr>
-          <td>{{ u.id }}</td>
-          <td>{{ u.nombre }}</td>
-          <td>{{ u.email }}</td>
-          <td>{% if u.is_admin %}Sí{% else %}No{% endif %}</td>
-          <td>
-            {% if u.last_login %}
-              {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-            {% else %}
-              —
-            {% endif %}
-          </td>
+{% endblock %}
 
-          <td>
-            {% if u.id == current_user.id %}
-              <em>Tú</em>
-            {% else %}
 
-              <form method="POST"
-                    action="{{ url_for('admin_change_type', user_id=u.id) }}"
-                    style="display:inline;">
-                <button type="submit" class="btn btn-secondary" style="padding:8px 10px;">
-                  {% if u.is_admin %}
-                    Quitar admin
-                  {% else %}
-                    Hacer admin
-                  {% endif %}
-                </button>
-              </form>
 
-              <form method="POST"
-                    action="{{ url_for('admin_delete_user', user_id=u.id) }}"
-                    style="display:inline;">
-                <button type="submit"
-                        class="btn btn-danger"
-                        style="padding:8px 10px;"
-                        onclick="return confirm('¿Seguro que quieres borrar este usuario?');">
-                  Borrar
-                </button>
-              </form>
 
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  
 
-  </main>
-
-</body>
-</html>
