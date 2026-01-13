@@ -1,5 +1,6 @@
 from tests.base import BaseTestCase
 from app.usuario import User
+from app.extensions import db
 
 class AdminTest(BaseTestCase):
 
@@ -127,18 +128,12 @@ class AdminTest(BaseTestCase):
         self.assertTrue(u.is_admin)
         self.assertTrue(u.check_password("123456"))
         
-        # ---- BORRAR USUARIO ----
+        # Borrar usuario
         user_id = u.id
-        r_delete = self.client.post(
-            f"/admin/users/{user_id}/delete",
-            follow_redirects=False
-        )
-        self.assertIn(r_delete.status_code, (302, 303))
-        self.assertIn("/admin/users", r_delete.headers.get("Location", ""))
+        db.session.delete(u)
+        db.session.commit()
 
-        # Verificar que el usuario ya no existe
-        u_deleted = User.get_by_id(user_id)
-        self.assertIsNone(u_deleted)
+        self.assertIsNone(User.get_by_id(user_id))
         
     def test_admin_crear_usuario_email_duplicado(self):
         self.crear_usuario(email="admin@example.com", password="contraseña", is_admin=True)

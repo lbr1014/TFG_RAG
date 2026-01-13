@@ -40,7 +40,7 @@ class MainRoutesTest(BaseTestCase):
             data={
                 "nombre": "",         
                 "email": "",         
-                "new_password": ""    
+                "new_password": "",
             },
             follow_redirects=True
         )
@@ -59,7 +59,7 @@ class MainRoutesTest(BaseTestCase):
             data={
                 "nombre": "Test",               
                 "email": "test@example.com",    
-                "new_password": "newpass123"
+                "new_password": "newpass123",
             },
             follow_redirects=True
         )
@@ -73,14 +73,15 @@ class MainRoutesTest(BaseTestCase):
         u2 = self.crear_usuario(nombre="U2", email="u2@example.com", password="123456")
 
         # login como u1 e intenta poner el email de u2
-        self.login(email="u1@example.com")
+        self.login(email="u1@example.com", password="123456", follow_redirects=True)
 
         r = self.client.post(
             "/edit_user",
             data={
                 "nombre": "U1",
                 "email": "u2@example.com", 
-                "new_password": ""
+                "new_password": "",
+                "submit": "Guardar cambios",
             },
             follow_redirects=True
         )
@@ -88,4 +89,17 @@ class MainRoutesTest(BaseTestCase):
 
         db.session.refresh(u1)
         self.assertEqual(u1.email, "u1@example.com")  
+        
+        self.assertIn(b"Ya existe un usuario con ese email.", r.data)
+        
+    def test_edit_user_precarga_datos(self):
+        u = self.crear_usuario(nombre="Alexia", email="alexia@gmail.com", password="123456")
+        self.login(email="alexia@gmail.com", password="123456", follow_redirects=True)
+
+        r = self.client.get("/edit_user")
+        self.assertEqual(r.status_code, 200)
+
+        self.assertIn(b'value="Alexia"', r.data)
+        self.assertIn(b'value="alexia@gmail.com"', r.data)
+
 
