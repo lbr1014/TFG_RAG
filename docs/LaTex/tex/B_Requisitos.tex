@@ -380,3 +380,36 @@ Los casos de uso definidos para el proyecto son:
 	\end{tabularx}
 	\caption{CU-7 Cargar documentos de licitaciones.}
 \end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-8}    & \textbf{Procesar documentos cargados}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-2, RF-2.1, RF-2.2, RF-2.2.1, RF-2.3, RF-2.3.1, RF-2.3.2 \\
+		\textbf{Descripción}          & El sistema prepara automáticamente los documentos para que puedan incluirse en el sistema. \\
+		\textbf{Precondición}         & Existen documentos cargados pendientes. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El sistema extrae texto descartando páginas y documentos sin texto extraíble.
+			\item Convierte el texto a \textit{Markdown} homogéneo.
+			\item Intenta conservar la estructura básica del documento original.
+			\item Limpia caracteres problemáticos y normaliza espacios y saltos de linea.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Los documentos procesados listos para el \textit{chunking}. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Documento sin texto. Se marca como no procesable y se continua como los demás.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Alta  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-8 Procesar documentos cargados.}
+\end{table}
