@@ -2,34 +2,8 @@
 
 \section{Introducción}
 
-Una muestra de cómo podría ser una tabla de casos de uso:
 
-% Caso de Uso 1 -> Consultar Experimentos.
-\begin{table}[p]
-	\centering
-	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
-		\toprule
-		\textbf{CU-1}    & \textbf{Ejemplo de caso de uso}\\
-		\toprule
-		\textbf{Versión}              & 1.0    \\
-		\textbf{Autor}                & Alumno \\
-		\textbf{Requisitos asociados} & RF-xx, RF-xx \\
-		\textbf{Descripción}          & La descripción del CU \\
-		\textbf{Precondición}         & Precondiciones (podría haber más de una) \\
-		\textbf{Acciones}             &
-		\begin{enumerate}
-			\def\labelenumi{\arabic{enumi}.}
-			\tightlist
-			\item Pasos del CU
-			\item Pasos del CU (añadir tantos como sean necesarios)
-		\end{enumerate}\\
-		\textbf{Postcondición}        & Postcondiciones (podría haber más de una) \\
-		\textbf{Excepciones}          & Excepciones \\
-		\textbf{Importancia}          & Alta o Media o Baja... \\
-		\bottomrule
-	\end{tabularx}
-	\caption{CU-1 Nombre del caso de uso.}
-\end{table}
+
 
 \section{Objetivos generales}
 
@@ -155,3 +129,149 @@ Los casos de uso definidos para el proyecto son:
 	\item CU-9 Actualizar base de datos vectorial
 	\item CU-10 Administrar usuarios
 \end{itemize}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-1}    & \textbf{Registro de usuarios}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-10.1 \\
+		\textbf{Descripción}          & Permite crear una cuenta en la aplicación web. \\
+		\textbf{Precondición}         & Que el usuario no este autentificado. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a ``Registro''.
+			\item El usuario introduce el nombre, email y contraseña.
+			\item El sistema valida el formato y que el email no este duplicado.
+			\item El sistema almacena el usuario con la contraseña \textit{hasheada}.
+			\item El sistema confirma el registro.
+			\item El sistema crea la sesión y redirige a la página de consultas.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Cuenta creada y usuario autentificado \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Tiene algún campo vacío. Muestra un error con el mensaje ``Completa este campo''.
+			\item El email ya existe. Muestra un error con el mensaje ``Ya existe un usuario con ese email''.
+			\item El email no cumple la validación. Muestra un error con el mensaje ``Invalid email address''.
+			\item La contraseña no cumple la política. Muestra un error con el mensaje ``Aumenta la longitud del texto a 6 caracteres como mínimo''.
+			\item Las contraseñas no coinciden. Muestra un error con el mensaje ``Las contraseñas no coinciden''.
+			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje ``Aumenta la longitud del texto a 2 caracteres o más''.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Alta  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-1 Registro de usuarios.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-2}    & \textbf{Iniciar sesión}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-10.1, RF-10.2 \\
+		\textbf{Descripción}          & Autentifica al usuario y abre una sesión segura. \\
+		\textbf{Precondición}         & Que el usuario este registrado y no este autentificado. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a ``Iniciar sesión''.
+			\item El usuario introduce el email y la contraseña.
+			\item El sistema verifica los credenciales.
+			\item El sistema crea la sesión y redirige a la página de consultas.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Sesión activa para el usuario. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Tiene algún campo vacío. Muestra un error con el mensaje ``Completa este campo''.
+			\item El email o la contraseña no coinciden con ningún usuario registrado. Muestra un error con el mensaje ``Email o contraseña incorrectos.''.
+			\item El email no cumple la validación. Muestra un error con el mensaje ``Invalid email address''.
+			\item La contraseña no cumple la política. Muestra un error con el mensaje ``Aumenta la longitud del texto a 6 caracteres como mínimo''.		
+		\end{enumerate}\\
+		\textbf{Importancia}          & Alta  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-2 Iniciar sesión.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-3}    & \textbf{Cerrar sesión}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-10.2 \\
+		\textbf{Descripción}          & Finaliza la sesión del usuario. \\
+		\textbf{Precondición}         & Que el usuario este autentificado. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario pulsa el botón ``Cerrar sesión''.
+			\item El sistema invalida la sesión.
+			\item El sistema redirige a la primera de inicio.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Sesión finalizada. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Error al invalidar sesión. Muestra un mensaje de error controlado. 	
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-3 Cerrar sesión.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-4}    & \textbf{Realizar consulta al RAG}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-6, RF-7, RF-8, RF-8.1, RF-9, RF-11 \\
+		\textbf{Descripción}          & El usuario hace una pregunta, el sistema recupera contexto por similitud, construye el prompt y genera respuesta que incluya las fuentes. \\
+		\textbf{Precondición}         & Que el usuario este autentificado y la base de datos vectorial este disponible. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario escribe y envía una pregunta.
+			\item El sistema genera \textit{embeddings} de la consulta.
+			\item El sistema busca por similitud en la base de datos vectorial.
+			\item El sistema construye un \textit{prompt} con los \textit{chunks} y las reglas de uso del contexto.
+			\item El sistema llama al LLM y genera respuestas.
+			\item El sistema llama al LLM y genera una respuesta.
+			\item El sistema adjunta la trazabilidad de la respuesta, la cual incluye los documentos, metadatos y \textit{chunks} utilizados.
+			\item El sistema guarda la consulta en el historial del consultas del usuario.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Respuesta mostrada y consulta registrada. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Cuando no hay contexto suficiente. El sistema no responde a la pregunta (para evitar alucinaciones) y muestra un aviso de que falta contexto.
+			\item Timeout del LLM. El sistema muestra un mensaje controlado. 	
+		\end{enumerate}\\
+		\textbf{Importancia}          & Alta  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-4 Realizar consulta al RAG.}
+\end{table}
