@@ -35,6 +35,95 @@ Una muestra de cómo podría ser una tabla de casos de uso:
 
 \section{Catálogo de requisitos}
 
+\textbf{Requisitos funcionales}
+\begin{itemize}
+\tightlist
+	\item RF-1 Inserción de documentos: el sistema debe permitir cargar documentos de licitaciones con el objetivo de construir y actualizar la base de datos vectorial. 
+	\item RF.2 Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el RAG pueda usarlos.
+	\begin{itemize}
+	\tightlist
+		\item RF-2.1 Extracción de información: el sistema debe extraer automáticamente el contenido textual de los documentos introducidos, ignorando páginas o documentos sin texto extraíble.
+		\item RF-2.2 Conversión del contenido: el sistema debe transformar el texto extraído a un formato homogéneo, concretamente a \textit{markdown} para que sea más fácil su procesamiento.
+		\begin{itemize}
+		\tightlist
+			\item RF-2.2.1 Conservar estructura básica: el sistema debe conservar la estructura básica del texto siempre que sea posible (secciones, títulos, saltos de línea, párrafos, etc).
+		\end{itemize}
+		\item RF-2.3 Limpieza y normalización del texto: el sistema debe limpiar y normalizar el texto que se extrae de los documentos.
+		\begin{itemize}
+		\tightlist
+			\item RF-2.3.1 Eliminar caracteres: el sistema debe eliminar los caracteres irrelevantes o problemáticos.
+			\item RF-2.3.2 Normalización: el sistema debe normalizar los espacios, saltos de línea y formatos inconsistentes.
+		\end{itemize}
+	\end{itemize}
+	\item RF-3 Segmentación en chunks: el sistema debe dividir los documentos ya procesados en fragmentos de texto (\textit{chunks}) adecuados para el modelo de \textit{embeddings}.
+	\begin{itemize}
+	\tightlist
+		\item RF-3.1 Tamaño: el sistema debe segmentar el texto respetando un máximo de tamaño por \textit{token} para evitar errores.
+		\item RF-3.2 Solapamiento: el sistema debe aplicar solapamiento entre \textit{chunks} para preservar el contexto.
+		\item RF-3.3 Contexto: cada \textit{chunk} debe tener una referencia al documento original y a su posición dentro de él.
+	\end{itemize}
+	\item RF-4 Generación de \textit{embeddings}: el sistema debe generar representaciones vectoriales (\textit{embeddings}) para cada \textit{chunk}.
+	\item RF-5 Persistencia en base de datos vectorial: el sistema debe almacenar los \textit{chunks} y sus \textit{embeddings} en una base de datos vectorial.
+	\begin{itemize}
+	\tightlist
+		\item RF-5.1 Almacenar chunks: el sistema debe almacenar el contenido textual de cada \textit{chunk}.
+		\item RF-5.2 Almacenar embeddings: el sistema debe almacenar el \textit{embedding} asociado a cada \textit{chunk}.
+		\item RF-5.3 Almacenar metadatos: el sistema debe almacenar metadatos relevantes como el nombre del archivo, el titulo y el segmento incluido en el chunk.
+		\item RF-5.4 Actualización: el sistema debe permitir la actualización o recreación de la colección vectorial en el caso de incluir documentos nuevos.
+	\end{itemize}
+	\item RF-6 Recuperación de información por similitud: el sistema debe recuperar información relevante a partir de las consultas de los usuarios.
+	\begin{itemize}
+	\tightlist
+		\item RF-6.1 Generación de \textit{embedding}: el sistema debe generar el \textit{embedding} de la consulta del usuario.
+		\item RF-6.2 Búsqueda por similitud: el sistema debe realizar una búsqueda por similitud en la base de datos vectorial.
+	\end{itemize}
+	\item RF-7 Construcción del \textit{prompt} con contexto: el sistema debe construir un \textit{prompt}, para alimentar al LLM, que incluya los \textit{chunks} recuperados, la pregunta del usuario y reglas de uso del contexto.
+	\item RF-8 Generación de respuestas mediante un LLM: el sistema debe enviar el \textit{prompt} generado a un modelo LLM y mostrar la respuesta de dicho modelo al usuario.
+	\begin{itemize}
+	\tightlist
+		\item RF-8.1 Evitar alucinaciones: El sistema no debe responder cuando no haya contexto relevante suficiente.
+	\end{itemize}
+	\item RF-9 Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \textit{chunks} empleados para la generación de la respuesta. 
+	\item RF-10 Gestión de usuarios: el sistema debe permitir la gestión de usuarios a través de la aplicación web.
+	\begin{itemize}
+	\tightlist
+		\item RF-10.1 Registros y autentificación: el sistema debe permitir el registro y autentificación de los usuarios.
+		\item RF-10.2 Sesiones: el sistema debe gestionar las sesiones de los usuarios de forma segura.
+		\item RF-10.3 Roles: el sistema debe permitir asignar a los usuarios el rol de administradores o usuarios normales.
+		\item RF.10.4 Administradores: los administradores deben poder añadir usuarios, eliminarlos y cambiar su rol.
+	\end{itemize}
+	\item RF-11 Interfaz de consultas: los usuarios autentificados podrán realizar consultas y ver las respuestas del sistema.
+	\begin{itemize}
+	\tightlist
+		\item RF-11.1 Historial de consultas: los usuarios podrán ver su historial de consultas.
+	\end{itemize}
+\end{itemize}
+
+\textbf{Requisitos no funcionales}
+\begin{itemize}
+\tightlist
+	\item RNF-1 Reproducibilidad: el proyecto debe ejecutarse en un entorno reproducible.
+	\item RNF-2 Rendimiento: el sistema debe ser capaz de procesar los documentos sin intervención manual. Además, el sistema tiene que responder en un tiempo razonable.
+	\item RNF-3 Robustez ante errores: el sistema debe continuar ejecutándose ante fallos esperables en datos, red o servicios externos.
+	\begin{itemize}
+	\tightlist
+		\item RNF-3.1 Documentos corruptos: el sistema debe saltarse los documentos corruptos o sin texto extraible y continuar con el resto de documentos.
+		\item RNF-3.2 \textit{Timeouts}: el sistema debe manejar los \textit{timeouts} del LLM devolviendo mensajes controlados al usuario.
+	\end{itemize}
+	\item RNF-4 Trazabilidad técnica: el sistema debe realizar \textit{logs} de carga de modelo, lectura de PDFs, \textit{chunking}, \textit{embeddings}, guardado y consulta.
+	\item RNF-5 Seguridad: el sistema debe gestionar de forma segura la información sensible de los usuarios y el acceso a la aplicación.
+	\begin{itemize}
+	\tightlist
+		\item RNF-5.1 Contraseñas: las contraseñas deben almacenarse \textit{hasheadas}.
+		\item RNF-5.2 Control de acceso por roles: las funciones administrativas deben estar protegidas por rol para que solo las pueda realizar el administrador.
+		\item RNF-5.3 Protección de secretos: las claves sensibles no deben estar públicas en el repositorio.
+	\end{itemize}
+	\item RNF-6 Usabilidad: la interfaz debe permitir a los usuarios realizar las consultas y ver el historial de manera sencilla. Además, los textos deben ser legibles.
+	\item RNF-7 Calidad del \textit{software}: debe existir un conjunto de pruebas que asegure el correcto funcionamiento del programa. 
+	\item RNF-8 Disponibilidad: la web debe garantizar un nivel de disponibilidad adecuado que permita a los usuarios acceder a la aplicación y realizar consultas.
+	\item RNF-9 Recuperación y tolerancia a fallos: el sistema debe disponer de mecanismos que permitan la recuperación de información y la restauración del servicio tras fallos, garantizando la integridad de los datos.
+\end{itemize}
+
 \section{Especificación de requisitos}
 
 
