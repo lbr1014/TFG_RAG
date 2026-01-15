@@ -126,4 +126,17 @@ Una muestra de cómo podría ser una tabla de casos de uso:
 
 \section{Especificación de requisitos}
 
+\subsection{Actores}
+Los actores del sistema serán:
+\begin{itemize}
+\tightlist
+	\item \textbf{Usuario anónimo}: usuario que no ha iniciado sesión (solo puede registrarse y autentificarse)
+	\item \textbf{Usuario autentificado}: usuario que puede acceder a la aplicación sus acciones en al aplicación cambiarán dependiendo de su rol. 
+	\begin{itemize}
+	\tightlist
+	 	\item \textbf{Usuario normal}: usuario autentificado que puede consultar el RAG y ver su historial
+	 	\item \textbf{Usuario administrador}: usuario autentificado con permisos de gestión de usuarios y de carga y actualización documental
+	 \end{itemize}
+	 \item \textbf{Sistema}: es el encargado del procesamiento, \textit{chunking}, \textit{embeddings}, guardado y consulta. 
+\end{itemize}
 
