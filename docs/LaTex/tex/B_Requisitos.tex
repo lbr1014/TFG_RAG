@@ -7,6 +7,15 @@
 
 \section{Objetivos generales}
 
+Los objetivos generales que se buscan cumplir con este proyecto son:
+\begin{itemize}
+\tightlist
+	\item Desarrollar un sistema basado en Generación Aumentada por Recuperación (RAG) que permita realizar consultas sobre licitaciones del sector público, enriqueciendo las respuestas mediante información documental relevante.
+	\item Automatizar la recopilación, procesamiento e indexación de documentos de licitaciones, de forma que puedan ser integrados eficientemente en una base de datos vectorial.
+	\item Facilitar la consulta de la información de las licitaciones mediante una aplicación web intuitiva y accesible para usuarios autentificados.
+	\item Mejorar la comprensión y análisis de la información administrativa y técnica contenida en las licitaciones.
+\end{itemize}
+
 \section{Catálogo de requisitos}
 
 \textbf{Requisitos funcionales}
@@ -104,7 +113,8 @@
 
 \section{Especificación de requisitos}
 
-\subsection{Actores}
+\textbf{Actores}
+
 Los actores del sistema serán:
 \begin{itemize}
 \tightlist
@@ -118,7 +128,8 @@ Los actores del sistema serán:
 	 \item \textbf{Sistema}: es el encargado del procesamiento, \textit{chunking}, \textit{embeddings}, guardado y consulta. 
 \end{itemize}
 
-\subsection{Casos de uso}
+\textbf{Casos de uso}
+
 Los casos de uso definidos para el proyecto son:
 \begin{itemize}
 \tightlist
@@ -522,7 +533,6 @@ Los casos de uso definidos para el proyecto son:
 	\caption{CU-11  Crear usuarios.}
 \end{table}
 
-
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
@@ -588,3 +598,6 @@ Los casos de uso definidos para el proyecto son:
 	\end{tabularx}
 	\caption{CU-13 Modificar rol del usuarios.}
 \end{table}
+
+\textbf{Diagrama de casos de uso}
+
