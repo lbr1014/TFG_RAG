@@ -129,3 +129,7 @@ Desktop.ini
 Thumbs.db
 
 /media
+
+# Qdrant local data (RAG)
+app/rag/qdrant_data/
+

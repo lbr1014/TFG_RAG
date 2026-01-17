@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional
 
 class LoginForm(FlaskForm):
@@ -26,3 +26,7 @@ class EditUserForm(FlaskForm):
     email = StringField("Email", validators=[Optional(), Email(), Length(max=255)])
     new_password = PasswordField("Nueva contraseña", validators=[Optional(), Length(min=6)])
     submit = SubmitField("Guardar cambios")
+    
+class RAGQueryForm(FlaskForm):
+    question = TextAreaField("Pregunta", validators=[DataRequired(), Length(max=2000)])
+    submit = SubmitField("Preguntar")
