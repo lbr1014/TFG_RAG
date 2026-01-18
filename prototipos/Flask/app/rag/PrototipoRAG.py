@@ -27,6 +27,8 @@ from qdrant_client import QdrantClient
 from qdrant_client import models as qmodels
 from sentence_transformers import SentenceTransformer
 
+from hashlib import sha256
+
 # Logger
 logger = logging.getLogger(__name__)   
 
@@ -195,6 +197,132 @@ def _make_qdrant_client() -> QdrantClient:
 
 # Cliente global de Qdrant
 qdrant = _make_qdrant_client()
+
+def pdf_sha256(path: Path) -> str:
+    """
+    Calcula el hash SHA-256 de un archivo PDF.
+    Este hash se utiliza como identificador de contenido del documento,
+    permitiendo detectar si un PDF ha cambiado aunque mantenga el mismo nombre.
+
+    Argumentos:
+        path: Ruta al archivo PDF.
+
+    Returns:
+        Hash SHA-256 hexadecimal del contenido del archivo.
+    """
+    h = sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _qdrant_filter_by_filename(filename: str) -> qmodels.Filter:
+    """
+    Construye un filtro de Qdrant para seleccionar todos los puntos asociados a un archivo PDF concreto, usando su nombre.
+
+    Argumentos:
+        filename: Nombre del archivo PDF.
+
+    Returns:
+        Filtro listo para usar para busqeuda o borrado.
+    """
+    return qmodels.Filter(
+        must=[
+            qmodels.FieldCondition(
+                key="metadata.filename",
+                match=qmodels.MatchValue(value=filename),
+            )
+        ]
+    )
+
+
+def _qdrant_filter_by_filename_and_hash(filename: str, doc_hash: str) -> qmodels.Filter:
+    """
+    Construye un filtro de Qdrant para comprobar si un PDF concreto ya está indexado y 
+    coincide con una versión concreta del documento, es decir, si coinciden los hash.
+    Este filtro se usa para decidir si un PDF puede omitirse durante el indexado incremental.
+
+    Argumentos:
+        filename: Nombre del archivo PDF.
+        doc_hash: Hash SHA-256 del contenido del PDF.
+
+    Returns:
+        Filtro combinando nombre de archivo y hash.
+    """
+    return qmodels.Filter(
+        must=[
+            qmodels.FieldCondition(
+                key="metadata.filename",
+                match=qmodels.MatchValue(value=filename),
+            ),
+            qmodels.FieldCondition(
+                key="metadata.sha256",
+                match=qmodels.MatchValue(value=doc_hash),
+            ),
+        ]
+    )
+
+
+def qdrant_has_filename(filename: str) -> bool:
+    """
+    Comprueba si existen chunks indexados en Qdrant para un PDF concreto,
+    independientemente de su versión. Se usa para distinguir entre un PDF nuevo y un PDF ya indexado.
+    
+    Argumentos:
+        filename: Nombre del archivo PDF.
+
+    Returns:
+        True si existe al menos un chunk asociado al archivo.
+    """
+    records, _ = qdrant.scroll(
+        collection_name=VectorBaseDocument.get_collection_name(),
+        limit=1,
+        with_payload=False,
+        with_vectors=False,
+        scroll_filter=_qdrant_filter_by_filename(filename),
+    )
+    return len(records) > 0
+
+
+def qdrant_has_same_hash(filename: str, doc_hash: str) -> bool:
+    """
+    Comprueba si un PDF ya está indexado en Qdrant y además coincide con la versión actual 
+    del archivo (mismo hash SHA-256).
+
+    Argumentos:
+        filename: Nombre del archivo PDF.
+        doc_hash: Hash SHA-256 del contenido del PDF.
+
+    Returns:
+        True si el documento ya está indexado y no ha cambiado; Fase si el documento no esta inlcuido o ha cambiado.
+    """
+    records, _ = qdrant.scroll(
+        collection_name=VectorBaseDocument.get_collection_name(),
+        limit=1,
+        with_payload=False,
+        with_vectors=False,
+        scroll_filter=_qdrant_filter_by_filename_and_hash(filename, doc_hash),
+    )
+    return len(records) > 0
+
+
+def qdrant_delete_by_filename(filename: str) -> None:
+    """
+    Elimina de Qdrant todos los chunks asociados a un archivo PDF concreto.
+    Esta función se utiliza cuando se detecta que un PDF ha cambiado. Primero eliminan los chunks 
+    antiguos y luego indexa de nuevo el documento actualizado.
+
+    Args:
+        filename: Nombre del archivo PDF a eliminar de la base vectorial.
+    """
+    qdrant.delete(
+        collection_name=VectorBaseDocument.get_collection_name(),
+        points_selector=qmodels.FilterSelector(
+            filter=_qdrant_filter_by_filename(filename)
+        ),
+    )
+
 
 # =========================
 # OVM mínimo (Object–Vector Mapping)
@@ -553,90 +681,134 @@ def obtener_mejor_chunk(
     info["answer"] = answer
     return info
 
+def index_pdf(pdf_path: Path) -> int:
+    """
+    Esta función indexa un PDF para ello lee el texto, lo trocea en chunks, calcula embeddings y guarda los puntos en Qdrant.
+    Devuelve el número de chunks guardados.
+    """
+    with timed_block(f"total {pdf_path.name}"):
+        logger.info("Procesando %s ...", pdf_path.name)
+
+        # 1) Lectura del PDF
+        try:
+            with timed_block(f"leer pdf {pdf_path.name}"):
+                reader = PdfReader(str(pdf_path))
+                full_text = ""
+                info = reader.metadata or {}
+                title = info.get("/Title") or pdf_path.stem
+                doc_hash = pdf_sha256(pdf_path)
+                for page in reader.pages:
+                    full_text += (page.extract_text() or "") + "\n"
+        except (PdfReadError, PdfStreamError, Exception) as e:
+            logger.error("Error leyendo %s: %s", pdf_path.name, e)
+            return 0
+
+        if not full_text.strip():
+            logger.warning("%s: sin texto extraído.", pdf_path.name)
+            return 0
+
+        # 2) Chunking
+        try:
+            with timed_block(f"chunking {pdf_path.name}"):
+                chunks = chunk_text(full_text)
+        except Exception as e:
+            logger.error("Error haciendo chunks en %s: %s", pdf_path.name, e)
+            return 0
+
+        if not chunks:
+            logger.warning("%s: sin chunks válidos", pdf_path.name)
+            return 0
+
+        # 3) Embeddings
+        with timed_block(f"embeddings {pdf_path.name}"):
+            vectors = embedding_model(chunks, to_list=True)
+
+        # 4) Guardado en Qdrant
+        with timed_block(f"guardar qdrant {pdf_path.name}"):
+            docs: list[VectorBaseDocument] = []
+            for idx, (chunk, vec) in enumerate(zip(chunks, vectors)):
+                docs.append(
+                    VectorBaseDocument(
+                        content=chunk,
+                        embedding=vec,
+                        metadata={
+                            "filename": pdf_path.name,
+                            "title": title,
+                            "segment_index": idx,
+                            "sha256": doc_hash,
+                        },
+                    )
+                )
+            VectorBaseDocument.save_many(docs)
+            logger.info("Guardados %d chunks en Qdrant", len(docs))
+
+        return len(docs)
+
+
+def index_pliegos_dir(pliegos_dir: Path) -> dict:
+    """
+    Recorre todos los PDFs de un directorio y los indexa de forma incremental.
+    Si el PDF no existe en Qdrant lo indexa, si existe y el hash coincide no lo indexa y si existe y el has no coincide borra sus chunks y lo reindexa
+    Devuelve un resumen con contadores. 
+    """
+    if not pliegos_dir.exists():
+        logger.error("No se encuentra la carpeta %s", pliegos_dir)
+        raise SystemExit(1)
+
+    # Asegura colección antes de empezar
+    VectorBaseDocument._ensure_collection()
+
+    summary = {
+        "pdfs_total": 0,
+        "pdfs_nuevos": 0,
+        "pdfs_modificados": 0,
+        "pdfs_omitidos": 0,
+        "pdfs_error_o_sin_texto": 0,
+        "chunks_guardados": 0,
+    }
+
+    pdfs = sorted(pliegos_dir.glob("*.pdf"))
+    summary["pdfs_total"] = len(pdfs)
+
+    for pdf_path in pdfs:
+        filename = pdf_path.name
+        doc_hash = pdf_sha256(pdf_path)
+
+        # Si está y coincide hash no lo añade
+        if qdrant_has_same_hash(filename, doc_hash):
+            summary["pdfs_omitidos"] += 1
+            continue
+
+        # Si está pero hash distinto, borrar los chunks antiguos y genera los nuevos
+        if qdrant_has_filename(filename):
+            logger.info("%s ha cambiado => reindexando", filename)
+            qdrant_delete_by_filename(filename)
+            summary["pdfs_modificados"] += 1
+        else:
+            summary["pdfs_nuevos"] += 1
+
+        # Si no esta lo añade
+        n_chunks = index_pdf(pdf_path)
+        if n_chunks > 0:
+            summary["chunks_guardados"] += n_chunks
+        else:
+            summary["pdfs_error_o_sin_texto"] += 1
+
+    return summary
+
+
 
 if __name__ == "__main__":
     """
-    Recorre todos los PDFs de la carpeta Pliegos.
-    Extrae su texto, lo trocea en chunks respetando el nº máximo de tokens
-    admitidos por el modelo de embeddings.
-    Calcula los embeddings de cada chunk.
-    Los guarda en Qdrant para poder hacer búsquedas vectoriales después.
+    Construye la base de datos vectorial a partir de los PDFs de ./pliegos
     """
-        
-    collection = VectorBaseDocument.get_collection_name()
-    
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    
-    try:
-        qdrant.delete_collection(collection_name=collection)
-    except Exception as e:
-        logger.info("La base de datos no existe todavía: %s", e)
 
-    # Carpeta del proyecto y carpeta con los pliegos
     base_dir = Path(__file__).parent
     pliegos_dir = base_dir / "pliegos"
 
-    if not pliegos_dir.exists():
-        logger.error("No se encuentra la carpeta %s", pliegos_dir)
-        raise SystemExit(1)
-        
-    # Recorremos todos los PDFs de la carpeta Pliegos
-    for pdf_path in sorted(pliegos_dir.glob("*.pdf")):
-        with timed_block(f"total {pdf_path.name}"):
-            logger.info("Procesando %s ...", pdf_path.name)
-            # Lectura del pdf
-            try:
-                with timed_block(f"leer pdf {pdf_path.name}"):
-                    reader = PdfReader(str(pdf_path))
-                    full_text = ""
-                    info = reader.metadata or {}
-                    title = info.get("/Title") or pdf_path.stem
-                    for page in reader.pages:
-                        page_text = page.extract_text() or ""
-                        full_text += page_text + "\n"
-            except (PdfReadError, PdfStreamError, Exception) as e:
-                # Se ignora el archivo si no es un PDF válido o está corrupto
-                logger.error("Error leyendo %s: %s", pdf_path.name, e)
-                continue
-
-            if not full_text.strip():
-                logger.warning("%s: sin texto extraído.", pdf_path.name)
-                continue
-                
-            # Generación de chunks controlando el número de tokens
-            try:
-                with timed_block(f"chunking {pdf_path.name}"):
-                    chunks = chunk_text(full_text)
-            except Exception as e:
-                logger.error("Error haciendo chunks en %s: %s", pdf_path.name, e)
-                continue
-            
-            if not chunks:
-                logger.warning("%s: sin chunks válidos", pdf_path.name)
-                continue
-
-            # Embeddings para todos los chunks de este PDF
-            with timed_block(f"embeddings {pdf_path.name}"):
-                vectors = embedding_model(chunks, to_list=True)
-
-            # Se forman las entidades de dominio listas para guardar en Qdrant
-            with timed_block(f"guardar qdrant {pdf_path.name}"):
-                docs: list[VectorBaseDocument] = []
-                for idx, (chunk, vec) in enumerate(zip(chunks, vectors)):
-                    docs.append(
-                        VectorBaseDocument(
-                            content=chunk,
-                            embedding=vec,
-                            metadata={
-                                "filename": pdf_path.name, 
-                                "title": title, 
-                                "segment_index": idx,
-                            },
-                        )
-                    )
-                # Se guardan en la colección correspondiente
-                VectorBaseDocument.save_many(docs)
-                logger.info("Guardados %d chunks en Qdrant", len(docs))
+    summary = index_pliegos_dir(pliegos_dir)
+    logger.info("Resumen indexado: %s", summary)
