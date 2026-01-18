@@ -8,7 +8,7 @@ from ..decorators import admin_required
 from ..usuario import User
 from ..forms import AdminCreateUserForm
 from ..extensions import db
-from ..rag.PrototipoRAG import index_pdf_files
+from ..rag.PrototipoRAG import index_pliegos_dir
 
 ALLOWED_EXT = {".pdf"}
 
@@ -101,6 +101,11 @@ def upload_documents():
 @admin_bp.post("/vector-db/update")
 @admin_required
 def update_vector_db():
-    pdfs = sorted(pliegos_dir().glob("*.pdf"))
-    summary = index_pdf_files(pdfs, skip_if_already_indexed=True)
+    summary = index_pliegos_dir(pliegos_dir())
     return jsonify({"ok": True, "summary": summary})
+
+@admin_bp.get("/documents")
+@login_required
+@admin_required
+def documents_page():
+    return render_template("admin_upload_pdfs.html")

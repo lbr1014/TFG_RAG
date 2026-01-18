@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Cargar PDFs{% endblock %}
+
+{% block content %}
+  <h2>Cargar PDFs</h2>
+
+  <form id="uploadForm">
+    <label for="files"><strong>Selecciona uno o varios PDFs:</strong></label><br>
+    <input id="files" name="files" type="file" accept="application/pdf" multiple required>
+    <br><br>
+
+    <button type="submit" class="btn btn-primary">Subir</button>
+    <button type="button" id="btnIndex" class="btn btn-secondary" disabled>
+      Actualizar base vectorial
+    </button>
+  </form>
+
+  <div id="result" style="margin-top: 1rem;"></div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const result = document.getElementById("result");
+    const btnIndex = document.getElementById("btnIndex");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      result.textContent = "Subiendo PDFs...";
+      btnIndex.disabled = true;
+
+      const filesInput = document.getElementById("files");
+      const fd = new FormData();
+      for (const f of filesInput.files) fd.append("files", f);
+
+      const resp = await fetch("{{ url_for('admin.upload_documents') }}", {
+        method: "POST",
+        body: fd
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        result.textContent = "Error: " + (data.error || "No se pudo subir");
+        return;
+      }
+
+      result.textContent = "Subidos: " + (data.saved || []).join(", ");
+      btnIndex.disabled = false;
+    });
+
+    btnIndex.addEventListener("click", async () => {
+      result.textContent = "Actualizando base vectorial (chunks + embeddings)...";
+
+      const resp = await fetch("{{ url_for('admin.update_vector_db') }}", {
+        method: "POST"
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        result.textContent = "Error: " + (data.error || "No se pudo actualizar");
+        return;
+      }
+
+      result.textContent = "Resumen: " + JSON.stringify(data.summary);
+    });
+  </script>
+{% endblock %}
