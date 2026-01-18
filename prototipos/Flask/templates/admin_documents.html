@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}Documentos cargados{% endblock %}
+
+{% block content %}
+  <h2>Cargar PDFs</h2>
+
+  <form id="uploadForm">
+    <label for="files"><strong>Selecciona uno o varios PDFs:</strong></label><br>
+    <input id="files" name="files" type="file" accept="application/pdf" multiple required>
+    <br><br>
+
+    <button type="submit" class="btn btn-primary">Subir</button>
+    <button type="button" id="btnIndex" class="btn btn-secondary" disabled>
+      Actualizar base vectorial
+    </button>
+  </form>
+
+  <div id="status" style="margin-top: 1rem;"></div>
+
+  <hr style="margin: 1.5rem 0;">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Documentos cargados</h2>
+  </div>
+
+  {% if not docs %}
+    <div id="noDocsAlert" class="alert alert-info">
+      No hay documentos PDF cargados.
+    </div>
+  {% else %}
+    <div id="noDocsAlert" class="alert alert-info" style="display:none;">
+      No hay documentos PDF cargados.
+    </div>
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Archivo</th>
+          <th style="width: 160px;">Tamaño</th>
+          <th style="width: 220px;">Modificado</th>
+          <th style="width: 120px;">Chunks</th>
+          <th style="width: 140px;"></th>
+        </tr>
+      </thead>
+      <tbody id="docsTbody">
+      {% for d in docs %}
+        <tr id="row-{{ d.name|replace(' ', '_') }}">
+          <td class="col-name">{{ d.name }}</td>
+          <td class="col-size">{{ (d.size_bytes / 1024) | round(1) }} KB</td>
+          <td class="col-modified">{{ d.modified.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+          <td class="col-chunks">{{ d.chunks if d.chunks is defined else "—" }}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-danger"
+                    onclick="deleteDoc('{{ d.name }}')">
+              Borrar
+            </button>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const statusEl = document.getElementById("status");
+    const btnIndex = document.getElementById("btnIndex");
+    const docsTbody = document.getElementById("docsTbody");
+    const noDocsAlert = document.getElementById("noDocsAlert");
+
+    function setStatus(type, text) {
+      statusEl.className = type ? ("alert alert-" + type) : "";
+      statusEl.textContent = text || "";
+    }
+
+    function safeRowId(filename) {
+      return "row-" + filename.replaceAll(" ", "_").replaceAll("/", "_");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatKB(sizeBytes) {
+      if (typeof sizeBytes !== "number") return "—";
+      return (sizeBytes / 1024).toFixed(1) + " KB";
+    }
+
+    function formatDate(isoString) {
+      if (!isoString) return "—";
+      // isoString ejemplo: "2026-01-18T12:34:56"
+      return isoString.replace("T", " ");
+    }
+
+    function addOrUpdateRow(doc) {
+      const filename = doc.name;
+      const rowId = safeRowId(filename);
+
+      // si antes no había docs, ocultar aviso
+      if (noDocsAlert) noDocsAlert.style.display = "none";
+
+      let tr = document.getElementById(rowId);
+
+      if (!tr) {
+        tr = document.createElement("tr");
+        tr.id = rowId;
+        tr.innerHTML = `
+          <td class="col-name"></td>
+          <td class="col-size"></td>
+          <td class="col-modified"></td>
+          <td class="col-chunks"></td>
+          <td class="text-end"><button class="btn btn-sm btn-danger">Borrar</button></td>
+        `;
+        tr.querySelector("button").addEventListener("click", () => deleteDoc(filename));
+        docsTbody.prepend(tr);
+      }
+
+      tr.querySelector(".col-name").textContent = filename;
+      tr.querySelector(".col-size").textContent = formatKB(doc.size_bytes);
+      tr.querySelector(".col-modified").textContent = formatDate(doc.modified);
+      tr.querySelector(".col-chunks").textContent =
+        (doc.chunks === 0 || doc.chunks) ? String(doc.chunks) : "—";
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setStatus("info", "Subiendo PDFs...");
+      btnIndex.disabled = true;
+
+      const filesInput = document.getElementById("files");
+      const fd = new FormData();
+      for (const f of filesInput.files) fd.append("files", f);
+
+      const resp = await fetch("{{ url_for('admin.upload_documents') }}", {
+        method: "POST",
+        body: fd
+      });
+
+      let data = null;
+      try { data = await resp.json(); } catch (_) {}
+
+      if (!resp.ok || !data || !data.ok) {
+        setStatus("danger", "Error: " + ((data && data.error) ? data.error : "No se pudo subir"));
+        return;
+      }
+
+      const docs = data.docs || [];
+      docs.forEach(addOrUpdateRow);
+
+      setStatus("success", "Subidos: " + docs.map(d => d.name).join(", "));
+      btnIndex.disabled = false;
+      filesInput.value = "";
+    });
+
+    btnIndex.addEventListener("click", async () => {
+      setStatus("info", "Actualizando base vectorial (chunks + embeddings)...");
+
+      const resp = await fetch("{{ url_for('admin.update_vector_db') }}", {
+        method: "POST"
+      });
+
+      let data = null;
+      try { data = await resp.json(); } catch (_) {}
+
+      if (!resp.ok || !data || !data.ok) {
+        setStatus("danger", "Error: " + ((data && data.error) ? data.error : "No se pudo actualizar"));
+        return;
+      }
+
+      // Actualiza la columna chunks con lo que devuelve el backend
+      const chunkCounts = data.chunk_counts || {};
+      for (const [filename, chunks] of Object.entries(chunkCounts)) {
+        const row = document.getElementById(safeRowId(filename));
+        if (row) {
+          const cell = row.querySelector(".col-chunks");
+          if (cell) cell.textContent = String(chunks);
+        }
+      }
+
+      setStatus("success", "Resumen: " + JSON.stringify(data.summary));
+    });
+
+    async function deleteDoc(filename) {
+      if (!confirm("¿Seguro que quieres borrar " + filename + "?")) return;
+
+      const resp = await fetch(
+        "{{ url_for('admin.delete_document', filename='__FILENAME__') }}"
+          .replace("__FILENAME__", encodeURIComponent(filename)),
+        { method: "POST" }
+      );
+
+      let data = null;
+      try { data = await resp.json(); } catch (_) {}
+
+      if (!resp.ok || !data || !data.ok) {
+        setStatus("danger", "Error: " + ((data && data.error) ? data.error : "No se pudo borrar"));
+        return;
+      }
+
+      const row = document.getElementById(safeRowId(filename));
+      if (row) row.remove();
+
+      if (docsTbody.children.length === 0 && noDocsAlert) {
+        noDocsAlert.style.display = "block";
+      }
+
+      setStatus("success", "Borrado: " + data.deleted);
+    }
+  </script>
+{% endblock %}

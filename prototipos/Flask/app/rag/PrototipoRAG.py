@@ -313,7 +313,7 @@ def qdrant_delete_by_filename(filename: str) -> None:
     Esta función se utiliza cuando se detecta que un PDF ha cambiado. Primero eliminan los chunks 
     antiguos y luego indexa de nuevo el documento actualizado.
 
-    Args:
+    Argumentos:
         filename: Nombre del archivo PDF a eliminar de la base vectorial.
     """
     qdrant.delete(
@@ -322,6 +322,22 @@ def qdrant_delete_by_filename(filename: str) -> None:
             filter=_qdrant_filter_by_filename(filename)
         ),
     )
+    
+def qdrant_count_chunks_by_filename(filename: str) -> int:
+    """
+    Cuenta cuántos chunks hay indexados en Qdrant para un PDF.
+    
+    Argumentos:
+        filename: Nombre del archivo PDF a eliminar de la base vectorial.
+    """
+    VectorBaseDocument._ensure_collection()
+    res = qdrant.count(
+        collection_name=VectorBaseDocument.get_collection_name(),
+        count_filter=_qdrant_filter_by_filename(filename),
+        exact=True,
+    )
+    return int(getattr(res, "count", 0))
+
 
 
 # =========================
