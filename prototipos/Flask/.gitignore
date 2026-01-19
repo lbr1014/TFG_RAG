@@ -133,3 +133,4 @@ Thumbs.db
 # Qdrant local data (RAG)
 app/rag/qdrant_data/
 
+*.pdf

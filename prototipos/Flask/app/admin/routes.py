@@ -3,6 +3,9 @@ from flask_login import login_required, current_user
 from pathlib import Path
 from werkzeug.utils import secure_filename
 from datetime import datetime
+import os
+import sys
+import subprocess
 
 from . import admin_bp
 from ..decorators import admin_required
@@ -159,5 +162,34 @@ def delete_document(filename: str):
     except Exception:
         current_app.logger.exception("Error borrando documento")
         abort(500)
+
+    return redirect(url_for("admin.documents_page"))
+
+@admin_bp.post("/documents/web_scraping")
+@login_required
+@admin_required
+def web_scraping_documents():
+    """
+    Lanza el scraping con Playwright y guarda los PDFs en app/rag/pliegos.
+    """
+    base_pliegos = pliegos_dir() 
+    root = Path(current_app.root_path)
+
+    scraper_dir = root / "web_scraping"
+    script_1 = scraper_dir / "PliegosPlaywrightAsincrono.py"
+    script_2 = scraper_dir / "DescargarPliegos.py"
+
+    cwd = scraper_dir
+
+    env = os.environ.copy()
+    env["PLIEGOS_DEST"] = str(base_pliegos)
+    env["PLIEGOS_INPUT_JSON"] = str(cwd / "resultados_playwright_asincrono_servidor.json")
+    env["PLIEGOS_OUTPUT_JSON"] = str(cwd / "pliegos_pdfs.json")
+
+    try:
+        subprocess.run([sys.executable, str(script_1)], cwd=str(cwd), env=env, check=True)
+        subprocess.run([sys.executable, str(script_2)], cwd=str(cwd), env=env, check=True)
+    except subprocess.CalledProcessError:
+        current_app.logger.exception("Error ejecutando scraping")
 
     return redirect(url_for("admin.documents_page"))
