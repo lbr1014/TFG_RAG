@@ -113,12 +113,6 @@ def documentos_service() -> DocumentosService:
         count_chunks=qdrant_count_chunks_by_filename,
     )
 
-@admin_bp.get("/documents")
-@login_required
-@admin_required
-def documents_page():
-    docs = documentos_service().list_documents()
-    return render_template("admin_documents.html", docs=docs)
 
 @admin_bp.get("/documents/list")
 @login_required
@@ -127,9 +121,22 @@ def documents_list_page():
     """
     Página para ver los documentos PDF cargados y poder borrarlos.
     """
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+
     base = pliegos_dir()
+    files = sorted(base.glob("*.pdf"))
+    total = len(files)
+
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    page = max(1, min(page, total_pages))
+
+    start = (page - 1) * per_page
+    end = start + per_page
+    page_files = files[start:end]
+
     docs = []
-    for p in sorted(base.glob("*.pdf")):
+    for p in page_files:
         stat = p.stat()
         name = p.name
         try:
@@ -137,14 +144,19 @@ def documents_list_page():
         except Exception:
             chunks = 0
         docs.append({
-            "name": p.name,
+            "name": name,
             "size_bytes": stat.st_size,
             "modified": datetime.fromtimestamp(stat.st_mtime),
             "chunks": chunks,
         })
 
-    return render_template("admin_documents.html", docs=docs)
-
+    return render_template(
+        "admin_documents.html",
+        docs=docs,
+        page=page,
+        total_pages=total_pages,
+        total_docs=total,
+    )
 
 @admin_bp.post("/documents/<path:filename>/delete")
 @login_required

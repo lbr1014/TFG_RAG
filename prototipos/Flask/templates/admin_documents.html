@@ -29,7 +29,7 @@
       </form>
 
     </div>
-</div>
+  </div>
 
 
   <hr style="margin: 1.5rem 0;">
@@ -76,6 +76,19 @@
         {% endfor %}
         </tbody>
       </table>
+      {% if total_pages > 1 %}
+        <div class="pagination">
+          {% if page > 1 %}
+            <a class="page-link" href="{{ url_for('admin.documents_list_page', page=page-1) }}">&laquo; Anterior</a>
+          {% endif %}
+
+          <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_docs }} documentos)</span>
+
+          {% if page < total_pages %}
+            <a class="page-link" href="{{ url_for('admin.documents_list_page', page=page+1) }}">Siguiente &raquo;</a>
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 {% endblock %}
