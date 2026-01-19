@@ -4,31 +4,33 @@
 {% block content %}
   <h2>Cargar PDFs</h2>
 
-  <div class="auth-container d-flex gap-2 align-items-end flex-wrap" style="margin: 0 auto;">
+  <div class="auth-page auth-container d-flex flex-column align-items-center gap-3" style="margin: 0 auto;">
 
     <form method="POST"
           action="{{ url_for('admin.upload_documents') }}"
-          enctype="multipart/form-data"
-          class="d-flex flex-column gap-3">
+          enctype="multipart/form-data">
+      
+      <div class="form-group">
           
-      <label for="files"><strong>Selecciona uno o varios PDFs:</strong></label>
-      <br>
-      <input id="files" name="files" type="file" accept="application/pdf" multiple required>
-      <br>
+        <label for="files"><strong>Selecciona uno o varios PDFs:</strong></label>
+        <br>
+        <input id="files" name="files" type="file" accept="application/pdf" multiple required>
+        <br><br>
+      </div>
       <!-- Contenedor de botones -->
-      <div class="d-flex gap-3 flex-wrap">
-        <button type="submit" class="btn btn-primary">
+      <div class="d-flex justify-content-center gap-3">
+        <button type="submit" class="btn btn-secondary">
           Subir
         </button>
         
         <form method="POST" >
-          <button type="submit" class="btn btn-info px-4 text-white">
+          <button type="submit" class="btn btn-secondary">
             Web Scraping
           </button>
         </form>
-
+        <br> <br>
         <form method="POST" action="{{ url_for('admin.update_vector_db') }}">
-          <button type="submit" class="btn btn-secondary">
+          <button type="submit" class="btn btn-primary">
             Actualizar base vectorial
           </button>
         </form>

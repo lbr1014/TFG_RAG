@@ -1,5 +1,5 @@
 /* =========================
-   BASE GLOBAL
+   BODY
    ========================= */
 
 * { box-sizing: border-box; }
@@ -32,7 +32,6 @@ h1, h2, h3 {
   padding: 20px;
 }
 
-/* Unificamos auth-container y login-container (eran iguales) */
 .auth-container {
   background-color: #ffffff;
   width: 360px;
@@ -97,7 +96,7 @@ h1, h2, h3 {
   transition: background-color 0.2s ease;
 }
 
-/* Primario y secundario comparten color en tu diseño -> lo unificamos */
+/* Primario y secundario comparten color */
 .btn-primary,
 .btn-secondary {
   background-color: #3498db;
@@ -149,7 +148,7 @@ h1, h2, h3 {
 }
 
 /* =========================
-   CABECERA (base.html + home)
+   CABECERA
    ========================= */
 
 .main-header {
@@ -186,7 +185,7 @@ h1, h2, h3 {
   gap: 10px;
 }
 
-/* Título y autor blancos en cabecera de inicio */
+/* Título y autor blancos en cabecera*/
 .main-header h1 {
   color: #ffffff;
   margin: 0;
@@ -276,7 +275,7 @@ h1, h2, h3 {
 
 
 /* =========================
-   TABLAS (estilo reutilizable para toda la web)
+   TABLAS 
    ========================= */
 
 .app-table {
