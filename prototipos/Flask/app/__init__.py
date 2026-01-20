@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+from dotenv import load_dotenv
 
 from .extensions import db, login_manager, migrate
 from .usuario import User
@@ -7,13 +8,17 @@ from .consulta import Consulta
 from .auth import auth_bp
 
 def create_app():
+    load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
     app = Flask(
         __name__,
         template_folder=os.path.join(os.path.dirname(__file__), "..", "templates"),
         static_folder=os.path.join(os.path.dirname(__file__), "..", "static"),
     )
 
-    app.config["SECRET_KEY"] = "una_clave_cualquiera_118732hfshdfiuhwy!!$%"
+    secret = os.environ.get("SECRET_KEY")
+    if not secret:
+        raise RuntimeError("SECRET_KEY no está definida. Revisa tu .env o variables de entorno.")
+    app.config["SECRET_KEY"] = secret
     basedir = os.path.abspath(os.path.dirname(__file__))
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "..", "app.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
