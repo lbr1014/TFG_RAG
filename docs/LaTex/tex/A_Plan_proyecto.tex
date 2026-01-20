@@ -271,7 +271,7 @@ El \textit{burndown} de este \textit{sprint11} se ilustra en la figura~\ref{fig:
 \imagen{Burndown/Sprint11}{Sprint 11.}
 
 \subsection{\textit{Sprint} 12 (4/12/2025 - 15/01/2026)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/12}{Sprint 12} fue comenzar a realizar la página \textit{web} con \textit{Flask} y comenzar a definir los casos de uso del proyecto. Este \textit{sprint} fue más largo que el resto ya que coincidió con la semana de exámenes finales del primer cuatrimestre y las navidades. Para llevar a cabo estos objetivos se plantearon las siguienets tareas:
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/12}{Sprint 12} fue comenzar a realizar la página \textit{web} con \textit{Flask} y comenzar a definir los casos de uso del proyecto. Este \textit{sprint} fue más largo que el resto ya que coincidió con la semana de exámenes finales del primer cuatrimestre y las navidades. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Definir los casos de uso.
@@ -289,10 +289,27 @@ El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/12}
 	\item Hacer los \textit{test} para la gestión de usuarios de la \textit{web}.
 \end{itemize}
 
-Para realizar estas tareas se estimaron 28 horas de trabajo. Al final se emplearon más de 35 horas debido a que la tarea de ``Comenzar la página \textit{web}'' llevo más tiempo del planificado. Esta tarea consistió en realizar la estructura básica de la \textit{web}, la cual finalmente  se dividió en \textit{blueprints} para que tuviese mejor escalabilidad. Comprender el funcionamiento y saber implementar los \textit{blueprints} fue la causa del aumento de horas invertido.
+Para realizar estas tareas se estimaron 28 horas de trabajo. Al final se emplearon más de 35 horas, debido principalmente a que la tarea ``Comenzar la página \textit{web}'' llevó más tiempo del planificado. Esta tarea consistió en realizar la estructura básica de la \textit{web}, la cual finalmente  se dividió en \textit{blueprints} para que tuviese mejor escalabilidad. Comprender el funcionamiento de los \textit{blueprints} y saber implementarlos aumentó significativamente el tiempo de desarrollo de la estructura de la \textit{web}.
 
 El \textit{burndown} de este \textit{sprint12} se ilustra en la figura~\ref{fig:Burndown/Sprint12}
 \imagen{Burndown/Sprint12}{Sprint 12.}
+
+\subsection{\textit{Sprint} 13 (15/01/2025 - 22/01/2026)}
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/13}{Sprint 13} fue completar las funcionalidades de la web permitiendo que los administradores puedan cargar documentos, de forma manual o automática (mediante \textit{web scraping}). El sistema gestionará estos documentos para extraer de ellos los \textit{embeddings} necesarios para el \textit{RAG}. Además, se marcó como objetivo incluir la interfaz para realizar las consultas al \textbf{LLM}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+\tightlist
+	\item Añadir casos de uso.
+	\item Incluir una clase consulta.
+	\item Añadir la funcionalidad carga de documentos.
+	\item Mostrar historial de consultas.
+	\item Implementar las consultas en la \textit{web Flask}.
+	\item Juntar el \textit{web scraping} con la carga de documentos de la \textit{web}.
+	\item Realizar la interfaz de las consultas.
+	\item Poner la clave secreta como variable de entorno.
+\end{itemize}
+
+Para realizar estas tareas se estimaron 28,5 horas de trabajo.Al final del \textit{sprint} se cumplieron todas las tareas más o menos en el plazo esperado.
+
 
 
 \section{Estudio de viabilidad}
