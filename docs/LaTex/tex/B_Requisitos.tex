@@ -158,13 +158,16 @@ Los casos de uso definidos para el proyecto son:
 	\item CU-9 Procesar documentos cargados
 	\item CU-10 Indexar documentos
 	\item CU-11 Actualizar la base de datos vectorial
-	\item CU-12 Consultar estado de los documentos
-	\item CU-13 Eliminar documento
-	\item CU-14 Crear usuarios
-	\item CU-15 Borrar usuarios
-	\item CU-16 Modificar rol del usuario
-	\item CU-17 Editar usuario
+	\item CU-12 Listar documentos
+	\item CU-13 Consultar estado de los documentos
+	\item CU-14 Eliminar documento
+	\item CU-15 Crear usuarios
+	\item CU-16 Borrar usuarios
+	\item CU-17 Modificar rol del usuario
+	\item CU-18 Editar usuario
 \end{itemize}
+
+\textbf{Diagrama de casos de uso}
 
 \begin{table}[p]
 	\centering
@@ -530,6 +533,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
+			\item El administrador accede a ``Administrar documentos''.
 			\item El administrador pulsa el botón ``Actualizar Base de Datos Vectorial''.
 			\item El sistema realiza el \textit{chunking} y el \textit{embedding}.
 			\item El sistema lo almacena en la base de datos vectorial.
@@ -551,7 +555,110 @@ Los casos de uso definidos para el proyecto son:
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-14}    & \textbf{ Crear usuarios}\\
+		\textbf{CU-12}    & \textbf{Listar documentos}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-1.2, RNF-4 \\
+		\textbf{Descripción}          & Permite al administrador ver el listado de documentos junto con los metadatos relevantes. \\
+		\textbf{Precondición}         & Hay un administrador autentificado y existe al menos un documento cargado en el sistema. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El administrador accede a ``Administrar documentos''.
+			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}).
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Documentos visibles para el administrador. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item No hay documentos. Muestra un mensaje informativo ``Aún no hay documentos''.
+			\item Error de base de datos. Muestra un error.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-12 Listar documentos.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-13}    & \textbf{Consultar estado de los documentos}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-1.2, RNF-4 \\
+		\textbf{Descripción}          & Permite al administrador ver el estado de los documentos cargados en el sistema (cargado, procesado, indexado o fallido). \\
+		\textbf{Precondición}         & Hay un administrador autentificado y existe al menos un documento cargado en el sistema. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El administrador accede a ``Administrar documentos''.
+			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}).
+			\item El sistema muestra el estado de los documentos listados.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Estados de los documentos visibles para el administrador. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item No hay documentos. Muestra un mensaje informativo ``Aún no hay documentos''.
+			\item Error de base de datos. Muestra un error.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-13 Consultar estado de los documentos.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-14}    & \textbf{Eliminar documento}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-1.3, RF-5.5, RNF-5.2 \\
+		\textbf{Descripción}          & Permite al administrador eliminar un documento del sistema, así como sus \textit{chunks} y \textit{embeddings} asociados en la base de datos vectorial. \\
+		\textbf{Precondición}         & Hay un administrador autentificado y existe al menos un documento cargado en el sistema. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El administrador accede a ``Administrar documentos''.
+			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}) y estado.
+			\item El administrador pulsa el botón ``Borrar''.
+			\item El sistema pide confirmación.
+			\item El administrador confirma el borrado.
+			\item El sistema borra el documento y sus metadatos. Además, si el documento esta indexado borra sus \textit{chunks} y sus \textit{embeddings}.
+			\item El sistema actualiza el listado.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Documento eliminado y sus \textit{chunks} y \textit{embeddings} borrados de la base de datos vectorial. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El documento no existe. Se muestra un aviso 
+			\item Error al borra. No se borra y se informa al administrador.
+			\item Error al borrar en la base de datos vectorial. No se borra el documento y se informa al administrador.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Alta  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-14 Eliminar documento.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-15}    & \textbf{ Crear usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -584,14 +691,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-14  Crear usuarios.}
+	\caption{CU-15  Crear usuarios.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-15}    & \textbf{ Borrar usuarios}\\
+		\textbf{CU-16}    & \textbf{ Borrar usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -618,14 +725,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-15  Borrar usuarios.}
+	\caption{CU-16  Borrar usuarios.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-16}    & \textbf{ Modificar rol del usuarios}\\
+		\textbf{CU-17}    & \textbf{ Modificar rol del usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -636,7 +743,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a``Administrar usuarios''.
+			\item El administrador accede a ``Administrar usuarios''.
 			\item El administrador pulsa el botón ``Hacer admin''/``Quitar admin'' del usuario que desee cambiar de rol.
 			\item El sistema cambia el rol del usuario.
 		\end{enumerate}\\
@@ -647,11 +754,46 @@ Los casos de uso definidos para el proyecto son:
 			\tightlist
 			\item Fallo al conectara con la base de datos. No se cmabia el rol del usuario.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Baja  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-16 Modificar rol del usuarios.}
+	\caption{CU-17 Modificar rol del usuarios.}
 \end{table}
 
-\textbf{Diagrama de casos de uso}
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-17}    & \textbf{ Editar usuario}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-10.5, RNF-5.1, RNF-5.2 \\
+		\textbf{Descripción}          & Permite que un usuario edite sus datos y contraseña. \\
+		\textbf{Precondición}         & Hay un usuario autentificado. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a ``Editar usuario''.
+			\item Modifica los campos que desee (nombre, \textit{email} o contraseña).
+			\item El sistema valida los formatos y reglas.
+			\item El sistema guarda los cambios. Si hay cambio de contraseña la almacena \textit{hasheada}.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Datos del usuario actualizados. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El email ya existe. Muestra un error con el mensaje ``Ya existe un usuario con ese email''.
+			\item El email no cumple la validación. Muestra un error con el mensaje ``Invalid email address''.
+			\item La contraseña no cumple la política. Muestra un error con el mensaje ``Aumenta la longitud del texto a 6 caracteres como mínimo''.
+			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje ``Aumenta la longitud del texto a 2 caracteres o más''.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Baja  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-18 Editar usuario.}
+\end{table}
+
 
