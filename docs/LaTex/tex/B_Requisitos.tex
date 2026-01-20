@@ -24,9 +24,9 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\item RF-1 Gestión de documentos: el sistema debe permitir que el administrador gestione los documentos de licitaciones del sistema. 
 	\begin{itemize}
 	\tightlist
-	\item RF-1.1 Inserción de documentos: el sistema debe permitir cargar documentos de licitaciones con el objetivo de construir y actualizar la base de datos vectorial.
-	\item RF-1.2 Listado de documentos cargados: el sistema debe permitir ver los documentos cargados y sus metadatos.
-	\item RF-1.3 Borrado de documentos: el sistema debe permitir borrar los documentos cargados.
+		\item RF-1.1 Inserción de documentos: el sistema debe permitir cargar documentos de licitaciones con el objetivo de construir y actualizar la base de datos vectorial.
+		\item RF-1.2 Listado de documentos cargados: el sistema debe permitir ver los documentos cargados y sus metadatos.
+		\item RF-1.3 Borrado de documentos: el sistema debe permitir borrar los documentos cargados.
 	\end{itemize}
 	\item RF-2 Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el RAG pueda usarlos.
 	\begin{itemize}
@@ -71,7 +71,7 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\item RF-8 Generación de respuestas mediante un LLM: el sistema debe enviar el \textit{prompt} generado a un modelo LLM y mostrar la respuesta de dicho modelo al usuario.
 	\begin{itemize}
 	\tightlist
-		\item RF-8.1 Evitar alucinaciones: El sistema no debe responder cuando no haya contexto relevante suficiente.
+		\item RF-8.1 Evitar alucinaciones: el sistema no debe responder cuando no haya contexto relevante suficiente.
 	\end{itemize}
 	\item RF-9 Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \textit{chunks} empleados para la generación de la respuesta. 
 	\item RF-10 Gestión de usuarios: el sistema debe permitir la gestión de usuarios a través de la aplicación web.
@@ -91,6 +91,12 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 		\tightlist
 			\item RF-11.1.1 Borrar consultas: los usuarios podrán borrar consultas del historial.
 		\end{itemize}
+	\end{itemize}
+	\item RF-12 Importación automática de licitaciones: el sistema debe permitir al administrador importar de manera automática las licitaciones mediante \textit{web scraping}.
+	\begin{itemize}
+	\tightlist
+		\item RF-12.1 Descarga y almacenamiento: el sistema debe descargar y almacenar los documentos obtenidos, así como sus metadatos.
+		\item RF-12.2 Gestión de errores y duplicados: el sistema debe continuar aunque la descarga de algún documento falle. Debe registrar los errores y evitar duplicados.
 	\end{itemize}
 \end{itemize}
 
@@ -404,6 +410,42 @@ Los casos de uso definidos para el proyecto son:
 		\bottomrule
 	\end{tabularx}
 	\caption{CU-7 Cargar documentos de licitaciones.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-8}    & \textbf{Importar licitaciones automáticamente}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-12, RF-12.1, RF-12.2 \\
+		\textbf{Descripción}          & Permite al administrador importar de manera automática las licitaciones a través de \textit{web scraping}. \\
+		\textbf{Precondición}         & Que el administrador este autentificado y haya un programa de \textit{web scraping} funcional. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El administrador accede a ``Administrar documentos''.
+			\item El administrador pulsa el botón ``Web scraping''.
+			\item El sistema lanza el proceso de \textit{web scraping}.
+			\item El sistema guarda los documentos obtenidos y registra sus metadatos.
+			\item El sistema muestra un resumen con el  número de documentos descargados, los duplicados y los fallidos.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Los documentos importados están disponibles para procesado e indexado. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Fallo de red. Se registra y muestra al administrador.
+			\item Documento corrupto o sin texto legible. Se marca como fallido y se continua con el siguiente.
+			\item Documento duplicado. Se omite y se registra como duplicado
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-8 Importar licitaciones automáticamente.}
 \end{table}
 
 \begin{table}[p]
