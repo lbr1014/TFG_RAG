@@ -21,8 +21,14 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 \textbf{Requisitos funcionales}
 \begin{itemize}
 \tightlist
-	\item RF-1 Inserción de documentos: el sistema debe permitir cargar documentos de licitaciones con el objetivo de construir y actualizar la base de datos vectorial. 
-	\item RF.2 Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el RAG pueda usarlos.
+	\item RF-1 Gestión de documentos: el sistema debe permitir que el administrador gestione los documentos de licitaciones del sistema. 
+	\begin{itemize}
+	\tightlist
+	\item RF-1.1 Inserción de documentos: el sistema debe permitir cargar documentos de licitaciones con el objetivo de construir y actualizar la base de datos vectorial.
+	\item RF-1.2 Listado de documentos cargados: el sistema debe permitir ver los documentos cargados y sus metadatos.
+	\item RF-1.3 Borrado de documentos: el sistema debe permitir borrar los documentos cargados.
+	\end{itemize}
+	\item RF-2 Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el RAG pueda usarlos.
 	\begin{itemize}
 	\tightlist
 		\item RF-2.1 Extracción de información: el sistema debe extraer automáticamente el contenido textual de los documentos introducidos, ignorando páginas o documentos sin texto extraíble.
@@ -38,7 +44,7 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 			\item RF-2.3.2 Normalización: el sistema debe normalizar los espacios, saltos de línea y formatos inconsistentes.
 		\end{itemize}
 	\end{itemize}
-	\item RF-3 Segmentación en chunks: el sistema debe dividir los documentos ya procesados en fragmentos de texto (\textit{chunks}) adecuados para el modelo de \textit{embeddings}.
+	\item RF-3 Segmentación en \textit{chunks}: el sistema debe dividir los documentos ya procesados en fragmentos de texto (\textit{chunks}) adecuados para el modelo de \textit{embeddings}.
 	\begin{itemize}
 	\tightlist
 		\item RF-3.1 Tamaño: el sistema debe segmentar el texto respetando un máximo de tamaño por \textit{token} para evitar errores.
@@ -49,10 +55,11 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\item RF-5 Persistencia en base de datos vectorial: el sistema debe almacenar los \textit{chunks} y sus \textit{embeddings} en una base de datos vectorial.
 	\begin{itemize}
 	\tightlist
-		\item RF-5.1 Almacenar chunks: el sistema debe almacenar el contenido textual de cada \textit{chunk}.
-		\item RF-5.2 Almacenar embeddings: el sistema debe almacenar el \textit{embedding} asociado a cada \textit{chunk}.
+		\item RF-5.1 Almacenar \textit{chunks}: el sistema debe almacenar el contenido textual de cada \textit{chunk}.
+		\item RF-5.2 Almacenar \textit{embeddings}: el sistema debe almacenar el \textit{embedding} asociado a cada \textit{chunk}.
 		\item RF-5.3 Almacenar metadatos: el sistema debe almacenar metadatos relevantes como el nombre del archivo, el titulo y el segmento incluido en el chunk.
 		\item RF-5.4 Actualización: el sistema debe permitir la actualización o recreación de la colección vectorial en el caso de incluir documentos nuevos.
+		\item RF-5.5 Eliminar: el sistema debe permitir borrar los \textit{chunks} y \textit{embeddings} de la base de datos vectorial.
 	\end{itemize}
 	\item RF-6 Recuperación de información por similitud: el sistema debe recuperar información relevante a partir de las consultas de los usuarios.
 	\begin{itemize}
@@ -73,7 +80,8 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 		\item RF-10.1 Registros y autentificación: el sistema debe permitir el registro y autentificación de los usuarios.
 		\item RF-10.2 Sesiones: el sistema debe gestionar las sesiones de los usuarios de forma segura.
 		\item RF-10.3 Roles: el sistema debe permitir asignar a los usuarios el rol de administradores o usuarios normales.
-		\item RF.10.4 Administradores: los administradores deben poder añadir usuarios, eliminarlos y cambiar su rol.
+		\item RF-10.4 Administradores: los administradores deben poder añadir usuarios, eliminarlos y cambiar su rol.
+		\item RF-10.5 Edición de datos de usuario: los usuarios deben poder editar sus datos.
 	\end{itemize}
 	\item RF-11 Interfaz de consultas: los usuarios autentificados podrán realizar consultas y ver las respuestas del sistema.
 	\begin{itemize}
@@ -140,12 +148,16 @@ Los casos de uso definidos para el proyecto son:
 	\item CU-5 Consultar historial de consultas
 	\item CU-6 Borrar consultas del historial
 	\item CU-7 Cargar documentos de licitaciones
-	\item CU-8 Procesar documentos cargados
-	\item CU-9 Indexar documentos
-	\item CU-10 Actualizar la base de datos vectorial
-	\item CU-11 Crear usuarios
-	\item CU-12 Borrar usuarios
-	\item CU-13 Modificar rol del usuario
+	\item CU-8 Importar licitaciones automáticamente
+	\item CU-9 Procesar documentos cargados
+	\item CU-10 Indexar documentos
+	\item CU-11 Actualizar la base de datos vectorial
+	\item CU-12 Consultar estado de los documentos
+	\item CU-13 Eliminar documento
+	\item CU-14 Crear usuarios
+	\item CU-15 Borrar usuarios
+	\item CU-16 Modificar rol del usuario
+	\item CU-17 Editar usuario
 \end{itemize}
 
 \begin{table}[p]
@@ -398,7 +410,7 @@ Los casos de uso definidos para el proyecto son:
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-8}    & \textbf{Procesar documentos cargados}\\
+		\textbf{CU-9}    & \textbf{Procesar documentos cargados}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -424,14 +436,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-8 Procesar documentos cargados.}
+	\caption{CU-9 Procesar documentos cargados.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-9}    & \textbf{Indexar documentos}\\
+		\textbf{CU-10}    & \textbf{Indexar documentos}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -458,14 +470,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-9 Indexar documentos.}
+	\caption{CU-10 Indexar documentos.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-10}    & \textbf{Actualizar la base de datos vectorial}\\
+		\textbf{CU-11}    & \textbf{Actualizar la base de datos vectorial}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -490,14 +502,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-10 Actualizar la base de datos vectorial.}
+	\caption{CU-11 Actualizar la base de datos vectorial.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-11}    & \textbf{ Crear usuarios}\\
+		\textbf{CU-14}    & \textbf{ Crear usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -530,14 +542,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-11  Crear usuarios.}
+	\caption{CU-14  Crear usuarios.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-12}    & \textbf{ Borrar usuarios}\\
+		\textbf{CU-15}    & \textbf{ Borrar usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -564,14 +576,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-12  Borrar usuarios.}
+	\caption{CU-15  Borrar usuarios.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-13}    & \textbf{ Modificar rol del usuarios}\\
+		\textbf{CU-16}    & \textbf{ Modificar rol del usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -596,7 +608,7 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-13 Modificar rol del usuarios.}
+	\caption{CU-16 Modificar rol del usuarios.}
 \end{table}
 
 \textbf{Diagrama de casos de uso}
