@@ -1,10 +1,41 @@
 from flask import render_template, request
 from flask_login import login_required, current_user
+from math import ceil
 from . import main_bp
 from ..extensions import db
 from ..forms import EditUserForm
 from ..usuario import User
 from app.consulta import Consulta
+
+def paginate_consultas(base_query, per_page=10):
+    """
+    Aplica paginación estándar a una query de consultas.
+    Devuelve: consultas, page, total_pages, total_items
+    """
+    page = request.args.get("page", 1, type=int)
+    if page < 1:
+        page = 1
+
+    # Si no es admin, filtrar por usuario
+    if not getattr(current_user, "is_admin", False):
+        base_query = base_query.filter(
+            Consulta.user_id == int(current_user.id)
+        )
+
+    total_consultas = base_query.count()
+    total_pages = max(1, ceil(total_consultas / per_page))
+
+    if page > total_pages:
+        page = total_pages
+
+    items = (
+        base_query
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
+
+    return items, page, total_pages, total_consultas
 
 @main_bp.route("/")
 def inicio():
@@ -18,11 +49,18 @@ def inicio():
 @login_required
 def pag_principal():
     q = Consulta.query.order_by(Consulta.created_at.desc())
-    if not getattr(current_user, "is_admin", False):
-        q = q.filter(Consulta.user_id == int(current_user.id))
-
-    consultas = q.limit(50).all()
-    return render_template("pag_principal.html", user=current_user,  consultas=consultas)
+        
+    consultas, page, total_pages, total_consultas = paginate_consultas(
+        q, per_page=10
+    )
+    return render_template(
+        "pag_principal.html", 
+        user=current_user,  
+        consultas=consultas, 
+        page=page, 
+        total_pages=total_pages, 
+        total_consultas=total_consultas
+    )
 
 @main_bp.route("/edit_user", methods=["GET", "POST"])
 @login_required
@@ -57,17 +95,22 @@ def edit_user():
                  
     return render_template("edit_user.html", form=form, user=current_user)
 
-@main_bp.get("/historial")
+@main_bp.get("/history")
 @login_required
 def historial():
     q = Consulta.query.order_by(Consulta.created_at.desc())
 
-    # Si no es admin, filtrar por su user_id
-    if not getattr(current_user, "is_admin", False):
-        q = q.filter(Consulta.user_id == int(current_user.id))
-
-    consultas = q.limit(200).all()
-    return render_template("historial.html", consultas=consultas)
+    consultas, page, total_pages, total_consultas = paginate_consultas(
+        q, per_page=10
+    )    
+    
+    return render_template(
+        "history.html", 
+        consultas=consultas,
+        page=page,
+        total_pages=total_pages,
+        total_consultas=total_consultas
+    )
 
 @main_bp.post("/consulta/<int:consulta_id>/delete")
 @login_required

@@ -15,7 +15,7 @@
     <h1>Historial de consultas</h1>
 
     {% if not consultas %}
-      <div class="alert alert-info">No hay consultas todavía.</div>
+      <div class="alert alert-info">Raliza tu primera consulta.</div>
     {% else %}
       <div>
         <table class="app-table">
@@ -68,6 +68,20 @@
             {% endfor %}
           </tbody>
         </table>
+        {% if total_pages > 1 %}
+          <div class="pagination">
+            {% if page > 1 %}
+              <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">&laquo; Anterior</a>
+            {% endif %}
+
+            <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_consultas }} consultas)</span>
+
+            {% if page < total_pages %}
+              <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">Siguiente &raquo;</a>
+            {% endif %}
+          </div>
+        {% endif %}
+
       </div>
     {% endif %}
   </div>

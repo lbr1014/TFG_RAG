@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Historial{% endblock %}
+
+{% block content %}
+
+    <div class="main-content" style="margin-bottom: 30px;">
+        <h1>Historial de consultas</h1>
+
+        {% if not consultas %}
+        <div class="alert alert-info">No hay consultas todavía.</div>
+        {% else %}
+        <div>
+            <table class="app-table">
+            <thead>
+                <tr>
+                {% if current_user.is_admin %}
+                    <th>Usuario</th>
+                {% endif %}
+                <th>Fecha</th>
+                <th>Pregunta</th>
+                <th>Documento</th>
+                <th>Tiempo</th>
+                <th>Acciones</th> 
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in consultas %}
+                <tr id="consulta-{{ c.id }}">
+                    {% if current_user.is_admin %}
+                    <td>{{ c.user.nombre }}</td>
+                    {% endif %}
+                    <td>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
+                    <td class="cell-question">{{ c.pregunta }}</td>
+                    <td>{{ (c.fragmentos or {}).get("filename", "—") }}</td>
+                    <td>{{ "%.3f"|format(c.tiempo_respuesta_s) }} s</td>
+                    <td >
+                    <button
+                        class="btn btn-danger"
+                        onclick="deleteConsulta({{ c.id }})">
+                        Borrar
+                    </button>
+                    </td>
+                </tr>
+
+                <tr class="details-row">
+                    <td colspan="{% if current_user.is_admin %}6{% else %}5{% endif %}">
+                    <details>
+                        <summary>Ver respuesta y fragmento</summary>
+                        <div style="margin-top:.5rem;">
+                        <p><strong>Respuesta:</strong><br>{{ c.respuesta }}</p>
+                        {% set fr = c.fragmentos or {} %}
+                        {% if (fr.get("chunks") or [])|length > 0 %}
+                            <p><strong>Fragmento usado:</strong></p>
+                            <pre style="white-space: pre-wrap;">{{ fr.get("chunks")[0] }}</pre>
+                        {% endif %}
+                        </div>
+                    </details>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+            {% if total_pages > 1 %}
+            <div class="pagination">
+                {% if page > 1 %}
+                <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">&laquo; Anterior</a>
+                {% endif %}
+
+                <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_consultas }} consultas)</span>
+
+                {% if page < total_pages %}
+                <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">Siguiente &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+        {% endif %}
+    </div>
+
+{% endblock %}
