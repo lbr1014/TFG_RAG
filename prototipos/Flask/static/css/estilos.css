@@ -480,4 +480,150 @@ h1, h2, h3 {
   text-align: center;
 }
 
+/* =========================
+   PÁGINA RAG (CONSULTAS)
+   ========================= */
+
+.rag-page{
+  max-width: 1000px;              /* misma idea que .main-content */
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.rag-card{
+  background: #ffffff;
+  border: 1px solid #d6d6d6;
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.10);
+  padding: 26px;
+  text-align: left;               /* aquí mejor a la izquierda */
+}
+
+.rag-head{
+  margin-bottom: 18px;
+}
+
+.rag-title{
+  margin: 0 0 6px;
+  color: #2c3e50;
+}
+
+.rag-subtitle{
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.rag-form .form-group{
+  margin-top: 14px;
+}
+
+.rag-form label{
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.rag-textarea{
+  width: 100%;
+  padding: 12px 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 130px;
+  background: #fff;
+}
+
+.rag-textarea:focus{
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52,152,219,.18);
+}
+
+.rag-actions{
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.rag-status{
+  font-size: 13px;
+  color: #555;
+  min-height: 1.2em;
+}
+
+.rag-status.is-error{
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.rag-result{
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #e6e6e6;
+}
+
+.rag-section-title{
+  margin: 0 0 10px;
+  color: #2c3e50;
+}
+
+.rag-answer{
+  margin: 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f4f7fb;            /* mismo tono que details-row */
+  border: 1px solid #dfe6ee;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.rag-debug{
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #e6e6e6;
+}
+
+.rag-debug summary{
+  cursor: pointer;
+  font-weight: 700;
+  color: #1f2d3d;
+  padding: 8px 0;
+}
+
+.rag-debug[open] summary{
+  color: #2c3e50;
+}
+
+.rag-debug-body{
+  margin-top: 10px;
+}
+
+.rag-meta{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  font-size: 13px;
+  color: #333;
+  padding: 12px;
+  background: #fafafa;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+}
+
+.rag-chunk{
+  margin: 12px 0 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e1e1e1;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
 
