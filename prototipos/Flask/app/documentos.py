@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Iterable, List, Dict, Optional
 from werkzeug.utils import secure_filename
 import hashlib
@@ -24,6 +24,12 @@ class Documento(db.Model):
     status = db.Column(db.String(25), nullable=False,default="cargado", index=True)
     error_message = db.Column(db.Text, nullable=True)
     
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        now = datetime.now(ZoneInfo("Europe/Madrid"))
+        if not self.modified_at:
+            self.modified_at = now
+    
     def sha256_file(path: Path) -> str:
         h = hashlib.sha256()
         with path.open("rb") as f:
@@ -36,11 +42,9 @@ class DocumentosService:
     def __init__(
         self,
         docs_dir: Path,
-        *,
         index_pliegos_dir,              
         delete_chunks,              
         count_chunks,               
-        allowed_ext: Optional[set[str]] = None,
     ):
         self.docs_dir = docs_dir
         self.docs_dir.mkdir(parents=True, exist_ok=True)
@@ -48,7 +52,6 @@ class DocumentosService:
         self.index_pliegos_dir = index_pliegos_dir
         self.delete_chunks = delete_chunks
         self.count_chunks = count_chunks
-        self.allowed_ext = allowed_ext or ALLOWED_EXT
 
     def sanitize_filename(self, filename: str) -> str:
         return secure_filename(filename or "")
@@ -82,70 +85,119 @@ class DocumentosService:
 
         docs.sort(key=lambda d: d.modified, reverse=True)
         return docs
+    
+    def list_documents_paginated(self, page: int, per_page: int):
+        return Documento.query.order_by(Documento.modified_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
-    def save_uploads(self, files: Iterable) -> List[Documento]:
+    def save_uploads(self, files: Iterable) -> None:
         """
-        Guarda PDFs subidos y devuelve los docs resultantes (para mostrar/flash si quieres).
+        Guarda PDFs en el disco y los metadatos en la base de datos.
         """
-        saved: List[Documento] = []
 
         for f in files:
-            safe = self.sanitize_filename(getattr(f, "filename", "") or "")
-            if not safe:
+            if not f or not f.nombre:
                 continue
-            if Path(safe).suffix.lower() not in self.allowed_ext:
+            
+            nombre=secure_filename(f.nombre)
+            
+            if not nombre.lower().endswith(".pdf"):
                 continue
 
-            dest = self.docs_dir / safe
+            dest = self.docs_dir / nombre
             f.save(dest)
 
-            stat = dest.stat()
-            try:
-                chunks = int(self.count_chunks(safe))
-            except Exception:
-                chunks = 0
+            self._upsert_from_path(dest, status="cargado")
+        
+        db.session.commit()
 
-            saved.append(
-                Documento(
-                    name=safe,
-                    size_bytes=stat.st_size,
-                    modified=datetime.fromtimestamp(stat.st_mtime),
-                    chunks=chunks,
-                )
+    def sync_from_folder(self) -> None:
+        """
+        Escanea el directorio y actualiza los registros de la base de datos.
+        """
+        for p in sorted(self._base.glob("*.pdf")):
+            self._upsert_from_path(p, status="cargado")
+        db.session.commit()
+        
+    def _upsert_from_path(self, p: Path, status: str) -> None:
+        stat = p.stat()
+        now = datetime.now(ZoneInfo("Europe/Madrid"))
+
+        rel_path = str(p)
+        file_hash = sha256_file(p)
+        
+        doc = Documento.query.filter_by(path=rel_path).first()
+        if not doc:
+            doc = Documento(
+                filename=p.name,
+                path=rel_path,
+                size_bytes=stat.st_size,
+                modified_at=datetime.fromtimestamp(stat.st_mtime, ZoneInfo("Europe/Madrid")),
+                chunks_count=0,
+                sha256=file_hash,
+                status=status,
+                created_at=now,
+                updated_at=now,
             )
+            db.session.add(doc)
+            
+        else:
+            
+            doc.filename = p.name
+            doc.size_bytes = stat.st_size
+            doc.modified_at = datetime.fromtimestamp(stat.st_mtime, ZoneInfo("Europe/Madrid"))
+            doc.sha256 = file_hash
+            doc.status = status
+            doc.updated_at = now
 
-        return saved
-
-    def delete_document(self, filename: str) -> str:
+    def delete_document(self, nombre: str) -> None:
         """
-        Borra en Qdrant y después en disco (como tu lógica actual).
-        Devuelve el nombre seguro borrado.
+        Borra en Qdrant, en el disco y en la base de datos.
         """
-        pdf_path = self.resolve_pdf_path(filename)
+        pdf_path = self.resolve_pdf_path(nombre)
         safe_name = pdf_path.name
 
         if not pdf_path.exists():
             raise FileNotFoundError("El archivo no existe")
 
+        # Borra chunks en Qdrant
         self.delete_chunks(safe_name)
-
+        
+        # Borra fichero
         pdf_path.unlink()
+        
+        # Borrra base de datos
+        doc = Documento.query.filter_by(filename=nombre, path=str(pdf_path)).first()
+        if doc:
+            db.session.delete(doc)
+            db.session.commit()        
 
-        return safe_name
-
-    def update_vector_db(self) -> Dict:
+    def update_vector_db(self) -> None:
         """
-        Re-indexa el directorio completo.
-        Devuelve summary + chunk_counts como tu endpoint actual.
+        Indexa y acctualiza el estado y los chunks en la base de datos.
         """
-        summary = self.index_pliegos_dir(self.docs_dir)
+        docs = Documento.query.filter(Documento.status.in_(["cargado", "fallido"])).all()
 
-        chunk_counts: Dict[str, int] = {}
-        for pdf_path in sorted(self.docs_dir.glob("*.pdf")):
-            name = pdf_path.name
+        for doc in docs:
             try:
-                chunk_counts[name] = int(self.count_chunks(name))
-            except Exception:
-                chunk_counts[name] = 0
+                doc.status = "procesado"
+                doc.error_message = None
+                doc.updated_at = datetime.now(ZoneInfo("Europe/Madrid"))
+                db.session.commit()
+                
+                self._index_pliegos_dir(str(self.docs_dir))
 
-        return {"summary": summary, "chunk_counts": chunk_counts}
+                try:
+                    doc.chunk_count = int(self.count_chunks(doc.name) or 0)
+                except Exception:
+                    doc.chunk_count = 0
+                    
+                doc.status = "indexado"
+                doc.updated_at = datetime.now(ZoneInfo("Europe/Madrid"))
+                db.session.commit()
+                
+            except Exception as ex:
+                doc.status = "fallido"
+                doc.error_message = str(ex)
+                doc.updated_at = datetime.now(ZoneInfo("Europe/Madrid"))
+                db.session.commit()
+                raise
