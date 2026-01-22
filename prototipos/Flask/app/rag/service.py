@@ -71,7 +71,7 @@ def rag_answer(question: str) -> Dict[str, Any]:
                 pregunta=question,
                 respuesta=str(data.get("answer", "")),
                 fragmentos=fragmentos,
-                tiempo_respuesta_s=float(elapsed),
+                tiempo_respuestas=float(elapsed),
             )
             db.session.add(consulta)
             db.session.commit()

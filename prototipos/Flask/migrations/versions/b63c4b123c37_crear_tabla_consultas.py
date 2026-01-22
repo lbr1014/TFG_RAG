@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('pregunta', sa.Text(), nullable=False),
     sa.Column('respuesta', sa.Text(), nullable=False),
     sa.Column('fragmentos', sa.JSON(), nullable=False),
-    sa.Column('tiempo_respuesta_s', sa.Float(), nullable=False),
+    sa.Column('tiempo_respuestas', sa.Float(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')

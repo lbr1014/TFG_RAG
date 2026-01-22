@@ -25,7 +25,7 @@ class Consulta(db.Model):
     fragmentos = db.Column(JSON, nullable=False, default=dict)
 
     # El tiempo que tardo en responder
-    tiempo_respuesta_s = db.Column(db.Float, nullable=False)
+    tiempo_respuestas = db.Column(db.Float, nullable=False)
 
     # Cuándo hizo la ocnsulta
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
