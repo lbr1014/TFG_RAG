@@ -1,7 +1,7 @@
 \apendice{Plan de Proyecto Software}
 
 \section{Introducción}
-El plan de proyecto software es el documento que define cómo se va a gestionar y ejecutar el desarrollo de un producto o sistema informático. Establece el alcance, los objetivos, el cronograma, los recursos, el presupuesto, los riesgos y los criterios de calidad, así como la organización del equipo y los mecanismos de seguimiento y control. En esencia, convierte una idea de software en un itinerario gestionable, con responsabilidades claras y procedimientos para controlar el progreso y los cambios.
+Este documento define cómo se va a gestionar y ejecutar el desarrollo de un producto o sistema informático. Establece el alcance, los objetivos, el cronograma, los recursos, el presupuesto, los riesgos y los criterios de calidad, así como la organización del equipo y los mecanismos de seguimiento y control. En esencia, convierte una idea de software en un itinerario gestionable, con responsabilidades claras y procedimientos para controlar el progreso y los cambios.
 
 Su importancia radica en que reduce la incertidumbre y aumenta la probabilidad de éxito académico y técnico. Permite justificar decisiones, anticipar problemas, y demostrar competencias en gestión de proyectos, ingeniería de requisitos, calidad y comunicación técnica.
 
@@ -10,9 +10,9 @@ En este documento se va a incluir la planificación temporal de las fases y tare
 También, se va a valorar la viabilidad del proyecto. En concreto, la viabilidad económica y la legal. En la viabilidad económica se estiman los costes y los beneficios del proyecto. Mientras que en la viabilidad legal analizan las leyes y licencias que afecten al desarrollo.  
 
 \section{Planificación temporal}
-Para la planificación se utiliza una metodología Scrum, aplicando iteraciones (\textit{sprints}). Al finalizar cada \textit{sprint} se realiza una reunión para la revisión del incremento y la planificación del siguiente. En la planificación se seleccionan y valoran las tareas (\textit{issues}) a realizar en el siguiente \textit{sprint}. Estas tareas se han valorado usando los \textit{story points} de ZenHub. A las tareas que se subdividen en otras se les ha asignado solo los puntos extras respecto a sus subtareas, los \textit{story points} no se han considerado acumulativos.
+Para la planificación se utiliza una metodología Scrum, aplicando iteraciones (\textit{sprints}). Al finalizar cada \textit{sprint} se realiza una reunión para la revisión del incremento y la planificación del siguiente. En la planificación se seleccionan y valoran las tareas (\textit{issues}) a realizar en el siguiente \textit{sprint}. Estas tareas se han valorado usando los \textit{story points} de ZenHub. A las tareas que se subdividen en otras se les ha asignado solo puntos extra respecto a sus subtareas, los \textit{story points} no se han considerado acumulativos.
 
-Para simplificar la asignación de los \textit{story points} se les ha asignado una estimación temporal recogida en la siguiente tabla~\ref{tabla:storypoints}:
+Para simplificar la asignación de los \textit{story points} se les ha asignado una estimación temporal recogida en la tabla~\ref{tabla:storypoints}:
 
 \begin{table}[h]
 	\centering
@@ -20,30 +20,30 @@ Para simplificar la asignación de los \textit{story points} se les ha asignado 
     		>{\centering\arraybackslash}p{0.46\linewidth}
     		>{\centering\arraybackslash}p{0.46\linewidth}}
 		\toprule
-		\textbf{\textit{Story Points}}    & \textbf{Tiempo invertido (horas)}\\
+		\textbf{\textit{Story Points}}    & \textbf{Tiempo estimado (horas)}\\
 		\midrule
-		1 \textit{Story Point} & 0,5  \\
-		2 \textit{Story Points} & 1  \\
-		3 \textit{Story Points} & 2  \\
-		5 \textit{Story Points} & 4  \\
-		8 \textit{Story Points} & 6  \\
-		13 \textit{Story Points} & 9  \\
-		21 \textit{Story Points} & 15  \\
-		40 \textit{Story Points} & más de 20 \\
+		1 & 0,5  \\
+		2 & 1  \\
+		3 & 2  \\
+		5 & 4  \\
+		8 & 6  \\
+		13 & 9  \\
+		21 & 15  \\
+		40 & más de 20 \\
 		\bottomrule
 	\end{tabularx}
-	\caption{Asignación temporal de los \textit{Story Points}.}
+	\caption{Tiempo estimado de los \textit{Story Points}.}
 	\label{tabla:storypoints}
 \end{table}
 
 
 \subsection{\textit{Sprint} 0 (11/09/2025 - 18/09/2025)}
-Este \textit{sprint} marcó el comienzo del proyecto. Los objetivos fueron realizar una primera toma de contacto con los RAG y los LLM, investigando sobre qué son, cómo funcionan y qué ventajas aportan los RAG. También, se planteó empezar a escribir los conceptos teóricos relevantes y crear el repositorio \href{https://github.com/lbr1014/TFG_RAG.git}{GitHub} para el proyecto. Como el \textit{sprint} se diseñó antes de la creación del repositorio, no se creó el \textit{milestone} asociado como se ha hecho en los \textit{sprints} posteriores. 
+Este \textit{sprint} marcó el comienzo del proyecto. Los objetivos fueron realizar una primera toma de contacto con los \textit{RAG} y los \textit{LLM}, investigando sobre qué son, cómo funcionan y qué ventajas aportan los \textit{RAG}. También, se planteó empezar a escribir los conceptos teóricos relevantes y crear el repositorio \href{https://github.com/lbr1014/TFG_RAG.git}{GitHub} para el proyecto. Como el \textit{sprint} se diseñó antes de la creación del repositorio, no se creó el \textit{milestone} asociado como se ha hecho en los \textit{sprints} posteriores. 
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Crear el repositorio en GitHub.
-	\item Investigar sobre los RAG y LLM.
+	\item Investigar sobre los \textit{RAG} y \textit{LLM}.
 	\begin{itemize}
 	\tightlist
 		\item Leer el capítulo 1 del libro: \textit{A simple guide to retrieval augmented generation}~\cite{book:RAG_SimpleGuide}.
@@ -54,7 +54,7 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 Para realizar estas tareas se estimaron 6 horas de trabajo pero en realidad fueron 9. Al finalizar el \textit{sprint} se completaron todas las tareas.
 
 \subsection{\textit{Sprint} 1 (18/09/2025 - 25/09/2025)}
-Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/1}{Sprint 1} fueron investigar sobre los LLM y los RAG y escribir la información más relevante como conceptos teóricos en la memoria. Comenzar a escribir los objetivos del proyecto y las técnicas y herramientas definidas hasta el momento, como la metodología Scrum o el repositorio. 
+Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/1?closed=1}{Sprint 1} fueron investigar sobre los \textit{LLM} y los \textit{RAG} y escribir la información más relevante como conceptos teóricos en la memoria. Comenzar a escribir los objetivos del proyecto y las técnicas y herramientas definidas hasta el momento, como la metodología Scrum o el repositorio. 
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
@@ -62,7 +62,7 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 	\item Escribir conceptos teóricos.
 	\begin{itemize}
 	\tightlist
-		\item Investigar sobre los RAG y los LLM.
+		\item Investigar sobre los \textit{RAG} y los \textit{LLM}.
 		\begin{itemize}
 		\tightlist
 			\item Leer el capítulo 3 del libro: \textit{A simple guide to retrieval augmented generation}~\cite{book:RAG_SimpleGuide}.
@@ -74,15 +74,15 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 Para realizar estas tareas se estimaron 8,5 horas de trabajo pero en realidad fueron 10. Al finalizar el \textit{sprint} se completaron todas las tareas.
 
 El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint1}
-\imagen{Burndown/Sprint1}{Sprint 1.}
+\imagenflotante{Burndown/Sprint1}{\textit{Burndown chart} del \textit{sprint} 1.}
 
 \subsection{\textit{Sprint} 2 (25/09/2025 - 02/10/2025)}
-Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/2}{Sprint 2} fueron seguir investigando sobre los LLM y RAG y explicar la información relevante en los conceptos teóricos. Investigar sobre el \textit{Web Scraping} y explicar en los anexos el plan de proyecto, en concreto la planificación temporal y los \textit{sprints}.
+Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/2?closed=1}{Sprint 2} fueron seguir investigando sobre los \textit{LLM} y \textit{RAG} y explicar la información relevante en los conceptos teóricos. Investigar sobre el \textit{Web Scraping} y explicar en los anexos el plan de proyecto, en concreto la planificación temporal y los \textit{sprints}.
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Añadir las correcciones a la memoria.
-	\item Completar el apartado pipeline de generación del apartado conceptos teóricos.
+	\item Completar el apartado \textit{pipeline} de generación del apartado conceptos teóricos.
 	\item Investigar sobre \textit{Web Scraping}.
 	\begin{itemize}
 	\tightlist
@@ -95,10 +95,10 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 Para realizar estas tareas se estimaron 10 horas de trabajo pero en realidad fueron 12. Al finalizar el \textit{sprint} se completaron todas las tareas.
 
 El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint2}
-\imagen{Burndown/Sprint2}{Sprint 2.}
+\imagenflotante{Burndown/Sprint2}{\textit{Burndown chart} del \textit{sprint} 2.}
 
 \subsection{\textit{Sprint} 3 (2/10/2025 - 09/10/2025)}
-Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/3}{Sprint 3} fueron realizar un primer prototipo de \textit{Web Scraping}, tanto en \textit{Selenium} como en \textit{Playwright}. Incluir en la memoria las correcciones y la información relevante.
+Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/3?closed=1}{Sprint 3} fueron realizar un primer prototipo de \textit{Web Scraping}, tanto en \textit{Selenium} como en \textit{Playwright}. Incluir en la memoria las correcciones y la información relevante.
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
@@ -119,10 +119,10 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 Para realizar estas tareas se estimaron 15 horas de trabajo pero en realidad fueron 18. Al finalizar el \textit{sprint} se completaron todas las tareas.
 
 El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint3}
-\imagen{Burndown/Sprint3}{Sprint 3.}
+\imagenflotante{Burndown/Sprint3}{\textit{Burndown chart} del \textit{sprint} 3.}
 
 \subsection{\textit{Sprint} 4 (9/10/2025 - 16/10/2025)}
-Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/4}{Sprint 4} fueron continuar realizando la aplicación de \textit{Web Scraping}, tanto en \textit{Selenium} como en \textit{Playwright}, para sacar licitaciones de la página de contratación del sector público. Incluir en la memoria una comparación entre ambas aplicaciones de \textit{Web Scraping}. Seguir investigando sobre los RAG.
+Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/4?closed=1}{Sprint 4} fueron continuar realizando la aplicación de \textit{Web Scraping}, tanto en \textit{Selenium} como en \textit{Playwright}, para sacar licitaciones de la página de contratación del sector público. Incluir en la memoria una comparación entre ambas aplicaciones de \textit{Web Scraping}. Seguir investigando sobre los \textit{RAG}.
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
@@ -145,10 +145,10 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 Para realizar estas tareas se estimaron 14 horas de trabajo pero en realidad fueron 18. Al finalizar el \textit{sprint} se completaron todas las tareas.
 
 El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint4}
-\imagen{Burndown/Sprint4}{Sprint 4.}
+\imagenflotante{Burndown/Sprint4}{\textit{Burndown chart} del \textit{sprint} 4.}
 
 \subsection{\textit{Sprint} 5 (16/10/2025 - 23/10/2025)}
-Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/5}{Sprint 5} fueron investigar sobre las mejoras que aporta la \textit{API} asíncrona de \textit{Playwright} y como se implementa. También, se planificado investigar sobre la gestión de dependencias y entornos en \textit{Python}. Todo esto mientras se sigue investigando sobre los \textit{RAG} y \textit{LLM} y se escriben los aspectos más relevantes en la memoria. 
+Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/5?closed=1}{Sprint 5} fueron investigar sobre las mejoras que aporta la \textit{API} asíncrona de \textit{Playwright} y como se implementa. También, se planificado investigar sobre la gestión de dependencias y entornos en \textit{Python}. Todo esto mientras se sigue investigando sobre los \textit{RAG} y \textit{LLM} y se escriben los aspectos más relevantes en la memoria. 
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
@@ -168,29 +168,29 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 Para realizar estas tareas se estimaron 15 horas de trabajo pero en realidad fueron 18, ya que se tuvo que reescribir parte del código realizado en los \textit{sprints} anteriores para el \textit{Web Scraping} debido a una actualización en la página de \href{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}. Este cambio afectó en mayor medida a la extracción de información de las licitaciones, ya que ha sido la página que más ha cambiado con dicha actualización. A pesar de este contratiempo al finalizar el \textit{sprint} se completaron todas las tareas.
 
 El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint5}
-\imagen{Burndown/Sprint5}{Sprint 5.}
+\imagenflotante{Burndown/Sprint5}{\textit{Burndown chart} del \textit{sprint} 5.}
 
 \subsection{\textit{Sprint} 6 (23/10/2025 - 30/10/2025)}
 
-Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/6}{Sprint 6} fueron descargar los pdfs de las licitaciones de la página de \href{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}. Para descargar dichos pdfs se va a usar de base el programa de \textit{Web Scraping} del \textit{sprint} anterior. Además, se han fijado como objetivos investigar sobre los modelos de inteligencia artificial de \textit{Hugging Face} e instalar y probar el funcionamiento de \textit{Ollama}.
+Los objetivos del \href{https://github.com/lbr1014/TFG_RAG/milestone/6?closed=1}{Sprint 6} fueron descargar los documentos (en formato \textit{pdf}) de las licitaciones de la página de \href{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}. Para descargar dichos pdfs se va a usar de base el programa de \textit{Web Scraping} del \textit{sprint} anterior. Además, se han fijado como objetivos investigar sobre los modelos de inteligencia artificial de \textit{Hugging Face} e instalar y probar el funcionamiento de \textit{Ollama}.
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Investigar sobre \textit{Ollama}.
 	\item Investigar y probar modelos de inteligencia artificial de \textit{Hugging Face}.
-	\item Investigar sobre formas de implementar los RAG.
+	\item Investigar sobre formas de implementar los \textit{RAG}.
 	\item Descargar los pdfs de las licitaciones de la la página de \href{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}.
 	\item Instalar las dependencias en \textit{Poetry}.
 \end{itemize}
 
-Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron 15, se ha usado un servidor de la UBU para descargar un zip con las licitaciones. Para acceder a dichas licitaciones se ha usado el archivo "\textit{resultados\_playwright\_asincrono"} obtenido en el \textit{sprint} anterior, en el cual se almacenan los enlaces a los pdfs de cada licitación. Al finalizar el \textit{sprint} se completaron todas las tareas.
+Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron 15, se ha usado un servidor de la UBU para descargar un zip con las licitaciones. Para acceder a dichas licitaciones se ha usado el archivo \texttt{<<resultados\_playwright\_asincrono>>} obtenido en el \textit{sprint} anterior, en el cual se almacenan los enlaces a los pdfs de cada licitación. Al finalizar el \textit{sprint} se completaron todas las tareas.
 
 El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint6}
-\imagen{Burndown/Sprint6}{Sprint 6.}
+\imagenflotante{Burndown/Sprint6}{\textit{Burndown chart} del \textit{sprint} 6.}
 
 \subsection{\textit{Sprint} 7 (30/10/2025 - 6/11/2025)}
 
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/7}{Sprint 7} fue investigar e implementar distintos tipos de \textit{tokenize}. Esto se planteó como un primer paso para la implantación total del RAG.
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/7?closed=1}{Sprint 7} fue investigar e implementar distintos tipos de \textit{tokenizer}. Esto se planteó como un primer paso para la implantación total del \textit{RAG}.
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
@@ -199,16 +199,16 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 	\item Comparar las implementaciones de \textit{tokenize}.
 \end{itemize}
 
-Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron 15. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas, pero sería destacable que en los \textit{scripts} de las diversas pruebas de \textit{tokenizers} no solo se han incluido estos. Si no que también se han incluido funciones para probar su uso, como pueden ser \textit{propts} y funciones para dividir los pdfs de las licitaciones.
+Para realizar estas tareas se estimaron 12 horas de trabajo pero en realidad fueron 15. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas, pero sería destacable que en los \textit{scripts} de las diversas pruebas de \textit{tokenizers} no solo se han incluido estos. Si no que también se han incluido funciones para probar su uso, como pueden ser \textit{prompts} y funciones para dividir los pdfs de las licitaciones.
 
-El \textit{burndown} de este \textit{sprint7} se ilustra en la figura~\ref{fig:Burndown/Sprint7}
-\imagen{Burndown/Sprint7}{Sprint 7.}
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint7}
+\imagenflotante{Burndown/Sprint7}{\textit{Burndown chart} del \textit{sprint} 7.}
 
 \subsection{\textit{Sprint} 8 (6/11/2025 - 13/11/2025)}
 
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/8}{Sprint 8} fue implementar una base de datos para el RAG y juntarlo con uno de los \textit{tokenizers} ya implementados del \textit{sprint} anterior. Además, en este \textit{sprint} se planteó como objetivo obtener los pliegos definitivos de de la página de \href{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}. 
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/8?closed=1}{Sprint 8} fue implementar una base de datos para el \textit{RAG} y juntarlo con uno de los \textit{tokenizers} ya implementados del \textit{sprint} anterior. Además, en este \textit{sprint} se planteó como objetivo obtener los pliegos definitivos de de la página de \href{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}. 
 
-Esto se debe a que los pliegos obtenidos anteriormente no eran correctos, se trataban de resúmenes incompletos que no servían para alimentar al RAG. Durante el \textit{sprint} 7, se encontraron los pliegos correctos y se fijo como objetivo del siguiente \textit{sprint} modificar los programa de \textit{Web Scraping} para descargarlos. 
+Esto se debe a que los pliegos obtenidos anteriormente no eran correctos, se trataban de resúmenes incompletos que no servían para alimentar al \textit{RAG}. Durante el \textit{sprint} 7, se encontraron los pliegos correctos y se fijo como objetivo del siguiente \textit{sprint} modificar los programa de \textit{Web Scraping} para descargarlos. 
 Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
@@ -218,30 +218,30 @@ Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 	\item Explicar la comparativa de las bases de datos.
 \end{itemize}
 
-Para realizar estas tareas se estimaron 12 horas de trabajo, pero en realidad fueron 16. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha implementado la base de datos vectorial \textit{Qdranty} y se ha juntado con el diseño de \textit{tokenizer} del \textit{sprint} anterior, aunque se ha cambiado el modelo para usar el del libro \href{https://www.amazon.com/LLM-Engineers-Handbook-engineering-production/dp/1836200072}{LLM Engineer's Handbook}. Además, se han realizado los \textit{embeddings} para poder almacenarlos en la base de datos vectorial.
+Para realizar estas tareas se estimaron 12 horas de trabajo, pero en realidad fueron 16. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha implementado la base de datos vectorial \textit{Qdranty} y se ha juntado con el diseño de \textit{tokenizer} del \textit{sprint} anterior, aunque se ha cambiado el modelo para usar el del libro \href{https://www.amazon.com/LLM-Engineers-Handbook-engineering-production/dp/1836200072}{\textit{LLM Engineer's Handbook}}. Además, se han realizado los \textit{embeddings} para poder almacenarlos en la base de datos vectorial.
 
-El \textit{burndown} de este \textit{sprint8} se ilustra en la figura~\ref{fig:Burndown/Sprint8}
-\imagen{Burndown/Sprint8}{Sprint 8.}
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint8}
+\imagenflotante{Burndown/Sprint8}{\textit{Burndown chart} del \textit{sprint} 8.}
 
 \subsection{\textit{Sprint} 9 (13/11/2025 - 20/11/2025)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/9}{Sprint 9} fue realizar un \textit{script} que, dada una consulta, devuelva el \textit{chunk} más parecido. Junto con este \textit{chunk} debe devolver el nombre y el titulo del pdf, asi como una respuesta del LLM basándose en dicho \textit{chunk}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/9?closed=1}{Sprint 9} fue realizar un \textit{script} que, dada una consulta, devuelva el \textit{chunk} más parecido. Junto con este \textit{chunk} debe devolver el nombre y el titulo del pdf, asi como una respuesta del \textit{LLM} basándose en dicho \textit{chunk}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Implementar funciones que devuelvan el nombre del pdf al que pertenece el \textit{chunk}.
 	\item Mejorar la partición de los \textit{chunks} añadiendo solapamiento (\textit{overlap}).
 	\item Obtención del fragmento del \textit{chunk}.
-	\item Implementar código para que el LLM de una respuesta a partir de una pregunta del usuario.
+	\item Implementar código para que el \textit{LLM} de una respuesta a partir de una pregunta del usuario.
 	\item Añadir al código funciones para medir los tiempos
 	\item Usar loggers en el código	
 \end{itemize}
 
-Para realizar estas tareas se estimaron 18 horas y más o menos se ha cumplido dicha estimación. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha mejorado el código añadiendo medidas de los tiempos de ejecución e implementando el uso de \textit{loggers}. También, se ha añadido solapamiento en los \textit{chunks} lo que mejora la eficacia de estos. Por otro lado se ha implementado el objetivo principal, es decir, el \textit{script} que permite que el usuario realice una pregunta y el LLM conteste basándose en el \textit{chunk} más parecido a la pregunta. Además se indica el pdf del que ha sacado la información asi como el \textit{chunk} concreto.
+Para realizar estas tareas se estimaron 18 horas y más o menos se ha cumplido dicha estimación. En este \textit{sprint} se han llevado a cabo todas las tareas planificadas. Se ha mejorado el código añadiendo medidas de los tiempos de ejecución e implementando el uso de \textit{loggers}. También, se ha añadido solapamiento en los \textit{chunks} lo que mejora la eficacia de estos. Por otro lado se ha implementado el objetivo principal, es decir, el \textit{script} que permite que el usuario realice una pregunta y el \textit{LLM} conteste basándose en el \textit{chunk} más parecido a la pregunta. Además se indica el pdf del que ha sacado la información asi como el \textit{chunk} concreto.
 
-El \textit{burndown} de este \textit{sprint9} se ilustra en la figura~\ref{fig:Burndown/Sprint9}
-\imagen{Burndown/Sprint9}{Sprint 9.}
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint9}
+\imagenflotante{Burndown/Sprint9}{\textit{Burndown chart} del \textit{sprint} 9.}
 
 \subsection{\textit{Sprint} 10 (20/11/2025 - 27/11/2025)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/10}{Sprint 10} fue intentar convertir los pdfs a \textit{Markdown}. Para ello se han valorado diversas formas de realizar la conversión, por ejemplo, desde un \textit{OCR} vinculado a un \textit{LLM} o directamente empleando una biblioteca de \textit{Python}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/10?closed=1}{Sprint 10} fue intentar convertir los pdfs a \textit{Markdown}. Para ello se han valorado diversas formas de realizar la conversión, por ejemplo, desde un \textit{OCR} vinculado a un \textit{LLM} o directamente empleando una biblioteca de \textit{Python}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Buscar formas de automatizar la conversión a \textit{Markdown}.
@@ -254,11 +254,11 @@ El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/10}
 
 Para realizar estas tareas se estimaron 10 horas, pero debido a la gran heterogeneidad de formatos de los pdfs fueron más, aproximadamente unas 15. A pesar de que se han obtenido resultados significativamente mejores que en las primeras aproximaciones no se ha conseguido ningún \texttt{Markdown} lo suficiente mente bueno. Esto se debe a que cada pdf de licitaciones tiene un formato distinto y no se ha conseguido ningún \textit{Script} que detecte correctamente todas las secciones.
 
-El \textit{burndown} de este \textit{sprint10} se ilustra en la figura~\ref{fig:Burndown/Sprint10}
-\imagen{Burndown/Sprint10}{Sprint 10.}
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint10}
+\imagenflotante{Burndown/Sprint10}{\textit{Burndown chart} del \textit{sprint} 10.}
 
 \subsection{\textit{Sprint} 11 (27/11/2025 - 4/12/2025)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/11}{Sprint 11} fue intentar implementar un \textit{Script} que basándose en los resultados obtenidos del anterior sea capaz de detectar correctamente las secciones de los pdfs. Además, se propuso comenzar a investigar sobre el funcionamiento de \textit{Flask}. Ya que esta aplicación se va a utilizar en el proyecto para realizar una \textit{web} para realizar las consultas al LLM. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/11?closed=1}{Sprint 11} fue intentar implementar un \textit{Script} que basándose en los resultados obtenidos del anterior sea capaz de detectar correctamente las secciones de los pdfs. Además, se propuso comenzar a investigar sobre el funcionamiento de \textit{Flask}. Ya que esta aplicación se va a utilizar en el proyecto para realizar una \textit{web} para realizar las consultas al \textit{LLM}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Probar nuevos OCRs para la conversión de los pdfs a \textit{Markdown}.
@@ -267,11 +267,11 @@ El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/11}
 
 Para realizar estas tareas se estimaron 8 horas. Al final se emplearon cerca de 12 horas debido al mismo problema del \textit{Spritn} anterior, que no se ha conseguido implementar un \textit{script} capaz de detectar correctamente todas las secciones.
 
-El \textit{burndown} de este \textit{sprint11} se ilustra en la figura~\ref{fig:Burndown/Sprint11}
-\imagen{Burndown/Sprint11}{Sprint 11.}
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint11}
+\imagenflotante{Burndown/Sprint11}{\textit{Burndown chart} del \textit{sprint} 11.}
 
 \subsection{\textit{Sprint} 12 (4/12/2025 - 15/01/2026)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/12}{Sprint 12} fue comenzar a realizar la página \textit{web} con \textit{Flask} y comenzar a definir los casos de uso del proyecto. Este \textit{sprint} fue más largo que el resto ya que coincidió con la semana de exámenes finales del primer cuatrimestre y las navidades. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/12?closed=1}{Sprint 12} fue comenzar a realizar la página \textit{web} con \textit{Flask} y comenzar a definir los casos de uso del proyecto. Este \textit{sprint} fue más largo que el resto ya que coincidió con la semana de exámenes finales del primer cuatrimestre y las navidades. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Definir los casos de uso.
@@ -289,13 +289,13 @@ El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/12}
 	\item Hacer los \textit{test} para la gestión de usuarios de la \textit{web}.
 \end{itemize}
 
-Para realizar estas tareas se estimaron 28 horas de trabajo. Al final se emplearon más de 35 horas, debido principalmente a que la tarea ``Comenzar la página \textit{web}'' llevó más tiempo del planificado. Esta tarea consistió en realizar la estructura básica de la \textit{web}, la cual finalmente  se dividió en \textit{blueprints} para que tuviese mejor escalabilidad. Comprender el funcionamiento de los \textit{blueprints} y saber implementarlos aumentó significativamente el tiempo de desarrollo de la estructura de la \textit{web}.
+Para realizar estas tareas se estimaron 28 horas de trabajo. Al final se emplearon más de 35 horas, debido principalmente a que la tarea <<Comenzar la página \textit{web}>> llevó más tiempo del planificado. Esta tarea consistió en realizar la estructura básica de la \textit{web}, la cual finalmente  se dividió en \textit{blueprints} para que tuviese mejor escalabilidad. Comprender el funcionamiento de los \textit{blueprints} y saber implementarlos aumentó significativamente el tiempo de desarrollo de la estructura de la \textit{web}.
 
-El \textit{burndown} de este \textit{sprint12} se ilustra en la figura~\ref{fig:Burndown/Sprint12}
-\imagen{Burndown/Sprint12}{Sprint 12.}
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint12}
+\imagenflotante{Burndown/Sprint12}{\textit{Burndown chart} del \textit{sprint} 12.}
 
 \subsection{\textit{Sprint} 13 (15/01/2025 - 22/01/2026)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/13}{Sprint 13} fue completar las funcionalidades de la web permitiendo que los administradores puedan cargar documentos, de forma manual o automática (mediante \textit{web scraping}). El sistema gestionará estos documentos para extraer de ellos los \textit{embeddings} necesarios para el \textit{RAG}. Además, se marcó como objetivo incluir la interfaz para realizar las consultas al \textbf{LLM}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/13?closed=1}{Sprint 13} fue completar las funcionalidades de la web permitiendo que los administradores puedan cargar documentos, de forma manual o automática (mediante \textit{web scraping}). El sistema gestionará estos documentos para extraer de ellos los \textit{embeddings} necesarios para el \textit{RAG}. Además, se marcó como objetivo incluir la interfaz para realizar las consultas al \textit{LLM}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 \begin{itemize}
 \tightlist
 	\item Añadir casos de uso.
@@ -310,7 +310,8 @@ El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/13}
 
 Para realizar estas tareas se estimaron 28,5 horas de trabajo.Al final del \textit{sprint} se cumplieron todas las tareas más o menos en el plazo esperado.
 
-
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint13}
+\imagenflotante{Burndown/Sprint13}{\textit{Burndown chart} del \textit{sprint} 13.}
 
 \section{Estudio de viabilidad}
 
