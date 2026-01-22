@@ -10,7 +10,7 @@
 Los objetivos generales que se buscan cumplir con este proyecto son:
 \begin{itemize}
 \tightlist
-	\item Desarrollar un sistema basado en Generación Aumentada por Recuperación (RAG) que permita realizar consultas sobre licitaciones del sector público, enriqueciendo las respuestas mediante información documental relevante.
+	\item Desarrollar un sistema basado en Generación Aumentada por Recuperación (\textit{RAG}) que permita realizar consultas sobre licitaciones del sector público, enriqueciendo las respuestas mediante información documental relevante.
 	\item Automatizar la recopilación, procesamiento e indexación de documentos de licitaciones, de forma que puedan ser integrados eficientemente en una base de datos vectorial.
 	\item Facilitar la consulta de la información de las licitaciones mediante una aplicación web intuitiva y accesible para usuarios autentificados.
 	\item Mejorar la comprensión y análisis de la información administrativa y técnica contenida en las licitaciones.
@@ -18,7 +18,10 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 
 \section{Catálogo de requisitos}
 
+A continuación se van a definir los requisitos del proyecto, tanto los funcionales como los no funcionales.
+
 \textbf{Requisitos funcionales}
+
 \begin{itemize}
 \tightlist
 	\item RF-1 Gestión de documentos: el sistema debe permitir que el administrador gestione los documentos de licitaciones del sistema. 
@@ -28,7 +31,7 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 		\item RF-1.2 Listado de documentos cargados: el sistema debe permitir ver los documentos cargados y sus metadatos.
 		\item RF-1.3 Borrado de documentos: el sistema debe permitir borrar los documentos cargados.
 	\end{itemize}
-	\item RF-2 Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el RAG pueda usarlos.
+	\item RF-2 Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el \textit{RAG} pueda usarlos.
 	\begin{itemize}
 	\tightlist
 		\item RF-2.1 Extracción de información: el sistema debe extraer automáticamente el contenido textual de los documentos introducidos, ignorando páginas o documentos sin texto extraíble.
@@ -67,12 +70,8 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 		\item RF-6.1 Generación de \textit{embedding}: el sistema debe generar el \textit{embedding} de la consulta del usuario.
 		\item RF-6.2 Búsqueda por similitud: el sistema debe realizar una búsqueda por similitud en la base de datos vectorial.
 	\end{itemize}
-	\item RF-7 Construcción del \textit{prompt} con contexto: el sistema debe construir un \textit{prompt}, para alimentar al LLM, que incluya los \textit{chunks} recuperados, la pregunta del usuario y reglas de uso del contexto.
-	\item RF-8 Generación de respuestas mediante un LLM: el sistema debe enviar el \textit{prompt} generado a un modelo LLM y mostrar la respuesta de dicho modelo al usuario.
-	\begin{itemize}
-	\tightlist
-		\item RF-8.1 Evitar alucinaciones: el sistema no debe responder cuando no haya contexto relevante suficiente.
-	\end{itemize}
+	\item RF-7 Construcción del \textit{prompt} con contexto: el sistema debe construir un \textit{prompt}, para alimentar al \textit{LLM}, que incluya los \textit{chunks} recuperados, la pregunta del usuario y reglas de uso del contexto.
+	\item RF-8 Generación de respuestas mediante un \textit{LLM}: el sistema debe enviar el \textit{prompt} generado a un modelo \textit{LLM} y mostrar la respuesta de dicho modelo al usuario.
 	\item RF-9 Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \textit{chunks} empleados para la generación de la respuesta. 
 	\item RF-10 Gestión de usuarios: el sistema debe permitir la gestión de usuarios a través de la aplicación web.
 	\begin{itemize}
@@ -87,10 +86,7 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\begin{itemize}
 	\tightlist
 		\item RF-11.1 Historial de consultas: los usuarios podrán ver su historial de consultas.
-		\begin{itemize}
-		\tightlist
-			\item RF-11.1.1 Borrar consultas: los usuarios podrán borrar consultas del historial.
-		\end{itemize}
+		\item RF-11.2 Borrar consultas: los usuarios podrán borrar consultas del historial.
 	\end{itemize}
 	\item RF-12 Importación automática de licitaciones: el sistema debe permitir al administrador importar de manera automática las licitaciones mediante \textit{web scraping}.
 	\begin{itemize}
@@ -109,7 +105,7 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\begin{itemize}
 	\tightlist
 		\item RNF-3.1 Documentos corruptos: el sistema debe saltarse los documentos corruptos o sin texto extraible y continuar con el resto de documentos.
-		\item RNF-3.2 \textit{Timeouts}: el sistema debe manejar los \textit{timeouts} del LLM devolviendo mensajes controlados al usuario.
+		\item RNF-3.2 \textit{Timeouts}: el sistema debe manejar los \textit{timeouts} del \textit{LLM} devolviendo mensajes controlados al usuario.
 	\end{itemize}
 	\item RNF-4 Trazabilidad técnica: el sistema debe realizar \textit{logs} de carga de modelo, lectura de PDFs, \textit{chunking}, \textit{embeddings}, guardado y consulta.
 	\item RNF-5 Seguridad: el sistema debe gestionar de forma segura la información sensible de los usuarios y el acceso a la aplicación.
@@ -123,26 +119,23 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\item RNF-7 Calidad del \textit{software}: debe existir un conjunto de pruebas que asegure el correcto funcionamiento del programa. 
 	\item RNF-8 Disponibilidad: la web debe garantizar un nivel de disponibilidad adecuado que permita a los usuarios acceder a la aplicación y realizar consultas.
 	\item RNF-9 Recuperación y tolerancia a fallos: el sistema debe disponer de mecanismos que permitan la recuperación de información y la restauración del servicio tras fallos, garantizando la integridad de los datos.
+	\item RNF-10 Evitar alucinaciones: el sistema no debe responder cuando no haya contexto relevante suficiente.
 \end{itemize}
 
 \section{Especificación de requisitos}
 
-\textbf{Actores}
-
-Los actores del sistema serán:
+Los actores del sistema son:
 \begin{itemize}
 \tightlist
 	\item \textbf{Usuario anónimo}: usuario que no ha iniciado sesión (solo puede registrarse y autentificarse)
 	\item \textbf{Usuario autentificado}: usuario que puede acceder a la aplicación sus acciones en al aplicación cambiarán dependiendo de su rol. 
 	\begin{itemize}
 	\tightlist
-	 	\item \textbf{Usuario normal}: usuario autentificado que puede consultar el RAG y ver su historial
+	 	\item \textbf{Usuario normal}: usuario autentificado que puede consultar el \textit{RAG} y ver su historial
 	 	\item \textbf{Usuario administrador}: usuario autentificado con permisos de gestión de usuarios y de carga y actualización documental
 	 \end{itemize}
 	 \item \textbf{Sistema}: es el encargado del procesamiento, \textit{chunking}, \textit{embeddings}, guardado y consulta. 
 \end{itemize}
-
-\textbf{Casos de uso}
 
 Los casos de uso definidos para el proyecto son:
 \begin{itemize}
@@ -150,7 +143,7 @@ Los casos de uso definidos para el proyecto son:
 	\item CU-1 Registro de usuarios
 	\item CU-2 Iniciar sesión
 	\item CU-3 Cerrar sesión
-	\item CU-4 Realizar consulta al RAG
+	\item CU-4 Realizar consulta al \textit{RAG}
 	\item CU-5 Consultar historial de consultas
 	\item CU-6 Borrar consultas del historial
 	\item CU-7 Cargar documentos de licitaciones
@@ -184,7 +177,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario accede a ``Registro''.
+			\item El usuario accede a <<Registro>>.
 			\item El usuario introduce el nombre, email y contraseña.
 			\item El sistema valida el formato y que el email no este duplicado.
 			\item El sistema almacena el usuario con la contraseña \textit{hasheada}.
@@ -196,12 +189,12 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Tiene algún campo vacío. Muestra un error con el mensaje ``Completa este campo''.
-			\item El email ya existe. Muestra un error con el mensaje ``Ya existe un usuario con ese email''.
-			\item El email no cumple la validación. Muestra un error con el mensaje ``Invalid email address''.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje ``Aumenta la longitud del texto a 6 caracteres como mínimo''.
-			\item Las contraseñas no coinciden. Muestra un error con el mensaje ``Las contraseñas no coinciden''.
-			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje ``Aumenta la longitud del texto a 2 caracteres o más''.
+			\item Tiene algún campo vacío. Muestra un error con el mensaje <<Completa este campo>>.
+			\item El email ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese email>>.
+			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
+			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
+			\item Las contraseñas no coinciden. Muestra un error con el mensaje <<Las contraseñas no coinciden>>.
+			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -224,7 +217,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario accede a ``Iniciar sesión''.
+			\item El usuario accede a <<Iniciar sesión>>.
 			\item El usuario introduce el email y la contraseña.
 			\item El sistema verifica los credenciales.
 			\item El sistema crea la sesión y redirige a la página de consultas.
@@ -234,10 +227,10 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Tiene algún campo vacío. Muestra un error con el mensaje ``Completa este campo''.
-			\item El email o la contraseña no coinciden con ningún usuario registrado. Muestra un error con el mensaje ``Email o contraseña incorrectos.''.
-			\item El email no cumple la validación. Muestra un error con el mensaje ``Invalid email address''.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje ``Aumenta la longitud del texto a 6 caracteres como mínimo''.		
+			\item Tiene algún campo vacío. Muestra un error con el mensaje <<Completa este campo>>.
+			\item El email o la contraseña no coinciden con ningún usuario registrado. Muestra un error con el mensaje <<Email o contraseña incorrectos.>>.
+			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
+			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.		
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -260,7 +253,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario pulsa el botón ``Cerrar sesión''.
+			\item El usuario pulsa el botón <<Cerrar sesión>>.
 			\item El sistema invalida la sesión.
 			\item El sistema redirige a la primera de inicio.
 		\end{enumerate}\\
@@ -281,7 +274,7 @@ Los casos de uso definidos para el proyecto son:
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-4}    & \textbf{Realizar consulta al RAG}\\
+		\textbf{CU-4}    & \textbf{Realizar consulta al \textit{RAG}}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -296,8 +289,8 @@ Los casos de uso definidos para el proyecto son:
 			\item El sistema genera \textit{embeddings} de la consulta.
 			\item El sistema busca por similitud en la base de datos vectorial.
 			\item El sistema construye un \textit{prompt} con los \textit{chunks} y las reglas de uso del contexto.
-			\item El sistema llama al LLM y genera respuestas.
-			\item El sistema llama al LLM y genera una respuesta.
+			\item El sistema llama al \textit{LLM} y genera respuestas.
+			\item El sistema llama al \textit{LLM} y genera una respuesta.
 			\item El sistema adjunta la trazabilidad de la respuesta, la cual incluye los documentos, metadatos y \textit{chunks} utilizados.
 			\item El sistema guarda la consulta en el historial del consultas del usuario.
 		\end{enumerate}\\
@@ -307,12 +300,12 @@ Los casos de uso definidos para el proyecto son:
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item Cuando no hay contexto suficiente. El sistema no responde a la pregunta (para evitar alucinaciones) y muestra un aviso de que falta contexto.
-			\item Timeout del LLM. El sistema muestra un mensaje controlado. 	
+			\item \textit{Timeout} del \textit{LLM}. El sistema muestra un mensaje controlado. 	
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-4 Realizar consulta al RAG.}
+	\caption{CU-4 Realizar consulta al \textit{RAG}.}
 \end{table}
 
 \begin{table}[p]
@@ -330,7 +323,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario accede al ``Historial''.
+			\item El usuario accede al <<Historial>>.
 			\item El sistema lista las consultas del usuario.
 			\item El usuario puede abrir una consulta para ver la respuesta completa y la trzabilidad de dicha respuesta.
 		\end{enumerate}\\
@@ -339,7 +332,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario no ha realizado consultas. Muestra un mensaje de error ``Aún no hay consultas''. 	
+			\item El usuario no ha realizado consultas. Muestra un mensaje de error <<Aún no hay consultas>>. 	
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -362,9 +355,9 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario accede al ``Historial''.
+			\item El usuario accede al <<Historial>>.
 			\item El sistema lista las consultas del usuario.
-			\item El usuario pulsa el botón ``Borrar''.
+			\item El usuario pulsa el botón <<Borrar>>.
 			\item El sistema elimina la consulta seleccionada de la base de datos.
 			\item El sistema actualiza la vista del historial.
 		\end{enumerate}\\
@@ -397,7 +390,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador pulsa el botón ``Cargar''.
+			\item El administrador pulsa el botón <<Cargar>>.
 			\item El administrador selecciona uno o varios documentos.
 			\item El sistema valida los documentos y los almacena.
 			\item El sistema registra la carga.
@@ -430,8 +423,8 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a ``Administrar documentos''.
-			\item El administrador pulsa el botón ``Web scraping''.
+			\item El administrador accede a <<Administrar documentos>>.
+			\item El administrador pulsa el botón <<Web scraping>>.
 			\item El sistema lanza el proceso de \textit{web scraping}.
 			\item El sistema guarda los documentos obtenidos y registra sus metadatos.
 			\item El sistema muestra un resumen con el  número de documentos descargados, los duplicados y los fallidos.
@@ -533,8 +526,8 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a ``Administrar documentos''.
-			\item El administrador pulsa el botón ``Actualizar Base de Datos Vectorial''.
+			\item El administrador accede a <<Administrar documentos>>.
+			\item El administrador pulsa el botón <<Actualizar Base de Datos Vectorial>>.
 			\item El sistema realiza el \textit{chunking} y el \textit{embedding}.
 			\item El sistema lo almacena en la base de datos vectorial.
 		\end{enumerate}\\
@@ -566,7 +559,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a ``Administrar documentos''.
+			\item El administrador accede a <<Administrar documentos>>.
 			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}).
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Documentos visibles para el administrador. \\
@@ -574,7 +567,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item No hay documentos. Muestra un mensaje informativo ``Aún no hay documentos''.
+			\item No hay documentos. Muestra un mensaje informativo <<Aún no hay documentos>>.
 			\item Error de base de datos. Muestra un error.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Media  \\
@@ -598,7 +591,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a ``Administrar documentos''.
+			\item El administrador accede a <<Administrar documentos>>.
 			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}).
 			\item El sistema muestra el estado de los documentos listados.
 		\end{enumerate}\\
@@ -607,7 +600,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item No hay documentos. Muestra un mensaje informativo ``Aún no hay documentos''.
+			\item No hay documentos. Muestra un mensaje informativo <<Aún no hay documentos>>.
 			\item Error de base de datos. Muestra un error.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Media  \\
@@ -631,9 +624,9 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a ``Administrar documentos''.
+			\item El administrador accede a <<Administrar documentos>>.
 			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}) y estado.
-			\item El administrador pulsa el botón ``Borrar''.
+			\item El administrador pulsa el botón <<Borrar>>.
 			\item El sistema pide confirmación.
 			\item El administrador confirma el borrado.
 			\item El sistema borra el documento y sus metadatos. Además, si el documento esta indexado borra sus \textit{chunks} y sus \textit{embeddings}.
@@ -669,12 +662,12 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a``Administrar usuarios''.
-			\item El administrador pulsa el botón ``Añadir usuario''.
+			\item El administrador accede a<<Administrar usuarios>>.
+			\item El administrador pulsa el botón <<Añadir usuario>>.
 			\item El administrador introduce el nombre, email, contraseña y si es administrador o no.
 			\item El sistema valida el formato y que el email no este duplicado.
 			\item El sistema almacena el usuario con la contraseña \textit{hasheada}.
-			\item El sistema redirige a la página de ``Gestión de usuarios''.
+			\item El sistema redirige a la página de <<Gestión de usuarios>>.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Usuario creado. \\
 		\textbf{Excepciones}          & 
@@ -682,11 +675,11 @@ Los casos de uso definidos para el proyecto son:
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item Intento de acceso sin ser administrador. Se deniega.
-			\item Tiene algún campo vacío. Muestra un error con el mensaje ``Completa este campo''.
-			\item El email ya existe. Muestra un error con el mensaje ``Ya existe un usuario con ese email''.
-			\item El email no cumple la validación. Muestra un error con el mensaje ``Invalid email address''.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje ``Aumenta la longitud del texto a 6 caracteres como mínimo''.
-			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje ``Aumenta la longitud del texto a 2 caracteres o más''.
+			\item Tiene algún campo vacío. Muestra un error con el mensaje <<Completa este campo>>.
+			\item El email ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese email>>.
+			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
+			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
+			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
@@ -709,10 +702,10 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a``Administrar usuarios''.
-			\item El administrador pulsa el botón ``Borra'' del usuario que desee eliminar.
+			\item El administrador accede a <<Administrar usuarios>>.
+			\item El administrador pulsa el botón <<Borra>> del usuario que desee eliminar.
 			\item El sistema pide confirmación antes de borrar el usuario.
-			\item El administrador pulsa el botón ``Aceptar''.
+			\item El administrador pulsa el botón <<Aceptar>>.
 			\item El sistema borra al usuario y sus datos de la base de datos.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Usuario borrado. \\
@@ -743,8 +736,8 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a ``Administrar usuarios''.
-			\item El administrador pulsa el botón ``Hacer admin''/``Quitar admin'' del usuario que desee cambiar de rol.
+			\item El administrador accede a <<Administrar usuarios>>.
+			\item El administrador pulsa el botón <<Hacer admin>>/<<Quitar admin>> del usuario que desee cambiar de rol.
 			\item El sistema cambia el rol del usuario.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Usuario con el rol cambiado. \\
@@ -775,7 +768,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario accede a ``Editar usuario''.
+			\item El usuario accede a <<Editar usuario>>.
 			\item Modifica los campos que desee (nombre, \textit{email} o contraseña).
 			\item El sistema valida los formatos y reglas.
 			\item El sistema guarda los cambios. Si hay cambio de contraseña la almacena \textit{hasheada}.
@@ -785,10 +778,10 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El email ya existe. Muestra un error con el mensaje ``Ya existe un usuario con ese email''.
-			\item El email no cumple la validación. Muestra un error con el mensaje ``Invalid email address''.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje ``Aumenta la longitud del texto a 6 caracteres como mínimo''.
-			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje ``Aumenta la longitud del texto a 2 caracteres o más''.
+			\item El email ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese email>>.
+			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
+			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
+			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Baja  \\
 		\bottomrule
