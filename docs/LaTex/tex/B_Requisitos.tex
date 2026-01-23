@@ -154,13 +154,15 @@ Los casos de uso definidos para el proyecto son:
 	\item CU-12 Listar documentos
 	\item CU-13 Consultar estado de los documentos
 	\item CU-14 Eliminar documento
-	\item CU-15 Crear usuarios
-	\item CU-16 Borrar usuarios
-	\item CU-17 Modificar rol del usuario
-	\item CU-18 Editar usuario
+	\item CU-15 Gestión de usuarios
+	\item CU-65 Crear usuarios
+	\item CU-17 Borrar usuarios
+	\item CU-18 Modificar rol del usuario
+	\item CU-19 Editar usuario
 \end{itemize}
 
-\textbf{Diagrama de casos de uso}
+\imagenflotante{Diagramas/CasosUso}{Diagrama de casos de uso.}
+
 
 \begin{table}[p]
 	\centering
@@ -647,11 +649,46 @@ Los casos de uso definidos para el proyecto son:
 	\caption{CU-14 Eliminar documento.}
 \end{table}
 
+
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-15}    & \textbf{ Crear usuarios}\\
+		\textbf{CU-15}    & \textbf{ Gestión de usuarios}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & RF-10.3, RF-10.4 \\
+		\textbf{Descripción}          & El administrador debe poder gestionar a los usuarios de la aplicación y sus permisos. \\
+		\textbf{Precondición}         & Hay un administrador autentificado. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El administrador accede a la página de <<Iniciar sesión>>.
+			\item El administrador introduce su \textit{email} y contraseña.
+			\item El sistema le autentifica como administrador.
+			\item El administrador accede a <<Administrar usuarios>>.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Listado de usuarios para editar. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Intento de acceso sin ser administrador. Se deniega.
+			\item Si no hay usuarios registrados en la aplicación. Muestra un mensaje.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{CU-15 Gestión de usuarios.}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CU-16}    & \textbf{ Crear usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -662,7 +699,7 @@ Los casos de uso definidos para el proyecto son:
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El administrador accede a<<Administrar usuarios>>.
+			\item El administrador accede a <<Administrar usuarios>>.
 			\item El administrador pulsa el botón <<Añadir usuario>>.
 			\item El administrador introduce el nombre, email, contraseña y si es administrador o no.
 			\item El sistema valida el formato y que el email no este duplicado.
@@ -684,14 +721,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-15  Crear usuarios.}
+	\caption{CU-16 Crear usuarios.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-16}    & \textbf{ Borrar usuarios}\\
+		\textbf{CU-17}    & \textbf{ Borrar usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -718,14 +755,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-16  Borrar usuarios.}
+	\caption{CU-17 Borrar usuarios.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-17}    & \textbf{ Modificar rol del usuarios}\\
+		\textbf{CU-18}    & \textbf{ Modificar rol del usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -750,14 +787,14 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Baja  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-17 Modificar rol del usuarios.}
+	\caption{CU-18 Modificar rol del usuarios.}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-17}    & \textbf{ Editar usuario}\\
+		\textbf{CU-19}    & \textbf{ Editar usuario}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -786,7 +823,7 @@ Los casos de uso definidos para el proyecto son:
 		\textbf{Importancia}          & Baja  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-18 Editar usuario.}
+	\caption{CU-19 Editar usuario.}
 \end{table}
 
 
