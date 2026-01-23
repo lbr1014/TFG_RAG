@@ -155,7 +155,7 @@ Los casos de uso definidos para el proyecto son:
 	\item CU-13 Consultar estado de los documentos
 	\item CU-14 Eliminar documento
 	\item CU-15 Gestión de usuarios
-	\item CU-65 Crear usuarios
+	\item CU-16 Crear usuarios
 	\item CU-17 Borrar usuarios
 	\item CU-18 Modificar rol del usuario
 	\item CU-19 Editar usuario
@@ -280,7 +280,7 @@ Los casos de uso definidos para el proyecto son:
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-6, RF-7, RF-8, RF-8.1, RF-9, RF-11 \\
+		\textbf{Requisitos asociados} & RF-6, RF-7, RF-8, RF-9, RF-11, RNF-3, RNF-3.2, RNF-10 \\
 		\textbf{Descripción}          & El usuario hace una pregunta, el sistema recupera contexto por similitud, construye el prompt y genera respuesta que incluya las fuentes. \\
 		\textbf{Precondición}         & Que el usuario este autentificado y la base de datos vectorial este disponible. \\
 		\textbf{Acciones}             &
@@ -350,7 +350,7 @@ Los casos de uso definidos para el proyecto son:
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-11.1.1 \\
+		\textbf{Requisitos asociados} & RF-11.2 \\
 		\textbf{Descripción}          & Permite al usuario borrar consultas del historial. \\
 		\textbf{Precondición}         & Que el usuario este autentificado y existan consultas guardadas. \\
 		\textbf{Acciones}             &
@@ -385,7 +385,7 @@ Los casos de uso definidos para el proyecto son:
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-1, RF-10.3, RF-10.4 \\
+		\textbf{Requisitos asociados} & RF-1, RF-10.3, RF-10.4, RNF-3, RNF-3.1 \\
 		\textbf{Descripción}          & El administrador sube documentos para alimentar o ampliar la base de datos vectorial. \\
 		\textbf{Precondición}         & Que el administrador este autentificado. \\
 		\textbf{Acciones}             &
@@ -418,7 +418,7 @@ Los casos de uso definidos para el proyecto son:
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-12, RF-12.1, RF-12.2 \\
+		\textbf{Requisitos asociados} & RF-12, RF-12.1, RF-12.2, RNF-3, RNF-3.1\\
 		\textbf{Descripción}          & Permite al administrador importar de manera automática las licitaciones a través de \textit{web scraping}. \\
 		\textbf{Precondición}         & Que el administrador este autentificado y haya un programa de \textit{web scraping} funcional. \\
 		\textbf{Acciones}             &
@@ -454,7 +454,7 @@ Los casos de uso definidos para el proyecto son:
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-2, RF-2.1, RF-2.2, RF-2.2.1, RF-2.3, RF-2.3.1, RF-2.3.2 \\
+		\textbf{Requisitos asociados} & RF-2, RF-2.1, RF-2.2, RF-2.2.1, RF-2.3, RF-2.3.1, RF-2.3.2, RNF-3, RNF-3.1 \\
 		\textbf{Descripción}          & El sistema prepara automáticamente los documentos para que puedan incluirse en el sistema. \\
 		\textbf{Precondición}         & Existen documentos cargados pendientes. \\
 		\textbf{Acciones}             &
@@ -521,7 +521,7 @@ Los casos de uso definidos para el proyecto son:
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-5.4, RF-1, RF-10.3 \\
+		\textbf{Requisitos asociados} & RF-1, RF-5.4, RF-10.3 \\
 		\textbf{Descripción}          & Permite al administrador actualizar la base de datos vectorial cuando hay documentos nuevos. \\
 		\textbf{Precondición}         & Hay un administrador autentificado y existen documentos nuevos que añadir a la base de datos vectorial. \\
 		\textbf{Acciones}             &
