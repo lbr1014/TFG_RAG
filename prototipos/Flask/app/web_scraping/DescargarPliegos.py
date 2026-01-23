@@ -47,6 +47,14 @@ async def descargar_pdf_es(context, url: str, expediente: str, nombre_doc: str, 
 
     try:
         contenido = await response.body()
+        ctype = (response.headers.get("content-type") or "").lower()
+
+        # Comprobar que sea un PDF real
+        es_pdf = ("application/pdf" in ctype) or contenido.startswith(b"%PDF-")
+
+        if not es_pdf:
+            print(f"ERROR: la descarga NO es PDF ({ctype}).")
+            return False
     except Exception as e:
         print(
             f"ERROR al leer el cuerpo de la respuesta [{expediente}] {nombre_doc} #{indice}: {e}"

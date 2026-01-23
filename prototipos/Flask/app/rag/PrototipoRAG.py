@@ -697,10 +697,9 @@ def obtener_mejor_chunk(
     info["answer"] = answer
     return info
 
-def index_pdf(pdf_path: Path) -> int:
+def index_pdf(pdf_path: Path, document_id: int | None = None) -> list[VectorBaseDocument]:
     """
     Esta función indexa un PDF para ello lee el texto, lo trocea en chunks, calcula embeddings y guarda los puntos en Qdrant.
-    Devuelve el número de chunks guardados.
     """
     with timed_block(f"total {pdf_path.name}"):
         logger.info("Procesando %s ...", pdf_path.name)
@@ -709,19 +708,20 @@ def index_pdf(pdf_path: Path) -> int:
         try:
             with timed_block(f"leer pdf {pdf_path.name}"):
                 reader = PdfReader(str(pdf_path))
-                full_text = ""
                 info = reader.metadata or {}
                 title = info.get("/Title") or pdf_path.stem
                 doc_hash = pdf_sha256(pdf_path)
+                parts: list[str] = []
                 for page in reader.pages:
-                    full_text += (page.extract_text() or "") + "\n"
+                    parts.append((page.extract_text() or ""))
+                full_text = "\n".join(parts)
         except (PdfReadError, PdfStreamError, Exception) as e:
             logger.error("Error leyendo %s: %s", pdf_path.name, e)
-            return 0
+            return []
 
         if not full_text.strip():
             logger.warning("%s: sin texto extraído.", pdf_path.name)
-            return 0
+            return []
 
         # 2) Chunking
         try:
@@ -729,36 +729,48 @@ def index_pdf(pdf_path: Path) -> int:
                 chunks = chunk_text(full_text)
         except Exception as e:
             logger.error("Error haciendo chunks en %s: %s", pdf_path.name, e)
-            return 0
+            return []
 
         if not chunks:
             logger.warning("%s: sin chunks válidos", pdf_path.name)
-            return 0
+            return []
 
         # 3) Embeddings
         with timed_block(f"embeddings {pdf_path.name}"):
             vectors = embedding_model(chunks, to_list=True)
+            
+        # Seguridad si no coinciden longitudes
+        if len(vectors) != len(chunks):
+            logger.error(
+                "%s: nº chunks (%d) != nº embeddings (%d)",
+                pdf_path.name, len(chunks), len(vectors)
+            )
+            return []
 
         # 4) Guardado en Qdrant
         with timed_block(f"guardar qdrant {pdf_path.name}"):
             docs: list[VectorBaseDocument] = []
+            base_meta = {
+                "filename": pdf_path.name,
+                "title": title,
+                "sha256": doc_hash,
+            }
+            if document_id is not None:
+                base_meta["document_id"] = int(document_id)
+                
             for idx, (chunk, vec) in enumerate(zip(chunks, vectors)):
+                meta = dict(base_meta)
+                meta["segment_index"] = idx
                 docs.append(
                     VectorBaseDocument(
                         content=chunk,
                         embedding=vec,
-                        metadata={
-                            "filename": pdf_path.name,
-                            "title": title,
-                            "segment_index": idx,
-                            "sha256": doc_hash,
-                        },
+                        metadata=meta,
                     )
                 )
             VectorBaseDocument.save_many(docs)
             logger.info("Guardados %d chunks en Qdrant", len(docs))
-
-        return len(docs)
+        return docs
 
 
 def index_pliegos_dir(pliegos_dir: Path) -> dict:

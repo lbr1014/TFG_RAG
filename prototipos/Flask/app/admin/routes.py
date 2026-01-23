@@ -136,6 +136,7 @@ def documents_list_page():
         total_docs=pagination.total,
     )
 
+
 @admin_bp.post("/documents/<int:doc_id>/delete")
 @login_required
 @admin_required
