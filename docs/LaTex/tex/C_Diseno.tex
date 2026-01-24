@@ -12,11 +12,24 @@ Para llevar a cabo la aplicación se han definido las siguientes entidades:
 	\item Documento: esta entidad representa un pdf cargado en la aplicación. Maneja un identificador (id) como clave primaria, el nombre del fichero, el tamaño, la fecha de modificación, el número de \textit{chunks} en la base de datos vectorial, el \textit{hash} del documento y el estado del documento (cargado, procesado, indexado, fallido). 
 	\item \textit{Chunk}: esta entidad representa cada trozo de texto en el que se dividen los documentos para poder generar los \textit{embeddings}. Maneja el texto que forma al propio \textit{chunk}, el \textit{embedding} y los metadatos del \textit{chunk} (nombre del archivo, título y posición dentro del documento).
 	\item \textit{Embedding}: esta entidad se corresponde con la representación vectorial utilizada para la base de datos vectorial. Va a permitir recuperar \textit{chunks} por similitud. La entidad maneja un vector asociado al \textit{chunk}.
+	\item \textit{ConsultaCunk}: esta entidad modela la relación entre las consultas y los \textit{chunks} permitiendo que una consulta tenga varios \textit{chunk} y que un \textit{chunk} pueda servir para varias consultas. La entidad maneja el identificador de la consulta, el identificador del \textit{chunk}, la similitud y el \textit{ranking}.
 \end{itemize}
 
-\textbf{Diagrama E/R}
+Las relaciones entre las entidades son:
+\begin{itemize}
+\tightlist
+	\item Un usuario puede hacer cero o varias consultas.
+	\item Cada consulta pertenece a un usuario.
+	\item Un documento tiene cero (si esta cargado pero no indexado) o varios \textit{chunks}.
+	\item Cada \textit{chunk} pertenece a un documento.
+	\item Un \textit{chunk} puede tener cero o un \textit{embedding}.
+	\item Cada \textit{embedding} pertenece a un \textit{chunk}.
+	\item Una consulta usa uno o varios \textit{chunk}.
+	\item Un \textit{chunk} puede ser usado por cero o varias consultas.
+\end{itemize}
 
-\textbf{Diagrama relacional}
+
+\imagenflotante{Diagramas/Entidad_Relacion}{Diagrama Entidad/Relación.}
 
 \imagenflotante{Diagramas/Relacional}{Diagrama relacional.}
 
