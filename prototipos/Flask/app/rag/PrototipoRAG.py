@@ -581,7 +581,7 @@ def chunk_text(text: str, overlap_ratio: float = 0.1) -> list[str]:
     return chunks
 
 
-def recuperacion_chunk(user_query: str, k: int = 1) -> list[VectorBaseDocument]:
+def recuperacion_chunk(user_query: str, k: int = 10) -> list[VectorBaseDocument]:
     """
     Dada una pregunta del usuario, recupera los chunks más similares
     desde Qdrant.

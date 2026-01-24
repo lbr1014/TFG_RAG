@@ -8,10 +8,14 @@ from flask_login import current_user
 
 from app.extensions import db
 from app.consulta import Consulta
+from app.chunk import Chunk
+from app.consultaChunk import ConsultaChunk
+from sqlalchemy import or_
 
 logger = logging.getLogger(__name__)
 
 from .PrototipoRAG import obtener_mejor_chunk
+from qdrant_client import models as qmodels
 
 
 def rag_answer(question: str) -> Dict[str, Any]:
@@ -59,25 +63,64 @@ def rag_answer(question: str) -> Dict[str, Any]:
     # Guardado en BBDD
     try:
         if current_user and getattr(current_user, "is_authenticated", False):
-            fragmentos = {
-                "title": data.get("title", ""),
-                "filename": data.get("filename", ""),
-                "segment_index": data.get("segment_index", -1),
-                "chunks": [data.get("chunk", "")] if data.get("chunk") else [],
-            }
 
             consulta = Consulta(
                 user_id=int(current_user.id),
                 pregunta=question,
                 respuesta=str(data.get("answer", "")),
-                fragmentos=fragmentos,
                 tiempo_respuestas=float(elapsed),
             )
             db.session.add(consulta)
+            db.session.flush()
+            
+            retrieved = data.get("retrieved", []) or []
+            for item in retrieved[:10]:
+                qid = (item.get("qdrant_point_id") or "").strip()
+                chunk_obj = None
+                if qid:
+                    chunk_obj = Chunk.query.filter_by(qdrant_point_id=qid).first()
+                    
+                if chunk_obj is None:
+                    doc_id = item.get("document_id")
+                    doc_sha = item.get("doc_sha256")
+                    seg_idx = item.get("segment_index")
+                    if doc_id is not None and doc_sha and seg_idx is not None:
+                        chunk_obj = Chunk.query.filter_by(
+                            document_id=int(doc_id),
+                            doc_sha256=str(doc_sha),
+                            segment_index=int(seg_idx),
+                        ).first()
+                        
+                if chunk_obj is None:
+                    continue
+
+                db.session.add(
+                    ConsultaChunk(
+                        consulta_id=int(consulta.id),
+                        chunk_id=int(chunk_obj.id),
+                        similitud=float(item.get("similitud", 0.0)),
+                        ranking=int(item.get("ranking", 0)),
+                    )
+                )
+
             db.session.commit()
+
     except Exception:
         logger.exception("No se pudo guardar la consulta en BBDD")
         db.session.rollback()
 
     data["elapsed_s"] = round(elapsed, 4)
     return data
+
+def qdrant_search_with_scores(qdrant, collection_name: str, query_vector: list[float], limit: int = 10):
+    """
+    Devuelve lista de ScoredPoint de Qdrant (incluye .id y .score).
+    """
+    res = qdrant.query_points(
+        collection_name=collection_name,
+        query=query_vector,
+        limit=limit,
+        with_payload=True,
+        with_vectors=False,
+    )
+    return getattr(res, "points", res) 

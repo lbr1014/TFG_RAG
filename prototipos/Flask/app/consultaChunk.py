@@ -1,0 +1,23 @@
+from __future__ import annotations
+
+from sqlalchemy import UniqueConstraint
+from .extensions import db
+
+class ConsultaChunk(db.Model):
+    __tablename__ = "consultaChunks"
+    
+    consulta_id = db.Column(db.Integer, db.ForeignKey("consultas.id"),  primary_key=True)
+    chunk_id = db.Column(db.Integer, db.ForeignKey("chunks.id"),  primary_key=True)
+
+    similitud = db.Column(db.Float, nullable=False)
+    ranking = db.Column(db.Integer, nullable=False)
+    
+    consulta = db.relationship(
+        "Consulta",
+        backref=db.backref("consultaChunks", lazy=True, cascade="all, delete-orphan"),
+    )
+    chunk = db.relationship("Chunk")
+
+    __table_args__ = (
+        UniqueConstraint("consulta_id", "ranking", name="uq_consulta_rank"),
+    )

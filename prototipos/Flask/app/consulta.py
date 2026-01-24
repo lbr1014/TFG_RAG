@@ -21,9 +21,6 @@ class Consulta(db.Model):
     pregunta = db.Column(db.Text, nullable=False)
     respuesta = db.Column(db.Text, nullable=False)
 
-    # Los documentos en los que se baso
-    fragmentos = db.Column(JSON, nullable=False, default=dict)
-
     # El tiempo que tardo en responder
     tiempo_respuestas = db.Column(db.Float, nullable=False)
 
