@@ -50,7 +50,7 @@ class BaseTestCase(unittest.TestCase):
         self._created_user_ids.append(u.id)
         return u
     
-    def login(self, email="test@example.com", password="contraseña", follow_redirects=True):
+    def login(self, email="test@example.com", password="contraseña", follow_redirects=False):
         return self.client.post(
             "/login",
             data={"email": email, "password": password},

@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import time
+import atexit
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
@@ -192,11 +193,26 @@ def _make_qdrant_client() -> QdrantClient:
     """
     data_dir = Path(__file__).parent / "qdrant_data"
     data_dir.mkdir(exist_ok=True)
-    return QdrantClient(path=str(data_dir))
+    try:
+        return QdrantClient(path=str(data_dir))
+    except Exception as e:
+        logger.warning("No se pudo inicializar Qdrant local: %s", e)
+        return None
 
 
 # Cliente global de Qdrant
 qdrant = _make_qdrant_client()
+
+@atexit.register
+def _close_qdrant():
+    global qdrant
+    try:
+        if qdrant is not None:
+            qdrant.close()
+    except Exception as e:
+        logger.debug("Error cerrando Qdrant al salir: %s", e)
+    finally:
+        qdrant = None
 
 def pdf_sha256(path: Path) -> str:
     """
@@ -342,13 +358,21 @@ def qdrant_get_payloads(point_ids: list[str]) -> dict[str, dict]:
     ids = [i for i in point_ids if i]
     if not ids:
         return {}
-    res = qdrant.retrieve(
-        collection_name=VectorBaseDocument.get_collection_name(),
-        ids=ids,
-        with_payload=True,
-        with_vectors=False,
-    )
-    out = {}
+    try:
+        res = qdrant.retrieve(
+            collection_name=VectorBaseDocument.get_collection_name(),
+            ids=ids,
+            with_payload=True,
+            with_vectors=False,
+        )
+    except ValueError as e:
+        logger.warning("Qdrant sin colección (%s). Devolviendo payloads vacíos.", e)
+        return {}
+    except Exception as e:
+        logger.warning("Error leyendo payloads de Qdrant: %s. Devolviendo payloads vacíos.", e)
+        return {}
+    
+    out:  dict[str, dict] = {}
     for r in (res or []):
         out[str(r.id)] = (r.payload or {})
     return out
@@ -613,19 +637,21 @@ def recuperacion_chunk_con_scores(user_query: str, k: int = 10) -> list[qmodels.
     """
     # Embedding de la pregunta
     query_vector = embedding_model(user_query, to_list=True)
+    try:
+        VectorBaseDocument._ensure_collection()
 
-    VectorBaseDocument._ensure_collection()
-
-    # Query con scores
-    res = qdrant.query_points(
-        collection_name=VectorBaseDocument.get_collection_name(),
-        query=query_vector,
-        limit=k,
-        with_payload=True,
-        with_vectors=False,
-    )
-    return getattr(res, "points", res)
-
+        # Query con scores
+        res = qdrant.query_points(
+            collection_name=VectorBaseDocument.get_collection_name(),
+            query=query_vector,
+            limit=k,
+            with_payload=True,
+            with_vectors=False,
+        )
+        return getattr(res, "points", res)
+    except Exception as e:
+        logger.warning("Qdrant no disponible para recuperar chunks: %s", e)
+        return []
 
 
 # =========================
