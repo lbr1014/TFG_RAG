@@ -17,7 +17,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Generic, Optional, Type, TypeVar, Dict
+from typing import Any, Generic, Iterable, Optional, Type, TypeVar, Dict
 from uuid import UUID, uuid4
 
 import requests
@@ -570,40 +570,18 @@ def chunk_text(text: str, overlap_ratio: float = 0.1) -> list[str]:
     current: list[tuple[str, int]] = []
     current_tokens = 0
 
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-
-        try:
-            tokens = tokenizer.tokenize(line)
-        except Exception as e:
-            # Si el tokenizer falla con una línea extraña, la ignoramos
-            logger.warning("No se puede tokenizar una línea: %s", e)
+    for line in iter_clean_lines(text):
+        line_tokens = token_len(tokenizer, line)
+        if line_tokens is None:
             continue
                 
-        line_tokens = len(tokens)
         # Si al añadir esta línea se supera el límite, se guarda el chunk actual
         if current_tokens + line_tokens > max_len and current:
             
             # Se guarda el chunk actual
-            chunk_text_str = " ".join(long for (long, _) in current).strip()
-            if chunk_text_str:
-                chunks.append(chunk_text_str)
-                
-            # Se calcula las líneas que se reutilizan como solapamiento
-            overlap: list[tuple[str, int]] = []
-            tokens_in_overlap = 0
-            for long, t in reversed(current):
-                if tokens_in_overlap + t > overlap_tokens:
-                    break
-                overlap.append((long, t))
-                tokens_in_overlap += t
-            overlap.reverse()  # las volvemos a poner en orden original
-            
+            get_chunk(chunks, current)            
             # Se empieza un nuevo chunk con el solapamiento
-            current = overlap.copy()
-            current_tokens = tokens_in_overlap
+            current, current_tokens = token_overlap(current, overlap_tokens)
         
         # Añadimos la línea actual al chunk
         current.append((line, line_tokens))
@@ -611,12 +589,55 @@ def chunk_text(text: str, overlap_ratio: float = 0.1) -> list[str]:
 
     # Último chunk pendiente
     if current:
-        chunk_text_str = " ".join(long for (long, _) in current).strip()
-        if chunk_text_str:
-            chunks.append(chunk_text_str)
+        get_chunk(chunks, current)  
 
     return chunks
 
+def token_len(tokenizer, text: str) -> int | None:
+    """
+    Devuelve el número de tokens o None si falla la tokenización.
+    """
+    try:
+        return len(tokenizer.tokenize(text))
+    except Exception as e:
+        logger.warning("No se puede tokenizar una línea: %s", e)
+        return None
+
+def get_chunk(chunks: list[str], current: list[tuple[str, int]]) -> None:
+    """
+    Vuelca el chunk actual si hay contenido.
+    """
+    chunk = " ".join(s for s, _ in current).strip()
+    if chunk:
+        chunks.append(chunk)
+
+def token_overlap(
+    current: list[tuple[str, int]],
+    overlap_tokens: int,
+) -> tuple[list[tuple[str, int]], int]:
+    """
+    Calcula el solapamiento (líneas finales) y tokens solapados.
+    """
+    overlap: list[tuple[str, int]] = []
+    tokens_in_overlap = 0
+
+    for s, t in reversed(current):
+        if tokens_in_overlap + t > overlap_tokens:
+            break
+        overlap.append((s, t))
+        tokens_in_overlap += t
+
+    overlap.reverse()
+    return overlap, tokens_in_overlap
+
+def iter_clean_lines(text: str) -> Iterable[str]:
+    """
+    Itera líneas limpias (strip) y no vacías.
+    """
+    for line in text.splitlines():
+        line = line.strip()
+        if line:
+            yield line
 
 def recuperacion_chunk(user_query: str, k: int = 10) -> list[VectorBaseDocument]:
     """
