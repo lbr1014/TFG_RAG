@@ -21,8 +21,10 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run tests with coverage
+        working-directory: prototipos/Flask
+        env:
+          PYTHONPATH: ${{ github.workspace }}/prototipos/Flask
         run: |
-          cd prototipos/Flask
           pytest --cov=app --cov-report=xml
 
       - name: SonarQube Scan
