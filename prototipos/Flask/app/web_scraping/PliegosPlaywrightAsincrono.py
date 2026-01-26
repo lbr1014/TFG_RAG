@@ -77,7 +77,7 @@ async def eleccion_organo(frame_arbol: Frame, texto_objetivo: str) -> None:
     await btn_anadir.click()
 
 
-async def pestana_diputacion(busqueda: str) -> str:
+def pestana_diputacion(busqueda: str) -> str:
     """
     Devuelve la clave de pestaña a abrir según el texto de búsqueda.
 
@@ -126,27 +126,28 @@ async def ir_pestana(page: Page, clave: str) -> None:
         ValueError: Si la pestaña no está mapeada.
         PlaywrightTimeoutError: Si no se puede abrir la pestaña.
     """
+    VISTA = r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
 
     mapping = {
         "Perfil del Contratante": (
-            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_" + r"\:perfilComp\:textLinkOff"
+            VISTA + r"\:perfilComp\:textLinkOff"
         ),
         "Documentos": (
-            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_" + r"\:perfilComp\:linkPrepDocs"
+            VISTA + r"\:perfilComp\:linkPrepDocs"
         ),
         "Licitaciones": (
-            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_" + r"\:perfilComp\:linkPrepLic"
+            VISTA + r"\:perfilComp\:linkPrepLic"
         ),
         "Contratos Menores": (
-            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
+            VISTA
             + r"\:perfilComp\:linkPrepContratosMenores"
         ),
         "Encargos a medios propios": (
-            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
+            VISTA
             + r"\:perfilComp\:linkPrepEncargosMP"
         ),
         "Consultas preliminares": (
-            r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_"
+            VISTA
             + r"\:perfilComp\:linkPrepConsultasAnuncio"
         ),
     }
@@ -190,11 +191,11 @@ async def extraer_licitaciones(page: Page) -> list[dict]:
     total = await filas.count()
     print(f"Filas en la página: {total}")
 
-    botonSiguiente = page.locator(
+    boton_siguiente = page.locator(
         r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:form1\:siguienteLink"
     )
-    await botonSiguiente.wait_for(state="visible")
-    await botonSiguiente.scroll_into_view_if_needed()
+    await boton_siguiente.wait_for(state="visible")
+    await boton_siguiente.scroll_into_view_if_needed()
     j = 0
     pagina = 1
     resultados = []
@@ -230,10 +231,10 @@ async def extraer_licitaciones(page: Page) -> list[dict]:
             await tabla.wait_for(state="visible")
             await page.wait_for_load_state("networkidle")
 
-        if not await botonSiguiente.is_visible():
+        if not await boton_siguiente.is_visible():
             break
 
-        await botonSiguiente.click(force=True)
+        await boton_siguiente.click(force=True)
         await page.wait_for_load_state("domcontentloaded")
         await tabla.wait_for(state="visible")
         await page.wait_for_load_state("networkidle")
@@ -547,7 +548,7 @@ async def run() -> None:
             await page.wait_for_load_state("networkidle")
 
             # Va a la pestaña correcta segun la query
-            destino = await pestana_diputacion(QUERY)
+            destino = pestana_diputacion(QUERY)
             print(f"Iré a la pestaña: {destino}")
             await ir_pestana(page, destino)
 

@@ -55,7 +55,7 @@ class AuthTest(BaseTestCase):
     def test_signup(self):
         r = self.client.get("/singup")
         self.assertEqual(r.status_code, 200)
-        self.assertTrue(len(r.data) > 0)
+        self.assertGreater(len(r.data), 0)
 
     def test_signup_correcto(self):
         r = self.client.post(
@@ -102,6 +102,5 @@ class AuthTest(BaseTestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"Ya existe un usuario con ese email.", r.data)
 
-        # asegura que no creó otro usuario extra con ese email
         users = User.query.filter_by(email="dup@example.com").all()
         self.assertEqual(len(users), 1)

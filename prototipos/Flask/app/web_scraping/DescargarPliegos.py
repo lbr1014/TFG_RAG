@@ -213,7 +213,7 @@ def iterar_paginas(items: list[dict]) -> Iterable[Tuple[str, str, str]]:
         documentos = datos.get("Documentos") or []
         for doc in documentos:
             nombre_doc = (doc.get("Documento") or "").strip()
-            if not es_pliego:
+            if not es_pliego(nombre_doc):
                 continue
 
             url = primera_url(doc)
