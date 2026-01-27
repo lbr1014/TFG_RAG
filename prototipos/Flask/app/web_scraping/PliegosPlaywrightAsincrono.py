@@ -388,25 +388,27 @@ async def parse_documentos(page: Page) -> Optional[list[dict[str, str]]]:
         await set_if_text(doc_data, "Documento", doc_td)
 
         # Columna 3: Ver documentos
-        links_td = row.locator("td:nth-of-type(3)")
-        hrefs: list[str] = []
-        if await links_td.count():
-            enlaces = links_td.locator("a[href]")
-            k = await enlaces.count()
-            for j in range(k):
-                a = enlaces.nth(j)
-                href = await a.get_attribute("href")
-                if href and href != "#":
-                    hrefs.append(urljoin(page.url, href))
-        if hrefs:
-            doc_data["Ver documentos (urls)"] = " | ".join(hrefs)
-
+        await documentos_extract_links(page, row.locator("td:nth-of-type(3)"), doc_data)
+        
         # Columna 4: DOUE
         await parse_documentos_doue(page,row,doc_data)
                             
         if doc_data:
             documentos.append(doc_data)
     return documentos or None
+
+async def documentos_extract_links(page: Page, links_td: Locator, doc_data: dict[str, str]) -> None:
+    hrefs: list[str] = []
+    if await links_td.count():
+        enlaces = links_td.locator("a[href]")
+        k = await enlaces.count()
+        for j in range(k):
+            a = enlaces.nth(j)
+            href = await a.get_attribute("href")
+            if href and href != "#":
+                hrefs.append(urljoin(page.url, href))
+    if hrefs:
+        doc_data["Ver documentos (urls)"] = " | ".join(hrefs)
 
 async def parse_documentos_doue(page: Page, row: Locator, doc_data: dict[str, str]) -> None:
     doue_td = row.locator("td:nth-of-type(4)")
@@ -434,9 +436,11 @@ async def parse_documentos_doue(page: Page, row: Locator, doc_data: dict[str, st
 
 async def set_if_text(datos: dict[str, str], key: str, value: Locator) -> None:
         
-    if await value.count():
-        value_text = await value.inner_text()
-        datos[key] = _norm(value_text)
+    if not await value.count():
+        return
+    txt = _norm(await value.first.inner_text())
+    if txt:
+        datos[key] = txt
     
     
 async def guardar_licitacion_json(resultados: List[Any]) -> None:
@@ -541,7 +545,7 @@ async def run() -> None:
             
 
         except PWTimeoutError as e:
-            print("Timeout al cargar o encontrar elementos: {e}.")
+            print("Timeout al cargar o encontrar elementos: ", e)
         finally:
             await guardar_licitacion_json(resultado)
             await context.tracing.stop()
