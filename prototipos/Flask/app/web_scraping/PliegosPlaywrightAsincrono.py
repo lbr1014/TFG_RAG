@@ -2,7 +2,7 @@ import asyncio
 import json
 import re
 import time
-from typing import Any, List
+from typing import Any, List, Optional
 from urllib.parse import urljoin
 
 from playwright.async_api import Frame, Page, async_playwright, expect
@@ -257,62 +257,81 @@ async def extraer_detalles_licitacion(page: Page) -> dict:
     head_sel = (
         r"#viewns_Z7_AVEQAI930OBRD02JPMTPG21006_\:form1 > div > div > div.row > table"
     )
-    head_table = page.locator(head_sel)
-    if await head_table.count():
-        await head_table.first.wait_for(state="visible")
-        head_rows = head_table.locator("tbody > tr")
-
-        # Fila 1: Órgano (url)
-        if await head_rows.nth(0).count():
-            r0 = head_rows.nth(0)
-
-            # URL del Órgano de contratación (solo href)
-            organo_a = r0.locator("a[href][id*=':URLOrganoContratacion']").first
-            if await organo_a.count():
-                href = await organo_a.get_attribute("href")
-                if href and href != "#":
-                    datos["Órgano de contratación"] = urljoin(page.url, href)
-
-            # ID del órgano
-            id_oc_el = r0.locator("span[id*=':form1:text_IdOrganoContratacion']").first
-            if await id_oc_el.count():
-                datos["ID del Órgano de Contratación"] = _norm(
-                    await id_oc_el.inner_text()
-                )
-
-            # Ubicación orgánica
-            ubig_el = r0.locator("span[id*=':form1:text_UbicacionOrganica']").first
-            if await ubig_el.count():
-                datos["Ubicación orgánica"] = _norm(await ubig_el.inner_text())
-
-        # Fila 2: Expediente (texto)
-        if await head_rows.nth(1).count():
-            r1 = head_rows.nth(1)
-            exp_el = r1.locator("span[id*=':form1:text_Expediente']").first
-            if await exp_el.count():
-                datos["Expediente"] = _norm(await exp_el.inner_text())
-
-        # Fila 3: Objeto del contrato (texto)
-        if await head_rows.nth(2).count():
-            r2 = head_rows.nth(2)
-            obj_el = r2.locator("span[id*=':form1:text_ObjetoContrato']").first
-            if await obj_el.count():
-                datos["Objeto del contrato"] = _norm(await obj_el.inner_text())
-
-        # Fila 4: Enlace a la licitación (solo href)
-        if await head_rows.nth(3).count():
-            r3 = head_rows.nth(3)
-            lic_a = r3.locator("a[href][id*=':form1:link_EnlaceLicPLACE']").first
-            if await lic_a.count():
-                href = await lic_a.get_attribute("href")
-                if href and href != "#":
-                    datos["Enlace a la licitación"] = urljoin(page.url, href)
+    await parse_head_table(page, datos, head_sel)
 
     # Localiza la segunda tabla
-    tabla_sel = (
+    tabla2_sel = (
         r"#viewns_Z7_AVEQAI930OBRD02JPMTPG21006_\:form1 > div > div >"
         + r"table:nth-child(3)"
     )
+    await parse_label_value_table(page, datos, tabla2_sel)
+
+    # Localiza la tercera tabla
+    tabla3_sel = (
+        r"#viewns_Z7_AVEQAI930OBRD02JPMTPG21006_\:form1 > div > div >"
+        + r"table:nth-child(5)"
+    )
+    await parse_label_value_table(page, datos, tabla3_sel)
+
+    # Documentos
+    documentos = await parse_documentos(page)
+    
+    if documentos:
+        datos["Documentos"] = documentos
+
+    return datos
+
+async def parse_head_table(page: Page, datos: dict[str, object], head_sel: str) -> None:
+    head_table = page.locator(head_sel)
+    if not await head_table.count():
+        return
+    
+    await head_table.first.wait_for(state="visible")
+    head_rows = head_table.locator("tbody > tr")
+
+    # Fila 1: Órgano (url)
+    r0 = head_rows.nth(0)
+
+    # URL del Órgano de contratación (solo href)
+    organo_a = r0.locator("a[href][id*=':URLOrganoContratacion']").first
+    if await organo_a.count():
+        href = await organo_a.get_attribute("href")
+        if href and href != "#":
+            datos["Órgano de contratación"] = urljoin(page.url, href)
+
+    # ID del órgano
+    id_oc_el = r0.locator("span[id*=':form1:text_IdOrganoContratacion']").first
+    if await id_oc_el.count():
+        datos["ID del Órgano de Contratación"] = _norm(
+            await id_oc_el.inner_text()
+        )
+
+    # Ubicación orgánica
+    ubig_el = r0.locator("span[id*=':form1:text_UbicacionOrganica']").first
+    if await ubig_el.count():
+        datos["Ubicación orgánica"] = _norm(await ubig_el.inner_text())
+
+    # Fila 2: Expediente (texto)
+    r1 = head_rows.nth(1)
+    exp_el = r1.locator("span[id*=':form1:text_Expediente']").first
+    if await exp_el.count():
+        datos["Expediente"] = _norm(await exp_el.inner_text())
+
+    # Fila 3: Objeto del contrato (texto)
+    r2 = head_rows.nth(2)
+    obj_el = r2.locator("span[id*=':form1:text_ObjetoContrato']").first
+    if await obj_el.count():
+        datos["Objeto del contrato"] = _norm(await obj_el.inner_text())
+
+    # Fila 4: Enlace a la licitación (solo href)
+    r3 = head_rows.nth(3)
+    lic_a = r3.locator("a[href][id*=':form1:link_EnlaceLicPLACE']").first
+    if await lic_a.count():
+        href = await lic_a.get_attribute("href")
+        if href and href != "#":
+            datos["Enlace a la licitación"] = urljoin(page.url, href)
+
+async def parse_label_value_table(page: Page, datos: dict[str, object], tabla_sel: str) -> None:
     tabla = page.locator(tabla_sel)
     await tabla.first.wait_for(state="visible")
 
@@ -338,45 +357,8 @@ async def extraer_detalles_licitacion(page: Page) -> dict:
 
         value = _norm(value)
         datos[label] = value
-
-    # Localiza la tercera tabla
-    tabla_sel = (
-        r"#viewns_Z7_AVEQAI930OBRD02JPMTPG21006_\:form1 > div > div >"
-        + r"table:nth-child(5)"
-    )
-    tabla = page.locator(tabla_sel)
-    if await tabla.count():
-        await tabla.first.wait_for(state="visible")
-
-        filas = tabla.locator("tbody.tabla-detalle-con-hijos > tr")
-        n2 = await filas.count()
-
-        for i in range(n2):
-            row = filas.nth(i)
-
-            label_loc = row.locator(
-                "span.cl-blue-dark.bold, span[id*=':form1:label_']"
-            ).first
-            label = (
-                _norm(await label_loc.inner_text()) if await label_loc.count() else None
-            )
-            if not label:
-                continue
-
-            value_loc = row.locator("span[id*=':form1:text_']").first
-            if await value_loc.count():
-                value = await value_loc.inner_text()
-            else:
-                right_col = row.locator("div.col-lg-8").first
-                value = (
-                    await right_col.inner_text() if await right_col.count() else None
-                )
-
-            value = _norm(value)
-            datos[label] = value
-
-    # Documentos
-
+        
+async def parse_documentos(page: Page) -> Optional[list[dict[str, str]]]:
     docs_sel = "#myTablaDetalleVISUOE"
     docs_table = page.locator(docs_sel)
     if await docs_table.count():
@@ -393,15 +375,11 @@ async def extraer_detalles_licitacion(page: Page) -> dict:
 
             # Columna 1: Publicación en plataforma
             pub_td = row.locator("td:nth-of-type(1)")
-            if await pub_td.count():
-                pub_text = await pub_td.inner_text()
-                doc_data["Publicación en plataforma"] = _norm(pub_text)
+            await set_if_text(doc_data, "Publicación en plataforma", pub_td)
 
             # Columna 2: Documento
             doc_td = row.locator("td:nth-of-type(2)")
-            if await doc_td.count():
-                doc_text = await doc_td.inner_text()
-                doc_data["Documento"] = _norm(doc_text)
+            await set_if_text(doc_data, "Documento", doc_td)
 
             # Columna 3: Ver documentos
             links_td = row.locator("td:nth-of-type(3)")
@@ -448,13 +426,15 @@ async def extraer_detalles_licitacion(page: Page) -> dict:
                         
             if doc_data:
                 documentos.append(doc_data)
-                
-            if documentos:
-                datos["Documentos"] = documentos
+    return documentos
 
-    print(f"\nLA TABLA ES: {datos}")
-
-    return datos
+async def set_if_text(datos: dict, key: str, value: Optional[str]) -> None:
+        
+    if await value.count():
+        value_text = await value.inner_text()
+        datos[key] = _norm(value_text)
+    
+    
 
 
 async def guardar_licitacion_json(resultados: List[Any]) -> None:
