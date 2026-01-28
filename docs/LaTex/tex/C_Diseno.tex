@@ -57,15 +57,15 @@ Los prototipos iniciales que se crearon se ilustran en las figuras ~\ref{fig:Dis
 \imagenflotante{Diseño_interfaces/prototipos/Edit_user}{Prototipo de la página de edición del usuario.}
 \imagenflotante{Diseño_interfaces/prototipos/Documents}{Prototipo de la página de gestión de documentos.}
 
-Aunque estos prototipos se asemejan mucho a las interfaces finales se han realizado diversos cambios. Por ejemplo se ha cambiado la cabecera para aportar más información como el nombre del usuario que inicia sesión, su rol (usuario normal o administrador) y su último inicio de sesión ~\ref{fig:Diseño_interfaces/Cabecera}. Además, se ha añadido información relevante que no se había valorado inicialmente a la tabla del historial de consultas y a la de documentos cargados. En la tabla del historial de consultas se han añadido diversos campos. El primero ha sido uno llamado documento el cual indica a que documento pertenece el \textit{chunk} principal.......... 
-Además, para mejorar la legibilidad de la tabla se ha decidido ubicar la respuesta debajo de la fila en un desplegable. 
-Por su parte, en la tabla donde se muestran los documentos cargados del sistema se han añadido dos columnas una que indica el tamaño del documento y otra que indica el estado de ese documento en el sistema (cargado, indexado o fallido) ~\ref{fig:Diseño_interfaces/Table_documents}.
-
-\textbf{(meter figuras de las tablas)}
+Aunque estos prototipos se asemejan mucho a las interfaces finales se han realizado diversos cambios. Por ejemplo se ha cambiado la cabecera para aportar más información como el nombre del usuario que inicia sesión, su rol (usuario normal o administrador) y su último inicio de sesión ~\ref{fig:Diseño_interfaces/Cabecera}. Además, se ha añadido información relevante que no se había valorado inicialmente a la tabla del historial de consultas y a la de documentos cargados. En la tabla del historial de consultas se han añadido diversos campos para aportar toda la información relevante sobre la consulta. Añadiendo el documento al que pertenece el \textit{chunk} principal y la fecha en la que el usuario hizo la consulta. Para el administrador, también, se ha añadido una columna en la que se indica el nombre del usuario que hizo la consulta. Además, para mejorar la legibilidad de la tabla se ha decidido ubicar la respuesta debajo de la fila en un desplegable ~\ref{fig:Diseño_interfaces/Table_asks}. Por su parte, en la tabla donde se muestran los documentos cargados del sistema se han añadido dos columnas una que indica el tamaño del documento y otra que indica el estado de ese documento en el sistema (cargado, indexado o fallido) ~\ref{fig:Diseño_interfaces/Table_documents}. Otro aspecto relevante es que en la página para realizar la consulta se ha añadido un desplegable para ver los \textit{chunks} utilizados  ~\ref{fig:Diseño_interfaces/RAG_def}.
 
 \imagenflotante{Diseño_interfaces/Cabecera}{Diseño de interfaz - Cabecera.}
 
+\imagenflotante{Diseño_interfaces/Table_asks}{Diseño de interfaz - Historial de consultas.}
+
 \imagenflotante{Diseño_interfaces/Table_documents}{Diseño de interfaz - Tabla de documentos cargados.}
+
+\imagenflotante{Diseño_interfaces/RAG_def}{Diseño de interfaz - Interfaz de consulta al modelo.}
 
 En estos diagramas  ~\ref{fig:Diagramas/Navegabilidad_admin} y ~\ref{fig:Diagramas/Navegabilidad_normal} se muestra como sería la navegabilidad de los usuario por la aplicación dependiendo del rol que tienen (administrador o usuario normal).
 
