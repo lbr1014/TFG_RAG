@@ -25,7 +25,7 @@ def upgrade():
         'lydiab293@gmail.com',
         'scrypt:32768:8:1$pl74Bt5pwnEUvxuX$3037992e1373b196b4e42fe4b56aea5410ef7c2602dc57a0686fd2d7b741c476f512441b39c4680c566c47b93205be9a6ebefd4db9341bdd07a9078547aa958f',
         NULL,
-        1
+        TRUE
     WHERE NOT EXISTS (
         SELECT 1 FROM users WHERE email = 'lydiab293@gmail.com'
     );
