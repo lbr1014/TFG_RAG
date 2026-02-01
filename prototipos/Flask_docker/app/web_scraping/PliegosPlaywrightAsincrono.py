@@ -2,6 +2,8 @@ import asyncio
 import json
 import re
 import time
+import os
+from pathlib import Path
 from typing import Any, List, Optional
 from urllib.parse import urljoin
 
@@ -173,7 +175,7 @@ async def ir_pestana(page: Page, clave: str) -> None:
     await page.wait_for_timeout(400)
 
 
-async def extraer_licitaciones(page: Page) -> list[dict]:
+async def extraer_licitaciones(page: Page, resultados: list[dict], index: dict[str, int]) -> list[dict]:
     """
     Recorre las licitaciones de la página entrando en cada una
     Argumentos:
@@ -220,7 +222,15 @@ async def extraer_licitaciones(page: Page) -> list[dict]:
             await page.wait_for_timeout(400)
 
             datos = await extraer_detalles_licitacion(page)
-            resultados.append({"datos": datos})
+            item = {"datos": datos}
+            
+            nuevo = actualizar_por_expediente(resultados, index, item)
+            await guardar_licitacion_json(resultados)
+            
+            if nuevo:
+                print(f"Guardada nueva licitación: {datos.get('Expediente')}")
+            else:
+                print(f"Actualizada (duplicado): {datos.get('Expediente')}")
 
             j += 1
             print(f"Licitación visitada #{i + 1} Total {j}")
@@ -443,24 +453,74 @@ async def set_if_text(datos: dict[str, str], key: str, value: Locator) -> None:
         datos[key] = txt
     
     
-async def guardar_licitacion_json(resultados: List[Any]) -> None:
+async def guardar_licitacion_json(resultados: List[dict]) -> None:
     """
-    Guarda las licitaciones en OUTPUT_JSON como una lista de objetos {datos, documentos}
+    Guarda las licitaciones en OUTPUT_JSON como una lista de objetos {datos, documentos} de manera incremental.
 
     Argumentos:
         resultados: La lista con los resultados que se van a almacenar en el json
     """
 
     def _write():
-        with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
+        path = Path(OUTPUT_JSON)
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        with tmp.open("w", encoding="utf-8") as f:
             json.dump(resultados, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, path)
 
     await asyncio.to_thread(_write)
+    
+def cargar_resultados_existentes() -> list[dict]:
+    """
+    Lee OUTPUT_JSON si existe y devuelve una lista.
+    Si no existe o está corrupto, devuelve [] (para no romper la ejecución).
+    """
+    path = Path(OUTPUT_JSON)
+    if not path.exists():
+        return []
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except Exception:
+        # Si el archivo quedó a medio escribir o corrupto, no tiramos la ejecución
+        return []
 
+def actualizar_por_expediente(
+    resultados: list[dict],
+    index: dict[str, int],
+    item: dict
+) -> bool:
+    """
+    Inserta o actualiza un item en 'resultados' usando 'Expediente' como clave única.
+    Devuelve True si se insertó nuevo, False si era duplicado (y se actualizó).
+    """
+    datos = item.get("datos") or {}
+    expediente = (datos.get("Expediente") or "").strip()
+
+    if not expediente:
+        resultados.append(item)
+        return True
+
+    if expediente in index:
+        resultados[index[expediente]] = item 
+        return False
+
+    index[expediente] = len(resultados)
+    resultados.append(item)
+    return True
 
 # ========== MAIN ============
 async def run() -> None:
-    resultado = []
+    resultado = cargar_resultados_existentes()
+    
+    # Construye índice por Expediente a partir de lo ya guardado
+    index: dict[str, int] = {}
+    for i, it in enumerate(resultado):
+        exp = ((it.get("datos") or {}).get("Expediente") or "").strip()
+        if exp:
+            index[exp] = i
+    
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
@@ -543,8 +603,7 @@ async def run() -> None:
 
             # Extrae las licitaciones y las guarda
             if destino == "Licitaciones":
-                resultado = await extraer_licitaciones(page)
-            
+                resultado = await extraer_licitaciones(page,  resultado, index)
 
         except PWTimeoutError as e:
             print("Timeout al cargar o encontrar elementos: ", e)
