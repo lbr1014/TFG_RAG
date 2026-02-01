@@ -200,7 +200,6 @@ async def extraer_licitaciones(page: Page, resultados: list[dict], index: dict[s
     await boton_siguiente.scroll_into_view_if_needed()
     j = 0
     pagina = 1
-    resultados = []
     while True:
 
         total = await filas.count()
