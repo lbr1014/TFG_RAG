@@ -25,7 +25,6 @@ services:
     container_name: flask_qdrant
     ports:
       - "6333:6333"
-      - "6334:6334"
     volumes:
       - qdrantdata:/qdrant/storage
     healthcheck:
@@ -35,6 +34,29 @@ services:
       retries: 20
       start_period: 20s
     restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: flask_ollama
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "sh", "-lc", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama:/root/.ollama
+    entrypoint: ["sh", "-lc"]
+    command: ["ollama pull llama3.1:8b-instruct-q4_K_M"]
+    restart: "no"
 
   web:
     build: .
@@ -49,6 +71,10 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_healthy
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
     restart: unless-stopped
     volumes:
       - docsdata:/data
@@ -57,3 +83,4 @@ volumes:
   pgdata:
   qdrantdata:
   docsdata:
+  ollama:
