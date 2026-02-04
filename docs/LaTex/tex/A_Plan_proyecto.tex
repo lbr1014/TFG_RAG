@@ -262,7 +262,7 @@ El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/11?
 \begin{itemize}
 \tightlist
 	\item Probar nuevos OCRs para la conversión de los pdfs a \textit{Markdown}.
-	\item Investigar sobre Flask.
+	\item Investigar sobre \textit{Flask}.
 \end{itemize}
 
 Para realizar estas tareas se estimaron 8 horas. Al final se emplearon cerca de 12 horas debido al mismo problema del \textit{Spritn} anterior, que no se ha conseguido implementar un \textit{script} capaz de detectar correctamente todas las secciones.
@@ -350,13 +350,46 @@ El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Bu
 \imagenflotante{Burndown/Sprint14}{\textit{Burndown chart} del \textit{sprint} 14.}
 
 \subsection{\textit{Sprint} 15 (29/01/2025 - 05/02/2026)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/15?closed=1}{Sprint 15} fue
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/15?closed=1}{Sprint 15} fue levantar mi aplicación \textit{Flask} usando un \textit{docker}.
 
 \section{Estudio de viabilidad}
 
 \subsection{Viabilidad económica}
-Para analizar la viabilidad económica se ha seguido el coste total de propiedad (TCO)~\cite{book:TCO_costs}. El TCO consiste en recoger todos los costes de un producto tecnológico, desde los más obvios como son los costes de adquisición hasta los costes de operación o los de oportunidad. Estos costes vienen recogidos en la figura ~\ref{fig:ApendiceA/Costes_TCO}  
+Para analizar la viabilidad económica se ha seguido el coste total de propiedad (TCO)~\cite{book:TCO_costs}. El TCO consiste en identificar y estimar todos los costes asociados al ciclo de vida de un producto tecnológico, no solo los costes directos de su adquisición, sino también los derivados de su operación, mantenimiento y uso a lo largo del tiempo. De esta forma, se obtiene una visión global y realista del impacto económico del sistema. Los costes considerados vienen recogidos en la figura ~\ref{fig:ApendiceA/Costes_TCO}.
+
 \imagenflotante{ApendiceA/Costes_TCO}{Coste total de propiedad~\cite{book:TCO_costs}.}
+
+Respecto a la adquisición de \textit{hardware} no ha sido necesaria la adquisición de \textit{hardware} específico adicional. El sistema \textit{RAG} se ha implementado de forma que se pueda ejecutar en entornos estándares, sin requerir servidores dedicados ni equipamiento especializado. El desarrollo y las pruebas se han realizado utilizando mi equipo personal y servidores ya disponibles en la universidad. Mi ordenador es un \href{https://support.hp.com/es-es/document/ish_7878690-7886844-16}{\textit{Victus by HP Gaming Laptop 16-r0xxx}}. El coste de adquisición del portátil fueron unos 1.200€. Considerando un periodo de amortización de 5 años, el coste amortizado correspondiente al proyecto con una duración de 9 meses (del 11 de septiembre al 11 junio) sería:
+$$
+\left(\frac{1200\,€}{5\,\text{años} \cdot 12\,\text{meses}}\right)\cdot 9\,\text{meses}
+= 180\,€
+$$
+
+Además, se ha usado el servidor \textit{beta} de la universidad
+
+
+Respecto a la adquisición de \textit{software} la mayor parte del \textit{software} utilizado en el proyecto es de código abierto y de uso gratuito, como \textit{Python, Flask, Qdrant, PostgresSQL, Docker} o las librerías de \textit{Hugging Face}. Estas herramientas no implican un coste directo de licencia. Por lo cual el único gasto que debe considerarse en este apartado es la adquisición de la licencia de 
+\href{https://www.microsoft.com/es-es/d/windows-11-home/dg7gmgf0krt0/000P}{\textit{Windows}} con un coste de unos 145€. Se considera una amortización de 5 años, por lo cual para los 9 meses del proyecto:
+$$
+\left(\frac{145\,€}{5\,\text{años} \cdot 12\,\text{meses}}\right)\cdot 9\,\text{meses}
+= 21,75\,€
+$$
+Por otro lado en el proyecto no ha habido costes indirectos asociados a servicios de terceros como pueden ser APIs o modelos en la nube, ya que se han elegido alternativas gratuitas.
+
+Los costes de instalación incluyen el tiempo invertido en la configuración del entorno de desarrollo, instalación de dependencias, despliegue del sistema y configuración de las bases de datos. Este tiempo debe considerar como un coste laboral. Se estima que en estas tareas se ha invertido un 20\% del tiempo total del proyecto.
+
+Respecto a la capacitación se ha requerido una fase importante de aprendizaje en tecnologías como \textit{RAG}, bases de datos vectoriales, modelos \textit{LLM}, \textit{web scraping} y despliegue \textit{web}. Este tiempo de formación constituye un coste indirecto de capital humano. Se estima que aproximadamente un 25\% - 30\% del tiempo total del proyecto ha sido dedicado a tareas de aprendizaje.
+
+El soporte durante la ejecución del proyecto ha sido llevado a cabo por los tutores.  Se han llevado a cabo reuniones (\textit{sprints}) para la revisión de decisiones y la resolución de problemas. Han sido necesarias unas 28 reuniones a lo largo del proyecto de aproximadamente una hora cada una. Además, al tiempo invertido para el soporte técnico debe sumarse el tiempo para llevar a cabo las revisiones de la memoria los anexos y del código. En total se estima que los tutores han invertido unas 100 horas en el proyecto cada uno.
+
+En el mantenimiento se incluye corrección de errores, adaptación a cambios en las fuentes de obtención de datos (como las modificaciones en la \textit{web} de contratación pública) y actualización de dependencias. A lo largo del proyecto se han producido varias modificaciones del código motivadas por cambios externos, por lo cual ha sido necesario dedicar tiempo periódico al mantenimiento correctivo y evolutivo. Este coste se traduce en un 5\% del tiempo total de desarrollo del proyecto.  
+
+Respecto a la infraestructura necesaria para el proyecto se basa en servicios de red, bases de datos y servidores locales. Se han utilizado infraestructuras universitarias (el servidor cuya amortización ya se ha tenido en cuenta en el apartado de adquisición de \textit{hardware}) y servicios gratuitos por lo cual no es necesario sumar gastos e infraestructuras al proyecto. 
+
+Respecto al tiempo inactivo, es decir, el impacto económico que supondrían las posibles caídas del sistema.  
+
+Finalmente deben considerarse los costes asociados al espacio físico del trabajo y al consumo de energía del equipo.
+
 \subsection{Viabilidad legal}
 
 
