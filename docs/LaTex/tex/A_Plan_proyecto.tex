@@ -359,14 +359,19 @@ Para analizar la viabilidad económica se ha seguido el coste total de propiedad
 
 \imagenflotante{ApendiceA/Costes_TCO}{Coste total de propiedad~\cite{book:TCO_costs}.}
 
+Para llevar a cabo el estudio de la viabilidad económica se va a considerar que el trabajo llevado a cabo por la alumna lo ha realizado un desarrollador contratado durante los 9 meses que ha durado el proyecto. Si se supone un escenario empresarial real en España y se toma como referencia el \href{https://www.boe.es/buscar/doc.php?id=BOE-A-2024-2251}{Salario Mínimo Interprofesional (SMI) de 2024}, el salario mínimo anual es de 15.876€, es decir, 1.134€ al mes (se divide en 14 pagas). Además, a este salario hay que añadirle lso gastos por la cotización a la \href{https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/36537}{Seguridad Social}. Normalmente la cotización es del 28,30\%, de los cuales 23,60\% se corresponden con gastos de la empresa. Por lo cual el gasto por la contratación del desarrollado sería:
+$$
+1134\frac{\,€}{\text{meses}} \cdot 1,236 \cdot 9\,\text{meses}
+= 12614,62\,€
+$$
+
 Respecto a la adquisición de \textit{hardware} no ha sido necesaria la adquisición de \textit{hardware} específico adicional. El sistema \textit{RAG} se ha implementado de forma que se pueda ejecutar en entornos estándares, sin requerir servidores dedicados ni equipamiento especializado. El desarrollo y las pruebas se han realizado utilizando mi equipo personal y servidores ya disponibles en la universidad. Mi ordenador es un \href{https://support.hp.com/es-es/document/ish_7878690-7886844-16}{\textit{Victus by HP Gaming Laptop 16-r0xxx}}. El coste de adquisición del portátil fueron unos 1.200€. Considerando un periodo de amortización de 5 años, el coste amortizado correspondiente al proyecto con una duración de 9 meses (del 11 de septiembre al 11 junio) sería:
 $$
 \left(\frac{1200\,€}{5\,\text{años} \cdot 12\,\text{meses}}\right)\cdot 9\,\text{meses}
 = 180\,€
 $$
 
-Además, se ha usado el servidor \textit{beta} de la universidad
-
+Además, se ha usado el servidor \href{https://www.gigabyte.com/es/Enterprise/Server-Motherboard/MW51-HP0-rev-1x}{\textit{beta}} de la universidad. Aunque el servidor no se ha considerado un gasto de \textit{hardware} ya que se ha considerado que se amortizaba en 5 años y ya tienen 9.
 
 Respecto a la adquisición de \textit{software} la mayor parte del \textit{software} utilizado en el proyecto es de código abierto y de uso gratuito, como \textit{Python, Flask, Qdrant, PostgresSQL, Docker} o las librerías de \textit{Hugging Face}. Estas herramientas no implican un coste directo de licencia. Por lo cual el único gasto que debe considerarse en este apartado es la adquisición de la licencia de 
 \href{https://www.microsoft.com/es-es/d/windows-11-home/dg7gmgf0krt0/000P}{\textit{Windows}} con un coste de unos 145€. Se considera una amortización de 5 años, por lo cual para los 9 meses del proyecto:
@@ -376,19 +381,60 @@ $$
 $$
 Por otro lado en el proyecto no ha habido costes indirectos asociados a servicios de terceros como pueden ser APIs o modelos en la nube, ya que se han elegido alternativas gratuitas.
 
-Los costes de instalación incluyen el tiempo invertido en la configuración del entorno de desarrollo, instalación de dependencias, despliegue del sistema y configuración de las bases de datos. Este tiempo debe considerar como un coste laboral. Se estima que en estas tareas se ha invertido un 20\% del tiempo total del proyecto.
+Los costes de instalación incluyen el tiempo invertido en la configuración del entorno de desarrollo, instalación de dependencias, despliegue del sistema con \textit{Docker} y configuración de las bases de datos. Este tiempo debe considerar como un coste laboral. Se estima que en estas tareas se ha invertido un 20\% del tiempo total del proyecto. Por lo cual teniendo en cuenta que el coste laboral del desarrollador ha sido de 12614,62€ el de los costes de instalación se corresponde:
+$$
+12614,62\,€ \cdot 0,20
+= 2522,92\,€
+$$
 
-Respecto a la capacitación se ha requerido una fase importante de aprendizaje en tecnologías como \textit{RAG}, bases de datos vectoriales, modelos \textit{LLM}, \textit{web scraping} y despliegue \textit{web}. Este tiempo de formación constituye un coste indirecto de capital humano. Se estima que aproximadamente un 25\% - 30\% del tiempo total del proyecto ha sido dedicado a tareas de aprendizaje.
+Respecto a los costes de capacitación se ha requerido una fase importante de aprendizaje en tecnologías como \textit{RAG}, bases de datos vectoriales, modelos \textit{LLM}, \textit{web scraping} y despliegue \textit{web}. Este tiempo de formación constituye un coste indirecto de capital humano. Se estima que aproximadamente un 25\% del tiempo total del proyecto ha sido dedicado a tareas de aprendizaje. Por lo cual el coste de capacitación ha sido:
+$$
+12614,62\,€ \cdot 0,25
+= 3153,66\,€
+$$
 
 El soporte durante la ejecución del proyecto ha sido llevado a cabo por los tutores.  Se han llevado a cabo reuniones (\textit{sprints}) para la revisión de decisiones y la resolución de problemas. Han sido necesarias unas 28 reuniones a lo largo del proyecto de aproximadamente una hora cada una. Además, al tiempo invertido para el soporte técnico debe sumarse el tiempo para llevar a cabo las revisiones de la memoria los anexos y del código. En total se estima que los tutores han invertido unas 100 horas en el proyecto cada uno.
 
-En el mantenimiento se incluye corrección de errores, adaptación a cambios en las fuentes de obtención de datos (como las modificaciones en la \textit{web} de contratación pública) y actualización de dependencias. A lo largo del proyecto se han producido varias modificaciones del código motivadas por cambios externos, por lo cual ha sido necesario dedicar tiempo periódico al mantenimiento correctivo y evolutivo. Este coste se traduce en un 5\% del tiempo total de desarrollo del proyecto.  
+En el mantenimiento se incluye corrección de errores, adaptación a cambios en las fuentes de obtención de datos (como las modificaciones en la \textit{web} de contratación pública) y actualización de dependencias. A lo largo del proyecto se han producido varias modificaciones del código motivadas por cambios externos, por lo cual ha sido necesario dedicar tiempo periódico al mantenimiento correctivo y evolutivo. Este coste se traduce en un 5\% del tiempo total de desarrollo del proyecto. Por lo cual el coste de mantenimiento ha sido:
+$$
+12614,62\,€ \cdot 0,05
+= 630,73\,€
+$$
 
 Respecto a la infraestructura necesaria para el proyecto se basa en servicios de red, bases de datos y servidores locales. Se han utilizado infraestructuras universitarias (el servidor cuya amortización ya se ha tenido en cuenta en el apartado de adquisición de \textit{hardware}) y servicios gratuitos por lo cual no es necesario sumar gastos e infraestructuras al proyecto. 
 
-Respecto al tiempo inactivo, es decir, el impacto económico que supondrían las posibles caídas del sistema.  
+El tiempo inactivo se corresponde el impacto económico que suponen los periodos en los que el sistema no está operativo o no puede utilizarse de forma eficiente.
 
-Finalmente deben considerarse los costes asociados al espacio físico del trabajo y al consumo de energía del equipo.
+Finalmente deben considerarse los costes asociados al espacio físico del trabajo y al consumo de energía del equipo. Se ha considerado que para llevar a cabo el proyecto se ha gastado una media de 80€ mensuales de electricidad, como el proyecto ha durado 9 meses, el coste total sería:
+$$
+80\frac{\,€}{\text{meses}} \cdot 9\,\text{meses}
+= 720\,€
+$$
+
+
+\begin{table}[h]
+	\centering
+	\begin{tabularx}{\linewidth}{
+    		>{\centering\arraybackslash}p{0.46\linewidth}
+    		>{\centering\arraybackslash}p{0.46\linewidth}}
+		\toprule
+		\textbf{Componentes}    & \textbf{Estimación (euros)}\\
+		\midrule
+		Adquisición \textit{hardware} & 180  \\
+		Adquisición \textit{software} & 21,75  \\
+		Instalación & 2522,92  \\
+		Capacitación & 3153,66 \\
+		Soporte &   \\
+		Mantenimiento & 630,73 \\
+		Infraestructura & 0 \\
+		Tiempo inactivo & 0 \\
+		Espacio y energía & 720 \\
+		Coste total del proyecto & \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Coste total del proyecto.}
+	\label{tabla:storypoints}
+\end{table}
 
 \subsection{Viabilidad legal}
 
