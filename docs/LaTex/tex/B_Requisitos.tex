@@ -148,19 +148,17 @@ Los casos de uso definidos para el proyecto son:
 	\item CU-6 Borrar consultas del historial
 	\item CU-7 Cargar documentos de licitaciones
 	\item CU-8 Importar licitaciones automáticamente
-	\item CU-9 Procesar documentos cargados
-	\item CU-10 Indexar documentos
-	\item CU-11 Actualizar la base de datos vectorial
-	\item CU-12 Listar documentos
-	\item CU-13 Consultar estado de los documentos
-	\item CU-14 Eliminar documento
-	\item CU-15 Gestión de usuarios
-	\item CU-16 Crear usuarios
-	\item CU-17 Borrar usuarios
-	\item CU-18 Modificar rol del usuario
-	\item CU-19 Editar usuario
+	\item CU-9 Indexar documentos
+	\item CU-10 Listar documentos
+	\item CU-11 Consultar estado de los documentos
+	\item CU-12 Eliminar documento
+	\item CU-13 Gestión de usuario
+	\item CU-14 Crear usuarios
+	\item CU-15 Borrar usuarios
+	\item CU-16 Modificar rol del usuario
+	\item CU-17 Editar usuario
 \end{itemize}
-El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/CasosUso}.
+El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/CasosUso}.
 
 \imagendiagram{Diagramas/CasosUso}{Diagrama de casos de uso.}{1.2}
 
@@ -181,8 +179,8 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El usuario accede a <<Registro>>.
-			\item El usuario introduce el nombre, email y contraseña.
-			\item El sistema valida el formato y que el email no este duplicado.
+			\item El usuario introduce el nombre, \textit{email} y contraseña.
+			\item El sistema valida el formato y que el \textit{email} no este duplicado.
 			\item El sistema almacena el usuario con la contraseña \textit{hasheada}.
 			\item El sistema confirma el registro.
 			\item El sistema crea la sesión y redirige a la página de consultas.
@@ -192,12 +190,12 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Tiene algún campo vacío. Muestra un error con el mensaje <<Completa este campo>>.
-			\item El email ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese email>>.
-			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
-			\item Las contraseñas no coinciden. Muestra un error con el mensaje <<Las contraseñas no coinciden>>.
-			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
+			\item Tiene algún campo vacío. Mostrar error de campo obligatorio.
+			\item El \textit{email} ya existe. Mostrar error de \textit{email} duplicado.
+			\item El \textit{email} no cumple la validación. Mostrar error de \textit{email} inválido.
+			\item La contraseña no cumple la política. Mostrar error de contraseña poco segura.
+			\item Las contraseñas no coinciden. Mostrar error de contraseñas distintas.
+			\item El nombre tiene menos de 2 caracteres. Mostrar error de nombre demasiado corto.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -221,7 +219,7 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El usuario accede a <<Iniciar sesión>>.
-			\item El usuario introduce el email y la contraseña.
+			\item El usuario introduce el \textit{email} y la contraseña.
 			\item El sistema verifica los credenciales.
 			\item El sistema crea la sesión y redirige a la página de consultas.
 		\end{enumerate}\\
@@ -230,10 +228,10 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Tiene algún campo vacío. Muestra un error con el mensaje <<Completa este campo>>.
-			\item El email o la contraseña no coinciden con ningún usuario registrado. Muestra un error con el mensaje <<Email o contraseña incorrectos.>>.
-			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.		
+			\item Tiene algún campo vacío.  Mostrar error de campo obligatorio.
+			\item El \textit{email} o la contraseña no coinciden con ningún usuario registrado. Mostrar error de usuario o contraseña incorrectos.
+			\item El \textit{email} no cumple la validación. Mostrar error de \textit{email} inválido.
+			\item La contraseña no cumple la política. ostrar error de contraseña poco segura.		
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -265,7 +263,7 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Error al invalidar sesión. Muestra un mensaje de error controlado. 	
+			\item Error al invalidar sesión. Mostrar mensaje de error al cerrar sesión. 	
 		\end{enumerate}\\
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
@@ -303,7 +301,7 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item Cuando no hay contexto suficiente. El sistema no responde a la pregunta (para evitar alucinaciones) y muestra un aviso de que falta contexto.
-			\item \textit{Timeout} del \textit{LLM}. El sistema muestra un mensaje controlado. 	
+			\item \textit{Timeout} del \textit{LLM}. Mostrar un mensaje controlado. 	
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -328,14 +326,14 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\tightlist
 			\item El usuario accede al <<Historial>>.
 			\item El sistema lista las consultas del usuario.
-			\item El usuario puede abrir una consulta para ver la respuesta completa y la trzabilidad de dicha respuesta.
+			\item El usuario puede abrir una consulta para ver la respuesta completa y la trazabilidad de dicha respuesta.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Historial visualizado. \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario no ha realizado consultas. Muestra un mensaje de error <<Aún no hay consultas>>. 	
+			\item El usuario no ha realizado consultas. Mostrar mensaje de que aun no hay consultas. 	
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -369,8 +367,8 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Error en la base de datos al intentar borrar la consulta. Muestra un mensaje de error controlado.
-			\item La consulta seleccionada no existe o ya ha sido borrada. Muestra un aviso al usuario.
+			\item Error en la base de datos al intentar borrar la consulta. Mostrar mensaje de error controlado.
+			\item La consulta seleccionada no existe o ya ha sido borrada. Mostrar aviso al usuario.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta  \\
 		\bottomrule
@@ -439,7 +437,7 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\tightlist
 			\item Fallo de red. Se registra y muestra al administrador.
 			\item Documento corrupto o sin texto legible. Se marca como fallido y se continua con el siguiente.
-			\item Documento duplicado. Se omite y se registra como duplicado
+			\item Documento duplicado. Se omite y se registra como duplicado.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
@@ -702,8 +700,8 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\tightlist
 			\item El administrador accede a <<Administrar usuarios>>.
 			\item El administrador pulsa el botón <<Añadir usuario>>.
-			\item El administrador introduce el nombre, email, contraseña y si es administrador o no.
-			\item El sistema valida el formato y que el email no este duplicado.
+			\item El administrador introduce el nombre, \textit{email}, contraseña y si es administrador o no.
+			\item El sistema valida el formato y que el \textit{email} no este duplicado.
 			\item El sistema almacena el usuario con la contraseña \textit{hasheada}.
 			\item El sistema redirige a la página de <<Gestión de usuarios>>.
 		\end{enumerate}\\
@@ -714,15 +712,15 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\tightlist
 			\item Intento de acceso sin ser administrador. Se deniega.
 			\item Tiene algún campo vacío. Muestra un error con el mensaje <<Completa este campo>>.
-			\item El email ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese email>>.
-			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
+			\item El \textit{email} ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese \textit{email}>>.
+			\item El \textit{email} no cumple la validación. Muestra un error con el mensaje <<Invalid \textit{email} address>>.
 			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
 			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Media  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-16 Crear usuarios.}
+	\caption{CU-16 Crear usuario.}
 \end{table}
 
 \begin{table}[p]
@@ -741,7 +739,7 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a <<Administrar usuarios>>.
-			\item El administrador pulsa el botón <<Borra>> del usuario que desee eliminar.
+			\item El administrador pulsa el botón <<Borrar>> del usuario que desee eliminar.
 			\item El sistema pide confirmación antes de borrar el usuario.
 			\item El administrador pulsa el botón <<Aceptar>>.
 			\item El sistema borra al usuario y sus datos de la base de datos.
@@ -783,7 +781,7 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Fallo al conectara con la base de datos. No se cmabia el rol del usuario.
+			\item Fallo al conectara con la base de datos. No se cambia el rol del usuario.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Baja  \\
 		\bottomrule
@@ -816,8 +814,8 @@ El diagrama de los casos de uso se muestra en esta imagen ~\ref{fig:Diagramas/Ca
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El email ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese email>>.
-			\item El email no cumple la validación. Muestra un error con el mensaje <<Invalid email address>>.
+			\item Se intenta cambiar el \textit{email} por otro que ya existe en el sistema. Muestra un error con el mensaje <<Ya existe un usuario con ese \textit{email}>>.
+			\item El \textit{email} no cumple la validación. Muestra un error con el mensaje <<Invalid \textit{email} address>>.
 			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
 			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
 		\end{enumerate}\\
