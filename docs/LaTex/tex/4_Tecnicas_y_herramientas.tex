@@ -2,8 +2,10 @@
 En este apartado se va a realizar una breve explicación de la metodología empleada, asi como de las herramientas utilizadas para el desarrollo del proyecto. En dicha explicación se va a incluir una comparación con otras herramientas similares en la cual se muestre el motivo de la selección de dicha herramienta. 
 \section{Metodologías}
 
-\subsection{Scrum}
-La metodología Scrum es un marco de trabajo ágil orientado a la gestión y desarrollo de proyectos de manera iterativa e incremental. Se organiza en ciclos cortos denominados \textit{sprints}, al final de los cuales se entrega un incremento funcional del producto. Estos \textit{sprints} favorecen la mejora continua y la adaptación al cambio, además, aseguran una entrega temprana de valor. A diferencia de metodologías tradicionales, Scrum aporta mayor flexibilidad y retroalimentación constante~\cite{scrum:guide}. 
+\subsection{\textit{Scrum}}
+La metodología \textit{Scrum} es un marco de trabajo ágil orientado a la gestión y desarrollo de proyectos de manera iterativa e incremental. Se organiza en ciclos cortos denominados \textit{sprints}, al final de los cuales se entrega un incremento funcional del producto (ver imagen~\ref{fig:Memoria/Metodologia_SCRUM} para ver el proceso \textit{Scrum} completo). Estos \textit{sprints} favorecen la mejora continua y la adaptación al cambio, además, aseguran una entrega temprana de valor. A diferencia de metodologías tradicionales, \textit{Scrum} aporta mayor flexibilidad y retroalimentación constante~\cite{scrum:guide}. 
+
+\imagenflotante{Memoria/Metodologia_SCRUM}{Metodología \textit{Scrum}.}{1}
 
 \section{Repositorio}
 Para alojar el repositorio se han valorado distintas alternativas como \href{https://bitbucket.org/}{Bitbucket}, \href{https://github.com/}{GitHub}, \href{https://gitlab.com/}{GitLab} o \href{https://trello.com/}{Trello}. Finalmente se ha elegido GitHub que es una plataforma basada en la nube que permite alojar repositorios de código. GitHub ofrece funciones muy útiles como ramas (\textit{branches}), \textit{pull request}, seguimiento de cambios (\textit{commits}), historial del proyecto, gestión de incidencias (\textit{issues}). Además, permite la colaboración entre usuarios, lo que es muy útil para la revisión del proyecto.
@@ -78,7 +80,7 @@ El proyecto requiere entornos aislados y reproducibles que faciliten el trabajo 
 
 
 \section{Base de datos vectorial}
-Una parte fundamental del desarrollo del RAG es la implementación de la base de datos vectorial. Se han valorado emplear diversas bases de datos, pero las dos que más se han estudiado son \textit{Qdrant} y \textit{pgvector}. \textit{Qdrant} es una base de datos vectorial especializada, diseñada desde cero para búsquedas de similitud de alta concurrencia y baja latencia. Presenta equilibrio entre el rendimiento, la latencia y el tiempo de indexado~\cite{llmeng:handbook}. Por su parte, \textit{pgvector} es una extensión de PostgreSQL que permite almacenar embeddings en columnas vectoriales y realizar búsquedas de similitud sobre una base de datos relacional ya existente. Es útil cuando la aplicación ya se apoya en este gestor, ya que simplifica la infraestructura~\cite{Qdrant:pgvector}. En la tabla~\ref{tab:bases-vectoriales} se muestran las principales ventajas y desventajas de cada opción.
+Una parte fundamental del desarrollo del \textit{RAG} es la implementación de la base de datos vectorial. Se han valorado emplear diversas bases de datos, pero las dos que más se han estudiado son \href{https://qdrant.tech/}{\textit{Qdrant}} y \href{https://www.datacamp.com/es/tutorial/pgvector-tutorial}{\textit{pgvector}}. \textit{Qdrant} es una base de datos vectorial especializada, diseñada desde cero para búsquedas de similitud de alta concurrencia y baja latencia. Presenta equilibrio entre el rendimiento, la latencia y el tiempo de indexado~\cite{llmeng:handbook}. Por su parte, \textit{pgvector} es una extensión de \href{https://www.postgresql.org/}{\textit{PostgreSQL}} que permite almacenar embeddings en columnas vectoriales y realizar búsquedas de similitud sobre una base de datos relacional ya existente. Es útil cuando la aplicación ya se apoya en este gestor, ya que simplifica la infraestructura~\cite{Qdrant:pgvector}. En la tabla~\ref{tab:bases-vectoriales} se muestran las principales ventajas y desventajas de cada opción.
 
 \begin{longtable}{
 		p{0.20\linewidth}
@@ -99,9 +101,9 @@ Una parte fundamental del desarrollo del RAG es la implementación de la base de
       \begin{itemize}
         \tightlist
         \item Diseñada específicamente como base de datos vectorial, con índices optimizados para búsquedas de similitud y buen compromiso entre RPS, latencia y tiempo de indexado~\cite{llmeng:handbook}.
-        \item Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en RAG.
+        \item Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en \textit{RAG}.
         \item Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y gRPC bien documentadas.
-        \item Integración directa con librerías y orquestadores de RAG, lo que reduce el código necesario para conectarla con el resto del sistema.
+        \item Integración directa con librerías y orquestadores de \textit{RAG}, lo que reduce el código necesario para conectarla con el resto del sistema.
       \end{itemize}
       &
       \begin{itemize}
@@ -128,12 +130,11 @@ Una parte fundamental del desarrollo del RAG es la implementación de la base de
       \end{itemize}
       \\
    \bottomrule
-   \\
    \caption{Ventajas y desventajas de \textit{Qdrant} y \textit{pgvector}.}
-	\label{tab:bases-vectoriales}
+	\label{tab:bases-vectoriales}\\
 \end{longtable}
 
-Para realizar el proyecto se ha optado por utilizar \textit{Qdrant}. Aunque \textit{pgvector} presenta características interesantes cuando se desea mantener toda a información en una única base de datos relacional, \textit{Qdrant} presenta un diseño especializado. Así como un mejor equilibrio entre rendimiento y latencia. Además, \textit{Qdrant} se utiliza en proyectos reales lo que lo convierte en una muy buena opción para implementar el sistema RAG.
+Para realizar el proyecto se ha optado por utilizar \textit{Qdrant}. Aunque \textit{pgvector} presenta características interesantes cuando se desea mantener toda la información en una única base de datos relacional, \textit{Qdrant} presenta un diseño especializado. Así como un mejor equilibrio entre rendimiento y latencia. Además, \textit{Qdrant} se utiliza en proyectos reales lo que lo convierte en una muy buena opción para implementar el sistema \textit{RAG}.
 
 \section{Postgres}
 
