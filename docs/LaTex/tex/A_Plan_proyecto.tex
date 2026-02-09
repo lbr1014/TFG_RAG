@@ -350,11 +350,33 @@ El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Bu
 \imagenflotante{Burndown/Sprint14}{\textit{Burndown chart} del \textit{sprint} 14.}
 
 \subsection{\textit{Sprint} 15 (29/01/2025 - 05/02/2026)}
-El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/15?closed=1}{Sprint 15} fue levantar mi aplicación \textit{Flask} usando un \textit{docker}.
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/15?closed=1}{Sprint 15} fue levantar mi aplicación \textit{Flask} usando \textit{docker}. En la reunión se decidió implementar un \textit{docker} ya que mejora la potabilidad, la ligereza y el aislamiento de la aplicación. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+\tightlist
+	\item Implementar un \textit{docker} para la aplicación \textit{Flask}.
+	\begin{itemize}
+	\tightlist
+		\item Estudiar como desplegar la aplicación \textit{web}.
+		\item Arreglar la indexación de documentos para usar el \textit{docker}.
+		\item Arreglo de \textit{Web Scraping} para evitar fallos por perdida de conexión.
+	\end{itemize}
+	\item Empezar a escribir la viabilidad económica.
+	\item Completar los \textit{test} unitarios realizados previamente.
+	\item Realiza \textit{test} unitarios para las nuevas clases.
+\end{itemize}
+
+Para realizar el \textit{sprint} se estimaron 34 horas de trabajo. Al final de este \textit{sprint} se invirtieron unas 40 horas, pero, no se completaron todas las tareas, quedando incompletas las tareas <<Completar los \textit{test} unitarios realizados previamente>> y <<Realiza \textit{test} unitarios para las nuevas clases>>. Esto se debió a que la implementación de \textit{docker} llevo más tiempo del esperado por fallos en la conexión con el módulo de \textit{qdrant}. Las tareas incompletas se van a llevar a cabo en el siguiente \textit{sprint}.
+
+El \textit{burndown} de este \textit{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint15}.
+\imagenflotante{Burndown/Sprint15}{\textit{Burndown chart} del \textit{sprint} 15.}
+
+\subsection{\textit{Sprint} 16 (05/02/2025 - 12/02/2026)}
+El objetivo principal del \href{https://github.com/lbr1014/TFG_RAG/milestone/16?closed=1}{Sprint 16} fue
 
 \section{Estudio de viabilidad}
+El estudio de viabilidad es un análisis detallado que se realiza antes de iniciar un proyecto. Sirve para determinar la rentabilidad de ese proyecto, es decir, si se pude hacer realidad. Para ello se analiza si es económicamente rentable (sección~\hyperref[viabilidad_economica]{A.3.1}) y legalmente viable (sección~\hyperref[viabilidad_legal]{A.3.2}). 
 
-\subsection{Viabilidad económica}
+\subsection{Viabilidad económica}\label{viabilidad_economica}
 Para analizar la viabilidad económica se ha seguido el coste total de propiedad (TCO)~\cite{book:TCO_costs}. El TCO consiste en identificar y estimar todos los costes asociados al ciclo de vida de un producto tecnológico, no solo los costes directos de su adquisición, sino también los derivados de su operación, mantenimiento y uso a lo largo del tiempo. De esta forma, se obtiene una visión global y realista del impacto económico del sistema. Los costes considerados vienen recogidos en la tabla~\ref{tabla:explicacion_TCO}.
 
 \begin{table}[h]
@@ -467,6 +489,6 @@ Los costes totales del proyecto vienen desglosados en la siguiente tabla~\ref{ta
 	\label{tabla:coste}
 \end{table}
 
-\subsection{Viabilidad legal}
+\subsection{Viabilidad legal}\label{viabilidad_legal}
 
 
