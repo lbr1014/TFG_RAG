@@ -9,8 +9,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
 
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +23,8 @@ services:
   qdrant:
     image: qdrant/qdrant:latest
     container_name: flask_qdrant
-    ports:
-      - "6333:6333"
+    expose:
+      - "6333"
     volumes:
       - qdrantdata:/qdrant/storage
     restart: unless-stopped
@@ -60,8 +60,8 @@ services:
     env_file: 
       - .env
       - secret.env
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
     depends_on:
       db:
         condition: service_healthy
@@ -79,9 +79,19 @@ services:
       - ./data:/data
       - hf_cache:/root/.cache/huggingface
 
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: flask_nginx
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+
 volumes:
   pgdata:
   qdrantdata:
-  docsdata:
   ollama:
   hf_cache:
