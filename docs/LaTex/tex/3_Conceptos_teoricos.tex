@@ -1,6 +1,6 @@
 \capitulo{3}{Conceptos teóricos}
 
-En este apartado se van a definir los conceptos más relevantes a tener en cuenta sobre el proyecto, por lo cual se considera importante definir qué es el \textit{Web Scraping}, que es un \textit{RAG} y cuáles son sus aportaciones más significativas a los \textit{LLM} que ya existen. Además se considera importante contextualizar su origen, y para ello se va a comenzar explicando que son los \textit{LLM} y sus principales limitaciones.
+En este apartado se van a definir los conceptos más relevantes a tener en cuenta sobre el proyecto, por lo cual se considera importante definir qué es el \textit{Web Scraping}, qué es un \textit{RAG} y cuáles son sus aportaciones más significativas a los \textit{LLM} que ya existen. Además, se considera importante contextualizar su origen, y para ello se va a comenzar explicando que son los \textit{LLM} y sus principales limitaciones.
 
 \section{\textit{Web Scraping}}
 \textit{Web Scraping} es el proceso automático de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\textit{crawling}), \textit{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
@@ -10,34 +10,34 @@ Existe una convención estándar, llamada \textit{Robots Exclusion Protocol} (\t
 \section{\textit{LLM}}
 Los \textit{Large Language Model} (\textit{LLM}), que se traduce como los grades modelos del lenguaje, son modelos de aprendizaje automático que han sido entrenados con grandes conjuntos de datos generados por humanos. Estos datos se usan para encontrar patrones estadísticos y replicar nuestras habilidades lingüísticas. Por lo cual, se puede decir que en esencia son modelos de predicción del siguiente \textit{token} o lo que es lo mismo de la siguiente palabra~\cite{book:RAG_SimpleGuide}.
 
-Algunos ejemplos de \textit{LLM} son ChatGPT\footnote{OpenAI. ChatGPT. Disponible en: \url{https://chat.openai.com}.}, Claude\footnote{Anthropic. Claude. Disponible en: \url{https://claude.ai}.} o Llama\footnote{Meta AI. Llama. Disponible en: \url{https://ai.meta.com/llama/}}.
+Algunos ejemplos de \textit{LLM} son \href{https://chat.openai.com}{ChatGPT (OpenAI)}, \href{https://claude.ai}{Claude (Anthropic)} o \href{https://ai.meta.com/llama/}{Llama (Meta AI)}.
 
 Las principales características de los \textit{LLM} son las siguientes:
 \begin{itemize}
 \tightlist
-	\item Naturaleza de predicción del próximo token: como se ha mencionado anteriormente los \textit{LLM} seleccionan la palabra más probable de una distribución. La elección de esta palabra se basa en los patrones estadísticos que ha aprendido con los datos del entrenamiento.
+	\item Naturaleza de predicción del próximo \textit{token}: como se ha mencionado anteriormente los \textit{LLM} seleccionan la palabra más probable de una distribución. La elección de esta palabra se basa en los patrones estadísticos que ha aprendido con los datos del entrenamiento.
 	\item Memoria paramétrica: es el conocimiento interno del \textit{LLM}. Consiste en la información con la que ha sido entrenado y se basa únicamente en sus parámetros. Por lo cual es una memoria limitada y estática.
 \end{itemize}
 
 Las principales limitaciones de los \textit{LLM} son las siguientes:
 \begin{itemize}
 \tightlist
-	\item Desactualizado: los eventos posteriores al entrenamiento del \textit{LLM}, es decir, la fecha de corte del cocimiento, no estarán disponibles para el modelo lo que puede hacer que la respuesta este desactualizada. Además, el entrenamiento de un \textit{LLM} es muy costoso y lleva mucho tiempo, por lo cual no se reentrenan con mucha frecuencia. 
-	\item Alucinaciones: a veces los \textit{LLM} dan respuestas incorrectas con gran confianza de manera que parece que la información que te está dando es verdadera. Esto se debe a su naturaleza de predicción del próximo \textit{token}. 
+	\item Desactualizado: los \textit{LLM} solo pueden acceder a la información presente en sus datos de entrenamiento, que tienen una fecha límite específica conocida como «fecha de corte del conocimiento». Cualquier evento, descubrimiento o información posterior a esta fecha no estará disponible para el modelo, lo que puede generar respuestas desactualizadas. Además, el entrenamiento de un \textit{LLM} es muy costoso y requiere mucho tiempo, por lo que estos modelos no se reentrenan con frecuencia, perpetuando esta limitación temporal. 
+	\item Alucinaciones: a veces los \textit{LLM} dan respuestas incorrectas con gran confianza de manera que parece que la información que te está proporcionando es verdadera. Esto se debe a su naturaleza de predicción del próximo \textit{token}. 
 	\item Limitación de conocimiento: los \textit{LLM} se entrenan con datos públicos, lo que limita su conocimiento, ya que no tienen conocimientos de información que no sea pública, como, por ejemplo, documentos internos de una empresa, información de los clientes o de los productos.
 \end{itemize}
 
-Para solventar las limitaciones que se han comentado la solución es darle al \textit{LLM} el contexto que le falta. El contexto del \textit{LLM} es la información no parametrica que se le proporciona en la consulta o \textit{prompt} para que el modelo genere una respuesta más precisa, actual y fundamentada. Para proporcionarle este contexto se puede expandir la memoria del \textit{LLM} mediante generación aumentada, es decir, incorporando un \textit{RAG}.
+Para solventar las limitaciones que se han comentado, la solución es darle al \textit{LLM} el contexto que le falta. El contexto del \textit{LLM} es la información no paramétrica que se le proporciona en la consulta o \textit{prompt} para que el modelo genere una respuesta más precisa, actual y fundamentada. Para proporcionarle este contexto se puede expandir la memoria del \textit{LLM} mediante generación aumentada, es decir, incorporando un \textit{RAG}.
 
 \section{\textit{RAG}}
-\textit{Retrieval Augmented Generation} (\textit{RAG}), o en español, generación aumentada por recuperación, es una técnica que consiste en recuperar la información que sea relevante de una fuente externa. Con dicha información aumenta la entrada al \textit{LLM}, lo que permite que el \textit{LLM} genere una respuesta mucho más precisa, contextual y confiable (ver pasos en la imagen~\ref{fig:Memoria/Funcionamiento_RAG}). Para realizar esto, el \textit{RAG} usa tres pasos: recuperar, aumentar y generar. 
+\textit{Retrieval Augmented Generation} (\textit{RAG}), o en español, generación aumentada por recuperación, es una técnica que consiste en recuperar la información que sea relevante de una fuente externa. Con dicha información se aumenta la entrada al \textit{LLM}, lo que permite que el \textit{LLM} genere una respuesta mucho más precisa, contextual y confiable (ver pasos en la imagen~\ref{fig:Memoria/Funcionamiento_RAG}). Para realizar esto, el \textit{RAG} usa tres pasos: recuperar, aumentar y generar. 
 
 \imagenflotante{Memoria/Funcionamiento_RAG}{Diagrama del funcionamiento del \textit{RAG}.}{1}
 
 El \textit{RAG} combina dos tipos de memoria:
 \begin{itemize}
 \tightlist
-	\item La memoria paramétrica: es la que típicamente tienen los \textit{LLM}, que como se ha visto es limitada y estática. 
+	\item La memoria paramétrica: es la que típicamente tienen los \textit{LLM}, que como se ha visto es limitada al conocimiento disponible en el momento del entrenamiento y estática. 
 	\item La memoria no paramétrica: es información externa al \textit{LLM} que se le puede proporcionar. Es un conocimiento externo y dinámico que se puede extender tanto como se desee y que puede contener documentos propietarios.
 \end{itemize}
 
@@ -60,7 +60,7 @@ Las principales ventajas de \textit{RAG} son:
 \end{itemize}
 
 \section{Conexión del \textit{LLM} con el \textit{RAG}}
-El primer paso es el de recopilar los documentos externos y convertirlos a vectores numéricos (\textit{embeddings}) y almacenarlos. Cuando llega una consulta (\textit{prompt}), en lugar de buscar coincidencias por palabras, se busca en ese espacio vectorial los fragmentos que son semánticamente más parecidos, a esto se le conoce como búsqueda por significado. Esos fragmentos se incorporan como contexto al \textit{LLM}, de modo que el \textit{RAG} combina la capacidad de razonamiento del modelo con una recuperación de información altamente precisa. En la imagen~\ref{fig:Memoria/RAG} se puede ver la diferencia de funcionamiento entre un modelo que emplea \textit{RAG} y uno que no lo hace~\cite{RAG:image}.
+El primer paso es el de recopilar los documentos externos y convertirlos a vectores numéricos (\textit{embeddings}) y almacenarlos. Cuando llega una consulta (\textit{prompt}), en lugar de buscar coincidencias por palabras, se busca en ese espacio vectorial los fragmentos que son semánticamente más parecidos. A esto se le conoce como búsqueda por significado. Esos fragmentos se incorporan como contexto al \textit{LLM}, de modo que el \textit{RAG} combina la capacidad de razonamiento del modelo con una recuperación de información altamente precisa. En la imagen~\ref{fig:Memoria/RAG} se puede ver la diferencia de funcionamiento entre un modelo que emplea \textit{RAG} y uno que no lo hace~\cite{RAG:image}.
 
 \imagenflotante{Memoria/RAG}{Funcionamiento de un modelo \textit{LLM} con \textit{RAG} y otro sin él~\cite{RAG:image}.}{1}
 
@@ -68,14 +68,14 @@ El primer paso es el de recopilar los documentos externos y convertirlos a vecto
 \section{Diseño del \textit{RAG}}
 Un sistema \textit{RAG} se construye en dos \textit{pipelines} complementarios, el de indexación (\textit{offline}/asíncrono), y el de generación (\textit{online}/ tiempo real). El primero crea y mantiene la memoria no paramétrica o base de conocimiento. El segundo gestiona la interacción con el usuario, realizando la recuperación, el aumento del \textit{prompt} y la generación de la respuesta. Esta separación es estructural en el diseño de \textit{RAG} y permite optimizar la precisión y la latencia del sistema~\cite{book:RAG_SimpleGuide}.
 
-\subsection{\textit{Pipeline} de Indexación (\textit{offline})}
+\subsection{\textit{Pipeline} de indexación (\textit{offline})}
 Su objetivo es consolidar y preparar el conocimiento para que el \textit{pipeline} de generación pueda consultarlo eficientemente. Consta de cinco pasos:
 \begin{enumerate}
 	\item Conectarse a las fuentes externas.
 	\item Extraer y \textit{parsear} los documentos.
 	\item Dividir textos largos en fragmentos más pequeños denominados \textit{chunks}.
-	\item Convierte los \textit{chunks} a un formato adecuado
-	\item Almacena en una base de datos vectorial los \textit{embeddings}
+	\item Convertir los \textit{chunks} a un formato adecuado.
+	\item Almacenar en una base de datos vectorial los \textit{embeddings}.
 \end{enumerate}
 Además de crearlo, este \textit{pipeline} mantiene y actualiza el conocimiento base, por lo que debe ejecutarse de forma periódica~\cite{book:RAG_SimpleGuide}.
 
@@ -101,22 +101,22 @@ Los componentes clave del \textit{pipeline} de indexación son:
 	\end{itemize}
 \end{itemize} 
 
-Cuando la recuperación se externaliza, es decir, cuando la búsqueda y obtención de información no la realiza el sistema sobre su propia base vectorial, sino que se delegan en un tercero (como por ejemplo una API) o en el documento que aporta el usuario, no es imprescindible construir un \textit{pipeline} de indexación ni mantener una base vectorial. En cambio, en un \textit{RAG} clásico, donde el sistema recupera conocimiento de su repositorio interno, sí se recomienda diseñar el \textit{pipeline} de indexación y mantener una base vectorial propia~\cite{book:RAG_SimpleGuide}.
+Cuando la recuperación se externaliza, es decir, cuando la búsqueda y obtención de información no la realiza el sistema sobre su propia base vectorial, sino que se delega en un tercero (como por ejemplo una API) o en el documento que aporta el usuario, no es imprescindible construir un \textit{pipeline} de indexación ni mantener una base vectorial. En cambio, en un \textit{RAG} clásico, donde el sistema recupera conocimiento de su repositorio interno, sí se recomienda diseñar el \textit{pipeline} de indexación y mantener una base vectorial propia~\cite{book:RAG_SimpleGuide}.
 
-\subsection{\textit{Pipeline} de Generación (\textit{online})}
-Gestiona la consulta del usuario de extremo a extremo. Este \textit{pipeline} recibe la pregunta del usuario, recupera el contexto relevante de la base vectorial, los \textit{chunks}, aumenta el \textit{prompt} con ese contexto y genera la respuesta con el \textit{LLM}. Se compone de tres fases: \textit{retrieval}, \textit{augmentation} y \textit{generation}~\cite{book:RAG_SimpleGuide}. 
+\subsection{\textit{Pipeline} de generación (\textit{online})}
+Gestiona la consulta del usuario de extremo a extremo. Este \textit{pipeline} recibe la pregunta del usuario, recupera el contexto relevante de la base de datos vectorial, los \textit{chunks}, aumenta el \textit{prompt} con ese contexto y genera la respuesta con el \textit{LLM}. Se compone de tres fases: \textit{retrieval}, \textit{augmentation} y \textit{generation}~\cite{book:RAG_SimpleGuide}. 
 
 Los componentes clave del \textit{pipeline} de generación son:
 \begin{itemize}
 \tightlist
-	\item Retriever: es el motor de búsqueda sobre la base vectorial, es decir, la base de conocimiento. Devuelve los documentos más relevantes. Es crítico para la precisión del sistema y contribuye a la latencia, su calidad condiciona el rendimiento del \textit{RAG}. El método más frecuente son los \textit{embeddings} gracias a su capacidad semántica.
-	\item Gestión del \textit{Prompt} (\textit{Augmentation}): combina la consulta y el contexto recuperado. Además, aplica estrategias de ingeniaría de \textit{prompt} para maximizar la calidad de la respuesta. Las estrategias recomendadas son:
+	\item \textit{Retriever}: es el motor de búsqueda sobre la base vectorial, es decir, la base de conocimiento. Devuelve los documentos más relevantes. Es crítico para la precisión del sistema y contribuye a la latencia, su calidad condiciona el rendimiento del \textit{RAG}. El método más frecuente son los \textit{embeddings} gracias a su capacidad semántica.
+	\item Gestión del \textit{prompt} (\textit{Augmentation}): combina la consulta y el contexto recuperado. Además, aplica estrategias de ingeniaría de \textit{prompt} para maximizar la calidad de la respuesta. Las estrategias recomendadas son:
 	\begin{itemize}
 	\tightlist
 		\item \textit{Contextual prompting}: consiste en instruir al modelo para que solo responda con el contexto proporcionado.
 		\item \textit{Controlled generation prompting}: consiste en indicarle al modelo que no conteste si el contexto no permite responder a la pregunta.
 		\item \textit{Few-shot prompting}: consiste en incluir ejemplos para forzar el formato de la respuesta.
-		\item \textit{Chain-of-Thought}: consiste en pedir pasos intermedios cuando los razonamientos son complejos.
+		\item \textit{Chain-of-thought}: consiste en pedir pasos intermedios cuando los razonamientos son complejos.
 	\end{itemize}
 	\item Configuración \textit{LLM} (\textit{Generation}): es la selección del modelo que va a generar la respuesta final. Pueden ser modelos:
 	\begin{itemize}
@@ -128,27 +128,27 @@ Los componentes clave del \textit{pipeline} de generación son:
 \end{itemize} 
 
 \subsection{Capas de soporte}
-Además de los dos \textit{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, \textit{cache} semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \textit{prompt}, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \textit{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
+Además de los dos \textit{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, caché semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \textit{prompt}, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \textit{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
 \begin{enumerate}
 \tightlist
-	\item Capas críticas: son las capas imprescindibles del \textit{RAGOps stack}.
+	\item \textbf{Capas críticas}: son las capas imprescindibles del \textit{RAGOps stack}.
 	\begin{itemize}
 	\tightlist
 		\item Capa de datos: es la encargada de crear la base de conocimiento, para ello recolecta datos desde sistemas origen, los transforma y los almacena.
-		\item Capa de modelos: se incluyen los modelos de \textit{embeddings}, LLMs y de las tareas. Incluye el entrenamiento y la optimización de inferencia.
+		\item \textbf{Capa de modelos}: se incluyen los modelos de embeddings, de los LLM y de las tareas. Incluye el entrenamiento y la optimización de inferencia.
 		\item Despliegue de modelos: pueden ser servicios gestionados, auto-hospedados o locales.
 		\item Orquestación de la aplicación: se encarga de coordinar la consulta, la recuperación de datos y la generación. Incluye soporte multiagente y automatización de flujos de trabajo. 
 	\end{itemize}
-	\item Capas esenciales: son las capas que necesita el sistema, se encargan del rendimiento, la fiabilidad y de la seguridad.
+	\item \textbf{Capas esenciales}: son las capas que necesita el sistema, se encargan del rendimiento, la fiabilidad y de la seguridad.
 	\begin{itemize}
 	\tightlist
 		\item Capa de \textit{prompt}: diseño, versión y evaluación de \textit{prompts} para guiar al \textit{LLM} y reducir las alucinaciones. 
-		\item Capa de evaluación: se encarga de medir, de forma periódica, la relevancia de contexto, fidelidad y relevancia de la respuesta.
+		\item Capa de evaluación: se encarga de medir, de forma periódica, la relevancia del contexto, fidelidad y relevancia de la respuesta.
 		\item Capa de monitorización: observa el proceso del \textit{RAG} para encontrar fallos. Para ello monitoriza la latencia y el error.
 		\item Seguridad y privacidad del \textit{LLM}: es la encargada de emplear métodos para evitar el \textit{prompt injection}. Algunos de los métodos que se emplean son validar las entradas, realizar encriptados y emplear control de accesos.
 		\item Capa de caché: emplea caché para reducir los costes y la latencia en consultas frecuentes.
 	\end{itemize}
-	\item Capas de mejora: son capas opcionales que pueden aportar beneficios dependiendo del caso de uso. Se centran en la eficiencia, usabilidad y escalabilidad del sistema.
+	\item \textbf{Capas de mejora}: son capas opcionales que pueden aportar beneficios dependiendo del caso de uso. Se centran en la eficiencia, usabilidad y escalabilidad del sistema.
 \end{enumerate}
 
 \section{Evaluación de la calidad del \textit{RAG}}
@@ -164,18 +164,18 @@ Las tres dimensiones de la tríada son:
 	\item Relevancia de la respuesta: la respuesta es útil y adecuada respecto a la intención y el contexto de la consulta original.
 \end{itemize}
 
-Aparte de las dimensiones de la tríada, otos aspectos relevantes que el sistema debe incorporar son:
+Aparte de las dimensiones de la tríada, otros aspectos relevantes que el sistema debe incorporar son:
 \begin{itemize}
 \tightlist
 	\item Robustez al ruido: el sistema debe distinguir aquellos documentos relacionados pero que sean poco útiles.
 	\item Rechazo en negativo: el sistema no debe responder cuando no hay evidencias relevantes.
 	\item Integración de información: el sistema debe ser capaz de sintetizar múltiples documentos que posean información relevante.
-	\item Robustez contrafactual: el sistema tiene que detectar y evitar la información inexacta en el propio \textit{knowledge base}
+	\item Robustez contrafactual: el sistema tiene que detectar y evitar la información inexacta en el propio \textit{knowledge base}.
 \end{itemize}
 
 Hay dos herramientas principales de evaluación:
 \begin{itemize}
 \tightlist
-	\item \textit{Retrieval-Augmented Generation Assessment} (RAGAs): es un \textit{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclos rápidos~\cite{ragas:docs}. 
-	\item \textit{Automated RAG Evaluation System}(ARES): es un \textit{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto~\cite{saadfalcon2023ares}.
+	\item \textit{Retrieval-Augmented Generation Assessment} (RAGAs)~\cite{ragas:docs}: es un \textit{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclos rápidos. 
+	\item \textit{Automated RAG Evaluation System} (ARES)~\cite{saadfalcon2023ares}: es un \textit{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto.
 \end{itemize}
