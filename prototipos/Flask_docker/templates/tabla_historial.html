@@ -9,7 +9,7 @@
       <th>Fecha</th>
       <th>Pregunta</th>
       <th>Documento</th>
-      <th>Tiempo</th>
+      <th>Tiempo (s)</th>
       <th>Acciones</th>
     </tr>
   </thead>
@@ -30,7 +30,7 @@
         <td>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
         <td class="cell-question">{{ c.pregunta }}</td>
         <td>{{ qm_best.get("filename", "—") }}</td>
-        <td>{{ "%.3f"|format(c.tiempo_respuestas) }} s</td>
+        <td>{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
         <td>
           <form method="POST"
                 action="{{ url_for(delete_url_endpoint, consulta_id=c.id) }}"
