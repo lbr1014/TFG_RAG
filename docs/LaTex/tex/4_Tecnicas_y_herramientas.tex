@@ -76,7 +76,7 @@ Selenium controla navegadores reales y es un estándar veterano, pero Playwright
 Aunque \textit{Selenium} sigue siendo una apuesta segura, para \textit{scraping} moderno con multipes sesiones y depuración rápida, \textit{Playwright} requiere menos código y es más robusto. 
 
 \section{Gestión de dependencias y entornos \textit{Python}}
-El proyecto requiere entornos aislados y reproducibles que faciliten el trabajo local, la integración continua y la generación de entregables. Se ha valorado utilizar \href{http://python-poetry.org/docs/}{\textit{Poetry}} y \href{https://docs.astral.sh/uv/}{\textit{uv}}. \textit{Poetry} es una herramienta madura de gestión de dependencias y empaquetado que centraliza la configuración en \file{pyproject.toml}. Crea y gestiona entornos virtuales de forma automática, mantiene un archivo de bloqueo (\textit{poetry.lock}) para asegurar instalaciones deterministas, permite definir grupos de dependencias, así como, generar de manera automática el \file{requirements.txt}. Por su parte \textit{uv} es un gestor rápido que, al igual que \textit{Poetry}, tiene soporte para \file{pyproject.toml}. Posee un buen rendimiento y una elevada velocidad gracias al uso de cachés eficientes. Finalmente, se ha optado por usar \textit{Poetry} por su cobertura integral del ciclo de vida dentro de un flujo coherente y estable.
+El proyecto requiere entornos aislados y reproducibles que faciliten el trabajo local, la integración continua y la generación de entregables. Se ha valorado utilizar \href{http://python-poetry.org/docs/}{\textit{Poetry}} y \href{https://docs.astral.sh/uv/}{\textit{uv}}. \textit{Poetry} es una herramienta madura de gestión de dependencias y empaquetado que centraliza la configuración en \file{pyproject.toml}. Crea y gestiona entornos virtuales de forma automática, mantiene un archivo de bloqueo (\file{poetry.lock}) para asegurar instalaciones deterministas, permite definir grupos de dependencias, así como, generar de manera automática el \file{requirements.txt}. Por su parte \textit{uv} es un gestor rápido que, al igual que \textit{Poetry}, tiene soporte para \file{pyproject.toml}. Posee un buen rendimiento y una elevada velocidad gracias al uso de cachés eficientes. Finalmente, se ha optado por usar \textit{Poetry} por su cobertura integral del ciclo de vida dentro de un flujo coherente y estable.
 
 
 \section{Base de datos vectorial}
@@ -102,7 +102,7 @@ Una parte fundamental del desarrollo del \textit{RAG} es la implementación de l
         \tightlist
         \item Diseñada específicamente como base de datos vectorial, con índices optimizados para búsquedas de similitud y buen compromiso entre RPS, latencia y tiempo de indexado~\cite{llmeng:handbook}.
         \item Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en \textit{RAG}.
-        \item Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y gRPC bien documentadas.
+        \item Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y RPC bien documentadas.
         \item Integración directa con bibliotecas y orquestadores de \textit{RAG}, lo que reduce el código necesario para conectarla con el resto del sistema.
       \end{itemize}
       &
