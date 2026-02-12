@@ -2,27 +2,27 @@
 En este apartado se va a realizar una breve explicación de la metodología empleada, así como de las herramientas utilizadas para el desarrollo del proyecto. En dicha explicación se va a incluir una comparación con otras herramientas similares en la cual se muestre el motivo de la selección de dicha herramienta. 
 \section{Metodologías}
 
-\subsection{\textit{Scrum}}
-La metodología \textit{Scrum} es un marco de trabajo ágil orientado a la gestión y desarrollo de proyectos de manera iterativa e incremental. Se organiza en ciclos cortos denominados \textit{sprints}, al final de los cuales se entrega un incremento funcional del producto (ver imagen~\ref{fig:Memoria/Metodologia_SCRUM} para ver el proceso \textit{Scrum} completo). Estos \textit{sprints} favorecen la mejora continua y la adaptación al cambio, además, aseguran una entrega temprana de valor. A diferencia de metodologías tradicionales, \textit{Scrum} aporta mayor flexibilidad y retroalimentación constante~\cite{scrum:guide}. 
+\subsection{\eng{Scrum}}
+La metodología \eng{Scrum} es un marco de trabajo ágil orientado a la gestión y desarrollo de proyectos de manera iterativa e incremental. Se organiza en ciclos cortos denominados \eng{sprints}, al final de los cuales se entrega un incremento funcional del producto (ver imagen~\ref{fig:Memoria/Metodologia_SCRUM} para ver el proceso \eng{Scrum} completo). Estos \eng{sprints} favorecen la mejora continua y la adaptación al cambio, además, aseguran una entrega temprana de valor. A diferencia de metodologías tradicionales, \eng{Scrum} aporta mayor flexibilidad y retroalimentación constante~\cite{scrum:guide}. 
 
-\imagenflotante{Memoria/Metodologia_SCRUM}{Metodología \textit{Scrum}.}{1}
+\imagenflotante{Memoria/Metodologia_SCRUM}{Metodología \eng{Scrum}.}{1}
 
 \section{Repositorio}
-Para alojar el repositorio se han valorado distintas alternativas como \href{https://bitbucket.org/}{Bitbucket}, \href{https://github.com/}{GitHub}, \href{https://gitlab.com/}{GitLab} o \href{https://trello.com/}{Trello}. Finalmente se ha elegido GitHub que es una plataforma basada en la nube que permite alojar repositorios de código. GitHub ofrece funciones muy útiles como ramas (\textit{branches}), \textit{pull requests}, seguimiento de cambios (\textit{commits}), historial del proyecto, gestión de incidencias (\textit{issues}). Además, permite la colaboración entre usuarios, lo que es muy útil para la revisión del proyecto.
+Para alojar el repositorio se han valorado distintas alternativas como \href{https://bitbucket.org/}{Bitbucket}, \href{https://github.com/}{GitHub}, \href{https://gitlab.com/}{GitLab} o \href{https://trello.com/}{Trello}. Finalmente se ha elegido GitHub que es una plataforma basada en la nube que permite alojar repositorios de código. GitHub ofrece funciones muy útiles como ramas (\eng{branches}), \eng{pull requests}, seguimiento de cambios (\eng{commits}), historial del proyecto, gestión de incidencias (\eng{issues}). Además, permite la colaboración entre usuarios, lo que es muy útil para la revisión del proyecto.
 
-Otra ventaja es que GitHub es compatible con herramientas de integración y despliegue continuo, lo que facilita la automatización de pruebas y la entrega de \textit{software}. Asimismo, permite incluir documentación directamente en el repositorio, ya sea mediante archivos \ext{README} o a través de \textit{wikis}, lo que mejora la claridad y la reproducibilidad del trabajo. Finalmente, al tratarse de la plataforma más utilizada a nivel mundial, cuenta con abundante documentación, lo que la convierte en una alternativa sólida y con amplio soporte~\cite{gitHub}.
+Otra ventaja es que GitHub es compatible con herramientas de integración y despliegue continuo, lo que facilita la automatización de pruebas y la entrega de \eng{software}. Asimismo, permite incluir documentación directamente en el repositorio, ya sea mediante archivos \ext{README} o a través de \eng{wikis}, lo que mejora la claridad y la reproducibilidad del trabajo. Finalmente, al tratarse de la plataforma más utilizada a nivel mundial, cuenta con abundante documentación, lo que la convierte en una alternativa sólida y con amplio soporte~\cite{gitHub}.
 
 \section{Gestión de tareas}
 Para la gestión de las tareas del proyecto se han valorado diversas herramientas, como \href{https://www.zenhub.com/}{ZenHub}, \href{https://github.com/}{GitHub
-  Projects} o \href{https://asana.com/es}{Asana}. Al final se ha optado por usar ZenHub que es una herramienta de gestión de proyectos fácilmente integrable con GitHub. Se ha elegido porque tiene mayor funcionalidad que GitHub Projects. Ambos permiten hacer tableros Kanban para organizar las tareas (\textit{to-do, in progress, doing}). Pero, ZenHub, además, permite asignar \textit{story points} a las tareas y generar los gráficos \textit{burndown} de los \textit{sprints}.
+  Projects} o \href{https://asana.com/es}{Asana}. Al final se ha optado por usar ZenHub que es una herramienta de gestión de proyectos fácilmente integrable con GitHub. Se ha elegido porque tiene mayor funcionalidad que GitHub Projects. Ambos permiten hacer tableros Kanban para organizar las tareas (\eng{to-do, in progress, doing}). Pero, ZenHub, además, permite asignar \eng{story points} a las tareas y generar los gráficos \eng{burndown} de los \eng{sprints}.
 
 \section{\LaTeX{}}
 Para la edición de los documentos en \LaTeX{} se ha considerado usar \href{http://www.xm1math.net/texmaker/}{\TeX{Maker}}, \href{https://www.texstudio.org/}{\TeX{Studio}}, \href{https://code.visualstudio.com/}{Visual Studio Code} y \href{https://es.overleaf.com/}{Overleaf}. Finalmente se ha optado por usar \TeX{Maker}, ya que es un editor multiplataforma, gratuito y de código abierto. Tiene un visor PDF integrado, así como herramientas para gestionar la bibliografía mediante Bib\TeX{}. Además, tiene una interfaz simple que facilita el aprendizaje, incorpora funciones como el autocompletado, el plegado de código y la detección de errores de compilación, sin necesidad de instalar complementos adicionales.
 
 Como distribución \LaTeX{} para procesar los documentos \ext{.tex} se ha valorado el uso de \href{https://miktex.org/}{Mik\TeX{}} y \href{https://www.tug.org/texlive/}{\TeX{Live}}, al final se ha elegido usar Mik\TeX{} ya que permite realizar una instalación mínima e ir añadiendo automáticamente los paquetes necesarios durante la compilación. Además, presenta un buen soporte para Windows, lo que se adapta bien a mi entorno de trabajo~\cite{miktex:textlive}.
 
-\section{\textit{Web Scraping}}
-Para el \textit{web scraping} se ha valorado usar \href{https://selenium-python.readthedocs.io/}{Selenium} y \href{https://playwright.dev/}{Playwright}.
+\section{\eng{Web Scraping}}
+Para el \eng{web scraping} se ha valorado usar \href{https://selenium-python.readthedocs.io/}{Selenium} y \href{https://playwright.dev/}{Playwright}.
 Selenium controla navegadores reales y es un estándar veterano, pero Playwright es más completo. Ya que ofrece automatización multi-navegador con contextos aislados, funcionamiento headless, espera automática de elementos y APIs consistentes, lo que lo vuelve más robusto y rápido para páginas con JavaScript pesado y flujos de login. En la tabla~\ref{tabla:SeleniumPlaywright} se muestran las ventajas y desventajas de cada uno.
 
 \begin{table}[p]
@@ -31,56 +31,56 @@ Selenium controla navegadores reales y es un estándar veterano, pero Playwright
 		\toprule
 			& \textbf{Ventajas} & \textbf{Desventajas} \\
 		\midrule
-		\textbf{\textit{Selenium}}~\cite{selenium:docs} & 
+		\textbf{\eng{Selenium}}~\cite{selenium:docs} & 
 		
 			\begin{itemize}
 			\tightlist
-				\item Utiliza el estándar W3C \textit{WebDriver}~\cite{w3c:webdriver2}, lo que aporta interoperabilidad y soporte a largo plazo.
+				\item Utiliza el estándar W3C \eng{WebDriver}~\cite{w3c:webdriver2}, lo que aporta interoperabilidad y soporte a largo plazo.
 				\item Multilenguaje y ecosistema maduro. Permite una integración fácil.
 				\item Es robusto para escalado distribuido. 
 			\end{itemize}  
 			& 			
 			 \begin{itemize}
 			\tightlist
-				\item Es propenso a fallos (\textit{flakiness}) si no se dominan las esperas.
+				\item Es propenso a fallos (\eng{flakiness}) si no se dominan las esperas.
 				\item La intercepción de red en menos homogénea entre navegadores.
 			\end{itemize}
 			
 			\\
 			
 		\midrule
-		\textbf{\textit{Playwright}}~\cite{playwright:actionability} & 
+		\textbf{\eng{Playwright}}~\cite{playwright:actionability} & 
 		 
 		 \begin{itemize}
 			\tightlist
-				\item Es muy estable y rápido en \textit{webs} con \textit{JavaScript} pesado.
-				\item Presenta multitud de herramientas integradas como \textit{Trace Viewer}, capturas de pantalla y videos.
-				\item Contiene selectores potentes y permite manejar los \textit{inframes} de forma sencilla. 
+				\item Es muy estable y rápido en \eng{webs} con \eng{JavaScript} pesado.
+				\item Presenta multitud de herramientas integradas como \eng{Trace Viewer}, capturas de pantalla y videos.
+				\item Contiene selectores potentes y permite manejar los \eng{inframes} de forma sencilla. 
 				\item Tiene un control de contexto aislado muy cómodo.
-				\item Su modelos asíncrono permite realizar acciones concurrentes sin bloquear el hilo empleando la \textit{API async/await}.
+				\item Su modelos asíncrono permite realizar acciones concurrentes sin bloquear el hilo empleando la \eng{API async/await}.
 			\end{itemize}   
 			& 			
 			\begin{itemize}
 			\tightlist
-				\item No utiliza el estándar \textit{WebDriver}. 
+				\item No utiliza el estándar \eng{WebDriver}. 
 			\end{itemize}   
 			
 			\\
 		
 		\bottomrule
 	\end{tabularx}
-	\caption{Ventajas y desventajas de \textit{Selenium} y \textit{Playwright}.}
+	\caption{Ventajas y desventajas de \eng{Selenium} y \eng{Playwright}.}
 	\label{tabla:SeleniumPlaywright}
 \end{table}
 
-Aunque \textit{Selenium} sigue siendo una apuesta segura, para \textit{scraping} moderno con multipes sesiones y depuración rápida, \textit{Playwright} requiere menos código y es más robusto. 
+Aunque \eng{Selenium} sigue siendo una apuesta segura, para \eng{scraping} moderno con multipes sesiones y depuración rápida, \eng{Playwright} requiere menos código y es más robusto. 
 
-\section{Gestión de dependencias y entornos \textit{Python}}
-El proyecto requiere entornos aislados y reproducibles que faciliten el trabajo local, la integración continua y la generación de entregables. Se ha valorado utilizar \href{http://python-poetry.org/docs/}{\textit{Poetry}} y \href{https://docs.astral.sh/uv/}{\textit{uv}}. \textit{Poetry} es una herramienta madura de gestión de dependencias y empaquetado que centraliza la configuración en \file{pyproject.toml}. Crea y gestiona entornos virtuales de forma automática, mantiene un archivo de bloqueo (\textit{poetry.lock}) para asegurar instalaciones deterministas, permite definir grupos de dependencias, así como, generar de manera automática el \file{requirements.txt}. Por su parte \textit{uv} es un gestor rápido que, al igual que \textit{Poetry}, tiene soporte para \file{pyproject.toml}. Posee un buen rendimiento y una elevada velocidad gracias al uso de cachés eficientes. Finalmente, se ha optado por usar \textit{Poetry} por su cobertura integral del ciclo de vida dentro de un flujo coherente y estable.
+\section{Gestión de dependencias y entornos \eng{Python}}
+El proyecto requiere entornos aislados y reproducibles que faciliten el trabajo local, la integración continua y la generación de entregables. Se ha valorado utilizar \href{http://python-poetry.org/docs/}{\eng{Poetry}} y \href{https://docs.astral.sh/uv/}{\eng{uv}}. \eng{Poetry} es una herramienta madura de gestión de dependencias y empaquetado que centraliza la configuración en \file{pyproject.toml}. Crea y gestiona entornos virtuales de forma automática, mantiene un archivo de bloqueo (\file{poetry.lock}) para asegurar instalaciones deterministas, permite definir grupos de dependencias, así como, generar de manera automática el \file{requirements.txt}. Por su parte \eng{uv} es un gestor rápido que, al igual que \eng{Poetry}, tiene soporte para \file{pyproject.toml}. Posee un buen rendimiento y una elevada velocidad gracias al uso de cachés eficientes. Finalmente, se ha optado por usar \eng{Poetry} por su cobertura integral del ciclo de vida dentro de un flujo coherente y estable.
 
 
 \section{Base de datos vectorial}
-Una parte fundamental del desarrollo del \textit{RAG} es la implementación de la base de datos vectorial. Se han valorado emplear diversas bases de datos, pero las dos que más se han estudiado son \href{https://qdrant.tech/}{\textit{Qdrant}} y \href{https://www.datacamp.com/es/tutorial/pgvector-tutorial}{\textit{pgvector}}. \textit{Qdrant} es una base de datos vectorial especializada, diseñada desde cero para búsquedas de similitud de alta concurrencia y baja latencia. Presenta equilibrio entre el rendimiento, la latencia y el tiempo de indexado~\cite{llmeng:handbook}. Por su parte, \textit{pgvector} es una extensión de \href{https://www.postgresql.org/}{\textit{PostgreSQL}} que permite almacenar embeddings en columnas vectoriales y realizar búsquedas de similitud sobre una base de datos relacional ya existente. Es útil cuando la aplicación ya se apoya en este gestor, ya que simplifica la infraestructura~\cite{Qdrant:pgvector}. En la tabla~\ref{tab:bases-vectoriales} se muestran las principales ventajas y desventajas de cada opción.
+Una parte fundamental del desarrollo del \eng{RAG} es la implementación de la base de datos vectorial. Se han valorado emplear diversas bases de datos, pero las dos que más se han estudiado son \href{https://qdrant.tech/}{\eng{Qdrant}} y \href{https://www.datacamp.com/es/tutorial/pgvector-tutorial}{\eng{pgvector}}. \eng{Qdrant} es una base de datos vectorial especializada, diseñada desde cero para búsquedas de similitud de alta concurrencia y baja latencia. Presenta equilibrio entre el rendimiento, la latencia y el tiempo de indexado~\cite{llmeng:handbook}. Por su parte, \eng{pgvector} es una extensión de \href{https://www.postgresql.org/}{\eng{PostgreSQL}} que permite almacenar embeddings en columnas vectoriales y realizar búsquedas de similitud sobre una base de datos relacional ya existente. Es útil cuando la aplicación ya se apoya en este gestor, ya que simplifica la infraestructura~\cite{Qdrant:pgvector}. En la tabla~\ref{tab:bases-vectoriales} se muestran las principales ventajas y desventajas de cada opción.
 
 \begin{longtable}{
 		p{0.20\linewidth}
@@ -97,13 +97,13 @@ Una parte fundamental del desarrollo del \textit{RAG} es la implementación de l
 	& \textbf{Ventajas} & \textbf{Desventajas} \\
 	\midrule
 	\endhead
-    \textbf{\textit{Qdrant}} &
+    \textbf{\eng{Qdrant}} &
       \begin{itemize}
         \tightlist
         \item Diseñada específicamente como base de datos vectorial, con índices optimizados para búsquedas de similitud y buen compromiso entre RPS, latencia y tiempo de indexado~\cite{llmeng:handbook}.
-        \item Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en \textit{RAG}.
-        \item Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y gRPC bien documentadas.
-        \item Integración directa con bibliotecas y orquestadores de \textit{RAG}, lo que reduce el código necesario para conectarla con el resto del sistema.
+        \item Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en \eng{RAG}.
+        \item Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y RPC bien documentadas.
+        \item Integración directa con bibliotecas y orquestadores de \eng{RAG}, lo que reduce el código necesario para conectarla con el resto del sistema.
       \end{itemize}
       &
       \begin{itemize}
@@ -114,11 +114,11 @@ Una parte fundamental del desarrollo del \textit{RAG} es la implementación de l
       \end{itemize}
       \\
     \midrule
-    \textbf{\textit{pgvector}} &
+    \textbf{\eng{pgvector}} &
       \begin{itemize}
         \tightlist
         \item Permite reutilizar una instancia de PostgreSQL ya desplegada, unificando datos transaccionales y embeddings en el mismo sistema.
-        \item Aprovecha todo el ecosistema SQL: transacciones, \textit{joins}, vistas, roles de usuario y mecanismos estándar de replicación y copia de seguridad.
+        \item Aprovecha todo el ecosistema SQL: transacciones, \eng{joins}, vistas, roles de usuario y mecanismos estándar de replicación y copia de seguridad.
         \item Simplifica la operación en entornos reducidos o con restricciones de infraestructura, al requerir un único motor de base de datos.
       \end{itemize}
       &
@@ -130,11 +130,11 @@ Una parte fundamental del desarrollo del \textit{RAG} es la implementación de l
       \end{itemize}
       \\
    \bottomrule
-   \caption{Ventajas y desventajas de \textit{Qdrant} y \textit{pgvector}.}
+   \caption{Ventajas y desventajas de \eng{Qdrant} y \eng{pgvector}.}
 	\label{tab:bases-vectoriales}\\
 \end{longtable}
 
-Para realizar el proyecto se ha optado por utilizar \textit{Qdrant}. Aunque \textit{pgvector} presenta características interesantes cuando se desea mantener toda la información en una única base de datos relacional, \textit{Qdrant} presenta un diseño especializado. Así como un mejor equilibrio entre rendimiento y latencia. Además, \textit{Qdrant} se utiliza en proyectos reales lo que lo convierte en una muy buena opción para implementar el sistema \textit{RAG}.
+Para realizar el proyecto se ha optado por utilizar \eng{Qdrant}. Aunque \eng{pgvector} presenta características interesantes cuando se desea mantener toda la información en una única base de datos relacional, \eng{Qdrant} presenta un diseño especializado. Así como un mejor equilibrio entre rendimiento y latencia. Además, \eng{Qdrant} se utiliza en proyectos reales lo que lo convierte en una muy buena opción para implementar el sistema \eng{RAG}.
 
 \section{Postgres}
 

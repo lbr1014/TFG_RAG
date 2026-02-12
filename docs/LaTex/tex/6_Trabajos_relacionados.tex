@@ -1,17 +1,42 @@
 \capitulo{6}{Trabajos relacionados}
 
-En este apartado se exponen los trabajos relacionados con el TFG que han sido publicados hasta la fecha. 
+En este apartado se analizan diferentes trabajos y proyectos que, aunque no constituyen modelos \eng{RAG} idénticos al desarrollado en este trabajo, comparten principios fundamentales relacionados con el uso de \eng{LLM}, recuperación de información, agentes inteligentes y gestión de contexto. Su estudio permite contextualizar el proyecto dentro del marco actual de aplicaciones basadas en \eng{LLM} y comprender distintas aproximaciones al diseño de inteligencias artificiales.
+
 \section{TFG relacionados}
-\subsection{\textit{Retrieval-Augmented Generation} para la Extracción de Información de Documentos Inteligente}
-En este TFG~\cite{trabajorelacionado:Daniel} se desarrolla un sistema RAG orientado al ámbito sanitario con el propósito de optimizar la recuperación y generación de información médica. El trabajo plantea una arquitectura basada en la recuperación y generación, que indexa documentación médica, crea \textit{embeddings} y orquesta \textit{prompts} para aportar contexto fiable al modelo generativo. Emplea técnicas de \textit{chunking} con solapamiento y un enfoque \textit{MultiQuery Retriever} para mejorar la cobertura y la precisión de la recuperación previa a la síntesis con un LLM. La solución se implementa sobre la API de \textit{Azure OpenAI}, utilizando \textit{LangChain} y \textit{FAISS} como motor de búsqueda vectorial, e integra una interfaz web en \textit{Flask} para simular consultas clínicas reales. Para la evaluación del sistema se emplea el \textit{framework RAGAS}, valorando métricas de precisión, relevancia y coherencia de las respuestas generadas, demostrando mejoras significativas frente a enfoques puramente generativos. 
+\subsection{\eng{Retrieval-Augmented Generation} para la Extracción de Información de Documentos Inteligente}
+En este TFG~\cite{trabajorelacionado:Daniel} se desarrolla un sistema RAG orientado al ámbito sanitario con el propósito de optimizar la recuperación y generación de información médica. El trabajo plantea una arquitectura basada en la recuperación y generación, que indexa documentación médica, crea \eng{embeddings} y orquesta \eng{prompts} para aportar contexto fiable al modelo generativo. Emplea técnicas de \eng{chunking} con solapamiento y un enfoque \eng{MultiQuery Retriever} para mejorar la cobertura y la precisión de la recuperación previa a la síntesis con un LLM. La solución se implementa sobre la API de \eng{Azure OpenAI}, utilizando \eng{LangChain} y \eng{FAISS} como motor de búsqueda vectorial, e integra una interfaz web en \eng{Flask} para simular consultas clínicas reales. Para la evaluación del sistema se emplea el \eng{framework RAGAS}, valorando métricas de precisión, relevancia y coherencia de las respuestas generadas, demostrando mejoras significativas frente a enfoques puramente generativos. 
 
-\subsection{\textit{LLM Twin Course: Building Your Production-Ready AI Replica}}
-Este curso~\cite{trabajorelacionado:LLM_twin}
+\section{Proyectos relacionados}
+\subsection{\eng{LLM Twin Course: Building Your Production-Ready AI Replica}}
+Este proyecto~\cite{trabajorelacionado:LLM_twin} propone la construcción de un asistente conversacional que actúa como el usuario. Su objetivo principal es crear un sistema capaz de responder, razonar y comunicarse tal y como lo haría un usuario concreto. Para ello debe adaptarse al conocimiento, las preferencias y el estilo de dicho usuario. A nivel técnico, el proyecto emplea una arquitectura modular que combina los modelos \eng{LLM} para la generación de respuestas, con sistemas de memoria persistentes, recuperación de información contextual y orquestación de flujos conversacionales. Uno de los aspectos más relevantes es la integración de memoria externa, que permite almacenar conocimiento personalizado y recuperarlo de manera dinámica durante la conversación. Aunque no se presenta como un \eng{RAG} clásico tiene el mismo objetivo, ampliar la memoria paramétrica del modelo mediante información recuperada.
 
-\subsection{\textit{Building Your Second Brain AI Assistant Using Agents, LLMs and RAG}}
-Este curso~\cite{trabajorelacionado:second_brain}
+\subsection{\eng{Building Your Second Brain AI Assistant Using Agents, LLMs and RAG}}
+Este proyecto~\cite{trabajorelacionado:second_brain} plantea la creación de un asistente para que organice, recupere y sintetice información personal o profesional. Para realizar esto emplea técnicas de agnetes inteligentes y \eng{RAG}. Su arquitectura combina sistemas de recuperación semántica basados en \eng{embeddings}, orquestación mediante agentes, gestión de memoria persistente e integración directa con \eng{LLM} para síntesis de información. Para implementar el modelo \eng{RAG} la información se indexa, se recupera según la consulta del usuario y se incorpora al \eng{prompt} aumentado del modelo. A este flujo se el añaden agentes que coordinan las tareas de búsqueda, filtrado y razonamiento para ampliar las capacidades del sistema.
 
 \subsection{ChatALL}
-Este proyecto~\cite{trabajorelacionado:ChatAll}
+Este proyecto~\cite{trabajorelacionado:ChatAll} consiste en diseñar una herramienta que permite interactuar de manera simultanea con múltiples modelos de lenguaje (\eng{LLM}). Su objetivo principal es permitir la comparación de respuestas entre distintos \eng{LLM} desde una única interfaz. Su arquitectura se centra en la orquestación de múltiples \file{APIs} de modelos, en la gestión concurrente de respuestas y en el desarrollo de una interfaz unificada par ala conversación. Aunque no amplía el conocimiento del modelo mediante el uso de \eng{RAG} es relevante como herramienta comparativa. Facilita evaluar el comportamiento de distintos \eng{LLM} ante una misma consulta.
 
 \subsection{NotebookLM}
+\href{https://notebooklm.google.com/notebook/4696bf9f-51cb-42c0-8805-401c6286dbec}{NotebookLM}~\cite{trabajorelacionado:NotebookLM1}~\cite{trabajorelacionado:NotebookLM2} es una herramienta orientada a la interacción inteligente con colecciones de documentos proporcionados por el usuario. Permite cargar documentos, analizarlos y generar respuestas fundamentales en su contenido. Se basa en la indexación de documentos, la recuperación contextual y la generación asistida por \eng{LLM}. Implementa un modelo \eng{RAG} ya que responde utilizando el contenido recuperado. Esto reduce las alucinaciones y mejora la respuesta. 
+
+\section{Análisis de las características de los proyectos}
+En la siguiente tabla~\ref{trabajorelacionado-comparativa} se muestra una comparativa entre las características de los distintos proyectos explicados previamente y las del modelo \eng{RAG} desarrollado en el TFG. 
+\begin{landscape}
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.12\columnwidth} p{0.12\columnwidth} p{0.12\columnwidth} p{0.12\columnwidth} p{0.12\columnwidth} }
+		\toprule
+		Características  & \eng{LLM Twin Course} & \eng{Second Brain AI Assistant} & ChatAll & NotebookLM & \eng{RAG} licitaciones\\
+		\midrule
+		Uso de \eng{RAG} & \cellcolor{yellow!25} Parcial & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \\
+		Memoria externa & \cellcolor{green!25} {$\checkmark$} & \cellcolor{green!25} {$\checkmark$}  & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \\
+		Multiagente & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$} & \\
+		Comparación de modelos & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \\
+		Orientación documental & \cellcolor{yellow!25} Media & \cellcolor{green!25} Alta & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} Muy alta & \\
+		Enfoque principal & Réplica digital personalizada & Gestión inteligente del conocimiento & Comparación de \eng{LLM} & Consulta documental guiada & \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Comparativa de las características de los proyectos.}
+	\label{trabajorelacionado-comparativa}
+\end{table}
+\end{landscape}

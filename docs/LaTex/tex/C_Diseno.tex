@@ -7,12 +7,12 @@
 Para llevar a cabo la aplicación se han definido las siguientes entidades:
 \begin{itemize}
 \tightlist
-	\item Usuario: esta entidad representa a la persona que usa la aplicación. Distingue entre usuario normal y administrador, al cual le permite realizar la gestión de documentos y usuarios. Esta entidad maneja un identificador (id) que es la clave primaria, un nombre, un email que debe ser único, una contraseña que se almacena \textit{hasheada}, el último inicio de sesión y el rol.
-	\item Consulta: esta entidad guarda las preguntas que realizan los usuarios, asi como las respuestas que da el \textit{LLM} alimentado por el \textit{RAG}. Es la base para el historial de consultas donde se van a listar y borrar. Esta entidad maneja un identificador (id) que es la clave primaria, el identificador del usuario que realiza la consulta, la pregunta del usuario, la respuesta, los fragmentos utilizados, el tiempo de respuesta, y la fecha en la que se preguntó al modelo.
-	\item Documento: esta entidad representa un pdf cargado en la aplicación. Maneja un identificador (id) como clave primaria, el nombre del fichero, el tamaño, la fecha de modificación, el número de \textit{chunks} en la base de datos vectorial, el \textit{hash} del documento y el estado del documento (cargado, procesado, indexado, fallido). 
-	\item \textit{Chunk}: esta entidad representa cada trozo de texto en el que se dividen los documentos para poder generar los \textit{embeddings}. Maneja el texto que forma al propio \textit{chunk}, el \textit{embedding} y los metadatos del \textit{chunk} (nombre del archivo, título y posición dentro del documento).
-	\item \textit{Embedding}: esta entidad se corresponde con la representación vectorial utilizada para la base de datos vectorial. Va a permitir recuperar \textit{chunks} por similitud. La entidad maneja un vector asociado al \textit{chunk}.
-	\item \textit{ConsultaCunk}: esta entidad modela la relación entre las consultas y los \textit{chunks} permitiendo que una consulta tenga varios \textit{chunk} y que un \textit{chunk} pueda servir para varias consultas. La entidad maneja el identificador de la consulta, el identificador del \textit{chunk}, la similitud y el \textit{ranking}.
+	\item Usuario: esta entidad representa a la persona que usa la aplicación. Distingue entre usuario normal y administrador, al cual le permite realizar la gestión de documentos y usuarios. Esta entidad maneja un identificador (id) que es la clave primaria, un nombre, un email que debe ser único, una contraseña que se almacena encriptada, el último inicio de sesión y el rol.
+	\item Consulta: esta entidad guarda las preguntas que realizan los usuarios, así como las respuestas que da el \eng{LLM} alimentado por el \textit{RAG}. Es la base para el historial de consultas donde se van a listar y borrar. Esta entidad maneja un identificador (id) que es la clave primaria, el identificador del usuario que realiza la consulta, la pregunta del usuario, la respuesta, los fragmentos utilizados, el tiempo de respuesta, y la fecha en la que se preguntó al modelo.
+	\item Documento: esta entidad representa un PDF cargado en la aplicación. Maneja un identificador (id) como clave primaria, el nombre del fichero, el tamaño, la fecha de modificación, el número de \eng{chunks} en la base de datos vectorial, el \textit{hash} del documento y el estado del documento (cargado, procesado, indexado, fallido). 
+	\item \eng{Chunk}: esta entidad representa cada trozo de texto en el que se dividen los documentos para poder generar los \textit{embeddings}. Maneja el texto que forma al propio \textit{chunk}, el \textit{embedding} y los metadatos del \textit{chunk} (nombre del archivo, título y posición dentro del documento).
+	\item \eng{Embedding}: esta entidad se corresponde con la representación vectorial utilizada para la base de datos vectorial. Va a permitir recuperar \textit{chunks} por similitud. La entidad maneja un vector asociado al \textit{chunk}.
+	\item \eng{ConsultaChunk}: esta entidad modela la relación entre las consultas y los \textit{chunks} permitiendo que una consulta tenga varios \textit{chunk} y que un \textit{chunk} pueda servir para varias consultas. La entidad maneja el identificador de la consulta, el identificador del \textit{chunk}, la similitud con la consulta del usuario y el \textit{ranking}. El \eng{ranking} hace referencia a la relevancia que tiene un \eng{chunk} entre los recuperados para aumentar el \eng{prompt} del \eng{LLM}. La posición del \eng{chunk} en el \eng{ranking} se determina ordenandolos descendentemente según su similitud.
 \end{itemize}
 
 Las relaciones entre las entidades son:
@@ -20,12 +20,12 @@ Las relaciones entre las entidades son:
 \tightlist
 	\item Un usuario puede hacer cero o varias consultas.
 	\item Cada consulta pertenece a un usuario.
-	\item Un documento tiene cero (si esta cargado pero no indexado) o varios \textit{chunks}.
-	\item Cada \textit{chunk} pertenece a un documento.
-	\item Un \textit{chunk} tiene un \textit{embedding}.
-	\item Cada \textit{embedding} pertenece a un \textit{chunk}.
-	\item Una consulta usa uno o varios \textit{chunk}.
-	\item Un \textit{chunk} puede ser usado por cero o varias consultas.
+	\item Un documento tiene cero (si está cargado pero no indexado) o varios \eng{chunks}.
+	\item Cada \eng{chunk} pertenece a un documento.
+	\item Un \eng{chunk} tiene un \textit{embedding}.
+	\item Cada \eng{embedding} pertenece a un \textit{chunk}.
+	\item Una consulta usa uno o varios \eng{chunk}.
+	\item Un \eng{chunk} puede ser usado por cero o varias consultas.
 \end{itemize}
 
 El diagrama entidad relación se muestra en esta imagen ~\ref{fig:Diagramas/Entidad_Relacion}
@@ -41,7 +41,7 @@ El diagrama relacional se muestra en esta imagen ~\ref{fig:Diagramas/Relacional}
 
 \section{Diseño de interfaces}
 
-El diseño de las interfaces se ha desarrollado de manera incremental. Inicialmente se hicieron bocetos genéricos para plasmar las principales funcionalidades de la aplicación. Posteriormente se fue iterando sobre esos diseños hasta llegar a las interfaces finales de la \textit{web}.
+El diseño de las interfaces se ha desarrollado de manera incremental. Inicialmente se hicieron bocetos genéricos para plasmar las principales funcionalidades de la aplicación. Posteriormente se fue iterando sobre esos diseños hasta llegar a las interfaces finales de la \eng{web}.
 
 Los prototipos iniciales que se crearon se ilustran en las figuras ~\ref{fig:Diseño_interfaces/prototipos/Inicio}, ~\ref{fig:Diseño_interfaces/prototipos/Login}, ~\ref{fig:Diseño_interfaces/prototipos/Singup}, ~\ref{fig:Diseño_interfaces/prototipos/Main}, ~\ref{fig:Diseño_interfaces/prototipos/Historial}, ~\ref{fig:Diseño_interfaces/prototipos/Main_details}, ~\ref{fig:Diseño_interfaces/prototipos/RAG}, ~\ref{fig:Diseño_interfaces/prototipos/Users}, ~\ref{fig:Diseño_interfaces/prototipos/Add_user}, ~\ref{fig:Diseño_interfaces/prototipos/Edit_user} y ~\ref{fig:Diseño_interfaces/prototipos/Documents}.
 
@@ -57,15 +57,15 @@ Los prototipos iniciales que se crearon se ilustran en las figuras ~\ref{fig:Dis
 \imagenflotante{Diseño_interfaces/prototipos/Edit_user}{Prototipo de la página de edición del usuario.}
 \imagenflotante{Diseño_interfaces/prototipos/Documents}{Prototipo de la página de gestión de documentos.}
 
-Aunque estos prototipos se asemejan mucho a las interfaces finales se han realizado diversos cambios. Por ejemplo se ha cambiado la cabecera para aportar más información como el nombre del usuario que inicia sesión, su rol (usuario normal o administrador) y su último inicio de sesión (ver imagen de la cabecera final~\ref{fig:Diseño_interfaces/Cabecera}). Además, se ha añadido información relevante que no se había valorado inicialmente a la tabla del historial de consultas y a la de documentos cargados. En la tabla del historial de consultas se han añadido diversos campos para aportar toda la información relevante sobre la consulta. Añadiendo el documento al que pertenece el \textit{chunk} principal y la fecha en la que el usuario hizo la consulta. Para el administrador, también, se ha añadido una columna en la que se indica el nombre del usuario que hizo la consulta. Además, para mejorar la legibilidad de la tabla se ha decidido ubicar la respuesta debajo de la fila en un desplegable (ver imagen del historial de consulta definitivo~\ref{fig:Diseño_interfaces/Table_asks}). Por su parte, en la tabla donde se muestran los documentos cargados del sistema se han añadido dos columnas una que indica el tamaño del documento y otra que indica el estado de ese documento en el sistema (cargado, indexado o fallido) (Ver imagen del diseño final de la tabla documentos~\ref{fig:Diseño_interfaces/Table_documents}). Otro aspecto relevante es que en la página para realizar la consulta se ha añadido un desplegable para ver los \textit{chunks} utilizados ( Ver imagen de la página de consultas definitiva~\ref{fig:Diseño_interfaces/RAG_def}).
+Aunque estos prototipos se asemejan mucho a las interfaces finales, se han realizado diversos cambios. Por ejemplo, se ha cambiado la cabecera para aportar más información como el nombre del usuario que inicia sesión, su rol (usuario normal o administrador) y su último inicio de sesión (ver imagen de la cabecera final~\ref{fig:Diseño_interfaces/Cabecera}). Además, se ha añadido a la tabla del historial de consultas y a la de documentos cargados información relevante que no se había valorado inicialmente. En la tabla del historial de consultas se han añadido diversos campos para aportar toda la información relevante sobre la consulta. Añadiendo el documento al que pertenece el \eng{chunk} principal y la fecha en la que el usuario hizo la consulta. Para el administrador, también, se ha añadido una columna en la que se indica el nombre del usuario que hizo la consulta. Además, para mejorar la legibilidad de la tabla se ha decidido ubicar la respuesta debajo de la fila en un desplegable (ver imagen del historial de consulta definitivo~\ref{fig:Diseño_interfaces/Table_asks}). Por su parte, en la tabla donde se muestran los documentos cargados del sistema se han añadido dos columnas, una que indica el tamaño del documento y otra que indica el estado de ese documento en el sistema (cargado, indexado o fallido) (ver imagen del diseño final de la tabla documentos~\ref{fig:Diseño_interfaces/Table_documents}). Otro aspecto relevante es que en la página para realizar la consulta se ha añadido un desplegable para ver los \textit{chunks} utilizados (ver imagen de la página de consultas definitiva~\ref{fig:Diseño_interfaces/RAG_def}).
 
-\imagenflotante{Diseño_interfaces/Cabecera}{Diseño de interfaz - Cabecera.}
+\imagenflotante{Diseño_interfaces/Cabecera}{Diseño de interfaz -- Cabecera.}
 
-\imagenflotante{Diseño_interfaces/Table_asks}{Diseño de interfaz - Historial de consultas.}
+\imagenflotante{Diseño_interfaces/Table_asks}{Diseño de interfaz -- Historial de consultas.}
 
-\imagenflotante{Diseño_interfaces/Table_documents}{Diseño de interfaz - Tabla de documentos cargados.}
+\imagenflotante{Diseño_interfaces/Table_documents}{Diseño de interfaz -- Tabla de documentos cargados.}
 
-\imagenflotante{Diseño_interfaces/RAG_def}{Diseño de interfaz - Interfaz de consulta al modelo.}
+\imagenflotante{Diseño_interfaces/RAG_def}{Diseño de interfaz -- Interfaz de consulta al modelo.}
 
 En estos diagramas  ~\ref{fig:Diagramas/Navegabilidad_admin} y ~\ref{fig:Diagramas/Navegabilidad_normal} se muestra como sería la navegabilidad de los usuario por la aplicación dependiendo del rol que tienen (administrador o usuario normal).
 \begin{landscape}

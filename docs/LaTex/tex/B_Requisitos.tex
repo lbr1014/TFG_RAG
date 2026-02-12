@@ -9,7 +9,7 @@
 Los objetivos generales que se buscan cumplir con este proyecto son:
 \begin{itemize}
 \tightlist
-	\item Desarrollar un sistema basado en Generación Aumentada por Recuperación (\textit{RAG}) que permita realizar consultas sobre licitaciones del sector público, enriqueciendo las respuestas mediante información documental relevante.
+	\item Desarrollar un sistema basado en Generación Aumentada por Recuperación (\eng{RAG}) que permita realizar consultas sobre licitaciones del sector público, enriqueciendo las respuestas mediante información documental relevante.
 	\item Automatizar la recopilación, procesamiento e indexación de documentos de licitaciones, de forma que puedan ser integrados eficientemente en una base de datos vectorial.
 	\item Facilitar la consulta de la información de las licitaciones mediante una aplicación web intuitiva y accesible para usuarios autentificados.
 	\item Mejorar la comprensión y análisis de la información administrativa y técnica contenida en las licitaciones.
@@ -23,103 +23,105 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 
 \begin{itemize}
 \tightlist
-	\item RF-1 Gestión de documentos: el sistema debe permitir que el administrador gestione los documentos de licitaciones del sistema. 
+	\item \req{RF-1} Gestión de documentos: el sistema debe permitir que el administrador gestione los documentos de licitaciones del sistema. 
 	\begin{itemize}
 	\tightlist
-		\item RF-1.1 Inserción de documentos: el sistema debe permitir cargar documentos de licitaciones con el objetivo de construir y actualizar la base de datos vectorial.
-		\item RF-1.2 Listado de documentos cargados: el sistema debe permitir ver los documentos cargados y sus metadatos.
-		\item RF-1.3 Borrado de documentos: el sistema debe permitir borrar los documentos cargados.
-		\item RF-1.4 Descarga de documentos: el sistema debe permitir descargar los documentos cargados.
+		\item \req{RF-1.1} Inserción de documentos: el sistema debe permitir cargar documentos de licitaciones con el objetivo de construir y actualizar la base de datos vectorial.
+		\item \req{RF-1.2} Listado de documentos cargados: el sistema debe permitir ver los documentos cargados y sus metadatos.
+		\item \req{RF-1.3} Borrado de documentos: el sistema debe permitir borrar los documentos cargados.
+		\item \req{RF-1.4} Descarga de documentos: el sistema debe permitir descargar los documentos cargados.
 	\end{itemize}
-	\item RF-2 Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el \textit{RAG} pueda usarlos.
+	\item \req{RF-2} Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el \eng{RAG} pueda usarlos.
 	\begin{itemize}
 	\tightlist
-		\item RF-2.1 Extracción de información: el sistema debe extraer automáticamente el contenido textual de los documentos introducidos, ignorando páginas o documentos sin texto extraíble.
-		\item RF-2.2 Conversión del contenido: el sistema debe transformar el texto extraído a un formato homogéneo, concretamente a \textit{markdown} para que sea más fácil su procesamiento.
+		\item \req{RF-2.1} Extracción de información: el sistema debe extraer automáticamente el contenido textual de los documentos introducidos, ignorando páginas o documentos sin texto extraíble.
+		\item \req{RF-2.2} Conversión del contenido: el sistema debe transformar el texto extraído a un formato homogéneo, concretamente a \eng{markdown} para que sea más fácil su procesamiento.
 		\begin{itemize}
 		\tightlist
-			\item RF-2.2.1 Conservar estructura básica: el sistema debe conservar la estructura básica del texto siempre que sea posible (secciones, títulos, saltos de línea, párrafos, etc).
+			\item \req{RF-2.2.1} Conservar estructura básica: el sistema debe conservar la estructura básica del texto siempre que sea posible (secciones, títulos, saltos de línea, párrafos, etc).
 		\end{itemize}
-		\item RF-2.3 Limpieza y normalización del texto: el sistema debe limpiar y normalizar el texto que se extrae de los documentos.
+		\item \req{RF-2.3} Limpieza y normalización del texto: el sistema debe limpiar y normalizar el texto que se extrae de los documentos.
 		\begin{itemize}
 		\tightlist
-			\item RF-2.3.1 Eliminar caracteres: el sistema debe eliminar los caracteres irrelevantes o problemáticos.
-			\item RF-2.3.2 Normalización: el sistema debe normalizar los espacios, saltos de línea y formatos inconsistentes.
+			\item \req{RF-2.3.1} Eliminar caracteres: el sistema debe eliminar los caracteres irrelevantes o problemáticos.
+			\item \req{RF-2.3.2} Normalización: el sistema debe normalizar los espacios, saltos de línea y formatos inconsistentes.
 		\end{itemize}
 	\end{itemize}
-	\item RF-3 Segmentación en \textit{chunks}: el sistema debe dividir los documentos ya procesados en fragmentos de texto (\textit{chunks}) adecuados para el modelo de \textit{embeddings}.
+	\item \req{RF-3} Segmentación en \eng{chunks}: el sistema debe dividir los documentos ya procesados en fragmentos de texto (\eng{chunks}) adecuados para el modelo de \eng{embeddings}.
 	\begin{itemize}
 	\tightlist
-		\item RF-3.1 Tamaño: el sistema debe segmentar el texto respetando un máximo de tamaño por \textit{token} para evitar errores.
-		\item RF-3.2 Solapamiento: el sistema debe aplicar solapamiento entre \textit{chunks} para preservar el contexto.
-		\item RF-3.3 Contexto: cada \textit{chunk} debe tener una referencia al documento original y a su posición dentro de él.
+		\item \req{RF-3.1} Tamaño: el sistema debe segmentar el texto respetando un máximo de tamaño medido en número de \eng{tokens} para evitar errores.
+		\item \req{RF-3.2} Solapamiento: el sistema debe aplicar solapamiento entre \eng{chunks} para preservar el contexto.
+		\item \req{RF-3.3} Contexto: cada \eng{chunk} debe tener una referencia al documento original y a su posición dentro de él.
 	\end{itemize}
-	\item RF-4 Generación de \textit{embeddings}: el sistema debe generar representaciones vectoriales (\textit{embeddings}) para cada \textit{chunk}.
-	\item RF-5 Persistencia en base de datos vectorial: el sistema debe almacenar los \textit{chunks} y sus \textit{embeddings} en una base de datos vectorial.
+	\item \req{RF-4} Generación de \eng{embeddings}: el sistema debe generar representaciones vectoriales (\eng{embeddings}) para cada \eng{chunk}.
+	\item \req{RF-5} Persistencia en base de datos vectorial: el sistema debe almacenar los \eng{chunks} y sus \eng{embeddings} en una base de datos vectorial.
 	\begin{itemize}
 	\tightlist
-		\item RF-5.1 Almacenar \textit{chunks}: el sistema debe almacenar el contenido textual de cada \textit{chunk}.
-		\item RF-5.2 Almacenar \textit{embeddings}: el sistema debe almacenar el \textit{embedding} asociado a cada \textit{chunk}.
-		\item RF-5.3 Almacenar metadatos: el sistema debe almacenar metadatos relevantes como el nombre del archivo, el titulo y el segmento incluido en el chunk.
-		\item RF-5.4 Actualización: el sistema debe permitir la actualización o recreación de la colección vectorial en el caso de incluir documentos nuevos.
-		\item RF-5.5 Eliminar: el sistema debe permitir borrar los \textit{chunks} y \textit{embeddings} de la base de datos vectorial.
+		\item \req{RF-5.1} Almacenar \eng{chunks}: el sistema debe almacenar el contenido textual de cada \eng{chunk}.
+		\item \req{RF-5.2} Almacenar \eng{embeddings}: el sistema debe almacenar el \eng{embedding} asociado a cada \eng{chunk}.
+		\item \req{RF-5.3} Almacenar metadatos: el sistema debe almacenar metadatos relevantes como el nombre del archivo, el título y el segmento incluido en el \eng{chunk}.
+		\item \req{RF-5.4} Actualización: el sistema debe permitir la actualización o recreación de la colección vectorial en el caso de incluir documentos nuevos.
+		\item \req{RF-5.5} Eliminar: el sistema debe permitir borrar los \eng{chunks} y \eng{embeddings} de la base de datos vectorial.
 	\end{itemize}
-	\item RF-6 Recuperación de información por similitud: el sistema debe recuperar información relevante a partir de las consultas de los usuarios.
+	\item \req{RF-6} Recuperación de información por similitud: el sistema debe recuperar información relevante a partir de las consultas de los usuarios.
 	\begin{itemize}
 	\tightlist
-		\item RF-6.1 Generación de \textit{embedding}: el sistema debe generar el \textit{embedding} de la consulta del usuario.
-		\item RF-6.2 Búsqueda por similitud: el sistema debe realizar una búsqueda por similitud en la base de datos vectorial.
+		\item \req{RF-6.1} Generación de \eng{embedding}: el sistema debe generar el \eng{embedding} de la consulta del usuario.
+		\item \req{RF-6.2} Búsqueda por similitud: el sistema debe realizar una búsqueda por similitud en la base de datos vectorial.
 	\end{itemize}
-	\item RF-7 Construcción del \textit{prompt} con contexto: el sistema debe construir un \textit{prompt}, para alimentar al \textit{LLM}, que incluya los \textit{chunks} recuperados, la pregunta del usuario y reglas de uso del contexto.
-	\item RF-8 Generación de respuestas mediante un \textit{LLM}: el sistema debe enviar el \textit{prompt} generado a un modelo \textit{LLM} y mostrar la respuesta de dicho modelo al usuario.
-	\item RF-9 Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \textit{chunks} empleados para la generación de la respuesta. 
-	\item RF-10 Gestión de usuarios: el sistema debe permitir la gestión de usuarios a través de la aplicación web.
+	\item \req{RF-7} Construcción del \eng{prompt} con contexto: el sistema debe construir un \eng{prompt}, para alimentar al \eng{LLM}, que incluya los \eng{chunks} recuperados, la pregunta del usuario e instrucciones de uso del contexto.
+	\item \req{RF-8} Generación de respuestas mediante un \eng{LLM}: el sistema debe enviar el \eng{prompt} generado a un modelo \eng{LLM} y mostrar la respuesta de dicho modelo al usuario.
+	\item \req{RF-9} Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \eng{chunks} empleados para la generación de la respuesta. 
+	\item \req{RF-10} Gestión de usuarios: el sistema debe permitir la gestión de usuarios a través de la aplicación web.
 	\begin{itemize}
 	\tightlist
-		\item RF-10.1 Registros y autentificación: el sistema debe permitir el registro y autentificación de los usuarios.
-		\item RF-10.2 Sesiones: el sistema debe gestionar las sesiones de los usuarios de forma segura.
-		\item RF-10.3 Roles: el sistema debe permitir asignar a los usuarios el rol de administradores o usuarios normales.
-		\item RF-10.4 Administradores: los administradores deben poder añadir usuarios, eliminarlos y cambiar su rol.
-		\item RF-10.5 Edición de datos de usuario: los usuarios deben poder editar sus datos.
+		\item \req{RF-10.1} Registros y autentificación: el sistema debe permitir el registro y autentificación de los usuarios.
+		\item \req{RF-10.2} Sesiones: el sistema debe gestionar las sesiones de los usuarios de forma segura.
+		\item \req{RF-10.3} Roles: el sistema debe permitir asignar a los usuarios el rol de administradores o usuarios normales.
+		\item \req{RF-10.4} Administradores: los administradores deben poder añadir usuarios, eliminarlos y cambiar su rol.
+		\item \req{RF-10.5} Edición de datos de usuario: los usuarios deben poder editar sus datos.
+		\item \req{RF-10.6} Recuperación de contraseña: los usuarios deben poder cambiar su contraseña utilizando su correo.
 	\end{itemize}
-	\item RF-11 Interfaz de consultas: los usuarios autentificados podrán realizar consultas y ver las respuestas del sistema.
+	\item \req{RF-11} Interfaz de consultas: los usuarios autentificados podrán realizar consultas y ver las respuestas del sistema.
 	\begin{itemize}
 	\tightlist
-		\item RF-11.1 Historial de consultas: los usuarios podrán ver su historial de consultas.
-		\item RF-11.2 Borrar consultas: los usuarios podrán borrar consultas del historial.
+		\item \req{RF-11.1} Historial de consultas: los usuarios podrán ver su historial de consultas.
+		\item \req{RF-11.2} Borrar consultas: los usuarios podrán borrar consultas del historial.
 	\end{itemize}
-	\item RF-12 Importación automática de licitaciones: el sistema debe permitir al administrador importar de manera automática las licitaciones mediante \textit{web scraping}.
+	\item \req{RF-12} Importación automática de licitaciones: el sistema debe permitir al administrador importar de manera automática las licitaciones mediante \eng{web scraping}.
 	\begin{itemize}
 	\tightlist
-		\item RF-12.1 Descarga y almacenamiento: el sistema debe descargar y almacenar los documentos obtenidos, así como sus metadatos.
-		\item RF-12.2 Gestión de errores y duplicados: el sistema debe continuar aunque la descarga de algún documento falle. Debe registrar los errores y evitar duplicados.
+		\item \req{RF-12.1} Descarga y almacenamiento: el sistema debe descargar y almacenar los documentos obtenidos, así como sus metadatos.
+		\item \req{RF-12.2} Gestión de errores y duplicados: el sistema debe continuar aunque la descarga de algún documento falle. Debe registrar los errores y evitar duplicados.
 	\end{itemize}
 \end{itemize}
 
 \textbf{Requisitos no funcionales}
 \begin{itemize}
 \tightlist
-	\item RNF-1 Reproducibilidad: el proyecto debe ejecutarse en un entorno reproducible.
-	\item RNF-2 Rendimiento: el sistema debe ser capaz de procesar los documentos sin intervención manual. Además, el sistema tiene que responder en un tiempo razonable.
-	\item RNF-3 Robustez ante errores: el sistema debe continuar ejecutándose ante fallos esperables en datos, red o servicios externos.
+	\item \req{RNF-1} Reproducibilidad: el proyecto debe ejecutarse en un entorno reproducible.
+	\item \req{RNF-2} Rendimiento: el sistema debe ser capaz de procesar los documentos sin intervención manual. Además, el sistema tiene que responder en un tiempo razonable.
+	\item \req{RNF-3} Robustez ante errores: el sistema debe continuar ejecutándose ante fallos esperables en datos, red o servicios externos.
 	\begin{itemize}
 	\tightlist
-		\item RNF-3.1 Documentos corruptos: el sistema debe saltarse los documentos corruptos o sin texto extraible y continuar con el resto de documentos.
-		\item RNF-3.2 \textit{Timeouts}: el sistema debe manejar los \textit{timeouts} del \textit{LLM} devolviendo mensajes controlados al usuario.
+		\item \req{RNF-3.1} Documentos corruptos: el sistema debe saltarse los documentos corruptos o sin texto extraíble y continuar con el resto de documentos.
+		\item \req{RNF-3.2} \eng{Timeouts}: el sistema debe manejar los \eng{timeouts} del \eng{LLM} devolviendo mensajes controlados al usuario.
 	\end{itemize}
-	\item RNF-4 Trazabilidad técnica: el sistema debe realizar \textit{logs} de carga de modelo, lectura de PDFs, \textit{chunking}, \textit{embeddings}, guardado y consulta.
-	\item RNF-5 Seguridad: el sistema debe gestionar de forma segura la información sensible de los usuarios y el acceso a la aplicación.
+	\item \req{RNF-4} Trazabilidad técnica: el sistema debe realizar \eng{logs} de carga de modelo, lectura de los PDF, \eng{chunking}, \eng{embeddings}, guardado y consulta.
+	\item \req{RNF-5} Seguridad: el sistema debe gestionar de forma segura la información sensible de los usuarios y el acceso a la aplicación.
 	\begin{itemize}
 	\tightlist
-		\item RNF-5.1 Contraseñas: las contraseñas deben almacenarse \textit{hasheadas}.
-		\item RNF-5.2 Control de acceso por roles: las funciones administrativas deben estar protegidas por rol para que solo las pueda realizar el administrador.
-		\item RNF-5.3 Protección de secretos: las claves sensibles no deben estar públicas en el repositorio.
+		\item \req{RNF-5.1} Contraseñas: las contraseñas deben almacenarse encriptadas.
+		\item \req{RNF-5.2} Control de acceso por roles: las funciones administrativas deben estar protegidas por rol para que solo las pueda realizar el administrador.
+		\item \req{RNF-5.3} Protección de secretos: las claves sensibles no deben estar públicas en el repositorio.
 	\end{itemize}
-	\item RNF-6 Usabilidad: la interfaz debe permitir a los usuarios realizar las consultas y ver el historial de manera sencilla. Además, los textos deben ser legibles.
-	\item RNF-7 Calidad del \textit{software}: debe existir un conjunto de pruebas que asegure el correcto funcionamiento del programa. 
-	\item RNF-8 Disponibilidad: la web debe garantizar un nivel de disponibilidad adecuado que permita a los usuarios acceder a la aplicación y realizar consultas.
-	\item RNF-9 Recuperación y tolerancia a fallos: el sistema debe disponer de mecanismos que permitan la recuperación de información y la restauración del servicio tras fallos, garantizando la integridad de los datos.
-	\item RNF-10 Evitar alucinaciones: el sistema no debe responder cuando no haya contexto relevante suficiente.
+	\item \req{RNF-6} Usabilidad: la interfaz debe permitir a los usuarios realizar las consultas y ver el historial de manera sencilla. Además, los textos deben ser legibles.
+	\item \req{RNF-7} Calidad del \eng{software}: debe existir un conjunto de pruebas que asegure el correcto funcionamiento del programa. 
+	\item \req{RNF-8} Disponibilidad: la web debe garantizar un nivel de disponibilidad adecuado que permita a los usuarios acceder a la aplicación y realizar consultas.
+	\item \req{RNF-9} Recuperación y tolerancia a fallos: el sistema debe disponer de mecanismos que permitan la recuperación de información y la restauración del servicio tras fallos, garantizando la integridad de los datos.
+	\item \req{RNF-10} Evitar alucinaciones: el sistema no debe responder cuando no haya contexto relevante suficiente.
+	\item \req{RNF-11} Calidad de las respuestas del \eng{LLM}: el sistema debe llevar a cabo un control de calidad de las respuestas que da el \eng{LLM} a las consultas del usuario.
 \end{itemize}
 
 \section{Especificación de requisitos}
@@ -131,35 +133,36 @@ Los actores del sistema son:
 	\item \textbf{Usuario autentificado}: usuario que puede acceder a la aplicación sus acciones en al aplicación cambiarán dependiendo de su rol. 
 	\begin{itemize}
 	\tightlist
-	 	\item \textbf{Usuario normal}: usuario autentificado que puede consultar el \textit{RAG} y ver su historial
+	 	\item \textbf{Usuario normal}: usuario autentificado que puede consultar el \eng{RAG} y ver su historial
 	 	\item \textbf{Usuario administrador}: usuario autentificado con permisos de gestión de usuarios y de carga y actualización documental
 	 \end{itemize}
-	 \item \textbf{Sistema}: es el encargado del procesamiento, \textit{chunking}, \textit{embeddings}, guardado y consulta. 
+	 \item \textbf{Sistema}: es el encargado del procesamiento, \eng{chunking}, \eng{embeddings}, guardado y consulta. 
 \end{itemize}
 
 Los casos de uso definidos para el proyecto son:
 \begin{itemize}
 \tightlist
-	\item CU-1 Registro de usuarios
-	\item CU-2 Iniciar sesión
-	\item CU-3 Cerrar sesión
-	\item CU-4 Realizar consulta al \textit{RAG}
-	\item CU-5 Consultar historial de consultas
-	\item CU-6 Borrar consultas del historial
-	\item CU-7 Gestión de documentos
-	\item CU-8 Cargar documentos de licitaciones
-	\item CU-9 Importar licitaciones automáticamente
-	\item CU-10 Convertir los documentos a \textit{Markdown}
-	\item CU-11 Indexar documento
-	\item CU-12 Listar documentos
-	\item CU-13 Consultar estado del documento
-	\item CU-14 Eliminar documento
-	\item CU-15 Descargar documento
-	\item CU-16 Gestión de usuario
-	\item CU-17 Crear usuario
-	\item CU-18 Borrar usuario
-	\item CU-19 Modificar rol del usuario
-	\item CU-20 Editar usuario
+	\item \textbf{CU-1} Registro de usuarios (ver tabla~\ref{req-01}).
+	\item \textbf{CU-2} Iniciar sesión (ver tabla~\ref{req-02}).
+	\item \textbf{CU-3} Cerrar sesión (ver tabla~\ref{req-03}).
+	\item \textbf{CU-4} Recuperar contraseña (ver tabla~\ref{req-04}).
+	\item \textbf{CU-5} Realizar consulta al \eng{RAG} (ver tabla~\ref{req-05}).
+	\item \textbf{CU-6} Consultar historial de consultas (ver tabla~\ref{req-06}).
+	\item \textbf{CU-7} Borrar consultas del historial (ver tabla~\ref{req-07}).
+	\item \textbf{CU-8} Gestión de documentos (ver tabla~\ref{req-08}).
+	\item \textbf{CU-9} Cargar documentos de licitaciones (ver tabla~\ref{req-09}).
+	\item \textbf{CU-10} Importar licitaciones automáticamente (ver tabla~\ref{req-10}).
+	\item \textbf{CU-11} Convertir los documentos a \eng{Markdown} (ver tabla~\ref{req-11}).
+	\item \textbf{CU-12} Indexar documento (ver tabla~\ref{req-12}).
+	\item \textbf{CU-13} Listar documentos (ver tabla~\ref{req-13}).
+	\item \textbf{CU-14} Consultar estado del documento (ver tabla~\ref{req-14}).
+	\item \textbf{CU-15} Eliminar documento (ver tabla~\ref{req-15}).
+	\item \textbf{CU-16} Descargar documento (ver tabla~\ref{req-16}).
+	\item \textbf{CU-17} Gestión de usuario (ver tabla~\ref{req-17}).
+	\item \textbf{CU-18} Crear usuario (ver tabla~\ref{req-18}).
+	\item \textbf{CU-19} Borrar usuario (ver tabla~\ref{req-19}).
+	\item \textbf{CU-20} Modificar rol del usuario (ver tabla~\ref{req-20}).
+	\item \textbf{CU-21} Editar usuario (ver tabla~\ref{req-21}).
 \end{itemize}
 El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/CasosUso}.
 
@@ -170,21 +173,21 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-1}    & \textbf{Registro de usuarios}\\
+		\textbf{\textbf{CU-1}}    & \textbf{Registro de usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.1 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.1} \\
 		\textbf{Descripción}          & Permite crear una cuenta en la aplicación web. \\
-		\textbf{Precondición}         & Que el usuario no este autentificado. \\
+		\textbf{Precondición}         & Que el usuario no esté autentificado. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El usuario accede a <<Registro>>.
-			\item El usuario introduce el nombre, \textit{email} y contraseña.
-			\item El sistema valida el formato y que el \textit{email} no este duplicado.
-			\item El sistema almacena el usuario con la contraseña \textit{hasheada}.
+			\item El usuario introduce el nombre, \eng{email} y contraseña.
+			\item El sistema valida el formato y que el \eng{email} no esté duplicado.
+			\item El sistema almacena el usuario con la contraseña encriptada.
 			\item El sistema confirma el registro.
 			\item El sistema crea la sesión y redirige a la página de consultas.
 		\end{enumerate}\\
@@ -193,36 +196,37 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Tiene algún campo vacío. Mostrar error de campo obligatorio.
-			\item El \textit{email} ya existe. Mostrar error de \textit{email} duplicado.
-			\item El \textit{email} no cumple la validación. Mostrar error de \textit{email} inválido.
-			\item La contraseña no cumple la política. Mostrar error de contraseña poco segura.
-			\item Las contraseñas no coinciden. Mostrar error de contraseñas distintas.
-			\item El nombre tiene menos de 2 caracteres. Mostrar error de nombre demasiado corto.
+			\item Tiene algún campo vacío $\Rightarrow$ Mostrar error de campo obligatorio.
+			\item El \eng{email} ya existe $\Rightarrow$ Mostrar error de \eng{email} duplicado.
+			\item El \eng{email} no cumple la validación $\Rightarrow$ Mostrar error de \eng{email} inválido.
+			\item La contraseña no cumple la política $\Rightarrow$ Mostrar error de contraseña poco segura.
+			\item Las contraseñas no coinciden $\Rightarrow$ Mostrar error de contraseñas distintas.
+			\item El nombre tiene menos de 2 caracteres $\Rightarrow$ Mostrar error de nombre demasiado corto.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-1 Registro de usuarios.}
+	\caption{\textbf{CU-1} Registro de usuarios.}
+	\label{req-01}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-2}    & \textbf{Iniciar sesión}\\
+		\textbf{\textbf{CU-2}}    & \textbf{Iniciar sesión}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.1, RF-10.2 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.1}, \refreq{RF-10.2} \\
 		\textbf{Descripción}          & Autentifica al usuario y abre una sesión segura. \\
-		\textbf{Precondición}         & Que el usuario este registrado y no este autentificado. \\
+		\textbf{Precondición}         & Que el usuario esté registrado y no esté autentificado. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El usuario accede a <<Iniciar sesión>>.
-			\item El usuario introduce el \textit{email} y la contraseña.
+			\item El usuario introduce el \eng{email} y la contraseña.
 			\item El sistema verifica los credenciales.
 			\item El sistema crea la sesión y redirige a la página de consultas.
 		\end{enumerate}\\
@@ -231,70 +235,110 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Tiene algún campo vacío.  Mostrar error de campo obligatorio.
-			\item El \textit{email} o la contraseña no coinciden con ningún usuario registrado. Mostrar error de usuario o contraseña incorrectos.
-			\item El \textit{email} no cumple la validación. Mostrar error de \textit{email} inválido.
-			\item La contraseña no cumple la política. ostrar error de contraseña poco segura.		
+			\item Tiene algún campo vacío $\Rightarrow$ Mostrar error de campo obligatorio.
+			\item El \eng{email} o la contraseña no coinciden con ningún usuario registrado $\Rightarrow$ Mostrar error de usuario o contraseña incorrectos.
+			\item El \eng{email} no cumple la validación $\Rightarrow$ Mostrar error de \eng{email} inválido.
+			\item La contraseña no cumple la política $\Rightarrow$ Mostrar error de contraseña poco segura.		
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-2 Iniciar sesión.}
+	\caption{\textbf{CU-2} Iniciar sesión.}
+	\label{req-02}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-3}    & \textbf{Cerrar sesión}\\
+		\textbf{\textbf{CU-3}}    & \textbf{Cerrar sesión}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.2 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.2} \\
 		\textbf{Descripción}          & Finaliza la sesión del usuario. \\
-		\textbf{Precondición}         & Que el usuario este autentificado. \\
+		\textbf{Precondición}         & Que el usuario esté autentificado. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El usuario pulsa el botón <<Cerrar sesión>>.
 			\item El sistema invalida la sesión.
-			\item El sistema redirige a la primera de inicio.
+			\item El sistema redirige a la página de inicio.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Sesión finalizada. \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Error al invalidar sesión. Mostrar mensaje de error al cerrar sesión. 	
+			\item Error al invalidar sesión $\Rightarrow$ Mostrar mensaje de error al cerrar sesión. 	
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\		
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-3 Cerrar sesión.}
+	\caption{\textbf{CU-3} Cerrar sesión.}
+	\label{req-03}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-4}    & \textbf{Realizar consulta al \textit{RAG}}\\
+		\textbf{\textbf{CU-4}}    & \textbf{Recuperar contraseña}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-6, RF-7, RF-8, RF-9, RF-11, RNF-3, RNF-3.2, RNF-10 \\
-		\textbf{Descripción}          & El usuario hace una pregunta, el sistema recupera contexto por similitud, construye el prompt y genera respuesta que incluya las fuentes. \\
-		\textbf{Precondición}         & Que el usuario este autentificado y la base de datos vectorial este disponible. \\
+		\textbf{Requisitos asociados} & \refreq{RF-10}, \refreq{RF-10.1}, \refreq{RF-10.6} \\
+		\textbf{Descripción}          & Permite a los usuarios cambiar su contraseña antes de iniciar sesión. \\
+		\textbf{Precondición}         & Que el usuario esté registrado en el sistema. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a <<Iniciar sesión>>.
+			\item El usuario pulsa el enlace <<¿No recuerdas la contraseña?>>.
+			\item El sistema envía un correo al email del usuario con el enlace a la página de recuperación de contraseña.
+			\item El usuario accede a la página de recuperar contraseña.
+			\item El usuario introduce la nueva contraseña y la confirmación de la contraseña.
+			\item El sistema guarda la nueva contraseña encriptada.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & Contraseña cambiada para el usuario. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Error al enviar el correo $\Rightarrow$ Mostrar error al enviar el correo.
+			\item La contraseña no cumple la política $\Rightarrow$ Mostrar error de contraseña poco segura.
+			\item Las contraseñas no coinciden $\Rightarrow$ Mostrar error de contraseñas distintas.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media.  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CU-4} Recuperar contraseña.}
+	\label{req-04}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{\textbf{CU-5}}    & \textbf{Realizar consulta al \eng{RAG}}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & \refreq{RF-6}, \refreq{RF-7}, \refreq{RF-8}, \refreq{RF-9}, \refreq{RF-11}, \refreq{RNF-3}, \refreq{RNF-3.2}, \refreq{RNF-10}, \refreq{RNF-11} \\
+		\textbf{Descripción}          & El usuario hace una pregunta, el sistema recupera contexto por similitud, construye el \eng{prompt} y genera respuesta que incluya las fuentes. \\
+		\textbf{Precondición}         & Que el usuario esté autentificado y la base de datos vectorial esté disponible. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El usuario escribe y envía una pregunta.
-			\item El sistema genera \textit{embeddings} de la consulta.
+			\item El sistema genera \eng{embeddings} de la consulta.
 			\item El sistema busca por similitud en la base de datos vectorial.
-			\item El sistema construye un \textit{prompt} con los \textit{chunks} y las reglas de uso del contexto.
-			\item El sistema llama al \textit{LLM} y genera respuestas.
-			\item El sistema adjunta la trazabilidad de la respuesta, la cual incluye los documentos, metadatos y \textit{chunks} utilizados.
+			\item El sistema construye un \eng{prompt} con los \eng{chunks} y las reglas de uso del contexto.
+			\item El sistema llama al \eng{LLM} y genera respuestas.
+			\item El sistema adjunta la trazabilidad de la respuesta, la cual incluye los documentos, metadatos y \eng{chunks} utilizados.
 			\item El sistema guarda la consulta en el historial del consultas del usuario.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Respuesta mostrada y consulta registrada. \\
@@ -302,26 +346,27 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Cuando no hay contexto suficiente. El sistema no responde a la pregunta (para evitar alucinaciones) y muestra un aviso de que falta contexto.
-			\item \textit{Timeout} del \textit{LLM}. Mostrar un mensaje controlado. 	
+			\item Cuando no hay contexto suficiente $\Rightarrow$ El sistema no responde a la pregunta (para evitar alucinaciones) y muestra un aviso de que falta contexto.
+			\item \eng{Timeout} del \eng{LLM} $\Rightarrow$ Mostrar un mensaje controlado. 	
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-4 Realizar consulta al \textit{RAG}.}
+	\caption{\textbf{CU-5} Realizar consulta al \eng{RAG}.}
+	\label{req-05}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-5}    & \textbf{Consultar historial de consultas}\\
+		\textbf{\textbf{CU-6}}    & \textbf{Consultar historial de consultas}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-11.1 \\
+		\textbf{Requisitos asociados} & \refreq{RF-11.1} \\
 		\textbf{Descripción}          & Permite al usuario ver su lista de preguntas y respuestas anteriores. \\
-		\textbf{Precondición}         & Que el usuario este autentificado y existan consultas guardadas. \\
+		\textbf{Precondición}         & Que el usuario esté autentificado y existan consultas guardadas. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
@@ -335,25 +380,26 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El usuario no ha realizado consultas. Mostrar mensaje de que aun no hay consultas. 	
+			\item El usuario no ha realizado consultas $\Rightarrow$ Mostrar mensaje de que aun no hay consultas. 	
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-5 Consultar historial de consultas.}
+	\caption{\textbf{CU-6} Consultar historial de consultas.}
+	\label{req-06}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-6}    & \textbf{Borrar consultas del historial}\\
+		\textbf{\textbf{CU-7}}    & \textbf{Borrar consultas del historial}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-11.2 \\
+		\textbf{Requisitos asociados} & \refreq{RF-11.2} \\
 		\textbf{Descripción}          & Permite al usuario borrar consultas del historial. \\
-		\textbf{Precondición}         & Que el usuario este autentificado y existan consultas guardadas. \\
+		\textbf{Precondición}         & Que el usuario esté autentificado y existan consultas guardadas. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
@@ -369,24 +415,25 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Error en la base de datos al intentar borrar la consulta. Mostrar mensaje de error controlado.
-			\item La consulta seleccionada no existe o ya ha sido borrada. Mostrar aviso al usuario.
+			\item Error en la base de datos al intentar borrar la consulta $\Rightarrow$ Mostrar mensaje de error controlado.
+			\item La consulta seleccionada no existe o ya ha sido borrada $\Rightarrow$ Mostrar aviso al usuario.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-6 Borrar consultas del historial.}
+	\caption{\textbf{CU-7} Borrar consultas del historial.}
+	\label{req-07}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-7}    & \textbf{ Gestión de documentos}\\
+		\textbf{\textbf{CU-8}}    & \textbf{Gestión de documentos}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-1, RF-1.1, RF-1.2, RF-1.3, RF-2, RF-2.1, RF-2.2, RF-2.2.1, RF-2.3, RF-2.3.1, RF-2.3.2, RF-3, RF-4, RF-5, RF-5.1, RF-5.2, RF-5.3, RF-5.4, RF-5.5, RNF-3.1 \\
+		\textbf{Requisitos asociados} & \refreq{RF-1}, \refreq{RF-1.1}, \refreq{RF-1.2}, \refreq{RF-1.3}, \refreq{RF-2}, \refreq{RF-2.1}, \refreq{RF-2.2}, \refreq{RF-2.2.1}, \refreq{RF-2.3}, \refreq{RF-2.3.1}, \refreq{RF-2.3.2}, \refreq{RF-3}, \refreq{RF-4}, \refreq{RF-5}, \refreq{RF-5.1}, \refreq{RF-5.2}, \refreq{RF-5.3}, \refreq{RF-5.4}, \refreq{RF-5.5}, \refreq{RNF-3.1} \\
 		\textbf{Descripción}          & El administrador debe poder gestionar a los documentos de la aplicación. \\
 		\textbf{Precondición}         & Hay un administrador autentificado. \\
 		\textbf{Acciones}             &
@@ -394,35 +441,36 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a la página de <<Iniciar sesión>>.
-			\item El administrador introduce su \textit{email} y contraseña.
+			\item El administrador introduce su \eng{email} y contraseña.
 			\item El sistema le autentifica como administrador.
 			\item El administrador accede a <<Administrar documentos>>.
 		\end{enumerate}\\
-		\textbf{Postcondición}        & Posibilidad de cargar documentos nuevos (de forma manual o por \textit{web scraping}), indexar, borrar o descargar los documentos ya cargados . \\
+		\textbf{Postcondición}        & Posibilidad de cargar documentos nuevos (de forma manual o por \eng{web scraping}), indexar, borrar o descargar los documentos ya cargados . \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Intento de acceso sin ser administrador. Se deniega.
-			\item Si no hay documentos cargados en la aplicación. Muestra un mensaje.
+			\item Intento de acceso sin ser administrador $\Rightarrow$ Se deniega.
+			\item Si no hay documentos cargados en la aplicación $\Rightarrow$ Muestra un mensaje.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-7 Gestión de documentos.}
+	\caption{\textbf{CU-8} Gestión de documentos.}
+	\label{req-08}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-8}    & \textbf{Cargar documentos de licitaciones}\\
+		\textbf{\textbf{CU-9}}    & \textbf{Cargar documentos de licitaciones}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-1, RF-10.3, RF-10.4, RNF-3, RNF-3.1 \\
+		\textbf{Requisitos asociados} & \refreq{RF-1}, \refreq{RF-10.3}, \refreq{RF-10.4}, \refreq{RNF-3}, \refreq{RNF-3.1} \\
 		\textbf{Descripción}          & El administrador sube documentos para alimentar o ampliar la base de datos vectorial. \\
-		\textbf{Precondición}         & Que el administrador este autentificado. \\
+		\textbf{Precondición}         & Que el administrador esté autentificado. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
@@ -437,32 +485,33 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Documento corrupto o sin texto legible. Se marca como fallido y se continua con el siguiente.
+			\item Documento corrupto o sin texto legible $\Rightarrow$ Se marca como fallido y se continua con el siguiente.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-8 Cargar documentos de licitaciones.}
+	\caption{\textbf{CU-9} Cargar documentos de licitaciones.}
+	\label{req-09}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-9}    & \textbf{Importar licitaciones automáticamente}\\
+		\textbf{\textbf{CU-10}}    & \textbf{Importar licitaciones automáticamente}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-12, RF-12.1, RF-12.2, RNF-3, RNF-3.1\\
-		\textbf{Descripción}          & Permite al administrador importar de manera automática las licitaciones a través de \textit{web scraping}. \\
-		\textbf{Precondición}         & Que el administrador este autentificado y haya un programa de \textit{web scraping} funcional. \\
+		\textbf{Requisitos asociados} & \refreq{RF-12}, \refreq{RF-12.1}, \refreq{RF-12.2}, \refreq{RNF-3}, \refreq{RNF-3.1}\\
+		\textbf{Descripción}          & Permite al administrador importar de manera automática las licitaciones a través de \eng{web scraping}. \\
+		\textbf{Precondición}         & Que el administrador esté autentificado y haya un programa de \eng{web scraping} funcional. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a <<Administrar documentos>>.
 			\item El administrador pulsa el botón <<Web scraping>>.
-			\item El sistema lanza el proceso de \textit{web scraping}.
+			\item El sistema lanza el proceso de \eng{web scraping}.
 			\item El sistema guarda los documentos obtenidos y registra sus metadatos.
 			\item El sistema muestra un resumen con el  número de documentos descargados, los duplicados y los fallidos.
 		\end{enumerate}\\
@@ -471,25 +520,26 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Fallo de red. Se registra y muestra al administrador.
-			\item Documento corrupto o sin texto legible. Se marca como fallido y se continua con el siguiente.
-			\item Documento duplicado. Se omite y se registra como duplicado.
+			\item Fallo de red $\Rightarrow$ Se registra y muestra al administrador.
+			\item Documento corrupto o sin texto legible $\Rightarrow$ Se marca como fallido y se continua con el siguiente.
+			\item Documento duplicado $\Rightarrow$ Se omite y se registra como duplicado.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-9 Importar licitaciones automáticamente.}
+	\caption{\textbf{CU-10} Importar licitaciones automáticamente.}
+	\label{req-10}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-10}    & \textbf{Convertir los documentos a \textit{Markdown}}\\
+		\textbf{\textbf{CU-11}}    & \textbf{Convertir los documentos a \eng{Markdown}}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-2, RF-2.1, RF-2.2, RF-2.2.1, RF-2.3, RF-2.3.1, RF-2.3.2 \\
+		\textbf{Requisitos asociados} & \refreq{RF-2}, \refreq{RF-2.1}, \refreq{RF-2.2}, \refreq{RF-2.2.1}, \refreq{RF-2.3}, \refreq{RF-2.3.1}, \refreq{RF-2.3.2} \\
 		\textbf{Descripción}          & El sistema prepara automáticamente los documentos para que puedan ser procesados por el sistema. \\
 		\textbf{Precondición}         & Hay documentos cargados por el administrador. \\
 		\textbf{Acciones}             &
@@ -497,34 +547,35 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El sistema extrae texto descartando páginas y documentos sin texto extraíble.
-			\item Convierte el texto a \textit{Markdown} homogéneo.
+			\item Convierte el texto a \eng{Markdown} homogéneo.
 			\item Intenta conservar la estructura básica del documento original.
-			\item Limpia caracteres problemáticos y normaliza espacios y saltos de linea.
+			\item Limpia caracteres problemáticos y normaliza espacios y saltos de línea.
 		\end{enumerate}\\
-		\textbf{Postcondición}        & Los documentos convertidos a \textit{Markdown} listos para el \textit{chunking}. \\
+		\textbf{Postcondición}        & Los documentos convertidos a \eng{Markdown} listos para el \eng{chunking}. \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Documento sin texto. Se marca como no procesable y se continua como los demás.
+			\item Documento sin texto $\Rightarrow$ Se marca como no procesable y se continua como los demás.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-10 Convertir los documentos a \textit{Markdown}.}
+	\caption{\textbf{CU-11} Convertir los documentos a \eng{Markdown}.}
+	\label{req-11}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-11}    & \textbf{Indexar documento}\\
+		\textbf{\textbf{CU-12}}    & \textbf{Indexar documento}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-3, RF-4, RF-5, RF-5.1, RF-5.2, RF-5.3 \\
+		\textbf{Requisitos asociados} & \refreq{RF-3}, \refreq{RF-4}, \refreq{RF-5}, \refreq{RF-5.1}, \refreq{RF-5.2}, \refreq{RF-5.3} \\
 		\textbf{Descripción}          & Permite al administrador actualizar la base de datos
-vectorial cuando hay documentos nuevos. El sistema convierte los documentos procesados en \textit{chunks}, genera los \textit{embeddings} y los guarda en la base de datos vectorial con metadatos. \\
+vectorial cuando hay documentos nuevos. El sistema convierte los documentos procesados en \eng{chunks}, genera los \eng{embeddings} y los guarda en la base de datos vectorial con metadatos. \\
 		\textbf{Precondición}         & Existen documentos procesados, una base de datos vectorial y un administrador autentificado. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
@@ -532,10 +583,10 @@ vectorial cuando hay documentos nuevos. El sistema convierte los documentos proc
 			\tightlist
 			\item El administrador accede a <<Administrar documentos>>.
 			\item El administrador pulsa el botón <<Actualizar Base de Datos Vectorial>>.
-			\item El sistema segmenta los archivos en \textit{chunks}.
-			\item Aplica solapamiento a dichos \textit{chunks}.
-			\item Añade una referencia al documento asi como el segmento que contiene.
-			\item Genera \textit{embeddings} de cada \textit{chunk}.
+			\item El sistema segmenta los archivos en \eng{chunks}.
+			\item Aplica solapamiento a dichos \eng{chunks}.
+			\item Añade una referencia al documento así como el segmento que contiene.
+			\item Genera \eng{embeddings} de cada \eng{chunk}.
 			\item Lo almacena en la base de datos vectorial.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & La colección vectorial con los nuevos documentos incluidos. \\
@@ -543,25 +594,26 @@ vectorial cuando hay documentos nuevos. El sistema convierte los documentos proc
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Fallo en conseguir los \textit{embedding} de un \textit{chunk}. Se omite el \textit{chunk} y se continúa.
-			\item Error de conexión con la base de datos vectorial. Se aborta la operación y se avisa al administrador
+			\item Fallo en conseguir los \eng{embedding} de un \eng{chunk} $\Rightarrow$ Se omite el \eng{chunk} y se continúa.
+			\item Error de conexión con la base de datos vectorial $\Rightarrow$ Se aborta la operación y se avisa al administrador
 a través de un mensaje.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-11 Indexar documento.}
+	\caption{\textbf{CU-12} Indexar documento.}
+	\label{req-12}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-12}    & \textbf{Listar documentos}\\
+		\textbf{\textbf{CU-13}}    & \textbf{Listar documentos}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-1.2, RNF-4 \\
+		\textbf{Requisitos asociados} & \refreq{RF-1.2}, \refreq{RNF-4} \\
 		\textbf{Descripción}          & Permite al administrador ver el listado de documentos junto con los metadatos relevantes. \\
 		\textbf{Precondición}         & Hay un administrador autentificado y existe al menos un documento cargado en el sistema. \\
 		\textbf{Acciones}             &
@@ -569,31 +621,32 @@ a través de un mensaje.
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a <<Administrar documentos>>.
-			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}).
+			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \eng{chunks}).
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Documentos visibles para el administrador. \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item No hay documentos. Muestra un mensaje informativo <<Aún no hay documentos>>.
-			\item Error de base de datos. Muestra un error.
+			\item No hay documentos $\Rightarrow$ Muestra un mensaje informativo <<Aún no hay documentos>>.
+			\item Error de base de datos $\Rightarrow$ Muestra un error.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-12 Listar documentos.}
+	\caption{\textbf{CU-13} Listar documentos.}
+	\label{req-13}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-13}    & \textbf{Consultar estado del documento}\\
+		\textbf{\textbf{CU-14}}    & \textbf{Consultar estado del documento}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-1.2, RNF-4 \\
+		\textbf{Requisitos asociados} & \refreq{RF-1.2}, \refreq{RNF-4} \\
 		\textbf{Descripción}          & Permite al administrador ver el estado de los documentos cargados en el sistema (cargado, indexado o fallido). \\
 		\textbf{Precondición}         & Hay un administrador autentificado y existe al menos un documento cargado en el sistema. \\
 		\textbf{Acciones}             &
@@ -601,7 +654,7 @@ a través de un mensaje.
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a <<Administrar documentos>>.
-			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}).
+			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \eng{chunks}).
 			\item El sistema muestra el estado de los documentos listados.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Estados de los documentos visibles para el administrador. \\
@@ -609,62 +662,64 @@ a través de un mensaje.
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item No hay documentos. Muestra un mensaje informativo <<Aún no hay documentos>>.
-			\item Error de base de datos. Muestra un error.
+			\item No hay documentos $\Rightarrow$ Muestra un mensaje informativo <<Aún no hay documentos>>.
+			\item Error de base de datos $\Rightarrow$ Muestra un error.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-13 Consultar estado del documento.}
+	\caption{\textbf{CU-14} Consultar estado del documento.}
+	\label{req-14}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-14}    & \textbf{Eliminar documento}\\
+		\textbf{\textbf{CU-15}}    & \textbf{Eliminar documento}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-1.3, RF-5.5, RNF-5.2 \\
-		\textbf{Descripción}          & Permite al administrador eliminar un documento del sistema, así como sus \textit{chunks} y \textit{embeddings} asociados en la base de datos vectorial. \\
+		\textbf{Requisitos asociados} & \refreq{RF-1.3}, \refreq{RF-5.5}, \refreq{RNF-5.2} \\
+		\textbf{Descripción}          & Permite al administrador eliminar un documento del sistema, así como sus \eng{chunks} y \eng{embeddings} asociados en la base de datos vectorial. \\
 		\textbf{Precondición}         & Hay un administrador autentificado y existe al menos un documento cargado en el sistema. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a <<Administrar documentos>>.
-			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}) y estado.
+			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \eng{chunks}) y estado.
 			\item El administrador pulsa el botón <<Borrar>>.
 			\item El sistema pide confirmación.
 			\item El administrador confirma el borrado.
-			\item El sistema borra el documento y sus metadatos. Además, si el documento esta indexado borra sus \textit{chunks} y sus \textit{embeddings}.
+			\item El sistema borra el documento y sus metadatos. Además, si el documento esta indexado borra sus \eng{chunks} y sus \eng{embeddings}.
 			\item El sistema actualiza el listado.
 		\end{enumerate}\\
-		\textbf{Postcondición}        & Documento eliminado y sus \textit{chunks} y \textit{embeddings} borrados de la base de datos vectorial. \\
+		\textbf{Postcondición}        & Documento eliminado y sus \eng{chunks} y \eng{embeddings} borrados de la base de datos vectorial. \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El documento no existe. Se muestra un aviso 
-			\item Error al borra. No se borra y se informa al administrador.
-			\item Error al borrar en la base de datos vectorial. No se borra el documento y se informa al administrador.
+			\item El documento no existe $\Rightarrow$ Se muestra un aviso. 
+			\item Error al borra $\Rightarrow$ No se borra y se informa al administrador.
+			\item Error al borrar en la base de datos vectorial $\Rightarrow$ No se borra el documento y se informa al administrador.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Alta  \\
+		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-14 Eliminar documento.}
+	\caption{\textbf{CU-15} Eliminar documento.}
+	\label{req-15}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-15}    & \textbf{Descargar documento}\\
+		\textbf{\textbf{CU-16}}    & \textbf{Descargar documento}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-1, RF-1.4, RNF-5.2 \\
+		\textbf{Requisitos asociados} & \refreq{RF-1}, \refreq{RF-1.4}, \refreq{RNF-5.2} \\
 		\textbf{Descripción}          & Permite al administrador descargar un documento del sistema. \\
 		\textbf{Precondición}         & Hay un administrador autentificado y existe al menos un documento cargado en el sistema. \\
 		\textbf{Acciones}             &
@@ -672,7 +727,7 @@ a través de un mensaje.
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a <<Administrar documentos>>.
-			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \textit{chunks}) y estado.
+			\item El sistema lista los documentos con sus metadatos (nombre, tamaño, fecha de modificación y \eng{chunks}) y estado.
 			\item El administrador pulsa el botón <<Descargar>>.
 			\item Se descarga el documento.
 		\end{enumerate}\\
@@ -681,24 +736,25 @@ a través de un mensaje.
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item El documento no existe. Se muestra un aviso 
-			\item Error al descargar. Se informa al administrador.
+			\item El documento no existe $\Rightarrow$ Se muestra un aviso. 
+			\item Error al descargar $\Rightarrow$ Se informa al administrador.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-15 Descargar documento.}
+	\caption{\textbf{CU-16} Descargar documento.}
+	\label{req-16}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-16}    & \textbf{ Gestión de usuarios}\\
+		\textbf{\textbf{CU-17}}    & \textbf{ Gestión de usuarios}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.3, RF-10.4 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.3}, \refreq{RF-10.4} \\
 		\textbf{Descripción}          & El administrador debe poder gestionar a los usuarios de la aplicación y sus permisos. \\
 		\textbf{Precondición}         & Hay un administrador autentificado. \\
 		\textbf{Acciones}             &
@@ -706,7 +762,7 @@ a través de un mensaje.
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El administrador accede a la página de <<Iniciar sesión>>.
-			\item El administrador introduce su \textit{email} y contraseña.
+			\item El administrador introduce su \eng{email} y contraseña.
 			\item El sistema le autentifica como administrador.
 			\item El administrador accede a <<Administrar usuarios>>.
 		\end{enumerate}\\
@@ -715,24 +771,25 @@ a través de un mensaje.
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Intento de acceso sin ser administrador. Se deniega.
-			\item Si no hay usuarios registrados en la aplicación. Mostrar mensaje de que aún no hay usuarios.
+			\item Intento de acceso sin ser administrador $\Rightarrow$ Se deniega.
+			\item Si no hay usuarios registrados en la aplicación $\Rightarrow$ Mostrar mensaje de que aún no hay usuarios.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-16 Gestión de usuarios.}
+	\caption{\textbf{CU-17} Gestión de usuarios.}
+	\label{req-17}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-17}    & \textbf{ Crear usuario}\\
+		\textbf{\textbf{CU-18}}    & \textbf{ Crear usuario}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.3, RF-10.4 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.3}, \refreq{RF-10.4} \\
 		\textbf{Descripción}          & El administrador crea usuarios desde la web. \\
 		\textbf{Precondición}         & Hay un administrador autentificado. \\
 		\textbf{Acciones}             &
@@ -741,9 +798,9 @@ a través de un mensaje.
 			\tightlist
 			\item El administrador accede a <<Administrar usuarios>>.
 			\item El administrador pulsa el botón <<Añadir usuario>>.
-			\item El administrador introduce el nombre, \textit{email}, contraseña y si es administrador o no.
-			\item El sistema valida el formato y que el \textit{email} no este duplicado.
-			\item El sistema almacena el usuario con la contraseña \textit{hasheada}.
+			\item El administrador introduce el nombre, \eng{email}, contraseña y si es administrador o no.
+			\item El sistema valida el formato y que el \eng{email} no esté duplicado.
+			\item El sistema almacena el usuario con la contraseña encriptada.
 			\item El sistema redirige a la página de <<Gestión de usuarios>>.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Usuario creado. \\
@@ -751,28 +808,29 @@ a través de un mensaje.
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Intento de acceso sin ser administrador. Se deniega.
-			\item Tiene algún campo vacío. Muestra un error con el mensaje <<Completa este campo>>.
-			\item El \textit{email} ya existe. Muestra un error con el mensaje <<Ya existe un usuario con ese \textit{email}>>.
-			\item El \textit{email} no cumple la validación. Muestra un error con el mensaje <<Invalid \textit{email} address>>.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
-			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
+			\item Intento de acceso sin ser administrador $\Rightarrow$ Se deniega.
+			\item Tiene algún campo vacío $\Rightarrow$ Muestra un error con el mensaje <<Completa este campo>>.
+			\item El \eng{email} ya existe $\Rightarrow$ Muestra un error con el mensaje <<Ya existe un usuario con ese \eng{email}>>.
+			\item El \eng{email} no cumple la validación $\Rightarrow$ Muestra un error con el mensaje <<Invalid \eng{email} address>>.
+			\item La contraseña no cumple la política $\Rightarrow$ Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
+			\item El nombre tiene menos de 2 caracteres $\Rightarrow$ Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-17 Crear usuario.}
+	\caption{\textbf{CU-18} Crear usuario.}
+	\label{req-18}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-18}    & \textbf{ Borrar usuario}\\
+		\textbf{\textbf{CU-19}}    & \textbf{ Borrar usuario}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.3, RF-10.4 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.3}, \refreq{RF-10.4} \\
 		\textbf{Descripción}          & El administrador borra usuarios desde la web. \\
 		\textbf{Precondición}         & Hay un administrador autentificado y usuarios previamente registrados en la aplicación. \\
 		\textbf{Acciones}             &
@@ -790,23 +848,24 @@ a través de un mensaje.
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Fallo al conectara con la base de datos. No se borra el usuario.
+			\item Fallo al conectar con la base de datos $\Rightarrow$ No se borra el usuario y se informa del problema al administrador.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Media  \\
+		\textbf{Importancia}          & Media.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-18 Borrar usuario.}
+	\caption{\textbf{CU-19} Borrar usuario.}
+	\label{req-19}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-19}    & \textbf{ Modificar rol del usuario}\\
+		\textbf{\textbf{CU-20}}    & \textbf{ Modificar rol del usuario}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.3, RF-10.4 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.3}, \refreq{RF-10.4} \\
 		\textbf{Descripción}          & El administrador puede cambiar el rol de los usuarios desde la web. \\
 		\textbf{Precondición}         & Hay un administrador autentificado y usuarios previamente registrados en la aplicación. \\
 		\textbf{Acciones}             &
@@ -822,23 +881,24 @@ a través de un mensaje.
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Fallo al conectara con la base de datos. No se cambia el rol del usuario.
+			\item Fallo al conectar con la base de datos $\Rightarrow$ No se cambia el rol del usuario y se informa del problema al administrador.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Baja  \\
+		\textbf{Importancia}          & Baja.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-19 Modificar rol del usuario.}
+	\caption{\textbf{CU-20} Modificar rol del usuario.}
+	\label{req-20}
 \end{table}
 
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{CU-20}    & \textbf{ Editar usuario}\\
+		\textbf{\textbf{CU-21}}    & \textbf{ Editar usuario}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
-		\textbf{Requisitos asociados} & RF-10.5, RNF-5.1, RNF-5.2 \\
+		\textbf{Requisitos asociados} & \refreq{RF-10.5}, \refreq{RNF-5.1}, \refreq{RNF-5.2} \\
 		\textbf{Descripción}          & Permite que un usuario edite sus datos y contraseña. \\
 		\textbf{Precondición}         & Hay un usuario autentificado. \\
 		\textbf{Acciones}             &
@@ -846,24 +906,25 @@ a través de un mensaje.
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El usuario accede a <<Editar usuario>>.
-			\item Modifica los campos que desee (nombre, \textit{email} o contraseña).
+			\item Modifica los campos que desee (nombre, \eng{email} o contraseña).
 			\item El sistema valida los formatos y reglas.
-			\item El sistema guarda los cambios. Si hay cambio de contraseña la almacena \textit{hasheada}.
+			\item El sistema guarda los cambios. Si hay cambio de contraseña la almacena encriptada.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & Datos del usuario actualizados. \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
-			\item Se intenta cambiar el \textit{email} por otro que ya existe en el sistema. Muestra un error con el mensaje <<Ya existe un usuario con ese \textit{email}>>.
-			\item El \textit{email} no cumple la validación. Muestra un error con el mensaje <<Invalid \textit{email} address>>.
-			\item La contraseña no cumple la política. Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
-			\item El nombre tiene menos de 2 caracteres. Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
+			\item Se intenta cambiar el \eng{email} por otro que ya existe en el sistema $\Rightarrow$ Muestra un error con el mensaje <<Ya existe un usuario con ese \eng{email}>>.
+			\item El \eng{email} no cumple la validación $\Rightarrow$ Muestra un error con el mensaje <<Invalid \eng{email} address>>.
+			\item La contraseña no cumple la política $\Rightarrow$ Muestra un error con el mensaje <<Aumenta la longitud del texto a 6 caracteres como mínimo>>.
+			\item El nombre tiene menos de 2 caracteres $\Rightarrow$ Muestra un error con el mensaje <<Aumenta la longitud del texto a 2 caracteres o más>>.
 		\end{enumerate}\\
-		\textbf{Importancia}          & Baja  \\
+		\textbf{Importancia}          & Baja.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{CU-20 Editar usuario.}
+	\caption{\textbf{CU-21} Editar usuario.}
+	\label{req-21}
 \end{table}
 
 

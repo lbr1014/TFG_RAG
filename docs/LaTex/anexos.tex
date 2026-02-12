@@ -10,6 +10,8 @@
 \usepackage{placeins}
 \usepackage{pdflscape}
 \usepackage{textcomp}
+\usepackage{xparse}
+
 
 %Cabeceras
 \copypagestyle{capitulo-en-cab}{headings}
@@ -28,6 +30,18 @@
 	allcolors = {red}
 }
 
+% Hipervínculos 
+\newcommand{\req}[1]{
+	\hypertarget{lab:#1}{\textbf{#1}}
+}
+\newcommand{\refreq}[1]{
+	\hyperlink{lab:#1}{#1}
+}
+%\renewcommand{\req}[1]{\textbf{#1}}
+%\renewcommand{\refreq}[1]{#1}
+
+
+
 % Ecuaciones
 \usepackage{amsmath}
 
@@ -40,6 +54,31 @@
 % Huérfanas y viudas
 \widowpenalty100000
 \clubpenalty100000
+
+% Hipervínculos
+\NewDocumentCommand{\myhref}{m m O{#1}}{%
+  \href{#1}{#2}\footnote{\url{#3}}%
+}
+
+\newcommand{\contsec}{
+	\myhref{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}
+	{Contratación del Sector Público}
+	[https://tinyurl.com/48ay5679]
+}
+
+% Marcado semántico
+\newcommand{\file}[1]{
+	\texttt{#1}
+}
+\newcommand{\ext}[1]{
+	\texttt{#1}
+}
+\newcommand{
+	\code}[1]{\texttt{#1}
+}
+
+%Palabras en ingles
+\newcommand{\eng}[1]{\textit{#1}}
 
 % Evitar solapes en el header
 \nouppercaseheads
