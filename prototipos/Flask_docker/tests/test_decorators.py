@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from tests.base import BaseTestCase
+from tests.__init__ import BaseTestCase
 from app.decorators import admin_required
 
 

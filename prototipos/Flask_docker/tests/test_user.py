@@ -1,7 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from tests.base import BaseTestCase
+from tests.__init__ import BaseTestCase
 from app.extensions import db
 from app.usuario import User
 

@@ -1,4 +1,4 @@
-from tests.base import BaseTestCase
+from tests.__init__ import BaseTestCase
 from app.usuario import User
 from app.extensions import db
 
