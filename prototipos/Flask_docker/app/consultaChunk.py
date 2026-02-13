@@ -6,8 +6,8 @@ from .extensions import db
 class ConsultaChunk(db.Model):
     __tablename__ = "consultaChunks"
     
-    consulta_id = db.Column(db.Integer, db.ForeignKey("consultas.id"),  primary_key=True)
-    chunk_id = db.Column(db.Integer, db.ForeignKey("chunks.id"),  primary_key=True)
+    consulta_id = db.Column(db.Integer, db.ForeignKey("consultas.id", ondelete="CASCADE"),  primary_key=True)
+    chunk_id = db.Column(db.Integer, db.ForeignKey("chunks.id", ondelete="CASCADE"),  primary_key=True)
 
     similitud = db.Column(db.Float, nullable=False)
     ranking = db.Column(db.Integer, nullable=False)
