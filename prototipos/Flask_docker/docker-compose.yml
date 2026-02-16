@@ -92,6 +92,7 @@ services:
 
   test:
     build: .
+    container_name: flask_tests
     working_dir: /app
     command: sh -lc "coverage run --source=app -m unittest discover -s tests -t . && coverage report -m"
     volumes:
