@@ -1,9 +1,19 @@
 import os
 import unittest
+import sqlite3
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 from app import create_app
 from app.extensions import db
 from app.usuario import User
+
+@event.listens_for(Engine, "connect")
+def _set_sqlite_pragma(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
