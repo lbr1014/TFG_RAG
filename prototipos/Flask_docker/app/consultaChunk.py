@@ -15,8 +15,9 @@ class ConsultaChunk(db.Model):
     consulta = db.relationship(
         "Consulta",
         backref=db.backref("consultaChunks", lazy=True, cascade="all, delete-orphan"),
+        passive_deletes=True,
     )
-    chunk = db.relationship("Chunk")
+    chunk = db.relationship("Chunk",  passive_deletes=True)
 
     __table_args__ = (
         UniqueConstraint("consulta_id", "ranking", name="uq_consulta_rank"),
