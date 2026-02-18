@@ -7,7 +7,7 @@ from app.extensions import db
 from app.chunk import Chunk
 from app.documentos import Documento
 
-class UsuarioModelTest(BaseTestCase):
+class ChunkModelTest(BaseTestCase):
     def crear_documento(self):
         doc = Documento(
            id=10,
@@ -80,9 +80,6 @@ class UsuarioModelTest(BaseTestCase):
         db.session.commit()
 
         db.session.add(c2)
-        try:
+        with self.assertRaises(IntegrityError):
             db.session.commit()
-            self.assertFalse("Debería fallar por UniqueConstraint")
-        except IntegrityError:
-            db.session.rollback()
-            self.assertTrue("Falla por UniqueConstraint")
+        db.session.rollback()
