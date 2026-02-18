@@ -43,7 +43,7 @@ def rag_answer(question: str) -> Dict[str, Any]:
         data = obtener_mejor_chunk(question)
     except Exception as e:
         logger.exception("Error en rag_answer: %s", e)
-        message_error("Ha ocurrido un error consultando el sistema. Inténtalo de nuevo.")
+        data = message_error("Ha ocurrido un error consultando el sistema. Inténtalo de nuevo.")
 
     elapsed = time.perf_counter() - start
 
@@ -110,6 +110,7 @@ def persist_consulta(question: str, data: Dict[str, Any], elapsed: float) -> Non
         db.session.commit()
         
 def find_chunk(item: dict)-> Optional["Chunk"]:
+    chunk_obj = None
     qid = (item.get("qdrant_point_id") or "").strip()
     if qid:
         chunk_obj = Chunk.query.filter_by(qdrant_point_id=qid).first()
