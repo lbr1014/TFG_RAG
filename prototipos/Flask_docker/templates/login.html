@@ -34,8 +34,19 @@
 
         <div class="links">
             <a href="{{ url_for('auth.singup') }}">¿No tienes cuenta? Regístrate</a><br>
+            <a href="{{ url_for('auth.forgot_password') }}">¿Olvidaste tu contraseña?</a><br>
             <a href="{{ url_for('main.inicio') }}">Volver al inicio</a>
         </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
     </div>
 
 </body>

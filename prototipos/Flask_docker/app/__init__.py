@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-from .extensions import db, login_manager, migrate
+from .extensions import db, login_manager, migrate, mail
 from .usuario import User
 from .consulta import Consulta
 from .documentos import Documento, DocumentosService
@@ -34,10 +34,21 @@ def create_app():
 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["DOCS_DIR"] = os.environ.get("DOCS_DIR", "pliegos")
+    
+    # Flask Mail
+    app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "")
+    app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", "587"))
+    app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "1") == "1"
+    app.config["MAIL_USE_SSL"] = os.environ.get("MAIL_USE_SSL", "0") == "1"
+    app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME", "")
+    app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "")
+    app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"])
+
 
     # init extensions
     db.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"

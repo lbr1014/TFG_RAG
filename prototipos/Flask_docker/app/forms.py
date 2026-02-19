@@ -34,3 +34,16 @@ class EditUserForm(FlaskForm):
 class RAGQueryForm(FlaskForm):
     question = TextAreaField("Pregunta", validators=[DataRequired(), Length(max=2000)])
     submit = SubmitField("Preguntar")
+    
+class ForgotPasswordForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Recuperar contraseña")
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField("Nueva contraseña", validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField(
+        "Repite la contraseña",
+        validators=[DataRequired(), EqualTo("password", message="Las contraseñas no coinciden")]
+    )
+    submit = SubmitField("Cambiar contraseña")
+
