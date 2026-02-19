@@ -89,7 +89,7 @@ def forgot_password():
             msg.body = f"""Hola {user.nombre},
 
             Has solicitado recuperar tu contraseña.
-            Abre este enlace para crear una nueva (caduca en 1 hora):
+            Abre este enlace para crear una nueva:
 
             {reset_url}
 
