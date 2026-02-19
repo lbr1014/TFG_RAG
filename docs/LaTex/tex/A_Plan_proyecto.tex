@@ -371,7 +371,45 @@ El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown
 \imagenflotante{Burndown/Sprint15}{\eng{Burndown chart} del \eng{sprint} 15.}
 
 \subsection{\eng{Sprint} 16 (05/02/2025 -- 12/02/2026)}
-El objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/16?closed=1}{Sprint 16} fue
+El objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/16?closed=1}{Sprint 16} fue incluir el uso de \eng{Nginx} para levantar la aplicación \eng{web} en el servidor integrándolo con la implementación de \eng{Gunicode} del \eng{sprint} anterior. Además, se fijo como objetivo explicar en la memoria algunos trabajos relacionados. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+\tightlist
+	\item Incluir trabajos relacionados en la memoria.
+	\item Incluir imágenes en la memoria.
+	\item Correcciones documentación.
+	\item Completar algunos de los \eng{tests} unitarios realizados previamente.
+	\item Realizar \eng{tests} unitarios para las nuevas clases.
+	\item Mejoras en el \eng{docker}.
+	\item Incluir \eng{Nginx} en la aplicación \eng{Flask}.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 34 horas de trabajo. Al finalizar el \eng{sprint} se realizaron todas las tareas, y de manera general respetando la planificación temporal. En el caso de la tarea <<Incluir trabajos relacionados en la memoria>> se estimó que se iba a realizar en 4 horas pero finalmente fueron unas 6 horas, ya que, se realizó una comparativa entre ellos y con el proyecto que se esta llevando a cabo en este TFG.
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint16}.
+\imagenflotante{Burndown/Sprint16}{\eng{Burndown chart} del \eng{sprint} 16.}
+
+\subsection{\eng{Sprint} 17 (12/02/2025 -- 19/02/2026)}
+El objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/17?closed=1}{Sprint 17} fue incluir que la aplicación pueda mandar correos a los usuarios, concretamente para avisar cuando acaban de ejecutarse los procesos largos (como el \eng{web scraping} o la actualización de la base de datos vectorial) y para la recuperación de la contraseña cuando se le ha olvidado. También, se siguieron implementando los \eng{tests} unitarios de la aplicación para cubrir el \eng{coverage}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+\tightlist
+	\item Correo cuando finalicen las tareas largas.
+	\begin{itemize}
+	\tightlist
+		\item Incluir recuperación de contraseña.
+		\begin{itemize}
+		\tightlist
+			\item Investigar como se pueden mandar correos automáticos desde \eng{Flask}.
+		\end{itemize}
+	\end{itemize}
+	\item Completar \eng{tests} y generar el informe del \eng{coverage}.
+	\item Incluir conversión a \eng{markdown} en la aplicación.
+	\item Botón cancelar consulta.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 24 horas de trabajo. Al finalizar el \eng{sprint} se realizaron todas las tareas invirtiendo unas 30 horas. Esto se debió a que la realización de los \eng{tests}
+
+%El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint17}.
+%\imagenflotante{Burndown/Sprint17}{\eng{Burndown chart} del \eng{sprint} 17.}
 
 \section{Estudio de viabilidad}
 El estudio de viabilidad es un análisis detallado que se realiza antes de iniciar un proyecto. Sirve para determinar la rentabilidad de ese proyecto, es decir, si se pude hacer realidad. Para ello se analiza si es económicamente rentable (sección~\hyperref[viabilidad_economica]{A.3.1}) y legalmente viable (sección~\hyperref[viabilidad_legal]{A.3.2}). 
