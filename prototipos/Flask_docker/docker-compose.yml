@@ -56,6 +56,7 @@ services:
 
   web:
     build: .
+    init: true
     container_name: flask_web
     env_file: 
       - .env
