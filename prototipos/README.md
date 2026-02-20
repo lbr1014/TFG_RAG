@@ -77,7 +77,7 @@ En esta carpeta se encuentran los archivos de prueba que se han ido generando du
 - **Web Scraping**: en esta carpeta hay varias implemenatciones de scripts para recopilar de manera automática licitaciones y descargar sus documentos (pliegos) desde la [Plataforma de Contratación del Sector Público](https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/). En dichos scripts se prueba tanto Selenium como Playwright síncorno y asíncrono para navegar por la web, seleccionar el órgano de contratación, recorrer las licitaciones, extraer sus metadatos y guardar los resultados (en un fichero JSON). También, se incluyen archivos que recorren estos JSON para entrar en las páginas de los documentos y descargar los pliegos en formato PDF.  
 
 ## Ejecución de los archivos:
-En este apartado se van a indicar los pasos ejecutar los archivos BaseDatos, Prompt, PruebaBaseDatos y PrototipoRAG, es decir, los que se encuentarn en la raiz del directorio prototipos, tanto desde una terminal Ubuntu como desde la terminal de Windows. 
+En este apartado se van a indicar los pasos para ejecutar los archivos BaseDatos, Prompt, PruebaBaseDatos y PrototipoRAG, es decir, los que se encuentarn en la raiz del directorio prototipos, tanto desde una terminal Ubuntu como desde la terminal de Windows. 
 ### Ejecutar desde Ubuntu:
 Se van a describir dos formas de instalar las dependecias para ejecutar los programas desde una terminal Ubuntu. La primera opción consiste en usar Poetry y la segunda el archivo requirements.
 ##### Utilizando Poetry:
