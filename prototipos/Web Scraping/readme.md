@@ -61,7 +61,7 @@ Se van a describir dos formas de instalar las dependecias para ejecutar los prog
    
 3) Entrar al directorio del proyecto:
    ```bash
-   cd TFG_RAG/prototipos
+   cd TFG_RAG/prototipos/Web Scraping
    ```
 4) Instalar las dependencias:
    ```bash
