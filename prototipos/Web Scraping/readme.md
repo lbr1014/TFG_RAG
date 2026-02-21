@@ -20,9 +20,9 @@ Se prueba tanto Selenium como Playwright síncorno y asíncrono para navegar por
  
   ## Contenido de los archivos y directorios:
 
-- **DescargarPdf.py**:
-- **DescargarPliegos.py**:
-- **PliegosPlaywrightAsincrono.py**:
+- **DescargarPdf.py**: este script usa Playwright en modo asíncrono para leer un archivo JSON (resultados_playwright_asincrono_servidor.json). Para cada expediente almacenado en el archivo se entra en la página guardada desde la cual se descarga el pdf en español del pliego y luego se almacena en la carpeta pdfs. el espediente se guarda con el nombre del espediente.
+- **DescargarPliegos.py**: este script automatiza la búsqueda y descarga de pliegos en PDF a partir de un archivo JSON (resultados_playwright_asincrono_servidor.json) utilizando Plawright asíncrono. Para cada registro coge el expediente de aquellos que tengan pliegos. Para estos entra en la URL y descarga los dos tipos de pliegos (Pliego Prescripciones Técnicas y Pliego Cláusulas Administrativas) y los almacena en la carpeta Pliegos.
+- **PliegosPlaywrightAsincrono.py**: este script automatiza la extración de la información de los expedientes de la Junta de Gobierno de la Diputación Provincial de Burgos usando Playwright asíncorno. Para ello entraen la [Plataforma de Contratación del Sector Público](https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/), navega hasta Perfil Contratante, seelecciona el organo (la junta de Burgos) y selecciona las licitaciones. 
 - **PliegosPlaywright.py**:
 - **PliegosSelenium.py**:
 - **pliegos_pdfs.json**:
