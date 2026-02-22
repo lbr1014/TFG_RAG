@@ -15,12 +15,12 @@ En esta carpeta se encuentran los archivos de prueba que se han generado para pr
  
  ## Contenido de los archivos y directorios:
 
-- **script_tokenize.py**:
-- **script_tokenize_segundoModelo.py**:
-- **script_tokenizer1.py**:
-- **script_tokenizer3.py**:
-- **resumen2.json**:
-- **resumen3.json**:
+- **script_tokenize.py**: este script se encarga de dividir el texto de los documentos en fragmentos más pequeños (tokenizar). Es una parte del sistema RAG. Toma como entrada os PDF (extaridos de web scraping), los limpia y segmenta por el número de caracteres. Genera una lista para ser indexada en una base de datos vectorial. 
+- **script_tokenize_segundoModelo.py**: este script es uan variante del proceso de tokenización con una configuración alternativa de embeddings. Su función principal es procesar los textos de los documentos, limpiarlos y dividirlos en fragmentos adecuados (según el limite de tokens del modelo). Genera los tokens que posteriormente se van a convertir en vectores e indexar en la base de datos vectorial. 
+- **script_tokenizer1.py**: este script se encarga de procesar y fragmentar textos en chunks listos para generar embeddings. Es una primera versión donde se definene reglas de limpieza, segmentación y tamaño de los fragmentos. 
+- **script_tokenizer3.py**: este script es otra variante del proceso de tokenización. Su función principal es limpiar lso documentos y dividirlos en fragmentos optimizados para generar embeddings y almacenarlos en una base de datos vectorial. En esta versión se incluye guardado de metadatos y solapamiento para mayor contexto de los chunks. 
+- **resumen2.json**: este archivo JSON contienen los dats generados en el pipeline de procesamiento. Contiene resúmenes estructurados de los documentos. Recoge información sintetizada a partir de los textos ya procesados. 
+- **resumen3.json**: este archivo JSON es otro arhcivo de dalida del pipelie. Contiene resumenes generados automáticamente de lso documentos. Almacena información sintetizada y fácil de consultar que complemente los textos originales y los embeddings, permitiendo comparar resultados.
  
 ## Ejecución de los archivos:
 En este apartado se van a indicar los pasos para ejecutar los archivos de web scraping, tanto desde una terminal Ubuntu como desde la terminal de Windows. 
