@@ -1,4 +1,3 @@
-# guardar como script_tokenizer_fix.py
 import re
 import json
 from pathlib import Path
@@ -9,7 +8,7 @@ from pypdf import PdfReader
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # =========================
-# 0) Parámetros de modelo y ventanas
+# Parámetros de modelo y ventanas
 # =========================
 max_seq_length = 2048
 max_new_tokens = 256
@@ -19,7 +18,7 @@ overlap_tokens = 60
 model_name = "meta-llama/Meta-Llama-3.1-8B"
 
 # =========================
-# 1) Utilidades de prompting/tokenizer (estrategia del libro)
+# Utilidades de prompting/tokenizer
 # =========================
 def alpaca_format(instruction: str, response: str = "") -> str:
     return f"### Instruction:\n{instruction}\n\n### Response:\n{response}"
@@ -74,7 +73,7 @@ def split_by_tokens(tokenizer, text: str, max_tokens: int, overlap: int = 50) ->
     return chunks
 
 # =========================
-# 2) Lectura y limpieza PDF (ignorar índice)
+# Lectura y limpieza PDF (ignorar índice)
 # =========================
 DOTS = r"[.\·•·∙⋅··…]"
 RE_INDEX_LINE = re.compile(rf"^\s*\d*(\.\d+)*\s*[^\d{DOTS}]+?\s{DOTS}{{4,}}\s*\d{{1,4}}\s*$")
@@ -82,7 +81,7 @@ RE_TRAILING_PAGENUM = re.compile(rf"{DOTS}{{3,}}\s*\d{{1,4}}\s*$")
 RE_HEADER_FOOTER = re.compile(r"^\s*(Página\s+\d+|ÍNDICE|INDEX|CONTENIDOS?)\s*$", re.I)
 
 def limpiar_linea(s: str) -> str:
-    s = s.replace("\u00A0", " ")  # nbsp
+    s = s.replace("\u00A0", " ")  
     s = re.sub(r"[ \t]+", " ", s)
     return s.strip()
 
@@ -110,7 +109,7 @@ def read_pdf_text(path: str) -> List[str]:
     for page in reader.pages:
         txt = clean_page(page.extract_text() or "")
         lineas.extend(txt.splitlines())
-    # Filtra vacías
+    # Filtra líenas vacías
     return [l for l in lineas if l]
 
 def es_linea_indice(s: str) -> bool:
@@ -172,7 +171,7 @@ def es_titulo_seccion(linea: str) -> Tuple[bool, str]:
     m = RE_TITULO.match(s) or re.match(r"^\s*(\d+(?:\.\d+)*)\s+(.*\S)\s*$", s)
     if not m:
         return False, ""
-    # clave: el TÍTULO debe ACABAR EN LETRA (no en dígito)
+    # El título acaba en letra
     if re.search(r"\d\s*$", s):
         return False, ""
     return True, s
@@ -196,7 +195,7 @@ def secciones_desde_lineas(lineas: List[str]) -> List[Tuple[str, List[str]]]:
     return secciones
 
 # =========================
-# 4) Carga de modelo (un solo device) y generación
+# Carga de modelo
 # =========================
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -223,7 +222,7 @@ def generate_summary(text: str) -> str:
         [prompt],
         return_tensors="pt",
         padding=True,
-        truncation=False,  # ya limitamos por tokens antes
+        truncation=False, 
     )
     # mueve inputs al mismo device que el modelo
     model_device = next(model.parameters()).device
@@ -243,7 +242,7 @@ def generate_summary(text: str) -> str:
     return decoded.strip()
 
 # =========================
-# 5) Resumen por sección con Map-Reduce
+# Resumen por sección con Map-Reduce
 # =========================
 def resumir_secciones(secciones: List[Tuple[str, List[str]]]) -> List[Dict[str, str]]:
     resultados: List[Dict[str, str]] = []
@@ -252,10 +251,10 @@ def resumir_secciones(secciones: List[Tuple[str, List[str]]]) -> List[Dict[str, 
         if not cuerpo:
             continue
 
-        # Paso A: empaquetar por frases (evitar cortes raros)
+        # Empaquetar por frases (evitar cortes raros)
         packs = split_by_sentences_pack(cuerpo)
 
-        # Paso B: asegurar límite de tokens (con solape)
+        # Asegurar límite de tokens (con solape)
         trozos: List[str] = []
         for pack in packs if packs else [cuerpo]:
             ids_len = len(tokenizer.encode(pack, add_special_tokens=False))
@@ -264,10 +263,10 @@ def resumir_secciones(secciones: List[Tuple[str, List[str]]]) -> List[Dict[str, 
             else:
                 trozos.append(pack)
 
-        # Paso C (Map): resumen por trozo
+        # Resumen por trozo
         parciales = [generate_summary(t) for t in trozos if t.strip()]
 
-        # Paso D (Reduce): fusión de resúmenes de la sección
+        # Fusión de resúmenes de la sección
         if len(parciales) > 1:
             fusion_text = "\n".join(f"- {p}" for p in parciales if p)
             resumen_final = generate_summary(
@@ -281,7 +280,7 @@ def resumir_secciones(secciones: List[Tuple[str, List[str]]]) -> List[Dict[str, 
     return resultados
 
 # =========================
-# 6) Orquestación
+# Orquestación
 # =========================
 def procesar_pdf(pdf_path: str) -> List[Dict[str, str]]:
     lineas = read_pdf_text(pdf_path)
@@ -296,6 +295,5 @@ def main(pdf_path: str, salida_json: str = "resumen.json"):
     print(f"Guardado: {salida_json} ({len(resumenes)} secciones)")
 
 if __name__ == "__main__":
-    # Cambia esta ruta por tu PDF real
-    PDF = "DOC20251103115131003_Proyecto_visado_11E25.pdf"
+    PDF = "pruebas.pdf"
     main(PDF, "resumen.json")

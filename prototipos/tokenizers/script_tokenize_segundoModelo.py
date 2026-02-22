@@ -22,7 +22,7 @@ def chunk(text: str, max_chars: int = 20000) -> str:
     return text[:max_chars]
 
 
-pdf_path = "DOC20251103115131003_Proyecto_visado_11E25.pdf"
+pdf_path = "pruebas.pdf"
 pdf_text = chunk(read_pdf(pdf_path))
 
 promp = f"""

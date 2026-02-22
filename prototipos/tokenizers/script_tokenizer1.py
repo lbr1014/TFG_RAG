@@ -10,7 +10,7 @@ max_seq_length = 2048
 max_new_tokens = 256
 prompt_reserva = 200
 max_input_tokens = max_seq_length - max_new_tokens - prompt_reserva
-overlap_tokens = 60  # solape moderado para continuidad
+overlap_tokens = 60  # solape moderado 
 model_name = "meta-llama/Meta-Llama-3.1-8B"
 
 # ===== Utilidades de prompting =====
@@ -171,7 +171,6 @@ def generate_summary(text: str) -> str:
         eos_token_id=tokenizer.eos_token_id,
     )
     decoded = tokenizer.decode(out[0], skip_special_tokens=True)
-    # separa por el marcador de Alpaca si aparece
     if "### Response:" in decoded:
         decoded = decoded.split("### Response:", 1)[-1]
     return decoded.strip()
@@ -184,23 +183,23 @@ def resumir_pdf(pdf_path: str, salida_json: str = "resumen2.json"):
 
     resumenes = []
     for titulo, cuerpo in sections:
-        # Paso 1: empaqueta por frases
+        # Empaqueta por frases
         packs = split_by_sentences_pack(cuerpo)
 
-        # Paso 2: asegura límite de tokens con solape
+        # Asegura límite de tokens con solape
         trozos: List[str] = []
         for pack in packs if packs else [cuerpo]:
-            # si el pack excede el límite en tokens, redivide por tokens
+            # si excede el límite en tokens, redivide por tokens
             ids_len = len(tokenizer.encode(pack, add_special_tokens=False))
             if ids_len > max_input_tokens:
                 trozos.extend(split_by_tokens(tokenizer, pack, max_input_tokens, overlap_tokens))
             else:
                 trozos.append(pack)
 
-        # Paso 3: resumen por trozo (map)
+        # Resumen por trozo 
         parciales = [generate_summary(t) for t in trozos if t.strip()]
 
-        # Paso 4: fusión dentro de la sección (reduce)
+        # Fusión dentro de la sección 
         if len(parciales) > 1:
             fusion_text = "\n".join(f"- {p}" for p in parciales if p)
             resumen_final = generate_summary(
@@ -219,6 +218,5 @@ def resumir_pdf(pdf_path: str, salida_json: str = "resumen2.json"):
 
 
 if __name__ == "__main__":
-    # Cambia aquí la ruta a tu PDF
-    pdf_path = "DOC20251103115131003_Proyecto_visado_11E25.pdf"
+    pdf_path = "pruebas.pdf"
     resumir_pdf(pdf_path, "resumen.json")

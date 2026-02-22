@@ -39,7 +39,7 @@ def split_by_tokens(tokenizer, text: str, max_tokens: int, overlap: int = 50):
 
 
 def split_by_sentences_pack(text: str, min_len=800, max_len=1200):
-    # une frases hasta ~max_len, como en el handbook
+    # une frases hasta max_len
     sents = re.split(r"(?<!\w\.\w.)(?<![A-ZÁÉÍÓÚÑ][a-záéíóúñ]\.)(?<=\.|\?|!)\s", text)
     packs, cur = [], ""
     for s in sents:
@@ -86,8 +86,6 @@ def read_pdf_text(path: str) -> str:
     chunks = []
     for i, p in enumerate(r.pages):
         txt = clean_page(p.extract_text() or "")
-        # si sabes que las 1-2 primeras páginas son índice, puedes saltarlas:
-        # if i < 2: continue
         chunks.append(txt)
     return "\n".join(chunks)
 
@@ -141,8 +139,7 @@ def split_into_sections(text: str) -> List[Tuple[str, str]]:
     return sections
 
 
-pdf_path = "DOC20251103115131003_Proyecto_visado_11E25.pdf"
-# pdf_text = chunk(read_pdf(pdf_path))
+pdf_path = "pruebas.pdf"
 pdf_text = read_pdf_text(pdf_path)
 sections = split_into_sections(pdf_text) 
 
@@ -181,11 +178,11 @@ overlap_tokens = 50
 
 resumenes = []
 for titulo, cuerpo in sections:
-    # 3) trocea cuerpo por tokens si hace falta
+    # trocea cuerpo por tokens si hace falta
     trozos = split_by_tokens(tokenizer, cuerpo, max_input_tokens, overlap_tokens)
     parciales = [generate_summary(t) for t in trozos]
 
-    # 4) fusiona los resúmenes parciales de esta sección (si hay varios)
+    # fusiona los resúmenes parciales de esta sección (si hay varios)
     if len(parciales) > 1:
         fusion_text = "\n".join(f"- {p}" for p in parciales)
         resumen_final = generate_summary(f"La sección '{titulo}' se compone de estos subresúmenes:\n{fusion_text}\n\nFusiona en 3–5 líneas.")
