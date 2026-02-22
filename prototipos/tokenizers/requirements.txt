@@ -1,10 +1,7 @@
-async-timeout==4.0.3 ; python_version >= "3.12"
-certifi==2025.10.5 ; python_version >= "3.12"
-charset-normalizer==3.4.4 ; python_version >= "3.12"
-greenlet==3.2.4 ; python_version >= "3.12"
-idna==3.11 ; python_version >= "3.12"
-playwright==1.55.0 ; python_version >= "3.12"
-pyee==13.0.0 ; python_version >= "3.12"
-requests==2.32.5 ; python_version >= "3.12"
-typing-extensions==4.15.0 ; python_version >= "3.12"
-urllib3==2.5.0 ; python_version >= "3.12"
+pypdf==5.0.1
+transformers==4.45.2
+accelerate==0.34.2
+huggingface-hub==0.24.6
+tokenizers==0.20.1
+safetensors==0.4.5
+torch==2.4.1
