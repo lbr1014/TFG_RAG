@@ -18,7 +18,7 @@ En esta carpeta se encuentran los archivos de prueba que se han ido generando du
  
 ## Contenido de los archivos y directorios:
 
-- **Intento1_Markdown.py**:
+- **Intento1_Markdown.py**: este script automatiza la conversión de PDF a Markdown. Además, aplica un posprocesado inteligente para limpiar y estructurar el texto. Primero utiliza la libreria MarkItDown para convertir los PDF del directorio pdfs en Markdown (guarda el resultado en la carpeta markdown_intento1). Después, realiza una limpieza del markdown eliminando las viñetas raras, uniendo las palabras cortadas por saltos de línea, normalizando los saltos de línea y los espacios y transformando el índice del documento en una lista con enlaces internos. También, intenta detectar los titulos de las secciones utilizando expresiones regulares.
 - **Markdown_Ocr.py**:
 - **Markdown_Ollama.py**:
 - **Markdown_Ollama2.py**:
