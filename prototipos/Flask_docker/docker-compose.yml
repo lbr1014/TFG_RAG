@@ -8,10 +8,13 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
-
+      TZ: Europe/Madrid
+      PGTZ: Europe/Madrid
     expose:
       - "5432"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
@@ -32,6 +35,8 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: flask_ollama
+    ports:
+      - "11435:11434"
     volumes:
       - ollama:/root/.ollama
     restart: unless-stopped
@@ -75,8 +80,11 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - DOCS_DIR=/data/pliegos
       - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --capture-output --log-level debug
+
     restart: unless-stopped
     volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - ./data:/data
       - hf_cache:/root/.cache/huggingface
 
@@ -87,8 +95,10 @@ services:
       - web
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
     restart: unless-stopped
 
   test:
