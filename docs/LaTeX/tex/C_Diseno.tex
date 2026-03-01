@@ -36,6 +36,47 @@ El diagrama relacional se muestra en esta imagen ~\ref{fig:Diagramas/Relacional}
 
 
 \section{Diseño arquitectónico}
+El objetivo del diseño arquitectónico es garantizar la modularidad, la escalabilidad, la mantenibilidad y la reproducibilidad del sistema desarrollado. Dicho sistema se basa en una arquitectura cliente–servidor multicapa, combinada con una arquitectura \eng{RAG} (\eng{Retrieval-Augmented Generation}) estructurada en dos \eng{pipelines} diferenciados, el de indexación y el de generación. Además, se busca un despliegue reproducible y desacoplado utilizando un contenedor \eng{Docker} para almacenar el código junto con sus dependencias.
+
+\subsection{Arquitectura general del sistema}
+El sistema sigue una arquitectura distribuida basada en servicios, donde cada componente tiene una responsabilidad claramente definida. La aplicación se compone de los siguientes elementos principales:
+\begin{itemize}
+\tightlist
+	\item Cliente \eng{web} (navegador del usuario).
+	\item Servidor \eng{web} \eng{Flask}.
+	\item Base de datos relacional (\eng{PostgreSQL}).
+	\item Base de datos vectorial (\eng{Qdrant}).
+	\item Servicio de modelos \eng{LLM} (\eng{Ollama}).
+	\item Servidor \eng{web} \eng{Nginx} como \eng{proxy} inverso.
+	\item \eng{Gunicorn} como servidor WSGI.
+\end{itemize}
+
+La comunicación entre componentes se realiza mediante el protocolo HTTP dentro de la red interna del \eng{Docekr}. El acceso externo se gestiona usando \eng{Nginx} a través del protocolo HTTPS.
+
+Desde el punto de vista lógico la arquitectura se divide en la capa de presentación, la capa de aplicación y la capa de persistencia y servicios externos.
+
+\subsection{Arquitectura de la aplicación \eng{web}}
+La aplicación \eng{web} sigue una arquitectura MVC (\eng{Model-View-Controller}). Esta arquitectura es típica de las aplicaciones \eng{Flask} \eng{server-side-rendered} (SSR)~\cite{diseño:SSR}. La técnica SSR consiste en generar el código de las páginas en el lado del servidor y entregar al cliente el código \file{HTML} completamente montado con toda la información que se debe mostrar. 
+
+El modelo vista controlador (MVC)~\cite{diseño:MVC} es un patrón arquitectónico de software que separa el código en tres capas independientes. La capa modelo donde se incluye la lógica y los datos , la capa vista donde se implementa la interfaz de usuario (\eng{frontend}) y la capa controlador que actúa de intermediario entre las acciones del usuario en las vistas y la lógica de la aplicación (rutas). En esta aplicación se implementa adaptado al ecosistema \eng{Flask} de la siguiente forma:
+\begin{itemize}
+\tightlist
+	\item La vista: está compuesta por las platillas \file{HTML} renderizadas mediante el motor de plantillas \file{Jinja2}, responsables de presentar la interfaz y capturar las interacciones del usuario. Además, incorpora los recursos estáticos (\file{css} y \file{JavaScript}). Aunque, la aplicación incorpora \eng{JavaScript} para mejorar la experiencia de usuario, la generación principal del contenido es \eng{server-side}, por lo que la arquitectura sigue siendo fundamentalmente SSR.
+	\item El controlador: se implementa mediante rutas \eng{Flask} organizadas en \eng{Blueprints}. El uso de \eng{Blueprints} permite mantener alta cohesión dentro de cada módulo y bajo acoplamiento entre funcionalidades. Se encarga de gestionar las peticiones HTTP, realizar validaciones básicas (como las de los formularios), así como controlar de acceso por rol. También, tiene la responsabilidad de invocar los servicios donde se encuentra la lógica, coordinar el \eng{pipeline} \eng{RAG} y generar las respuestas HTTP (renderizando la vista adecuada) . 
+	\item El modelo: esta compuesto por las entidades de datos persistentes (Usuario, Consulta, Documento, \eng{Chunk}, \eng{Embedding} y la relación \eng{ConsultaChunk}) y por la lógica de negocio asociada (gestión de usuarios, administración documental, \eng{pipelines} de consulta e indexación \eng{RAG}, control de estados de procesos largos, etc). Se usa una base de datos relacional (\eng{PostgresSQL}) para asegurar la persistencia de los datos de la aplicación y una base de datos vectorial (\eng{Qdrant}) para la recuperación semántica. Esta capa permite desacoplar la lógica de negocio de la base de datos subyacente.
+\end{itemize} 
+
+Con estas capas se mantiene el desacoplamiento de la aplicación \eng{web}, haciendo que los controladores organicen el flujo para que la interfaz de usuario no implemente reglas de negocio y sea el modelo el que encapsule los datos y los procesos del domino. 
+
+\subsection{Arquitectura del sistema \eng{RAG}}
+El sistema \eng{RAG} se integra dentro de la capa de aplicación y se estructura en dos \eng{pipelines}, el de indexación y el de generación:
+
+El \eng{pipeline} de indexación se ejecuta cuando se cargan los documentos en la aplicación, ya bien sea de manera manual o mediante \eng{web scraping}. Por cada documento se va a llevar a cabo una conversión a \file{Markdown}. De estos documentos se extrae, limpia y normaliza su texto, posteriormente se segmenta en \eng{chunks} con solapamiento y se generar sus \eng{embeddings}. Los cuales se van a almacenar en \eng{Qdrant}. Este proceso se ejecuta de forma asíncrona para evitar bloquear la interfaz \eng{web} y envía un correo electrónico al usuario cuando finaliza.
+
+El \eng{pipeline} de generación se activa cuando el usuario hace una consulta, generando los \eng{embeddings} de la consulta. Una vez generados recupera los \eng{chunks} más relevantes de \eng{Qdrant} por la similitud de sus \eng{embeddings} y los usa para construir el \eng{prompt} aumentado. Envía el \eng{prompt} generado al modelo \eng{LLM} y muestra su respuesta al usuario. Finalmente registra la consulta en la base de datos relacional. Este pipeline combina recuperación semántica y generación de texto, asegurando trazabilidad al devolver los metadatos de los documentos fuente.
+
+\subsection{Arquitectura de despliegue e infraestructura}
+El sistema se despliega mediante \file{Docker Compose}
 
 \section{Diseño procedimental}
 
