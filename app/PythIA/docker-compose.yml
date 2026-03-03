@@ -1,0 +1,124 @@
+services:
+  db:
+    image: postgres:16
+    container_name: flask_db
+    env_file:
+      - .env
+      - secret.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      TZ: Europe/Madrid
+      PGTZ: Europe/Madrid
+    expose:
+      - "5432"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: flask_qdrant
+    expose:
+      - "6333"
+    volumes:
+      - qdrantdata:/qdrant/storage
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: flask_ollama
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "sh", "-lc", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ollama:/root/.ollama
+    entrypoint: ["sh", "-lc"]
+    command: ["ollama pull llama3.1:8b-instruct-q4_K_M"]
+    restart: "no"
+
+  web:
+    build: .
+    init: true
+    container_name: flask_web
+    env_file: 
+      - .env
+      - secret.env
+    expose:
+      - "5000"
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - QDRANT_URL=http://qdrant:6333
+      - DOCS_DIR=/data/pliegos
+      - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --capture-output --log-level debug
+
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./data:/data
+      - hf_cache:/root/.cache/huggingface
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: flask_nginx
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    restart: unless-stopped
+
+  test:
+    build: .
+    container_name: flask_tests
+    working_dir: /app
+    command: sh -lc "coverage run --source=app -m unittest discover -s tests -t . && coverage report -m && coverage html"
+    volumes:
+      - ./tests:/app/tests
+      - ./app:/app/app
+      - ./coverage:/app/htmlcov
+    environment:
+      PYTHONPATH: /app
+      DATABASE_URL: "sqlite:///:memory:"
+      SECRET_KEY: "test"
+
+
+volumes:
+  pgdata:
+  qdrantdata:
+  ollama:
+  hf_cache:
+  test:

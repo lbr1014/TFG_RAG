@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Mi web{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+
+  <!-- CABECERA COMÚN -->
+  <header class="main-header">
+      <div class="user-info">
+      {% if current_user.is_authenticated %}
+          <p class="welcome">Hola, <strong>{{ current_user.nombre }}</strong></p>
+
+          {% if current_user.is_admin %}
+          <span class="badge admin">Administrador</span>
+          {% else %}
+          <span class="badge user">Usuario</span>
+          {% endif %}
+
+          <p class="last-login">
+          Último inicio:
+          {% if current_user.last_login %}
+              {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+          {% else %}
+              —
+          {% endif %}
+          </p>
+      {% else %}
+          <p class="welcome"><strong>{{ titulo or "Bienvenido" }}</strong></p>
+          <p class="home-author" style="margin:5px 0 0;">{{ autor }}</p>
+      {% endif %}
+      </div>
+
+      <div class="header-actions">
+    {% if current_user.is_authenticated %}
+
+      {# En la página principal #}
+      {% if current_user.is_admin %}
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button">
+            Opciones ▾
+          </button>
+          <div class="dropdown-menu">
+            {% if request.endpoint != 'admin.documents_list_page' %}
+              <a href="{{ url_for('admin.documents_list_page') }}" class="dropdown-item">
+                Administrar documentos
+              </a>
+            {% endif %}
+            {% if request.endpoint != 'main.historial' %}
+              <a href="{{ url_for('main.historial') }}" class="dropdown-item">
+                Historial de consultas
+              </a>
+            {% endif %}
+            {% if request.endpoint != 'admin.users' %}
+              <a href="{{ url_for('admin.users') }}" class="dropdown-item">
+                Administrar usuarios
+              </a>
+            {% endif %}
+            {% if request.endpoint != 'main.edit_user' %}
+              <a href="{{ url_for('main.edit_user') }}" class="dropdown-item">
+                Editar usuario
+              </a>
+            {% endif %}
+            {% if request.endpoint != 'main.pag_principal' %}
+              <a href="{{ url_for('main.pag_principal') }}" class="dropdown-item">
+                Página principal
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if not current_user.is_admin %}
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button">
+            Opciones ▾
+          </button>
+          <div class="dropdown-menu">
+            {% if request.endpoint != 'main.historial' %}
+              <a href="{{ url_for('main.historial') }}" class="dropdown-item">
+                Historial de consultas
+              </a>
+            {% endif %}
+
+            {% if request.endpoint != 'main.edit_user' %}
+              <a href="{{ url_for('main.edit_user') }}" class="dropdown-item">
+                Editar usuario
+              </a>
+            {% endif %}     
+            {% if request.endpoint != 'main.pag_principal' %}
+              <a href="{{ url_for('main.pag_principal') }}" class="dropdown-item">
+                Página principal
+              </a>
+            {% endif %}     
+          </div>
+        </div>
+      {% endif %}
+
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">
+        Cerrar sesión
+      </a>
+
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Iniciar sesión</a>
+      <a href="{{ url_for('auth.singup') }}" class="btn btn-secondary">Registrarse</a>
+    {% endif %}
+    </div>
+  </header>
+
+  <!-- CONTENIDO VARIABLE -->
+  <div class="page-scroll">
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/functionalities.js') }}"></script>
+</body>
+</html>

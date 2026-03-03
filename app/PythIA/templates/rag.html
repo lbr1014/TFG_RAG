@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Consultar al modelo{% endblock %}
+
+{% block content %}
+<div class="rag-page">
+  <div class="rag-card">
+    <div class="rag-head">
+      <h2 class="rag-title">Preguntar al modelo (RAG)</h2>
+      <p class="rag-subtitle">Escribe tu pregunta y revisa la respuesta y el fragmento usado.</p>
+    </div>
+
+    <form id="rag-form" method="post" class="rag-form">
+      {{ form.csrf_token }}
+
+      <div class="form-group">
+        {{ form.question.label }}
+        {{ form.question(class="rag-textarea", rows="5", placeholder="Escribe tu pregunta...") }}
+      </div>
+
+      <div class="rag-actions">
+        <button class="btn-modelo" type="submit">Preguntar</button>
+        <span id="status" class="rag-status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <div class="rag-result">
+      <h4 class="rag-section-title">Respuesta</h4>
+      <pre id="answer" class="rag-answer"></pre>
+    </div>
+
+    <details class="rag-debug">
+      <summary>Ver fragmento usado</summary>
+      <div class="rag-debug-body">
+        <div class="rag-meta">
+          <div><b>Archivo:</b> <span id="filename"></span></div>
+          <div><b>Título:</b> <span id="title"></span></div>
+          <div><b>Segmento:</b> <span id="segment_index"></span></div>
+        </div>
+
+        <pre id="chunk" class="rag-chunk"></pre>
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById("rag-form");
+  const statusEl = document.getElementById("status");
+  const answerEl = document.getElementById("answer");
+  const filenameEl = document.getElementById("filename");
+  const titleEl = document.getElementById("title");
+  const segmentEl = document.getElementById("segment_index");
+  const chunkEl = document.getElementById("chunk");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    statusEl.textContent = "Consultando…";
+    answerEl.textContent = "";
+    filenameEl.textContent = "";
+    titleEl.textContent = "";
+    segmentEl.textContent = "";
+    chunkEl.textContent = "";
+
+      const formData = new FormData(form);
+
+      const res = await fetch("{{ url_for('rag.rag_ask') }}", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      statusEl.textContent = "";
+
+      answerEl.textContent = data.answer || "";
+      filenameEl.textContent = data.filename || "";
+      titleEl.textContent = data.title || "";
+      segmentEl.textContent = (data.segment_index ?? "");
+      chunkEl.textContent = data.chunk || "";
+  });
+</script>
+{% endblock %}

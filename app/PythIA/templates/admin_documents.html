@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Documentos cargados{% endblock %}
+
+{% block content %}
+  <h2>Cargar PDFs</h2>
+
+  <div class="auth-page">
+    <div class="auth-container">
+
+      <div class="form-group">
+        <label for="files"><strong>Selecciona uno o varios PDFs:</strong></label>
+        <input form="uploadForm" id="files" name="files" type="file" accept="application/pdf" multiple required>
+      </div>
+
+      <div class="btn-row">
+        <form id="uploadForm" method="POST" action="{{ url_for('admin.upload_documents') }}" enctype="multipart/form-data" style="flex:1;">
+          <button type="submit" class="btn btn-secondary" style="width:100%;">Subir</button>
+        </form>
+
+        <form id="scrapingForm" method="POST" action="{{ url_for('admin.web_scraping_documents') }}" style="flex:1;">
+          <button type="submit" class="btn btn-secondary" style="width:100%;">Web Scraping</button>
+        </form>
+      </div>
+
+      <form id="vectorForm" method="POST" action="{{ url_for('admin.update_vector_db') }}" style="margin-top: 12px;">
+        <button type="submit" class="btn btn-primary">Actualizar base vectorial</button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Barra de progreso -->
+  <div id="scraping-progress" data-finished="false" style="display:none; margin-top: 12px;">
+    <div class="progress">
+      <div class="progress-bar"></div>
+    </div>
+    <div class="progress-text">Ejecutando web scraping…</div>
+  </div>
+
+  <hr style="margin: 1.5rem 0;">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Documentos cargados</h2>
+  </div>
+
+   {% if not docs %}
+    <div class="alert alert-info">
+      No hay documentos PDF cargados.
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>Archivo</th>
+            <th style="width: 160px;">Tamaño</th>
+            <th style="width: 220px;">Modificado</th>
+            <th style="width: 120px;">Chunks</th>
+            <th style="width: 140px;">Estado</th>
+            <th style="width: 140px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for d in docs %}
+          <tr>
+            <td>{{ d.nombre }}</td>
+            <td>{{ (d.size_bytes / 1024) | round(1) }} KB</td>
+            <td>{{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+            <td>{{ d.chunks if d.chunks is not none else 0 }}</td>
+            <td>{{ d.status }}</td>
+            <td class="text-end">
+              <form method="POST"
+                    action="{{ url_for('admin.delete_document', doc_id=d.id) }}"
+                    style="display:inline;">
+                <button type="submit"
+                        class="btn btn-sm btn-danger"
+                        onclick="return confirm('¿Seguro que quieres borrar {{ d.nombre }}?');">
+                  Borrar
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% if total_pages > 1 %}
+        <div class="pagination">
+          {% if page > 1 %}
+            <a class="page-link" href="{{ url_for('admin.documents_list_page', page=page-1) }}">&laquo; Anterior</a>
+          {% endif %}
+
+          <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_docs }} documentos)</span>
+
+          {% if page < total_pages %}
+            <a class="page-link" href="{{ url_for('admin.documents_list_page', page=page+1) }}">Siguiente &raquo;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='js/bar_progress.js') }}"></script>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de usuarios{% endblock %}
+
+{% block content %}
+  <h1>Gestión de usuarios</h1>
+  <div style="max-width:900px; margin: 0 auto 20px; text-align:right;">
+    <a href="{{ url_for('admin.create_user') }}" class="btn btn-secondary" style="text-decoration:none;">Añadir usuario</a>
+  </div>
+
+  <table class="app-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Admin</th>
+        <th>Último login</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.nombre }}</td>
+        <td>{{ u.email }}</td>
+        <td>{% if u.is_admin %}Sí{% else %}No{% endif %}</td>
+        <td>
+          {% if u.last_login %}
+            {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+
+        <td>
+          {% if u.id == current_user.id %}
+            <em>Tú</em>
+          {% else %}
+
+            <form method="POST"
+                  action="{{ url_for('admin.change_type', user_id=u.id) }}"
+                  style="display:inline;">
+              <button type="submit" class="btn btn-secondary" style="padding:8px 10px;">
+                {% if u.is_admin %}
+                  Quitar admin
+                {% else %}
+                  Hacer admin
+                {% endif %}
+              </button>
+            </form>
+
+            <form method="POST"
+                  action="{{ url_for('admin.delete_user', user_id=u.id) }}"
+                  style="display:inline;">
+              <button type="submit"
+                      class="btn btn-danger"
+                      style="padding:8px 10px;"
+                      onclick="return confirm('¿Seguro que quieres borrar este usuario?');">
+                Borrar
+              </button>
+            </form>
+
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}
+
+
+
+
+  
+

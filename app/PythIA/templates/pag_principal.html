@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "tabla_historial.html" import consultas_historial with context %}
+
+{% block title %}Página principal{% endblock %}
+
+{% block content %}
+  <div class="main-content" style="margin-bottom: 30px;">
+    <div style="margin-bottom: 30px;">
+      <a href="{{ url_for('rag.rag_page') }}" class="btn btn-modelo">
+        Consultar al modelo
+      </a>
+    </div>
+
+    <br>
+
+    <h1>Historial de consultas</h1>
+
+    {% if not consultas %}
+      <div class="alert alert-info">Raliza tu primera consulta.</div>
+    {% else %}
+      <div>
+        {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
+
+        {% if total_pages > 1 %}
+          <div class="pagination">
+            {% if page > 1 %}
+              <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">&laquo; Anterior</a>
+            {% endif %}
+
+            <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_consultas }} consultas)</span>
+
+            {% if page < total_pages %}
+              <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">Siguiente &raquo;</a>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      </div>
+    {% endif %}
+  </div>
+
+{% endblock %}
