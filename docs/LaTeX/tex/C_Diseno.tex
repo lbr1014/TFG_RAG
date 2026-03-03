@@ -63,22 +63,22 @@ La comunicación entre componentes (ver imagen ~\ref{fig:Arquitectura/Comunicaci
 
 \imagendiagram{Arquitectura/Peticiones}{Diagrama de la gestión de peticiones del sistema.}{1.1}
 
-\subsection{Arquitectura lógica}
-Desde el punto de vista lógico el sistema se estructura siguiendo una arquitectura multicapa, organizada en tres niveles claramente diferenciados. Estos niveles se corresponden con la capa de presentación, la capa de aplicación y la capa de persistencia y servicios externos (ver arquitectura en la imagen~\ref{fig:Arquitectura/ArquitecturaLogica}.
+\subsection{Arquitectura cliente-servidor multicapa}
+Desde el punto de vista lógico el sistema se estructura siguiendo una arquitectura cliente-servidor multicapa, organizada en tres niveles claramente diferenciados. Estos niveles se corresponden con la capa de presentación, la capa de aplicación y la capa de persistencia y servicios externos (ver arquitectura en la imagen~\ref{fig:Arquitectura/ArquitecturaLogica}.
 
-\imagendiagram{Arquitectura/ArquitecturaLogica}{Diagrama de la arquitectura lógica del sistema.}{1.1}
+\imagendiagram{Arquitectura/ArquitecturaLogica}{Arquitectura cliente-servidor multicapa.}{1.1}
 
 \begin{itemize}
 \tightlist
-	\item \textbf{Capa de presentación}: es la interfaz de usuario (IU) del sistema y es accesible a través del navegador web. Se sigue un enfoque SSR (\eng{Server-Side Rendering}), en el que las páginas HTML se generan en el servidor mediante plantillas (usando las plantillas \file{Jinja2} en \eng{Flask}) y se envían al navegador ya renderizadas. Esto reduce la complejidad en el cliente, simplifica el control de acceso y la validación en el servidor. Mejora la trazabilidad y el registro de las interacciones y simplifica la integración del \eng{pipeline RAG}.
+	\item \textbf{Capa de presentación}: es la interfaz de usuario (IU) del sistema y es accesible a través del navegador web. Se sigue un enfoque SSR (\eng{Server-Side Rendering}), en el que las páginas HTML se generan en el servidor mediante plantillas (usando las plantillas \file{Jinja2} en \eng{Flask}) y se envían al navegador (cliente) ya renderizadas. Esto reduce la complejidad en el cliente, simplifica el control de acceso y la validación en el servidor. Mejora la trazabilidad y el registro de las interacciones y simplifica la integración del \eng{pipeline RAG}.
 	\item \textbf{Capa de aplicación}: se implementa en el contenedor \eng{web}, que es donde se ejecuta la aplicaicón \eng{Flask} servida pro \eng{Gunicorn}. Esta capa es responsable de coordinar la lógica funcional del sistema y actúa como núcleo del procesamiento. Esta compuesta por los controladores (rutas) organizados en \eng{Blueprints} encargados de gestionar las peticiones HTTP, la lógica de negocio (gestión de usuarios, documentos, consultas, etc) y el \eng{pipeline RAG}.
 	\item \textbf{Capa de persistencia} y \textbf{servicios externos}: en esta capa se agrupan los sistemas encargados del almacenamiento y procesamiento de los datos. Se incluyen las bases de datos, tanto la relacional \eng{PostgreSQL} como la vectorial \eng{Qdrant}. También, se incluye \eng{Ollama} como proveedor del modelo \eng{LLM}. Todos estos servicios se ejecutan como contenedores independientes dentro de la red interna de \eng{Docker}, garantizando aislamiento, modularidad y facilidad de despliegue.
 \end{itemize}
 
 \subsection{Arquitectura de la aplicación \eng{web}}
-La aplicación \eng{web} sigue una arquitectura MVC (\eng{Model-View-Controller}). Esta arquitectura es típica de las aplicaciones \eng{Flask} \eng{server-side-rendered} (SSR)~\cite{diseño:SSR}. La técnica SSR consiste en generar el código de las páginas en el lado del servidor y entregar al cliente el código \file{HTML} completamente montado con toda la información que se debe mostrar. 
+La aplicación \eng{web} sigue una arquitectura MVC (\eng{Model-View-Controller}). Esta arquitecturaes típica de las aplicaciones \eng{Flask} \eng{Server-Side-Rendered} (SSR)~\cite{diseño:SSR}. La técnica SSR consiste en generar el código de las páginas en el lado del servidor y entregar al cliente el código \file{HTML} completamente montado con toda la información que se debe mostrar. 
 
-El modelo vista controlador (MVC)~\cite{diseño:MVC} es un patrón arquitectónico de software que separa el código en tres capas independientes. La capa modelo donde se incluye la lógica y los datos , la capa vista donde se implementa la interfaz de usuario (\eng{frontend}) y la capa controlador que actúa de intermediario entre las acciones del usuario en las vistas y la lógica de la aplicación (rutas). En esta aplicación se implementa adaptado al ecosistema \eng{Flask} (ver diagrama~\ref{fig:Arquitectura/ModeloVistaControlador}).
+El modelo vista intención (MVC)~\cite{diseño:MVC} es un patrón arquitectónico de software que separa el código en tres capas independientes. La capa modelo donde se incluye la lógica y los datos , la capa vista donde se implementa la interfaz de usuario (\eng{frontend}) y la capa controlador que actúa de intermediario entre las acciones del usuario en las vistas y la lógica de la aplicación (rutas). En esta aplicación se implementa adaptado al ecosistema \eng{Flask} (ver diagrama~\ref{fig:Arquitectura/ModeloVistaControlador}).
 
 \imagendiagram{Arquitectura/ModeloVistaControlador}{Diagrama de la arquitectura Modelo-Vista-Controlador (MVC) del sistema.}{1.1}
 
