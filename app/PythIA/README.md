@@ -91,9 +91,12 @@ En esta carpeta se encuentra la versión final de la aplicaicón. Esta preparada
 ## Ejecución de los archivos:
 En este apartado se van a indicar los pasos para ejecutar la aplicación web. 
 Para aceder a la página web ya levantada en el servidor solo se tiene que acceder al dominio pythia.es:
-[RAG sobre licitaciones del estado](https://pythia.es)
+
+[PythIA](https://pythia.es)
+
 Si se desea, también es accesible (si se está conectado a Eduroam) desde la IP del servidor:
-[RAG sobre licitaciones del estado](http://10.168.168.124/)
+
+[PythIA (10.168.168.12)](http://10.168.168.124/) 
 
 Si se desea desplegar en local se puede levantar usando los siguienets comandos.
   - Este primer comando permite levantar la aplicación recostruyendo el código (ideal para la primera ejecución). Va a contruir las imágenes y levantar los contenedores:
@@ -161,3 +164,4 @@ De igual forma que en Ubuntu se puede confirmar la instalacióne jecuantando el 
 ```powershell
 docker --version
 ```
+
