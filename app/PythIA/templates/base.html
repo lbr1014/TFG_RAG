@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Mi web{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
 </head>
 <body>
@@ -39,62 +40,62 @@
       {# En la página principal #}
       {% if current_user.is_admin %}
         <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle" type="button">
-            Opciones ▾
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Opciones
           </button>
-          <div class="dropdown-menu">
+          <ul class="dropdown-menu dropdown-menu-end">
             {% if request.endpoint != 'admin.documents_list_page' %}
-              <a href="{{ url_for('admin.documents_list_page') }}" class="dropdown-item">
+              <li><a class="dropdown-item" href="{{ url_for('admin.documents_list_page') }}" class="dropdown-item">
                 Administrar documentos
-              </a>
+              </a></li>
             {% endif %}
             {% if request.endpoint != 'main.historial' %}
-              <a href="{{ url_for('main.historial') }}" class="dropdown-item">
+              <li><a class="dropdown-item" href="{{ url_for('main.historial') }}" class="dropdown-item">
                 Historial de consultas
-              </a>
+              </a></li>
             {% endif %}
             {% if request.endpoint != 'admin.users' %}
-              <a href="{{ url_for('admin.users') }}" class="dropdown-item">
+              <li><a class="dropdown-item" href="{{ url_for('admin.users') }}" class="dropdown-item">
                 Administrar usuarios
-              </a>
+              </a></li>
             {% endif %}
             {% if request.endpoint != 'main.edit_user' %}
-              <a href="{{ url_for('main.edit_user') }}" class="dropdown-item">
+              <li><a class="dropdown-item" href="{{ url_for('main.edit_user') }}" class="dropdown-item">
                 Editar usuario
-              </a>
+              </a></li>
             {% endif %}
             {% if request.endpoint != 'main.pag_principal' %}
-              <a href="{{ url_for('main.pag_principal') }}" class="dropdown-item">
+              <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}" class="dropdown-item">
                 Página principal
-              </a>
+              </a></li>
             {% endif %}
-          </div>
+          </ul>
         </div>
       {% endif %}
 
       {% if not current_user.is_admin %}
         <div class="dropdown">
-          <button class="btn btn-secondary dropdown-toggle" type="button">
-            Opciones ▾
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Opciones
           </button>
-          <div class="dropdown-menu">
-            {% if request.endpoint != 'main.historial' %}
-              <a href="{{ url_for('main.historial') }}" class="dropdown-item">
-                Historial de consultas
-              </a>
+          <ul class="dropdown-menu dropdown-menu-end">
             {% endif %}
-
+            {% if request.endpoint != 'main.historial' %}
+              <li><a class="dropdown-item" href="{{ url_for('main.historial') }}" class="dropdown-item">
+                Historial de consultas
+              </a></li>
+            {% endif %}
             {% if request.endpoint != 'main.edit_user' %}
-              <a href="{{ url_for('main.edit_user') }}" class="dropdown-item">
+              <li><a class="dropdown-item" href="{{ url_for('main.edit_user') }}" class="dropdown-item">
                 Editar usuario
-              </a>
-            {% endif %}     
+              </a></li>
+            {% endif %}
             {% if request.endpoint != 'main.pag_principal' %}
-              <a href="{{ url_for('main.pag_principal') }}" class="dropdown-item">
+              <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}" class="dropdown-item">
                 Página principal
-              </a>
-            {% endif %}     
-          </div>
+              </a></li>
+            {% endif %}
+          </ul>
         </div>
       {% endif %}
 
@@ -115,7 +116,7 @@
         {% block content %}{% endblock %}
     </main>
   </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/functionalities.js') }}"></script>
 </body>
 </html>
