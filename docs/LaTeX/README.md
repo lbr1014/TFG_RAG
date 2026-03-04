@@ -1,35 +1,27 @@
-# Plantilla LaTeX
+# Documentación
 
-La plantilla se compone de dos documentos maestros: uno para la memoria y otro para los anexos.
+En esta carpeta se encuentra la **documentación** del proyecto. Concretamente la **memoria** y los **anexos**. De cada dcomuneto se encuentra la versión *PDF* final y los archivos editables *LaTeX*.
 
-- Memoría: ```memoria.tex```
-- Anexos: ```anexos.tex```
+## Estructura general del directorio:
 
-En la carpeta ```tex``` se encuentran los distintos documentos que forman los documentos maestros. 
-Dichos documentos contienen las secciones y subsecciones a completar.
-En el documento ```3_Conceptos_teoricos.tex``` se encuentra una breve guía de cómo usar LaTeX y los comandos propios de esta plantilla.
+- docs/
+  - img/
+  - tex/
+  - .gitignore
+  - anexos.pdf
+  - anexos.tex
+  - bibliografia.bib
+  - bibliografiaAnexos.bib
+  - memoria.pdf
+  - memoria.tex
 
-# Creación y edición de documentos en LaTeX
-
-LaTeX es un lenguaje de marcado. 
-Para crear y editar documentos en LaTeX se necesita un editor de LaTeX, que puede estar instalado en nuestro ordenador http://www.xm1math.net/texmaker/, o puede tratarse de un servicio web https://www.overleaf.com/.
-
-Un videotutorial de la instalación de Miktex + TexMaker en windows puede verse en 
-https://www.youtube.com/watch?v=DIdHfVpIiAk
-
-# Petición de cambios y sugerencias
-
-Se ruega a los alumnos y tutores que detecten fallos o que quieran proponer una sugerencia, que lo notifiquen mediante la creación de una issue https://github.com/ubutfgm/plantillaLatex/issues
-
-¡Contribuciones son bienvenidas! Sigue estos pasos para colaborar:
-1. Realiza un fork del repositorio.
-2. Crea una nueva rama (`git checkout -b feature/nueva-funcionalidad`).
-3. Realiza los cambios y haz commit (`git commit -am 'Descripción del cambio'`).
-4. Empuja tus cambios (`git push origin feature/nueva-funcionalidad`).
-5. Abre un Pull Request.
-
-# Gracias a los contribuidores
-César Ignacio García Osorio, Álvar Arnaiz Gonzalez, José Francisco Díez Pastor, Carlos Lopez Nozal.
-Álvaro López Cantero, Roberto Izquierdo Amo, David Miguel Lozano, Daniel Puente Ramírez.
-
-
+## Contenido de los archivos y directorios:
+- img: en esta carpeta se encuentran todos los **elementos gráficos** que se inclutyen en los documentos, organizados por carpetas.
+- text: en esta carpeta se encuentran todos los **arhivos fuente** para los distintos bloques de la memoria y los anexos.
+- .gitignore: en este archivo se iindican los elementos que **no** deben **subirse** a *GitHub*, como los binarios que se generan al compilar.
+- anexos.pdf: este es el *PDF* con la **documentacion complementaria** a la memoría para el Trabajo Fin de Grado.
+- anexos.tex: este es el archivo *LaTeX* deade el cual se puede **editar** la **documentación complementaria** a la memoria.
+- bibliografia.bib: en este archivo se incluye la **bibliografía** que se ha usado para la comprensión y redacción de la **memoria**. Esta bibliografía se usa como citas en la memoria.
+- bibliografiaAnexos.bib: en este archivo se incluye la **bibliografía** que se ha usado para la comprensión y redacción de los anexos. Esta bibliografía se usa como citas en los anexos.
+- memoria.pdf: este archivo es el *PDF* principal del Trabajo Fin de Grado, en él se incluyen los objetivos de dicho trabajo, asi como la información necesaria para su comprensión y las lineas de tyrabajo futuras.
+- memoria.tex este archivo es la versión editable en *LaTeX* de la memoria del Trabajo Fin de Grado. 
