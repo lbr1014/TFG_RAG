@@ -10,8 +10,10 @@ Se puede acceder a la aplicación desde cualquier navegador accediendo a la dire
 > [https://pythia.es](https://pythia.es/)
 
 ## Despliegue en local
+### Precondiciones
 Para el despliegue en local debe estar instalado en el sistema  <a href="#instalarDocker">*docker*</a> y <a href="#instalarGit">*git*</a>.
-### ⚙️ Instalar *docker*
+
+#### ⚙️ Instalar *docker*
 <a id="instalarDocker"></a>
 Para instalar *docker* en ***Ubuntu*** se debe:
    1) Instalar dependencias:
@@ -25,10 +27,93 @@ Para instalar *docker* en ***Ubuntu*** se debe:
 
 Para instalar *docker* en ***Windows*** se puede descargar direcrtaemnte la aplicación de escritorio de la página oficial de [*docker*](https://www.docker.com/products/docker-desktop/). 
 
+NOTA:
 > Se puede confirmar la instalación mirando la versión que hay de *docker* instalada en el sistema. Si devuelve una versión es que se ha instalado correctamete.
 >  ```bash
 >  docker --version
 >  ```
-### ⚙️ Instalar *git*
-<a id="instalarGit"></a>
 
+#### ⚙️ Instalar *git*
+<a id="instalarGit"></a>
+Para intalar *git* en ***Ubuntu*** se debe ejcutar el siguiente comando:
+```bash
+sudo apt install git -y
+```
+Para instalar *git* en ***Windows*** se puede descargar desde la *web* oficial [*git*](https://git-scm.com/)
+
+NOTA:
+> Se puede confirmar la instalación mirando la versión que hay de *git* instalada en el sistema. Si devuelve una versión es que se ha instalado correctamete.
+>  ```bash
+>  git --version
+>  ```
+>  También, se puede configurar el usuario y el correo para que los *commits* queden asociados al usuaio:
+> ```bash
+> git config --global user.name "Nombre Usuario"
+> git config --global user.email "emailUsuario@ejemplo.com"
+> ```
+
+### Clonar el repositorio
+Una vez que esteel comando *git*, se debe clonar el repositorio del proyecto. Para ello se deben seguir los siguientes pasos:
+    1) Clonar el repositorio:
+    ```bash
+    git clone https://github.com/lbr1014/TFG_RAG.git
+    ```
+    2) Acceder a la carpeta donde se encuentra la aplicación:
+    ```bash
+    cd app/PythIA
+    ```
+    
+### Levntar el proyecto con *docker*
+Una vez clonado el repositorio y teniendo *docker* instalado, se puede levantar la aplicaicón utilizando ***Docker-Compose***.
+  - Este primer comando permite **levantar** la aplicación recostruyendo el código (ideal para la primera ejecución). Va a contruir las imágenes y levantar los contenedores:
+    ```bash
+    docker compose up --build  
+    ```
+  - Si se desea **recostruir** las imagenes, pero, ejecutando los contenedores en **segundo plano**:
+    ```bash
+    docker compose up -d --build  
+    ```
+  - Si solo se desea **reconstruir** las imágenes sin levnatar los contenedores se puede usar el comando compose sin el *up*:
+    ```bash
+    docker compose build  
+    ```
+  - Para que recostruya el código **sin** usar el **chaché** almacenado por *Docker* (recomendado si hay fallos de dependencias):
+    ```bash
+    docker compose build --no-cache
+    ```
+  - Para levantar la aplicaicón **sin recostruir** el código. Utilizando las imagnees contruidas previamente.:
+    ```bash
+    docker compose up 
+    ```
+
+Para **parar** los contenedores se pueden usar dos comando.
+  - El priemro permite detener los contenedores **manteniendo** los volúmenes y datos:
+    ```bash
+    docker compose down
+    ```
+  - Si además se desea **eliminar** los volúmenes y los datos (incluyendo bases de datos y archivos guardados):
+    ```bash
+    docker compose down --volumes
+    ```
+
+Si se desesa **borrar** el caché de los *builds* pero manteniendo los contenedores y las imagenes acticas se usa:
+```bash
+docker builder prune -af
+```
+Si se desea realizar una **limpieza completa** del *Docker*, incluyendo los contenedores parados, las iamgenes no usadas, el caché y los volumenes se puede usar este copmando:
+```bash
+docker system prune -af --volumes
+```
+Para ver los ***logs*** de la aplicación se puede usar el comando:
+```bash
+docker compose logs -f
+```
+Para **reiniciar** servicios se puede usar el comando:
+```bash
+docker compose restart
+```
+NOTA:
+> Para comporbar que los contenedores estan funcionando se puede usar este comando:
+> ```bash
+> docker ps
+> ```
