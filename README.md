@@ -9,12 +9,11 @@
 Se puede **acceder a la aplicación** desde cualquier navegador accediendo a la dirección:
 > [https://pythia.es](https://pythia.es/)
 
-## Despliegue en local
-### Precondiciones
+## 🚀 Despliegue en local
+### 📋 Precondiciones
 Para el despliegue en local debe estar instalado en el sistema  <a href="#instalarDocker">*docker*</a> y <a href="#instalarGit">*git*</a>.
 
-#### ⚙️ Instalar *docker*
-<a id="instalarDocker"></a>
+#### ⚙️ Instalar ***docker*** <a id="instalarDocker"></a>
 Para instalar *docker* en ***Ubuntu*** se debe:
    1) Instalar dependencias:
       ```bash
@@ -33,8 +32,7 @@ NOTA:
 >  docker --version
 >  ```
 
-#### ⚙️ Instalar *git*
-<a id="instalarGit"></a>
+#### ⚙️ Instalar ***git*** <a id="instalarGit"></a>
 Para intalar *git* en ***Ubuntu*** se debe ejcutar el siguiente comando:
 ```bash
 sudo apt install git -y
@@ -52,7 +50,7 @@ NOTA:
 > git config --global user.email "emailUsuario@ejemplo.com"
 > ```
 
-### Clonar el repositorio
+### ⛓️ Clonar el repositorio
 Una vez que este el comando *git* se debe clonar el repositorio del proyecto. Para ello se deben seguir los siguientes pasos:
   1) Clonar el repositorio:
      ```bash
@@ -63,7 +61,7 @@ Una vez que este el comando *git* se debe clonar el repositorio del proyecto. Pa
      cd app/PythIA
      ```
      
-### Levntar el proyecto con *docker*
+### 🐳 Levantar el proyecto con *Docker*
 Una vez clonado el repositorio y teniendo *docker* instalado, se puede levantar la aplicaicón utilizando ***Docker-Compose***.
   - Este primer comando permite **levantar** la aplicación recostruyendo el código (ideal para la primera ejecución). Va a contruir las imágenes y levantar los contenedores:
     ```bash
@@ -118,7 +116,7 @@ NOTA:
 > docker ps
 > ```
 
-### Acceso a la aplicaicón local
+### 🗝️ Acceso a la aplicaicón local
 Una vez desplegada la aplicación en local utilizando un contenedor *Docker* levantado en *Gunicorn* y usando *Nginx* como *proxy* inverso se puede **acceder** a tarves del **navegador** ***web*** poniendo cualquiera de estas direcciones:
 - [http://127.0.0.1:8080/](http://127.0.0.1:8080/)
 - [http://localhost:8080/](http://localhost:8080/)
