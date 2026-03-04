@@ -1,5 +1,5 @@
 # PythIA 
-Autora: Lydia Blanco Ruiz.
+`Autora: Lydia Blanco Ruiz.`
 <p align="center">
   <img width="300" height="300" alt="PythIA_def" src="https://github.com/user-attachments/assets/6e44a4d9-eb22-4aba-a984-b625981c8ded" />
 </p>
