@@ -53,16 +53,16 @@ NOTA:
 > ```
 
 ### Clonar el repositorio
-Una vez que esteel comando *git*, se debe clonar el repositorio del proyecto. Para ello se deben seguir los siguientes pasos:
-    1) Clonar el repositorio:
-    ```bash
-    git clone https://github.com/lbr1014/TFG_RAG.git
-    ```
-    2) Acceder a la carpeta donde se encuentra la aplicación:
-    ```bash
-    cd app/PythIA
-    ```
-    
+Una vez que este el comando *git* se debe clonar el repositorio del proyecto. Para ello se deben seguir los siguientes pasos:
+  1) Clonar el repositorio:
+     ```bash
+      git clone https://github.com/lbr1014/TFG_RAG.git
+      ```
+  2) Acceder a la carpeta donde se encuentra la aplicación:
+     ```bash
+     cd app/PythIA
+     ```
+     
 ### Levntar el proyecto con *docker*
 Una vez clonado el repositorio y teniendo *docker* instalado, se puede levantar la aplicaicón utilizando ***Docker-Compose***.
   - Este primer comando permite **levantar** la aplicación recostruyendo el código (ideal para la primera ejecución). Va a contruir las imágenes y levantar los contenedores:
