@@ -1,12 +1,12 @@
 # PythIA 
-Autora: Lydia Blanco Ruiz.
+`Autora: Lydia Blanco Ruiz.`
 <p align="center">
   <img width="300" height="300" alt="PythIA_def" src="https://github.com/user-attachments/assets/6e44a4d9-eb22-4aba-a984-b625981c8ded" />
 </p>
 
 **PythIA** es una aplicación que permite realizar consultas sobre las licitaciones del estado, concretamente de la **Junta de Gobierno de la Diputación Provincial de Burgos**. Las respuestas se generan usando un ***LLM***  (*Large Lenguaje Model*) alimentado por un modelo ***RAG*** (*Retrieval-Augmented Generation*) que busca información concreta de los pliegos de la Junta.
 
-Se puede acceder a la aplicación desde cualquier navegador accediendo a la dirección:
+Se puede **acceder a la aplicación** desde cualquier navegador accediendo a la dirección:
 > [https://pythia.es](https://pythia.es/)
 
 ## Despliegue en local
@@ -117,3 +117,19 @@ NOTA:
 > ```bash
 > docker ps
 > ```
+
+### Acceso a la aplicaicón local
+Una vez desplegada la aplicación en local utilizando un contenedor *Docker* levantado en *Gunicorn* y usando *Nginx* como *proxy* inverso se puede **acceder** a tarves del **navegador** ***web*** poniendo cualquiera de estas direcciones:
+- [http://127.0.0.1:8080/](http://127.0.0.1:8080/)
+- [http://localhost:8080/](http://localhost:8080/)
+- `http://IP_del_dispositivo:8080`
+
+NOTA:
+> Los dos primeros solos on accesibles desde el propio dispositivo donde se ejecuta, en cambio, la opción de la IP es accesible por cualqueir dispositivo conectado a la misma red.
+
+IMPORTANTE:
+> Se ha creado un administrador por defecto en la aplicaicón para permitir el aceso con este rol.
+> Sus credenciales para iniciar sesión son:
+> 
+>   - email: `admin@gmail.com`
+>   - contraseña: `contraseña`
