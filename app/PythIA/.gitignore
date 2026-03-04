@@ -147,6 +147,9 @@ data/
 **/models/
 **/model_cache/
 
+# Coverage
+coverage/
+
 # HuggingFace explícito
 **/hub/
 **/sentence-transformers/
