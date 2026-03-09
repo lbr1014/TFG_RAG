@@ -42,7 +42,7 @@ def paginate_consultas(base_query, per_page=10):
 def inicio():
     return render_template(
         "index.html",
-        titulo="Implementación de un RAG sobre las licitaciones del estado",
+        titulo="PythIA",
         autor="Autora: Lydia Blanco Ruiz"
     )
 
