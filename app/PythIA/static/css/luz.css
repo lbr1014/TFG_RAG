@@ -1,0 +1,37 @@
+/* =========================
+   EFECTO LUZ
+   ========================= */
+
+.luz{
+  position: relative;
+  overflow: hidden;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+/* Capa de luz localizada */
+.luz::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: radial-gradient(
+    circle at var(--x, 50%) var(--y, 50%),
+    rgba(255,255,255,0.18),
+    transparent 60%
+  );
+
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.luz:hover::before{
+  opacity: 1;
+}
+
+.luz:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px rgba(59, 93, 122, 0.55),
+    inset 0 4px 10px rgba(0, 0, 0, 0.22);
+}

@@ -1,0 +1,111 @@
+/* =========================
+   PÁGINA DE INICIO
+   ========================= */
+
+.home-hero h1,
+.home-hero h2,
+.home-hero h3,
+.home-hero p {
+  color: #ffffff;
+}
+
+.main-header{
+  background: linear-gradient(90deg, #2c3e50 0%, #355066 100%);
+  color:#fff;
+  position:sticky;
+  top:0;
+  z-index:1000;
+  padding:12px 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(6px);
+}
+
+.logo-header{
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  display: block;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  border-radius: 50%;
+}
+
+.main-content.home-hero{
+  max-width: 100%;
+  padding: 0;
+  text-align: center;
+}
+
+.hero-block{
+  max-width: 980px;
+  padding: 60px 20px 20px;
+}
+
+.hero-badge{
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
+  color: #e8f1f8;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+.hero-title{
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.08;
+  font-weight: 800;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-subtitle{
+  max-width: 760px;
+  margin-top: 20px;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1.7;
+  color: rgba(255,255,255,.82);
+}
+
+.btn-hero-primary,
+.btn-hero-secondary,
+.btn-header{
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-weight: 700;
+  transition: all .25s ease;
+}
+
+.btn-hero-primary{
+  background: #ffffff;
+  color: #2c3e50;
+  border: 1px solid #ffffff;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+.btn-hero-primary:hover{
+  transform: translateY(-2px);
+  background: #f3f7fa;
+  color: #22313f;
+}
+
+.btn-hero-secondary{
+  background: rgba(255,255,255,.06);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,.18);
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+}
+
+.btn-hero-secondary:hover{
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.12);
+  color: #ffffff;
+}
