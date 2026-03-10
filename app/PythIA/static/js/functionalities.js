@@ -47,6 +47,40 @@ function initChunksModal() {
 
 }
 
+/* =========================
+   BORRADO
+   ========================= */
+
+function initDeleteModal(modalId = "deleteConfirmModal") {
+
+  const deleteModal = document.getElementById(modalId);
+  if (!deleteModal) return;
+
+  const deleteForm = deleteModal.querySelector("#deleteConfirmForm");
+  const deleteItemName = deleteModal.querySelector("#deleteItemName");
+
+  deleteModal.addEventListener("show.bs.modal", function (event) {
+
+    const button = event.relatedTarget;
+    if (!button) return;
+
+    const deleteUrl = button.getAttribute("data-delete-url");
+    const deleteName = button.getAttribute("data-delete-name");
+
+    if (deleteForm && deleteUrl) {
+      deleteForm.setAttribute("action", deleteUrl);
+    }
+
+    if (deleteItemName && deleteName) {
+      deleteItemName.textContent = deleteName;
+    }
+
+  });
+
+}
+
 initLightEffect();
 
 initChunksModal();
+
+initDeleteModal();
