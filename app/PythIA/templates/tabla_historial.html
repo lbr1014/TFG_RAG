@@ -1,168 +1,136 @@
 {% macro consultas_historial(consultas, meta_by_consulta, current_user, delete_url_endpoint) %}
 
-<table class="app-table">
-  <thead>
-    <tr>
-      {% if current_user.is_admin %}
-        <th>Usuario</th>
-      {% endif %}
-      <th>Fecha</th>
-      <th>Pregunta</th>
-      <th>Documento</th>
-      <th>Tiempo (s)</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {% for c in consultas %}
-      {% set qc_best = (meta_by_consulta or {}).get(c.id) or {} %}
-      {% set qm_best = qc_best.get("metadata") or {} %}
-
-      {% set used = (c.consultaChunks or []) %}
-      {% set used_sorted = used|sort(attribute="ranking") %}
-      {% set best_cc = (used_sorted|first) if (used_sorted|length > 0) else none %}
-
-      <tr id="consulta-{{ c.id }}">
-        {% if current_user.is_admin %}
-          <td>{{ c.user.nombre }}</td>
-        {% endif %}
-        <td>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
-        <td class="cell-question">{{ c.pregunta }}</td>
-        <td>{{ qm_best.get("filename", "—") }}</td>
-        <td>{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
-        <td>
-          <form method="POST"
-                action="{{ url_for(delete_url_endpoint, consulta_id=c.id) }}"
-                style="display:inline;">
-            <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres borrar esta consulta?');">
-              Borrar
-            </button>
-          </form>
-
-          <button type="button" class="btn btn-secondary btn-chunks" onclick="openChunksModal('{{ c.id }}')">
-            Detalles
-          </button>
-        </td>
-      </tr>
-
-      <tr class="details-row">
-        <td colspan="{% if current_user.is_admin %}6{% else %}5{% endif %}">
-          <details>
-            <summary>Ver respuesta</summary>
-            <div style="margin-top:.5rem;">
-              <p><strong>Respuesta:</strong><br>{{ c.respuesta }}</p>
-            </div>
-          </details>
-        </td>
-      </tr>
-
-      <template id="chunks-content-{{ c.id }}">
-        <div class="chunks-modal-head">
-          <div>
-            <h3 class="chunks-modal-title">Chunks usados — consulta #{{ c.id }}</h3>
-            <p class="chunks-modal-sub">
-              {{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }} · {{ c.pregunta }}
-            </p>
-          </div>
-          <button class="chunks-modal-close" type="button" onclick="closeChunksModal()" aria-label="Cerrar">×</button>
-        </div>
-
-        <div class="chunks-card">
-          <p style="margin:0 0 .4rem 0;"><strong>Mejor fragmento (ranking #1)</strong></p>
-
-          <div class="chunks-meta-grid">
-            <div><b>Archivo:</b> {{ qm_best.get("filename") or "—" }}</div>
-            <div><b>Título:</b> {{ qm_best.get("title") or "—" }}</div>
-            <div><b>Segmento:</b> {{ qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "—" }}</div>
-            <div><b>Similitud:</b>
-              {% if best_cc %}{{ "%.6f"|format(best_cc.similitud) }}{% else %}—{% endif %}
-            </div>
-          </div>
-
-          {% if qc_best.get("content") %}
-            <pre class="chunks-pre">{{ qc_best.get("content") }}</pre>
-          {% else %}
-            <div class="alert alert-warning" style="margin-top:.6rem;">
-              No se pudo recuperar el contenido del mejor chunk desde Qdrant.
-            </div>
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 app-table">  
+      <thead>
+        <tr>
+          {% if current_user.is_admin %}
+            <th>Usuario</th>
           {% endif %}
-        </div>
+          <th>Fecha</th>
+          <th>Pregunta</th>
+          <th>Documento</th>
+          <th>Tiempo (s)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
 
-        <div class="chunks-card">
-          <p style="margin:0 0 .4rem 0;">
-            <strong>Top {{ [10, (used_sorted|length)]|min }} de {{ used_sorted|length }} chunks usados</strong>
-          </p>
+      <tbody>
+        {% for c in consultas %}
+          {% set qc_best = (meta_by_consulta or {}).get(c.id) or {} %}
+          {% set qm_best = qc_best.get("metadata") or {} %}
 
-          {% if used_sorted|length == 0 %}
-            <div class="alert alert-info">Esta consulta no tiene chunks asociados en la base de datos.</div>
-          {% else %}
-            <table class="app-table" style="margin-top:.5rem;">
-              <thead>
-                <tr>
-                  <th>Ranking</th>
-                  <th>Similitud</th>
-                  <th>Documento</th>
-                  <th>Segmento</th>
-                  <th>Qdrant ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for cc in used_sorted[:10] %}
-                  {% set ch = cc.chunk %}
-                  <tr>
-                    <td>{{ cc.ranking }}</td>
-                    <td>{{ "%.6f"|format(cc.similitud) }}</td>
-                    <td>{{ ch.document.nombre if ch and ch.document else "—" }}</td>
-                    <td>{{ ch.segment_index if ch else "—" }}</td>
-                    <td>{{ ch.qdrant_point_id if ch else "—" }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          {% endif %}
-        </div>
-      </template>
+          {% set used = (c.consultaChunks or []) %}
+          {% set used_sorted = used|sort(attribute="ranking") %}
+          {% set best_cc = (used_sorted|first) if (used_sorted|length > 0) else none %}
 
-    {% endfor %}
-  </tbody>
-</table>
+          <tr id="consulta-{{ c.id }}">
+            {% if current_user.is_admin %}
+              <td>{{ c.user.nombre }}</td>
+            {% endif %}
+            <td>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
+            <td class="cell-question">{{ c.pregunta }}</td>
+            <td>{{ qm_best.get("filename", "—") }}</td>
+            <td>{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
+            <td>
+              <form method="POST"
+                    action="{{ url_for(delete_url_endpoint, consulta_id=c.id) }}"
+                    style="display:inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres borrar esta consulta?');">
+                  Borrar
+                </button>
+              </form>
 
-<div id="chunks-backdrop" class="chunks-modal-backdrop" onclick="closeChunksModal()"></div>
+              <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#chunksModal" data-consulta-id="{{ c.id }}">
+                Detalles
+              </button>
+            </td>
+          </tr>
 
-<div id="chunks-modal" class="chunks-modal" role="dialog" aria-modal="true" aria-label="Detalles de chunks">
-  <div class="chunks-modal-panel">
-    <div id="chunks-modal-body"></div>
+          <tr class="details-row">
+            <td colspan="{% if current_user.is_admin %}6{% else %}5{% endif %}">
+              <details>
+                <summary>Ver respuesta</summary>
+                <div style="margin-top:.5rem;">
+                  <p><strong>Respuesta:</strong><br>{{ c.respuesta }}</p>
+                </div>
+              </details>
+            </td>
+          </tr>
+
+          <template id="chunks-content-{{ c.id }}">
+            <div>
+              <h3 class="chunks-modal-title">Chunks usados — consulta #{{ c.id }}</h3>
+              <p class="chunks-modal-sub">
+                {{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }} · {{ c.pregunta }}
+              </p>
+            </div>
+
+            <div class="chunks-card">
+              <p style="margin:0 0 .4rem 0;"><strong>Mejor fragmento (ranking #1)</strong></p>
+
+              <div class="chunks-meta-grid">
+                <div><b>Archivo:</b> {{ qm_best.get("filename") or "—" }}</div>
+                <div><b>Título:</b> {{ qm_best.get("title") or "—" }}</div>
+                <div><b>Segmento:</b> {{ qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "—" }}</div>
+                <div><b>Similitud:</b>
+                  {% if best_cc %}{{ "%.6f"|format(best_cc.similitud) }}{% else %}—{% endif %}
+                </div>
+              </div>
+
+              {% if qc_best.get("content") %}
+                <pre class="chunks-pre">{{ qc_best.get("content") }}</pre>
+              {% else %}
+                <div class="alert alert-warning" style="margin-top:.6rem;">
+                  No se pudo recuperar el contenido del mejor chunk desde Qdrant.
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="chunks-card">
+              <p style="margin:0 0 .4rem 0;">
+                <strong>Top {{ [10, (used_sorted|length)]|min }} de {{ used_sorted|length }} chunks usados</strong>
+              </p>
+
+              {% if used_sorted|length == 0 %}
+                <div class="alert alert-info">Esta consulta no tiene chunks asociados en la base de datos.</div>
+              {% else %}
+              <div class="table-card mt-3">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 app-table">
+                      <thead>
+                        <tr>
+                          <th>Ranking</th>
+                          <th>Similitud</th>
+                          <th>Documento</th>
+                          <th>Segmento</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for cc in used_sorted[:10] %}
+                          {% set ch = cc.chunk %}
+                          <tr>
+                            <td>{{ cc.ranking }}</td>
+                            <td>{{ "%.6f"|format(cc.similitud) }}</td>
+                            <td>{{ ch.document.nombre if ch and ch.document else "—" }}</td>
+                            <td>{{ ch.segment_index if ch else "—" }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </template>
+
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
-<script>
-  function openChunksModal(consultaId) {
-    const tpl = document.getElementById(`chunks-content-${consultaId}`);
-    const body = document.getElementById("chunks-modal-body");
-    if (!tpl || !body) return;
-
-    body.innerHTML = tpl.innerHTML;
-
-    document.getElementById("chunks-backdrop").style.display = "block";
-    document.getElementById("chunks-modal").style.display = "block";
-
-    document.addEventListener("keydown", escCloseOnce);
-  }
-
-  function closeChunksModal() {
-    const body = document.getElementById("chunks-modal-body");
-    if (body) body.innerHTML = "";
-
-    document.getElementById("chunks-backdrop").style.display = "none";
-    document.getElementById("chunks-modal").style.display = "none";
-
-    document.removeEventListener("keydown", escCloseOnce);
-  }
-
-  function escCloseOnce(e) {
-    if (e.key === "Escape") closeChunksModal();
-  }
-</script>
+{% include "components/modal_chunks.html" %}
 
 {% endmacro %}
