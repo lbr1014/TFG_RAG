@@ -1,0 +1,137 @@
+/* =========================
+   TABLAS
+   ========================= */
+
+.table-card{
+  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.08) 100%);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  margin-top: 18px;
+}
+
+.app-table{
+  --bs-table-bg: transparent;
+  --bs-table-color: #ffffff;
+  --bs-table-border-color: rgba(255,255,255,.10);
+  --bs-table-hover-bg: rgba(255,255,255,.06);
+  --bs-table-hover-color: #ffffff;
+  margin-bottom: 0;
+}
+
+.app-table thead th{
+  background: rgba(255,255,255,.08);
+  color: #ffffff;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  white-space: nowrap;
+}
+
+.app-table tbody td{
+  color: rgba(255,255,255,.92);
+  vertical-align: middle;
+}
+
+.app-table .details-row td{
+  background: rgba(255,255,255,.05);
+  text-align: left;
+}
+
+.app-table details summary{
+  cursor: pointer;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.app-table details pre{
+  margin: 10px 0 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  color: #ffffff;
+  white-space: pre-wrap;
+}
+
+.cell-question{
+  min-width: 260px;
+  max-width: 420px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.table-responsive{
+  border-radius: 18px;
+}
+
+/* =========================
+   PAGINACIÓN 
+   ========================= */
+
+.pagination{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.page-link{
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #d6d6d6;
+  text-decoration: none;
+  color: #1f2d3d;
+}
+
+.page-link:hover{
+  background: #f3f3f3;
+}
+
+.page-info{
+  font-size: 13px;
+  color: #ffffff;
+}
+
+/* =========================
+   MODAL CHUNKS
+   ========================= */
+
+.chunks-modal-panel{
+  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.08) 100%);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  color: #fff;
+}
+
+.chunks-modal-title{
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.2;
+  color: #fff;
+}
+
+.chunks-modal-sub{
+  margin: .35rem 0 0 0;
+  color: rgba(255,255,255,.75);
+  font-size: 13px;
+}
+
+.chunks-pre{
+  white-space: pre-wrap;
+  margin-top: .75rem;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  color: #fff;
+}
+
+.modal-backdrop.show{
+  opacity: .45;
+}

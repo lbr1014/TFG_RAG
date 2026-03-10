@@ -9,17 +9,6 @@
   color: #ffffff;
 }
 
-.main-header{
-  background: linear-gradient(90deg, #2c3e50 0%, #355066 100%);
-  color:#fff;
-  position:sticky;
-  top:0;
-  z-index:1000;
-  padding:12px 0;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  backdrop-filter: blur(6px);
-}
-
 .logo-header{
   width: 64px;
   height: 64px;
