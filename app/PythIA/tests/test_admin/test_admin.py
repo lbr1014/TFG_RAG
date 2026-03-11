@@ -1,5 +1,7 @@
+import datetime
 import io
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 from tests.__init__ import BaseTestCase
 from app.usuario import User
 from app.extensions import db
@@ -12,6 +14,10 @@ from unittest.mock import patch, MagicMock
 from app.vector_update_state import VectorUpdateState
 from app.web_scraping_state import WebScrapingSate
 from app.admin.routes import documentos_async, scraping_async
+from app.consulta import Consulta
+from app.consultaChunk import ConsultaChunk
+from app.documentos import Documento
+from app.chunk import Chunk
 
 class AdminTest(BaseTestCase):
 
@@ -83,6 +89,62 @@ class AdminTest(BaseTestCase):
         # Si el usuario no existe
         r = self.client.post("/admin/users/999999/delete", follow_redirects=False)
         self.assertEqual(r.status_code, 404)
+
+    def test_admin_borra_usuario_en_cascada(self):
+        self.crear_usuario(email="admin@example.com", password="contraseÃ±a", is_admin=True)
+        self.login("admin@example.com", follow_redirects=True)
+
+        u = self.crear_usuario(email="cascade@example.com", password="contraseÃ±a", is_admin=False)
+        doc = Documento(
+            nombre="doc1",
+            path="doc1.pdf",
+            size_bytes=100,
+            modified_at=datetime.now(ZoneInfo("Europe/Madrid")),
+            chunks=1,
+            hash="hash-doc",
+            status="cargado",
+            error_message=None,
+        )
+        db.session.add(doc)
+        db.session.commit()
+
+        chunk = Chunk(
+            document_id=doc.id,
+            qdrant_point_id="cascade-qid",
+            segment_index=0,
+            doc_sha256="sha-doc",
+            n_chars=10,
+            n_tokens=3,
+        )
+        db.session.add(chunk)
+        db.session.commit()
+
+        consulta = Consulta(
+            user_id=u.id,
+            pregunta="P",
+            respuesta="R",
+            fragmentos=[{"ranking": 1, "similitud": 0.77, "metadata": {"filename": "doc1.pdf"}}],
+            tiempo_respuestas=0.2,
+        )
+        db.session.add(consulta)
+        db.session.commit()
+
+        db.session.add(
+            ConsultaChunk(
+                consulta_id=consulta.id,
+                chunk_id=chunk.id,
+                similitud=0.77,
+                ranking=1,
+            )
+        )
+        db.session.commit()
+
+        consulta_id = consulta.id
+        r = self.client.post(f"/admin/users/{u.id}/delete", follow_redirects=False)
+        self.assertIn(r.status_code, (302, 303))
+        self.assertIsNone(User.get_by_id(u.id))
+        self.assertIsNone(Consulta.query.get(consulta_id))
+        self.assertEqual(ConsultaChunk.query.count(), 0)
 
     def test_admin_no_puede_cambiarse_a_si_mismo(self):
         admin = self.crear_usuario(email="admin@example.com", password="contraseña", is_admin=True)

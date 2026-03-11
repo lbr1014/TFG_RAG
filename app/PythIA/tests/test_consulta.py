@@ -32,6 +32,7 @@ class ConsultaModelTest(BaseTestCase):
         
         self.assertIsInstance(consulta.created_at, datetime)
         self.assertIsNotNone(consulta.created_at)
+        self.assertEqual(consulta.fragmentos, [])
 
     def test_init_con_created_at(self):
         u = self.crear_usuario()
@@ -93,3 +94,19 @@ class ConsultaModelTest(BaseTestCase):
 
         self.assertIsNotNone(consulta.user)
         self.assertEqual(consulta.user.id, u.id)
+
+    def test_fragmentos_json(self):
+        u = self.crear_usuario()
+
+        consulta = Consulta(
+            user_id=u.id,
+            pregunta="P",
+            respuesta="R",
+            fragmentos=[{"ranking": 1, "similitud": 0.99, "metadata": {"filename": "doc.pdf"}}],
+            tiempo_respuestas=0.1,
+        )
+        db.session.add(consulta)
+        db.session.commit()
+
+        self.assertEqual(consulta.fragmentos[0]["ranking"], 1)
+        self.assertEqual(consulta.fragmentos[0]["metadata"]["filename"], "doc.pdf")
