@@ -795,6 +795,7 @@ def obtener_mejor_chunk(
             "segment_index": meta.get("segment_index", -1),
             "filename": meta.get("filename", ""),
             "title": meta.get("title", ""),
+            "metadata": dict(meta),
             "chunk": content,
         }
         retrieved.append(item)

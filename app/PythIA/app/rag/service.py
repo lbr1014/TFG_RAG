@@ -10,8 +10,6 @@ from app.extensions import db
 from app.consulta import Consulta
 from app.chunk import Chunk
 from app.consultaChunk import ConsultaChunk
-from sqlalchemy import or_
-
 logger = logging.getLogger(__name__)
 
 from .PrototipoRAG import obtener_mejor_chunk
@@ -81,23 +79,29 @@ def try_persist(question: str, data: Dict[str, Any], elapsed: float) -> None:
         
 def persist_consulta(question: str, data: Dict[str, Any], elapsed: float) -> None:
     if current_user and getattr(current_user, "is_authenticated", False):
+        retrieved = data.get("retrieved", []) or []
+        top_retrieved = retrieved[:10]
+        chunk_links: list[tuple[dict[str, Any], Chunk]] = []
+        fragmentos: list[dict[str, Any]] = []
+
+        for item in top_retrieved:
+            chunk_obj = find_chunk(item)
+            if chunk_obj is not None:
+                chunk_links.append((item, chunk_obj))
+            fragmentos.append(build_fragmento(item, chunk_obj))
 
         consulta = Consulta(
             user_id=int(current_user.id),
             pregunta=question,
             respuesta=str(data.get("answer", "")),
+            fragmentos=fragmentos,
             tiempo_respuestas=float(elapsed),
         )
         db.session.add(consulta)
         db.session.flush()
-        
-        retrieved = data.get("retrieved", []) or []
-        for item in retrieved[:10]:
-            chunk_obj = find_chunk(item)
-                    
-            if chunk_obj is None:
-                continue
 
+        
+        for item, chunk_obj in chunk_links:
             db.session.add(
                 ConsultaChunk(
                     consulta_id=int(consulta.id),
@@ -108,6 +112,47 @@ def persist_consulta(question: str, data: Dict[str, Any], elapsed: float) -> Non
             )
 
         db.session.commit()
+
+def build_fragmento(item: dict[str, Any], chunk_obj: Optional["Chunk"]) -> dict[str, Any]:
+    chunk_metadata = dict(item.get("metadata") or {})
+    chunk = item.get("chunk", "") or ""
+    document = getattr(chunk_obj, "document", None)
+
+    if chunk_obj is not None:
+        chunk_metadata.setdefault("chunk_id", int(chunk_obj.id))
+        chunk_metadata.setdefault("document_id", int(chunk_obj.document_id))
+        chunk_metadata.setdefault("doc_sha256", chunk_obj.doc_sha256)
+        chunk_metadata.setdefault("segment_index", chunk_obj.segment_index)
+        chunk_metadata.setdefault("n_chars", chunk_obj.n_chars)
+        chunk_metadata.setdefault("n_tokens", chunk_obj.n_tokens)
+        chunk_metadata.setdefault("qdrant_point_id", chunk_obj.qdrant_point_id)
+        if chunk_obj.created_at is not None:
+            chunk_metadata.setdefault("created_at", chunk_obj.created_at.isoformat())
+
+    if document is not None:
+        chunk_metadata.setdefault("document_name", document.nombre)
+        chunk_metadata.setdefault("document_path", document.path)
+        chunk_metadata.setdefault("document_hash", document.hash)
+
+    for src_key, dst_key in (
+        ("document_id", "document_id"),
+        ("doc_sha256", "doc_sha256"),
+        ("segment_index", "segment_index"),
+        ("filename", "filename"),
+        ("title", "title"),
+        ("qdrant_point_id", "qdrant_point_id"),
+    ):
+        value = item.get(src_key)
+        if value not in (None, ""):
+            chunk_metadata.setdefault(dst_key, value)
+
+    return {
+        "ranking": int(item.get("ranking", 0)),
+        "similitud": float(item.get("similitud", 0.0)),
+        "qdrant_point_id": str(item.get("qdrant_point_id", "") or ""),
+        "chunk": str(chunk),
+        "metadata": chunk_metadata,
+    }
         
 def find_chunk(item: dict)-> Optional["Chunk"]:
     chunk_obj = None

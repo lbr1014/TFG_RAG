@@ -4,7 +4,7 @@
   {% endblock %}
   <div class="table-card">
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 app-table">  
+      <table class="table table-hover align-middle mb-0 app-table">
         <thead>
           <tr>
             {% if current_user.is_admin %}
@@ -22,6 +22,9 @@
           {% for c in consultas %}
             {% set qc_best = (meta_by_consulta or {}).get(c.id) or {} %}
             {% set qm_best = qc_best.get("metadata") or {} %}
+            {% set stored_fragments = (c.fragmentos or [])|sort(attribute="ranking") %}
+            {% set best_fragment = (stored_fragments|first) if (stored_fragments|length > 0) else none %}
+            {% set best_fragment_meta = best_fragment.get("metadata") if best_fragment else {} %}
 
             {% set used = (c.consultaChunks or []) %}
             {% set used_sorted = used|sort(attribute="ranking") %}
@@ -33,15 +36,23 @@
               {% endif %}
               <td>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
               <td class="cell-question">{{ c.pregunta }}</td>
-              <td>{{ qm_best.get("filename", "—") }}</td>
+              <td>{{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</td>
               <td>{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
               <td>
-                <form method="POST"
+                <form id="delete-consulta-form-{{ c.id }}"
+                      method="POST"
                       action="{{ url_for(delete_url_endpoint, consulta_id=c.id) }}"
-                      style="display:inline;">
-                  <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres borrar esta consulta?');">
+                      class="d-inline">
+
+                  <button type="button"
+                          class="btn btn-danger"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteConfirmModal"
+                          data-item-name="la consulta #{{ c.id }}"
+                          data-form-id="delete-consulta-form-{{ c.id }}">
                     Borrar
                   </button>
+
                 </form>
 
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#chunksModal" data-consulta-id="{{ c.id }}">
@@ -63,7 +74,7 @@
 
             <template id="chunks-content-{{ c.id }}">
               <div>
-                <h3 class="chunks-modal-title">Chunks usados — consulta #{{ c.id }}</h3>
+                <h3 class="chunks-modal-title">Chunks usados - consulta #{{ c.id }}</h3>
                 <p class="chunks-modal-sub">
                   {{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }} · {{ c.pregunta }}
                 </p>
@@ -73,34 +84,63 @@
                 <p style="margin:0 0 .4rem 0;"><strong>Mejor fragmento (ranking #1)</strong></p>
 
                 <div class="chunks-meta-grid">
-                  <div><b>Archivo:</b> {{ qm_best.get("filename") or "—" }}</div>
-                  <div><b>Título:</b> {{ qm_best.get("title") or "—" }}</div>
-                  <div><b>Segmento:</b> {{ qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "—" }}</div>
+                  <div><b>Archivo:</b> {{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</div>
+                  <div><b>Titulo:</b> {{ (best_fragment_meta.get("title") if best_fragment else qm_best.get("title")) or "-" }}</div>
+                  <div><b>Segmento:</b> {{ best_fragment_meta.get("segment_index") if best_fragment and best_fragment_meta.get("segment_index") is not none else (qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "-") }}</div>
                   <div><b>Similitud:</b>
-                    {% if best_cc %}{{ "%.6f"|format(best_cc.similitud) }}{% else %}—{% endif %}
+                    {% if best_fragment %}{{ "%.6f"|format(best_fragment.get("similitud", 0.0)) }}{% elif best_cc %}{{ "%.6f"|format(best_cc.similitud) }}{% else %}-{% endif %}
                   </div>
                 </div>
 
-                {% if qc_best.get("content") %}
+                {% if best_fragment and best_fragment.get("chunk") %}
+                  <pre class="chunks-pre">{{ best_fragment.get("chunk") }}</pre>
+                {% elif qc_best.get("content") %}
                   <pre class="chunks-pre">{{ qc_best.get("content") }}</pre>
                 {% else %}
                   <div class="alert alert-warning" style="margin-top:.6rem;">
-                    No se pudo recuperar el contenido del mejor chunk desde Qdrant.
+                    No se pudo recuperar el contenido del mejor chunk.
                   </div>
                 {% endif %}
               </div>
 
+              {% set fragment_count = stored_fragments|length if stored_fragments|length > 0 else used_sorted|length %}
               <div class="chunks-card">
                 <p style="margin:0 0 .4rem 0;">
-                  <strong>Top {{ [10, (used_sorted|length)]|min }} de {{ used_sorted|length }} chunks usados</strong>
+                  <strong>Top {{ [10, fragment_count]|min }} de {{ fragment_count }} chunks usados</strong>
                 </p>
 
-                {% if used_sorted|length == 0 %}
+                {% if stored_fragments|length > 0 %}
+                  <div class="table-card mt-3">
+                    <div class="table-responsive">
+                      <table class="table table-hover align-middle mb-0 app-table">
+                        <thead>
+                          <tr>
+                            <th>Ranking</th>
+                            <th>Similitud</th>
+                            <th>Documento</th>
+                            <th>Segmento</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for frag in stored_fragments[:10] %}
+                            {% set frag_meta = frag.get("metadata") or {} %}
+                            <tr>
+                              <td>{{ frag.get("ranking", "-") }}</td>
+                              <td>{{ "%.6f"|format(frag.get("similitud", 0.0)) }}</td>
+                              <td>{{ frag_meta.get("document_name") or frag_meta.get("filename") or "-" }}</td>
+                              <td>{{ frag_meta.get("segment_index") if frag_meta.get("segment_index") is not none else "-" }}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                {% elif used_sorted|length == 0 %}
                   <div class="alert alert-info">Esta consulta no tiene chunks asociados en la base de datos.</div>
                 {% else %}
-                <div class="table-card mt-3">
-                  <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 app-table">
+                  <div class="table-card mt-3">
+                    <div class="table-responsive">
+                      <table class="table table-hover align-middle mb-0 app-table">
                         <thead>
                           <tr>
                             <th>Ranking</th>
@@ -115,8 +155,8 @@
                             <tr>
                               <td>{{ cc.ranking }}</td>
                               <td>{{ "%.6f"|format(cc.similitud) }}</td>
-                              <td>{{ ch.document.nombre if ch and ch.document else "—" }}</td>
-                              <td>{{ ch.segment_index if ch else "—" }}</td>
+                              <td>{{ ch.document.nombre if ch and ch.document else "-" }}</td>
+                              <td>{{ ch.segment_index if ch else "-" }}</td>
                             </tr>
                           {% endfor %}
                         </tbody>
@@ -134,5 +174,7 @@
   </div>
 
   {% include "components/modal_chunks.html" %}
+  {% include "components/modal_delete.html" %}
+  <script src="{{ url_for('static', filename='js/functionalities.js') }}"></script>
 
 {% endmacro %}

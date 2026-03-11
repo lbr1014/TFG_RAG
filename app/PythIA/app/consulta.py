@@ -14,12 +14,27 @@ class Consulta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # El usuario que realizó la consulta
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
-    user = db.relationship("User", backref=db.backref("consultas", lazy=True))
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user = db.relationship(
+        "User",
+        backref=db.backref(
+            "consultas",
+            lazy=True,
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+        ),
+        passive_deletes=True,
+    )
 
     # La pregunta que hizo
     pregunta = db.Column(db.Text, nullable=False)
     respuesta = db.Column(db.Text, nullable=False)
+    fragmentos = db.Column(JSON, nullable=False, default=list)
 
     # El tiempo que tardo en responder
     tiempo_respuestas = db.Column(db.Float, nullable=False)

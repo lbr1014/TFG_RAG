@@ -121,6 +121,10 @@ def historial():
     )
     
 def best_pid_for_consulta(consulta) -> str:
+    fragmentos = sorted(consulta.fragmentos or [], key=lambda item: item.get("ranking", 0))
+    if fragmentos:
+        return (fragmentos[0].get("qdrant_point_id") or "").strip()
+
     chunks = consulta.consultaChunks or []
     best_cc = min(chunks, key=lambda cc: cc.ranking, default=None)
 
@@ -131,19 +135,32 @@ def best_pid_for_consulta(consulta) -> str:
     return getattr(chunk, "qdrant_point_id", "") or ""
     
 def build_meta_by_consulta(consultas):
-    
-    best_point_ids = {c.id: best_pid_for_consulta(c) for c in consultas}
-            
-    payload_by_pid = qdrant_get_payloads(pid for pid in best_point_ids.values() if pid) 
-    
     meta_by_consulta = {}
-    for cid, pid in best_point_ids.items():
-        payload = payload_by_pid.get(pid) or {}
-        meta_by_consulta[cid] = {
-            "qdrant_point_id": pid,
-            "metadata": payload.get("metadata") or {},
-            "content": payload.get("content", "") or "",
-        }
+    legacy_pids = {}
+
+    for consulta in consultas:
+        fragmentos = sorted(consulta.fragmentos or [], key=lambda item: item.get("ranking", 0))
+        if fragmentos:
+            best = fragmentos[0]
+            meta_by_consulta[consulta.id] = {
+                "qdrant_point_id": (best.get("qdrant_point_id") or "").strip(),
+                "metadata": best.get("metadata") or {},
+                "content": best.get("chunk", "") or "",
+            }
+            continue
+
+        legacy_pids[consulta.id] = best_pid_for_consulta(consulta)
+
+    if legacy_pids:
+        payload_by_pid = qdrant_get_payloads(pid for pid in legacy_pids.values() if pid)
+        for cid, pid in legacy_pids.items():
+            payload = payload_by_pid.get(pid) or {}
+            meta_by_consulta[cid] = {
+                "qdrant_point_id": pid,
+                "metadata": payload.get("metadata") or {},
+                "content": payload.get("content", "") or "",
+            }
+
     return meta_by_consulta    
 
 @main_bp.post("/consulta/<int:consulta_id>/delete")
