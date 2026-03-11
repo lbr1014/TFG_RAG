@@ -137,14 +137,20 @@
               <td>{{ d.status }}</td>
 
               <td class="text-end">
-                <button type="button"
-                        class="btn btn-sm btn-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteConfirmModal"
-                        data-delete-url="{{ url_for('admin.delete_document', doc_id=d.id) }}"
-                        data-delete-name="{{ d.nombre }}">
-                  Borrar
-                </button>
+                <form id="delete-form-{{ d.id }}"
+                      method="POST"
+                      action="{{ url_for('admin.delete_document', doc_id=d.id) }}"
+                      class="d-inline">
+
+                  <button type="button"
+                          class="btn btn-sm btn-danger"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteConfirmModal"
+                          data-doc-name="{{ d.nombre }}"
+                          data-form-id="delete-form-{{ d.id }}">
+                    Borrar
+                  </button>
+                </form>
               </td>
             </tr>
           {% endfor %}

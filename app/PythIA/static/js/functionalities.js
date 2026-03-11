@@ -53,30 +53,29 @@ function initChunksModal() {
 
 function initDeleteModal(modalId = "deleteConfirmModal") {
 
-  const deleteModal = document.getElementById(modalId);
-  if (!deleteModal) return;
+  const deleteModal = document.getElementById("deleteConfirmModal")
+  const deleteName = document.getElementById("deleteItemName")
+  const confirmBtn = document.getElementById("confirmDeleteBtn")
 
-  const deleteForm = deleteModal.querySelector("#deleteConfirmForm");
-  const deleteItemName = deleteModal.querySelector("#deleteItemName");
+  let currentFormId = null
 
   deleteModal.addEventListener("show.bs.modal", function (event) {
 
-    const button = event.relatedTarget;
-    if (!button) return;
+      const button = event.relatedTarget
 
-    const deleteUrl = button.getAttribute("data-delete-url");
-    const deleteName = button.getAttribute("data-delete-name");
+      const itemName = button.getAttribute("data-item-name")
+      const formId = button.getAttribute("data-form-id")
 
-    if (deleteForm && deleteUrl) {
-      deleteForm.setAttribute("action", deleteUrl);
-    }
+      deleteName.textContent = itemName
+      currentFormId = formId
 
-    if (deleteItemName && deleteName) {
-      deleteItemName.textContent = deleteName;
-    }
+  })
 
-  });
-
+  confirmBtn.addEventListener("click", function () {
+      if (currentFormId) {
+          document.getElementById(currentFormId).submit()
+      }
+  })
 }
 
 initLightEffect();

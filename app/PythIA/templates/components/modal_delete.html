@@ -8,11 +8,11 @@
     <div class="modal-content app-surface delete-modal-panel border-0">
 
       <div class="modal-header delete-modal-header border-0">
-        <div>
-          <h1 class="modal-title delete-modal-title" id="deleteConfirmModalLabel">
+        <div class="delete-modal-heading">
+          <h2 class="modal-title delete-modal-title" id="deleteConfirmModalLabel">
             Confirmar borrado
-          </h1>
-          <p class="delete-modal-sub mb-0">
+          </h2>
+          <p class="delete-modal-sub">
             Esta acción no se puede deshacer.
           </p>
         </div>
@@ -20,11 +20,15 @@
         <button type="button"
                 class="btn-close btn-close-white"
                 data-bs-dismiss="modal"
-                aria-label="Cerrar"></button>
+                aria-label="Cerrar">
+        </button>
       </div>
 
       <div class="modal-body delete-modal-body">
-        ¿Seguro que quieres borrar <strong id="deleteItemName"></strong>?
+        <p class="delete-modal-question">
+          ¿Seguro que quieres borrar
+          <span class="delete-modal-file" id="deleteItemName"></span>?
+        </p>
       </div>
 
       <div class="modal-footer delete-modal-footer border-0">
@@ -34,11 +38,11 @@
           Cancelar
         </button>
 
-        <form id="deleteConfirmForm" method="POST" class="d-inline">
-          <button type="submit" class="btn btn-danger btn-header">
-            Borrar
-          </button>
-        </form>
+        <button id="confirmDeleteBtn"
+                type="submit"
+                class="btn btn-danger btn-header">
+          Borrar
+        </button>
       </div>
 
     </div>

@@ -58,15 +58,20 @@
                   </button>
                 </form>
 
-                <form method="POST"
+                <form id="delete-user-form-{{ u.id }}"
+                      method="POST"
                       action="{{ url_for('admin.delete_user', user_id=u.id) }}"
-                      style="display:inline;">
-                  <button type="submit"
-                          class="btn btn-danger"
-                          style="padding:8px 10px;"
-                          onclick="return confirm('¿Seguro que quieres borrar este usuario?');">
+                      class="d-inline">
+
+                  <button type="button"
+                          class="btn btn-danger btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteConfirmModal"
+                          data-item-name="el usuario {{ u.nombre }}"
+                          data-form-id="delete-user-form-{{ u.id }}">
                     Borrar
                   </button>
+
                 </form>
 
               {% endif %}
@@ -77,6 +82,8 @@
       </table>
     </div>
   </div>
+  {% include "components/modal_delete.html" %}
+
 {% endblock %}
 
 
