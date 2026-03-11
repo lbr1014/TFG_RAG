@@ -1,15 +1,11 @@
-/* =========================
-   TABLAS
-   ========================= */
-
 .table-card{
-  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.08) 100%);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 18px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,.06);
-  backdrop-filter: blur(8px);
+  border-radius: var(--app-radius-md);
   overflow: hidden;
   margin-top: 18px;
+}
+
+.table-responsive{
+  border-radius: inherit;
 }
 
 .app-table{
@@ -45,8 +41,9 @@
   color: #ffffff;
 }
 
-.app-table details pre{
-  margin: 10px 0 0;
+.app-table details pre,
+.chunks-pre{
+  margin-top: .75rem;
   padding: 12px;
   border-radius: 12px;
   background: rgba(255,255,255,.08);
@@ -62,18 +59,11 @@
   word-break: break-word;
 }
 
-.table-responsive{
-  border-radius: 18px;
-}
-
-/* =========================
-   PAGINACIÓN 
-   ========================= */
-
 .pagination{
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   margin: 16px 0 0;
 }
@@ -96,16 +86,8 @@
   color: #ffffff;
 }
 
-/* =========================
-   MODAL CHUNKS
-   ========================= */
-
 .chunks-modal-panel{
-  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.08) 100%);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 18px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255,255,255,.06);
-  backdrop-filter: blur(10px);
+  border-radius: var(--app-radius-md);
   color: #fff;
 }
 
@@ -122,16 +104,18 @@
   font-size: 13px;
 }
 
-.chunks-pre{
-  white-space: pre-wrap;
-  margin-top: .75rem;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
-  color: #fff;
-}
-
 .modal-backdrop.show{
   opacity: .45;
+}
+
+@media (max-width: 767.98px){
+  .cell-question{
+    min-width: 180px;
+    max-width: none;
+  }
+
+  .page-link{
+    width: 100%;
+    max-width: 220px;
+  }
 }

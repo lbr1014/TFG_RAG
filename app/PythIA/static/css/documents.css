@@ -1,27 +1,39 @@
-/* =========================
-   CARGAR DOCUMENTOS
-   ========================= */
+.main-content.documents-page-shell{
+  max-width: 1320px;
+}
+
+.documents-page{
+  max-width: 1240px;
+  margin: 0 auto;
+}
 
 .upload-card{
-  border-radius: 24px;
+  border-radius: var(--app-radius-lg);
   overflow: hidden;
+  padding: 0;
 }
 
-.upload-card_title{
-  color: #ffffff;
-  font-size: 1.5rem;
-  font-weight: 800;
+.upload-hero{
+  max-width: 720px;
 }
 
-.upload-card_subtitle{
-  color: rgba(255,255,255,.78);
-  line-height: 1.6;
+.upload-hero h1{
+  margin-bottom: .75rem;
+}
+
+.upload-panel{
+  padding: 1.25rem;
+  margin: 0;
+}
+
+.upload-panel-compact{
+  max-width: 780px;
 }
 
 .upload-dropzone{
-  padding: 1rem;
-  border-radius: 18px;
-  background: rgba(255,255,255,.06);
+  padding: 1.15rem;
+  border-radius: var(--app-radius-md);
+  background: rgba(255,255,255,.05);
   border: 1px dashed rgba(255,255,255,.18);
 }
 
@@ -30,18 +42,29 @@
 }
 
 .upload-input{
-  border-radius: 14px;
+  min-height: 58px;
+  border-radius: var(--app-radius-sm);
   border: 1px solid rgba(255,255,255,.16);
   background: rgba(255,255,255,.92);
   color: #1f2d3d;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.upload-input::file-selector-button{
+  margin-right: .9rem;
+  padding: .7rem .95rem;
+  border: 0;
+  border-right: 1px solid rgba(31,45,61,.12);
+  background: rgba(63,86,109,.08);
+  color: #1f2d3d;
+  font-weight: 700;
 }
 
 .upload-input:focus{
   border-color: #ffffff;
   background: rgba(255,255,255,.88);
-  box-shadow:
-    0 0 0 3px rgba(219,220,221,.18),
-    0 4px 14px rgba(219,220,221,.25);
+  box-shadow: 0 0 0 3px rgba(219,220,221,.18), 0 4px 14px rgba(219,220,221,.25);
 }
 
 .upload-dropzone .form-text{
@@ -49,7 +72,6 @@
 }
 
 .upload-card .btn{
-  border-radius: 14px;
   min-height: 48px;
 }
 
@@ -58,9 +80,81 @@
   background: rgba(255,255,255,.16);
 }
 
-/* Responsive */
+.documents-section{
+  text-align: left;
+}
+
+.documents-title{
+  color: #ffffff;
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+  font-weight: 800;
+}
+
+.documents-subtitle{
+  color: rgba(255,255,255,.74);
+  line-height: 1.6;
+}
+
+.documents-counter{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: .55rem .95rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.doc-name{
+  color: #ffffff;
+  word-break: break-word;
+}
+
+.doc-meta-inline{
+  color: rgba(255,255,255,.72);
+  font-size: .84rem;
+  line-height: 1.45;
+}
+
+.doc-meta-separator{
+  margin: 0 .3rem;
+}
+
+.doc-status{
+  display: inline-flex;
+  align-items: center;
+  padding: .38rem .7rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #ffffff;
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+@media (max-width: 991.98px){
+  .main-content.documents-page-shell{
+    max-width: 100%;
+  }
+
+  .documents-page{
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 767.98px){
-  .upload-card__title{
-    font-size: 1.25rem;
+  .upload-panel{
+    padding: 1rem;
+  }
+
+  .upload-dropzone{
+    padding: .9rem;
+  }
+
+  .documents-counter{
+    align-self: flex-start;
   }
 }

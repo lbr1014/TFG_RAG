@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Documentos cargados{% endblock %}
+{% block main_content_class %} documents-page-shell{% endblock %}
 
 {% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/documents.css') }}">
@@ -8,158 +9,160 @@
 {% endblock %}
 
 {% block content %}
+  <div class="documents-page container-fluid px-0">
+    <section class="app-surface upload-card">
+      <div class="p-4 p-md-5 text-center">
+        <div class="upload-hero mx-auto">
+          <h1 class="mb-2">Administrar documentos</h1>
+          <p class="documents-subtitle mb-0">
+            Carga documentos en el sistema, ejecuta el web scraping o actualiza la base de datos vectorial.
+          </p>
+        </div>
 
-  <div class="container px-0">
-    <div class="row justify-content-center">
-      <div class="col-12 col-lg-10 col-xl-9">
+        <form id="uploadForm"
+              method="POST"
+              action="{{ url_for('admin.upload_documents') }}"
+              enctype="multipart/form-data"
+              class="upload-panel upload-panel-compact text-start mx-auto mt-4">
 
-        <section class="app-surface upload-card">
-          <div class="card border-0 bg-transparent">
-            <div class="card-body p-4 p-md-5">
+          <div class="upload-dropzone mb-4">
+            <label for="files" class="form-label fw-semibold mb-2">
+              Carga uno o varios PDF
+            </label>
 
-              <div class="mb-4">
-                <h1 class="upload-card_title mb-1">Cargar e indexar documentos</h1>
-                <p class="upload-card_subtitle mb-0">
-                  Añade uno o varios archivos PDF para indexarlos en el sistema.
-                </p>
+            <input
+              id="files"
+              name="files"
+              type="file"
+              class="form-control form-control-lg upload-input"
+              accept="application/pdf"
+              multiple
+              required
+            >
+
+            <div class="form-text mt-2">
+              Formato admitido: PDF. Puedes seleccionar varios archivos a la vez.
+            </div>
+
+            <div class="row g-2">
+              <div class="col-12 col-md-6 d-grid">
+                <button type="submit" class="btn btn-light btn-header">
+                  Subir documentos
+                </button>
               </div>
-
-              <form id="uploadForm"
-                    method="POST"
-                    action="{{ url_for('admin.upload_documents') }}"
-                    enctype="multipart/form-data"
-                    class="text-start">
-
-                <div class="upload-dropzone mb-4">
-                  <label for="files" class="form-label fw-semibold mb-2">
-                    Selecciona uno o varios PDF
-                  </label>
-
-                  <input
-                    id="files"
-                    name="files"
-                    type="file"
-                    class="form-control form-control-lg upload-input"
-                    accept="application/pdf"
-                    multiple
-                    required
-                  >
-
-                  <div class="form-text mt-2">
-                    Formato admitido: PDF. Puedes seleccionar varios archivos a la vez.
-                  </div>
-                </div>
-
-                <div class="row g-2">
-                  <div class="col-12 col-md-6">
-                    <button type="submit" class="btn btn-light btn-header w-100 ">
-                      <i class="bi bi-upload me-2"></i>Subir documentos
-                    </button>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <button form="scrapingForm" type="submit" class="btn btn-outline-light btn-header w-100">
-                      <i class="bi bi-globe2 me-2"></i>Web Scraping
-                    </button>
-                  </div>
-                  <div class="col-12">
-                    <button form="vectorForm" type="submit" class="btn btn-primary w-100">
-                      <i class="bi bi-database-gear me-2"></i>Actualizar base vectorial
-                    </button>
-                  </div>
-                </div>
-              </form>
-
-              <form id="scrapingForm"
-                    method="POST"
-                    action="{{ url_for('admin.web_scraping_documents') }}"
-                    class="d-none">
-              </form>
-
-              <form id="vectorForm"
-                    method="POST"
-                    action="{{ url_for('admin.update_vector_db') }}"
-                    class="d-none">
-              </form>
-
-              <div id="scraping-progress" data-finished="false" class="mt-4 d-none">
-                <div class="progress upload-progress" role="progressbar" aria-label="Progreso scraping">
-                  <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
-                </div>
-                <div class="small text-white-50 mt-2 text-center">
-                  Ejecutando web scraping…
-                </div>
+              <div class="col-12 col-md-6 d-grid">
+                <button form="scrapingForm" type="submit" class="btn btn-outline-light btn-header">
+                  Web Scraping
+                </button>
               </div>
-
             </div>
           </div>
-        </section>
 
+          <div class="row g-1">
+            <div class="col-12 d-grid">
+              <button form="vectorForm" type="submit" class="btn btn-primary btn-header">
+                Actualizar base vectorial
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <form id="scrapingForm"
+              method="POST"
+              action="{{ url_for('admin.web_scraping_documents') }}"
+              class="d-none">
+        </form>
+
+        <form id="vectorForm"
+              method="POST"
+              action="{{ url_for('admin.update_vector_db') }}"
+              class="d-none">
+        </form>
+
+        <div id="scraping-progress" data-finished="false" class="mt-4 d-none">
+          <div class="progress upload-progress" role="progressbar" aria-label="Progreso scraping">
+            <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
+          </div>
+          <div class="small text-white-50 mt-2 text-center">
+            Ejecutando web scraping...
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <section class="documents-section mt-4 mt-md-5">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 text-start">
+        <div>
+          <h1 class="mb-1">Documentos cargados</h1>
+          <p class="documents-subtitle mb-0">
+            Revisa el estado de cada archivo y elimina los que ya no necesites.
+          </p>
+        </div>
+        <div class="documents-counter">{{ total_docs if total_docs is defined else docs|length }} documentos</div>
+      </div>
+
+      {% if not docs %}
+        <div class="alert alert-info mt-4">
+          No hay documentos PDF cargados.
+        </div>
+      {% else %}
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 app-table">
+              <thead>
+                <tr>
+                  <th>Archivo</th>
+                  <th class="d-none d-md-table-cell" style="width: 150px;">Tamano</th>
+                  <th class="d-none d-lg-table-cell" style="width: 210px;">Modificado</th>
+                  <th style="width: 105px;">Chunks</th>
+                  <th style="width: 140px;">Estado</th>
+                  <th class="text-end" style="width: 120px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for d in docs %}
+                  <tr>
+                    <td class="text-start">
+                      <div class="fw-semibold doc-name">{{ d.nombre }}</div>
+                      <div class="doc-meta-inline d-md-none mt-1">
+                        <span>{{ (d.size_bytes / 1024) | round(1) }} KB</span>
+                        <span class="doc-meta-separator">&bull;</span>
+                        <span>{{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}</span>
+                      </div>
+                    </td>
+
+                    <td class="d-none d-md-table-cell">{{ (d.size_bytes / 1024) | round(1) }} KB</td>
+                    <td class="d-none d-lg-table-cell">{{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                    <td>{{ d.chunks if d.chunks is not none else 0 }}</td>
+                    <td>
+                      <span class="doc-status">{{ d.status }}</span>
+                    </td>
+
+                    <td class="text-end">
+                      <form id="delete-form-{{ d.id }}"
+                            method="POST"
+                            action="{{ url_for('admin.delete_document', doc_id=d.id) }}"
+                            class="d-inline">
+                        <button type="button"
+                                class="btn btn-sm btn-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteConfirmModal"
+                                data-doc-name="{{ d.nombre }}"
+                                data-form-id="delete-form-{{ d.id }}">
+                          Borrar
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endif %}
+    </section>
   </div>
 
-  <hr class="my-4">
-
-  <h1>Documentos cargados</h1>
-
-  {% if not docs %}
-    <div class="alert alert-info">
-      No hay documentos PDF cargados.
-    </div>
-  {% else %}
-    <div class="table-card">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 app-table">  
-          <thead>
-            <tr>
-              <th>Archivo</th>
-              <th class="d-none d-md-table-cell" style="width: 160px;">Tamaño</th>
-              <th class="d-none d-lg-table-cell" style="width: 220px;">Modificado</th>
-              <th class="d-none d-md-table-cell" style="width: 120px;">Chunks</th>
-              <th style="width: 140px;">Estado</th>
-              <th class="text-end" style="width: 140px;">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for d in docs %}
-            <tr>
-              <td class="text-start">
-                <span class="fw-semibold">{{ d.nombre }}</span>
-                <div class="small text-muted d-md-none mt-1">
-                  {{ (d.size_bytes / 1024) | round(1) }} KB ·
-                  {{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}
-                </div>
-              </td>
-
-              <td class="d-none d-md-table-cell">{{ (d.size_bytes / 1024) | round(1) }} KB</td>
-              <td class="d-none d-lg-table-cell">{{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
-              <td class="d-none d-md-table-cell">{{ d.chunks if d.chunks is not none else 0 }}</td>
-              <td>{{ d.status }}</td>
-
-              <td class="text-end">
-                <form id="delete-form-{{ d.id }}"
-                      method="POST"
-                      action="{{ url_for('admin.delete_document', doc_id=d.id) }}"
-                      class="d-inline">
-
-                  <button type="button"
-                          class="btn btn-sm btn-danger"
-                          data-bs-toggle="modal"
-                          data-bs-target="#deleteConfirmModal"
-                          data-doc-name="{{ d.nombre }}"
-                          data-form-id="delete-form-{{ d.id }}">
-                    Borrar
-                  </button>
-                </form>
-              </td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  {% endif %}
   {% include "components/modal_delete.html" %}
   <script src="{{ url_for('static', filename='js/bar_progress.js') }}"></script>
-  
 {% endblock %}

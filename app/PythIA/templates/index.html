@@ -15,25 +15,29 @@
   <header class="main-header shadow-sm">
     <div class="container-fluid">
       <div class="d-flex align-items-center justify-content-between gap-3 py-2 flex-wrap">
-
-        <!-- Izquierda: logo + autor -->
         <div class="d-flex align-items-center gap-2">
-          <img
-            src="{{ url_for('static', filename='img/PythIA_logo.png') }}"
-            alt="Logo PythIA"
-            class="logo-header"
-          >
+          <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
           <div class="hero-title mt-3">
             <h1>{{ titulo }}</h1>
           </div>
         </div>
 
-        <!-- Derecha: acciones -->
         <div class="d-flex align-items-center gap-2">
-          <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-header">Iniciar sesión</a>
-          <a href="{{ url_for('auth.singup') }}" class="btn btn-outline-light btn-header">Registrarse</a>
-        </div>
+          <div class="d-none d-md-flex align-items-center gap-2">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-header">Iniciar sesión</a>
+            <a href="{{ url_for('auth.singup') }}" class="btn btn-outline-light btn-header">Registrarse</a>
+          </div>
 
+          <div class="dropdown d-md-none">
+            <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu">
+              <span class="menu-dots" aria-hidden="true">&#8942;</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{{ url_for('auth.login') }}">Iniciar sesión</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.singup') }}">Registrarse</a></li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </header>

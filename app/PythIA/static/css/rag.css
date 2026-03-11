@@ -1,15 +1,5 @@
-/* =========================
-   PÁGINA RAG 
-   ========================= */
-   
 .rag-card{
-  background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.08) 100%);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 24px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255,255,255,.06);
-  backdrop-filter: blur(8px);
+  border-radius: var(--app-radius-lg);
   padding: 24px;
   text-align: left;
 }
@@ -26,15 +16,18 @@
   line-height: 1.6;
 }
 
-.rag-label{
-  font-weight: 700;
+.rag-label,
+.rag-section-title,
+.rag-debug summary,
+.rag-meta strong{
   color: #ffffff;
+  font-weight: 700;
 }
 
 .rag-textarea{
   min-height: 140px;
   resize: vertical;
-  border-radius: 14px;
+  border-radius: var(--app-radius-sm);
   border: 1px solid rgba(255,255,255,.16);
   background: rgba(255,255,255,.92);
   color: #1f2d3d;
@@ -43,9 +36,7 @@
 .rag-textarea:focus{
   border-color: #ffffff;
   background: rgba(255,255,255,.88);
-  box-shadow:
-    0 0 0 3px rgba(219,220,221,.18),
-    0 4px 14px rgba(219,220,221,.25);
+  box-shadow: 0 0 0 3px rgba(219,220,221,.18), 0 4px 14px rgba(219,220,221,.25);
 }
 
 .rag-status{
@@ -59,20 +50,16 @@
   font-weight: 700;
 }
 
-.rag-result{
+.rag-result,
+.rag-debug{
   border-top: 1px solid rgba(255,255,255,.10);
   padding-top: 1.25rem;
-}
-
-.rag-section-title{
-  color: #ffffff;
-  font-weight: 700;
 }
 
 .rag-answer,
 .rag-chunk{
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: var(--app-radius-sm);
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.10);
   color: #ffffff;
@@ -80,23 +67,8 @@
   line-height: 1.6;
 }
 
-.rag-debug{
-  border-top: 1px solid rgba(255,255,255,.10);
-  padding-top: 1rem;
-}
-
-.rag-debug summary{
-  cursor: pointer;
-  font-weight: 700;
-  color: #ffffff;
-}
-
 .rag-meta{
   color: rgba(255,255,255,.88);
-}
-
-.rag-meta strong{
-  color: #ffffff;
 }
 
 @media (min-width: 768px){

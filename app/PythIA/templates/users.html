@@ -7,87 +7,80 @@
 {% endblock %}
 
 {% block content %}
-  <h1>Gestión de usuarios</h1>
-  <div style="max-width:900px; margin: 0 auto 20px; text-align:right;">
-    <a href="{{ url_for('admin.create_user') }}" class="btn btn-secondary" style="text-decoration:none;">Añadir usuario</a>
-  </div>
+  <div class="container px-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+      <h1 class="mb-0">Gestión de usuarios</h1>
+      <a href="{{ url_for('admin.create_user') }}" class="btn btn-secondary align-self-center align-self-md-auto">Anadir usuario</a>
+    </div>
 
-  <div class="table-card">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 app-table">  
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Admin</th>
-            <th>Último login</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 app-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Admin</th>
+              <th>Ultimo login</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
 
-        <tbody>
-          {% for u in users %}
-          <tr>
-            <td>{{ u.id }}</td>
-            <td>{{ u.nombre }}</td>
-            <td>{{ u.email }}</td>
-            <td>{% if u.is_admin %}Sí{% else %}No{% endif %}</td>
-            <td>
-              {% if u.last_login %}
-                {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-              {% else %}
-                —
-              {% endif %}
-            </td>
+          <tbody>
+            {% for u in users %}
+              <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.nombre }}</td>
+                <td>{{ u.email }}</td>
+                <td>{% if u.is_admin %}Si{% else %}No{% endif %}</td>
+                <td>
+                  {% if u.last_login %}
+                    {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
 
-            <td>
-              {% if u.id == current_user.id %}
-                <em>Tú</em>
-              {% else %}
+                <td>
+                  {% if u.id == current_user.id %}
+                    <em>Tu</em>
+                  {% else %}
+                    <div class="d-flex flex-wrap gap-2">
+                      <form method="POST"
+                            action="{{ url_for('admin.change_type', user_id=u.id) }}"
+                            class="d-inline">
+                        <button type="submit" class="btn btn-secondary btn-sm">
+                          {% if u.is_admin %}
+                            Quitar admin
+                          {% else %}
+                            Hacer admin
+                          {% endif %}
+                        </button>
+                      </form>
 
-                <form method="POST"
-                      action="{{ url_for('admin.change_type', user_id=u.id) }}"
-                      style="display:inline;">
-                  <button type="submit" class="btn btn-secondary" style="padding:8px 10px;">
-                    {% if u.is_admin %}
-                      Quitar admin
-                    {% else %}
-                      Hacer admin
-                    {% endif %}
-                  </button>
-                </form>
-
-                <form id="delete-user-form-{{ u.id }}"
-                      method="POST"
-                      action="{{ url_for('admin.delete_user', user_id=u.id) }}"
-                      class="d-inline">
-
-                  <button type="button"
-                          class="btn btn-danger btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#deleteConfirmModal"
-                          data-item-name="el usuario {{ u.nombre }}"
-                          data-form-id="delete-user-form-{{ u.id }}">
-                    Borrar
-                  </button>
-
-                </form>
-
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+                      <form id="delete-user-form-{{ u.id }}"
+                            method="POST"
+                            action="{{ url_for('admin.delete_user', user_id=u.id) }}"
+                            class="d-inline">
+                        <button type="button"
+                                class="btn btn-danger btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteConfirmModal"
+                                data-item-name="el usuario {{ u.nombre }}"
+                                data-form-id="delete-user-form-{{ u.id }}">
+                          Borrar
+                        </button>
+                      </form>
+                    </div>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
   {% include "components/modal_delete.html" %}
-
 {% endblock %}
-
-
-
-
-  
-
