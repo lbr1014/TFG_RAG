@@ -172,6 +172,36 @@ class MainRoutesTest(BaseTestCase):
         self.assertEqual(r.status_code, 200)
         
         self.cleanup_for_user_delete()
+
+    @patch("app.main.routes.qdrant_get_payloads")
+    def test_history_usa_fragmentos_guardados(self, mock_qdrant):
+        u = self.crear_usuario(email="u_hist_saved@example.com")
+        self.login(email="u_hist_saved@example.com")
+
+        consulta = Consulta(
+            user_id=u.id,
+            pregunta="con fragmentos",
+            respuesta="ok",
+            fragmentos=[
+                {
+                    "ranking": 1,
+                    "similitud": 0.88,
+                    "qdrant_point_id": "saved-point",
+                    "chunk": "texto guardado",
+                    "metadata": {"filename": "saved.pdf", "segment_index": 2},
+                }
+            ],
+            tiempo_respuestas=0.25,
+        )
+        db.session.add(consulta)
+        db.session.commit()
+
+        r = self.client.get("/history?page=1")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"saved.pdf", r.data)
+        mock_qdrant.assert_not_called()
+
+        self.cleanup_for_user_delete()
     
     def test_history(self):
         u = self.crear_usuario(email="u_hist_3@example.com")

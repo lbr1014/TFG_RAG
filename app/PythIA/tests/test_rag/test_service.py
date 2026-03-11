@@ -145,6 +145,11 @@ class RagServiceTest(BaseTestCase):
         self.assertEqual(c.user_id, self.user.id)
         self.assertEqual(c.pregunta, "pregunta")
         self.assertEqual(c.respuesta, "respuesta")
+        self.assertEqual(c.fragmentos[0]["ranking"], 1)
+        self.assertEqual(c.fragmentos[0]["similitud"], 0.9)
+        self.assertEqual(c.fragmentos[0]["qdrant_point_id"], "qid-1")
+        self.assertEqual(c.fragmentos[0]["metadata"]["chunk_id"], ch.id)
+        self.assertEqual(c.fragmentos[0]["metadata"]["document_id"], ch.document_id)
 
         rel = ConsultaChunk.query.first()
         self.assertIsNotNone(rel)
@@ -262,6 +267,9 @@ class RagServiceTest(BaseTestCase):
 
         c = Consulta.query.first()
         self.assertIsNotNone(c)
+        self.assertEqual(len(c.fragmentos), 2)
+        self.assertEqual(c.fragmentos[0]["qdrant_point_id"], "no-existe")
+        self.assertEqual(c.fragmentos[1]["metadata"]["chunk_id"], ch.id)
 
         self.assertEqual(ConsultaChunk.query.count(), 1)
         rel = ConsultaChunk.query.first()
