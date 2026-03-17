@@ -9,10 +9,8 @@ La metodología \eng{Scrum} es un marco de trabajo ágil orientado a la gestión
 \imagenflotante{Memoria/Metodologia_SCRUM}{Metodología \eng{Scrum}.}{1}
 
 \subsection{\eng{Kanban}}
-Para la gestión del flujo de trabajo y organización de tareas se ha adoptado la metodología \eng{Kanban}~\cite{herramienta:kanban}. La cual consiste en un enfoque ágil orientado a la visualización del trabajo, la optimización del flujo y la mejora continua. Se basa en la idea de que el trabajo debe gestionarse como un flujo continuo en lugar de dividirse en iteraciones cerradas. Se centra en representar el estado de las tareas de forma visual (ver imagenes~\ref{fig:Memoria/Kanban_ZenHub} y~\ref{fig:Memoria/Kanban_GitHubProjects}), lo que facilita la planificación, el seguimiento y la detección de cuellos de botella. Este enfoque es útil en proyectos de desarrollo \eng{software} en los que los requisitos puedan evolucionar, haciendo necesario tener una planificación flexible.
+Para la gestión del flujo de trabajo y organización de tareas se ha adoptado la metodología \eng{Kanban}~\cite{herramienta:kanban}. La cual consiste en un enfoque ágil orientado a la visualización del trabajo, la optimización del flujo y la mejora continua. Se basa en la idea de que el trabajo debe gestionarse como un flujo continuo en lugar de dividirse en iteraciones cerradas. Se centra en representar el estado de las tareas de forma visual, lo que facilita la planificación, el seguimiento y la detección de cuellos de botella. Este enfoque es útil en proyectos de desarrollo \eng{software} en los que los requisitos puedan evolucionar, haciendo necesario tener una planificación flexible.
 
-\imagenflotante{Memoria/Kanban_ZenHub}{Ejemplo de tablero \eng{Kanban} de la aplicación \eng{ZenHub}.}{1}
-\imagenflotante{Memoria/Kanban_GitHubProjects}{Ejemplo de tablero \eng{Kanban} de la aplicación \eng{GitHub Projects}.}{1}
 
 \section{Repositorio}
 Para alojar el repositorio se han valorado distintas alternativas como \href{https://bitbucket.org/}{Bitbucket}, \href{https://github.com/}{GitHub}, \href{https://gitlab.com/}{GitLab} o \href{https://trello.com/}{Trello}. Finalmente se ha elegido GitHub que es una plataforma basada en la nube que permite alojar repositorios de código. GitHub ofrece funciones muy útiles como ramas (\eng{branches}), \eng{pull requests}, seguimiento de cambios (\eng{commits}), historial del proyecto, gestión de incidencias (\eng{issues}). Además, permite la colaboración entre usuarios, lo que es muy útil para la revisión del proyecto.
@@ -39,46 +37,23 @@ Selenium controla navegadores reales y es un estándar veterano, pero Playwright
 
 \begin{table}[p]
 	\centering
-	\begin{tabularx}{\linewidth}{p{0.20\columnwidth} p{0.36\columnwidth} p{0.36\columnwidth}}
+	\begin{tabularx}{\linewidth}{ p{0.22\columnwidth}*{2}{>{}X}}
 		\toprule
-			& \textbf{Ventajas} & \textbf{Desventajas} \\
+			\textbf{Herramienta} & \textbf{Ventajas} & \textbf{Desventajas} \\
 		\midrule
-		\textbf{\eng{Selenium}}~\cite{selenium:docs} & 
+		\multirow{3}{*}[-6ex]{\textbf{\eng{Selenium}}~\cite{selenium:docs}} & Utiliza el estándar W3C \eng{WebDriver}~\cite{w3c:webdriver2}, lo que aporta interoperabilidad y soporte a largo plazo. & Es propenso a fallos (\eng{flakiness}) si no se dominan las esperas. \\
+		& Multilenguaje y ecosistema maduro. Permite una integración fácil. & La intercepción de red en menos homogénea entre navegadores. \\
+		& Es robusto para escalado distribuido. & \\
+			
+		\midrule
+		\multirow{5}{*}[-12ex]{\textbf{\eng{Playwright}}~\cite{playwright:actionability}} & Es muy estable y rápido en \eng{webs} con \eng{JavaScript} pesado. 
 		
-			\begin{itemize}
-			\tightlist
-				\item Utiliza el estándar W3C \eng{WebDriver}~\cite{w3c:webdriver2}, lo que aporta interoperabilidad y soporte a largo plazo.
-				\item Multilenguaje y ecosistema maduro. Permite una integración fácil.
-				\item Es robusto para escalado distribuido. 
-			\end{itemize}  
-			& 			
-			 \begin{itemize}
-			\tightlist
-				\item Es propenso a fallos (\eng{flakiness}) si no se dominan las esperas.
-				\item La intercepción de red en menos homogénea entre navegadores.
-			\end{itemize}
-			
-			\\
-			
-		\midrule
-		\textbf{\eng{Playwright}}~\cite{playwright:actionability} & 
+		& No utiliza el estándar \eng{WebDriver}.  \\
+		& Presenta multitud de herramientas integradas como \eng{Trace Viewer}, capturas de pantalla y videos. & \\
+		& Contiene selectores potentes y permite manejar los \eng{inframes} de forma sencilla.  & \\
+		& Tiene un control de contexto aislado muy cómodo. & \\
+		& Su modelos asíncrono permite realizar acciones concurrentes sin bloquear el hilo empleando la \eng{API async/await}. & \\
 		 
-		 \begin{itemize}
-			\tightlist
-				\item Es muy estable y rápido en \eng{webs} con \eng{JavaScript} pesado.
-				\item Presenta multitud de herramientas integradas como \eng{Trace Viewer}, capturas de pantalla y videos.
-				\item Contiene selectores potentes y permite manejar los \eng{inframes} de forma sencilla. 
-				\item Tiene un control de contexto aislado muy cómodo.
-				\item Su modelos asíncrono permite realizar acciones concurrentes sin bloquear el hilo empleando la \eng{API async/await}.
-			\end{itemize}   
-			& 			
-			\begin{itemize}
-			\tightlist
-				\item No utiliza el estándar \eng{WebDriver}. 
-			\end{itemize}   
-			
-			\\
-		
 		\bottomrule
 	\end{tabularx}
 	\caption{Ventajas y desventajas de \eng{Selenium} y \eng{Playwright}.}
@@ -91,61 +66,34 @@ Tras probar ambos, en una fase inicial del \eng{web scraping}, se vio que \eng{S
 El proyecto requiere entornos aislados y reproducibles que faciliten el trabajo local, la integración continua y la generación de entregables. Se ha valorado utilizar \href{http://python-poetry.org/docs/}{\eng{Poetry}} y \href{https://docs.astral.sh/uv/}{\eng{uv}}. \eng{Poetry} es una herramienta madura de gestión de dependencias y empaquetado que centraliza la configuración en \file{pyproject.toml}. Crea y gestiona entornos virtuales de forma automática, mantiene un archivo de bloqueo (\file{poetry.lock}) para asegurar instalaciones deterministas, permite definir grupos de dependencias, así como, generar de manera automática el \file{requirements.txt}. Por su parte \eng{uv} es un gestor rápido que, al igual que \eng{Poetry}, tiene soporte para \file{pyproject.toml}. Posee un buen rendimiento y una elevada velocidad gracias al uso de cachés eficientes. Finalmente, se ha optado por usar \eng{Poetry} por su cobertura integral del ciclo de vida dentro de un flujo coherente y estable.
 
 \section{Bases de datos}
-Para el desarrollo del sistema \eng{RAG} es necesario contar con dos tipos de bases de datos, una base de datos vectorial(sección~\hyperref[basedatos_vectorial]{4.7.1}) y una relacional(sección~\hyperref[basedatos_relacional]{4.7.2}). La base de datos vectorial permite almacenar, indexar y buscar semánticamente en los documentos para dar respuestas precisas y rápidas. La base de datos relacional que permite gestionar la información de la aplicación (los datos de los usuarios, los documentos, las consultas, los \eng{chunks} y los \eng{embeddings})
+Para el desarrollo del sistema \eng{RAG} es necesario contar con dos tipos de bases de datos, una base de datos vectorial (ver sección~\hyperref[basedatos_vectorial]{4.7.1}) y una relacional (ver sección~\hyperref[basedatos_relacional]{4.7.2}). La base de datos vectorial permite almacenar, indexar y buscar semánticamente en los documentos para dar respuestas precisas y rápidas. La base de datos relacional que permite gestionar la información de la aplicación (los datos de los usuarios, los documentos, las consultas, los \eng{chunks} y los \eng{embeddings}).
 \subsection{Base de datos vectorial}\label{basedatos_vectorial}
-Una parte fundamental del desarrollo del \eng{RAG} es la implementación de la base de datos vectorial. Se han valorado emplear diversas bases de datos, pero las dos que más se han estudiado son \href{https://qdrant.tech/}{\eng{Qdrant}} y \href{https://www.datacamp.com/es/tutorial/pgvector-tutorial}{\eng{pgvector}}~. \eng{Qdrant} es una base de datos vectorial especializada, diseñada desde cero para búsquedas de similitud de alta concurrencia y baja latencia. Presenta equilibrio entre el rendimiento, la latencia y el tiempo de indexado~\cite{llmeng:handbook}. Por su parte, \eng{pgvector} es una extensión de \href{https://www.postgresql.org/}{\eng{PostgreSQL}} que permite almacenar embeddings en columnas vectoriales y realizar búsquedas de similitud sobre una base de datos relacional ya existente. Es útil cuando la aplicación ya se apoya en este gestor, ya que simplifica la infraestructura~\cite{Qdrant:pgvector}. En la tabla~\ref{tab:bases-vectoriales} se muestran las principales ventajas y desventajas de cada opción.
+Una parte fundamental del desarrollo del \eng{RAG} es la implementación de la base de datos vectorial. Se han valorado emplear diversas bases de datos, pero las dos que más se han estudiado son \href{https://qdrant.tech/}{\eng{Qdrant}} y \href{https://www.datacamp.com/es/tutorial/pgvector-tutorial}{\eng{pgvector}}~. \eng{Qdrant} es una base de datos vectorial especializada, diseñada desde cero para búsquedas de similitud de alta concurrencia y baja latencia. Presenta equilibrio entre el rendimiento, la latencia y el tiempo de indexado~\cite{llmeng:handbook}. Por su parte, \eng{pgvector} es una extensión de \href{https://www.postgresql.org/}{\eng{PostgreSQL}} que permite almacenar embeddings en columnas vectoriales y realizar búsquedas de similitud sobre una base de datos relacional ya existente. Es útil cuando la aplicación ya se apoya en este gestor, ya que simplifica la infraestructura~\cite{Qdrant:pgvector}. En la tabla~\ref{tabla:bases-vectoriales} se muestran las principales ventajas y desventajas de cada opción.
 
-\begin{longtable}{
-		p{0.20\linewidth}
-		p{0.40\linewidth}
-		p{0.40\linewidth}
-	}
-	
-    \toprule
-    & \textbf{Ventajas} & \textbf{Desventajas} \\
-    \midrule
-    \endfirsthead
 
-	\toprule
-	& \textbf{Ventajas} & \textbf{Desventajas} \\
-	\midrule
-	\endhead
-    \textbf{\eng{Qdrant}} &
-      \begin{itemize}
-        \tightlist
-        \item Diseñada específicamente como base de datos vectorial, con índices optimizados para búsquedas de similitud y buen compromiso entre RPS, latencia y tiempo de indexado~\cite{llmeng:handbook}.
-        \item Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en \eng{RAG}.
-        \item Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y RPC bien documentadas.
-        \item Integración directa con bibliotecas y orquestadores de \eng{RAG}, lo que reduce el código necesario para conectarla con el resto del sistema.
-      \end{itemize}
-      &
-      \begin{itemize}
-        \tightlist
-        \item Introduce un nuevo servicio en la arquitectura: es necesario administrar una base de datos adicional a la relacional.
-        \item Requiere aprender herramientas y mecanismos de operación específicos (copias de seguridad, monitorización, actualización de índices, etc.).
-        \item Para casos de uso pequeños puede resultar más compleja que reutilizar la base de datos transaccional existente.
-      \end{itemize}
-      \\
-    \midrule
-    \textbf{\eng{pgvector}} &
-      \begin{itemize}
-        \tightlist
-        \item Permite reutilizar una instancia de PostgreSQL ya desplegada, unificando datos transaccionales y embeddings en el mismo sistema.
-        \item Aprovecha todo el ecosistema SQL: transacciones, \eng{joins}, vistas, roles de usuario y mecanismos estándar de replicación y copia de seguridad.
-        \item Simplifica la operación en entornos reducidos o con restricciones de infraestructura, al requerir un único motor de base de datos.
-      \end{itemize}
-      &
-      \begin{itemize}
-        \tightlist
-        \item El rendimiento en búsquedas vectoriales a gran escala (millones de vectores y alta concurrencia) suele ser inferior al de motores especializados.
-        \item Dispone de menos funcionalidades específicas de bases de datos vectoriales (gestión de colecciones, métricas especializadas o afinado fino de índices).
-        \item La configuración óptima de índices y parámetros depende de la versión de PostgreSQL y de la extensión, y puede requerir un ajuste cuidadoso.
-      \end{itemize}
-      \\
-   \bottomrule
-   \caption{Ventajas y desventajas de \eng{Qdrant} y \eng{pgvector}.}
-	\label{tab:bases-vectoriales}\\
-\end{longtable}
+\begin{table}[p]
+	\centering
+	\small
+	\begin{tabularx}{\linewidth}{ p{0.20\columnwidth}*{2}{>{}X}}
+		\toprule
+			\textbf{Herramienta} & \textbf{Ventajas} & \textbf{Desventajas} \\
+		\midrule
+		\multirow{4}{*}[-20ex]{\textbf{\eng{Qdrant}}~\cite{selenium:docs}} & Diseñada específicamente como base de datos vectorial, con índices optimizados para búsquedas de similitud y buen compromiso entre RPS, latencia y tiempo de indexado~\cite{llmeng:handbook}. & Introduce un nuevo servicio en la arquitectura: es necesario administrar una base de datos adicional a la relacional. \\
+		& Soporta filtrado avanzado por metadatos y búsquedas híbridas (vectoriales más filtros), lo que facilita consultas complejas en \eng{RAG}. & Requiere aprender herramientas y mecanismos de operación específicos (copias de seguridad, monitorización, actualización de índices, etc.). \\
+		& Ofrece despliegue sencillo mediante contenedores y opciones gestionadas, con APIs HTTP y RPC bien documentadas. & Para casos de uso pequeños puede resultar más compleja que reutilizar la base de datos transaccional existente. \\
+		& Integración directa con bibliotecas y orquestadores de \eng{RAG}, lo que reduce el código necesario para conectarla con el resto del sistema. & \\
+			
+		\midrule
+		\multirow{3}{*}[-16ex]{\textbf{\eng{pgvector}}~\cite{playwright:actionability}} & Permite reutilizar una instancia de \eng{PostgreSQL} ya desplegada, unificando datos transaccionales y \eng{embeddings} en el mismo sistema. & El rendimiento en búsquedas vectoriales a gran escala (millones de vectores y alta concurrencia) suele ser inferior al de motores especializados. \\
+		& Aprovecha todo el ecosistema SQL: transacciones, \eng{joins}, vistas, roles de usuario y mecanismos estándar de replicación y copia de seguridad. & Dispone de menos funcionalidades específicas de bases de datos vectoriales (gestión de colecciones, métricas especializadas o afinado fino de índices). \\
+		& Simplifica la operación en entornos reducidos o con restricciones de infraestructura, al requerir un único motor de base de datos. & La configuración óptima de índices y parámetros depende de la versión de PostgreSQL y de la extensión, y puede requerir un ajuste cuidadoso. \\
+		 
+		\bottomrule
+	\end{tabularx}
+	\caption{Ventajas y desventajas de \eng{Qdrant} y \eng{pgvector}.}
+	\label{tabla:bases-vectoriales}
+\end{table}
+
 
 Para realizar el proyecto se ha optado por utilizar \eng{Qdrant}. Aunque \eng{pgvector} presenta características interesantes cuando se desea mantener toda la información en una única base de datos relacional, \eng{Qdrant} presenta un diseño especializado. Así como un mejor equilibrio entre rendimiento y latencia. Además, \eng{Qdrant} se utiliza en proyectos reales lo que lo convierte en una muy buena opción para implementar el sistema \eng{RAG}.
 
@@ -154,12 +102,12 @@ Para la implementación de la base de datos relacional se ha valorado usar \href
 
 \begin{table}[p]
 	\centering
-	\begin{tabularx}{\linewidth}{p{0.20\columnwidth} p{0.36\columnwidth} p{0.36\columnwidth}}
+	\begin{tabularx}{\linewidth}{ p{0.27\columnwidth}*{2}{>{}X}}
 		\toprule
 			 \textbf{Características} & \textbf{\eng{PostgreSQL}} & \textbf{\eng{SQLite}} \\
 		\midrule
 		\textbf{Modelo} &  Cliente-servidor & Embebido \\
-		\textbf{Concurrencia} & Alta & Limitada (solo hay un escrito) \\
+		\textbf{Concurrencia} & Alta & Limitada (solo hay un escritor) \\
 		\textbf{Escalabilidad} & Alta & Baja \\
 		\textbf{Uso recomendado} & Sistemas multiusuario & Aplicaciones locales o prototipos \\
 		\textbf{Integración con Docker} & Muy buena & No necesaria (es un archivo local) \\		
@@ -183,10 +131,10 @@ Se ha optado por utilizar \eng{Flask} para el desarrollo \eng{web} en lugar de o
 	\item Extensiones: a pesar de que es minimalista, permite incorporar extensiones para bases de datos, autenticación o validación de formularios.
 \end{itemize}  
 
-\section{ Desplegar la aplicación}
-Para desplegar la \eng{web} se han utilizado las herramientas \eng{docker} (sección~\hyperref[docker]{4.9.1}), \eng{nginx} (sección~\hyperref[nginx]{4.9.2}), \eng{gunicorn} (sección~\hyperref[gunicorn]{4.9.3}), DNS (sección~\hyperref[dns]{4.9.4}) y el certificado SSL/TLS (sección~\hyperref[https]{4.9.5}). El uso de estas herramientas permite separar la responsabilidad y asegurar la portabilidad, el rendimiento y la seguridad. 
+\section{Despliegue de la aplicación}
+Para desplegar la \eng{web} se han utilizado las herramientas \eng{docker} (ver sección~\hyperref[docker]{4.9.1}), \eng{nginx} (ver sección~\hyperref[nginx]{4.9.2}), \eng{gunicorn} (ver sección~\hyperref[gunicorn]{4.9.3}), DNS (ver sección~\hyperref[dns]{4.9.4}) y el certificado SSL/TLS (ver sección~\hyperref[https]{4.9.5}). El uso de estas herramientas permite separar la responsabilidad y asegurar la portabilidad, el rendimiento y la seguridad. 
 
-Empaquetar la aplicación en un contenedor \eng{docker} garantiza su reproducibilidad, evitando conflictos entre librerías y versiones del sistema. \eng{Gunicorn} sirve para no exponer directamente la aplicación\eng{Flask} en Internet. \eng{Nginx} se coloca por delante actuando como un servidor \eng{web} y como \eng{proxy} inverso. Va recibir las conexiones externas y las va a reenviar al servicio de \eng{gunicorn}. También, se va a encargar de gestionar el cifrado y descifrado de HTTPS. El certificado SSL/TLS sirve para habilitar dicho protocolo HTTPS, en este caso demostrando control del dominio (DNS-01). En la siguiente imagen se puede ver cómo se relacionan las distintas herramientas~\ref{fig:Memoria/DespliegueFlask}. 
+Empaquetar la aplicación en un contenedor \eng{docker} garantiza su reproducibilidad, evitando conflictos entre librerías y versiones del sistema. \eng{Gunicorn} sirve para no exponer directamente la aplicación\eng{Flask} en Internet. \eng{Nginx} se coloca por delante actuando como un servidor \eng{web} y como \eng{proxy} inverso. Va recibir las conexiones externas y las va a reenviar al servicio de \eng{gunicorn}. También, se va a encargar de gestionar el cifrado y descifrado de HTTPS. El certificado SSL/TLS sirve para habilitar dicho protocolo HTTPS, en este caso demostrando control del dominio (DNS-01). En la imagen~\ref{fig:Memoria/DespliegueFlask} se puede ver cómo se relacionan las distintas herramientas. 
 
 \imagenflotante{Memoria/DespliegueFlask}{Relación entre las herramientas utilizadas para desplegar la aplicación \eng{web}.}{1}
 \subsection{Docker}\label{docker}

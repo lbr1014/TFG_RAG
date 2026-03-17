@@ -11,6 +11,7 @@
 \usepackage{longtable}
 \usepackage{pdflscape}
 \usepackage{amssymb}
+\usepackage{multirow}
 
 %Cabeceras
 \copypagestyle{capitulo-en-cab}{headings}
@@ -46,11 +47,7 @@
 \clubpenalty100000
 
 % Hipervínculos
-\let\oldhref\href
-\renewcommand{\href}[2]{
-	\oldhref{#1}{#2}
-	\footnote{\url{#1}}
-}
+\let\oldhref\href\renewcommand{\href}[2]{\oldhref{#1}{#2}\footnote{\url{#1}}}
 
 % Marcado semántico
 \newcommand{\file}[1]{
