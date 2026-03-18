@@ -7,12 +7,12 @@
 Para llevar a cabo la aplicación se han definido las siguientes entidades:
 \begin{itemize}
 \tightlist
-	\item Usuario: esta entidad representa a la persona que usa la aplicación. Distingue entre usuario normal y administrador, al cual le permite realizar la gestión de documentos y usuarios. Esta entidad maneja un identificador (id) que es la clave primaria, un nombre, un email que debe ser único, una contraseña que se almacena encriptada, el último inicio de sesión y el rol.
+	\item Usuario: esta entidad representa a la persona que usa la aplicación. Distingue entre usuario normal y administrador, al cual se le permite realizar la gestión de documentos y usuarios. Esta entidad maneja un identificador (id) que es la clave primaria, un nombre, un email que debe ser único, una contraseña que se almacena encriptada, el último inicio de sesión y el rol.
 	\item Consulta: esta entidad guarda las preguntas que realizan los usuarios, así como las respuestas que da el \eng{LLM} alimentado por el \textit{RAG}. Es la base para el historial de consultas donde se van a listar y borrar. Esta entidad maneja un identificador (id) que es la clave primaria, el identificador del usuario que realiza la consulta, la pregunta del usuario, la respuesta, los fragmentos utilizados, el tiempo de respuesta, y la fecha en la que se preguntó al modelo.
 	\item Documento: esta entidad representa un PDF cargado en la aplicación. Maneja un identificador (id) como clave primaria, el nombre del fichero, el tamaño, la fecha de modificación, el número de \eng{chunks} en la base de datos vectorial, el \textit{hash} del documento y el estado del documento (cargado, procesado, indexado, fallido). 
 	\item \eng{Chunk}: esta entidad representa cada trozo de texto en el que se dividen los documentos para poder generar los \textit{embeddings}. Maneja el texto que forma al propio \textit{chunk}, el \textit{embedding} y los metadatos del \textit{chunk} (nombre del archivo, título y posición dentro del documento).
 	\item \eng{Embedding}: esta entidad se corresponde con la representación vectorial utilizada para la base de datos vectorial. Va a permitir recuperar \textit{chunks} por similitud. La entidad maneja un vector asociado al \textit{chunk}.
-	\item \eng{ConsultaChunk}: esta entidad modela la relación entre las consultas y los \textit{chunks} permitiendo que una consulta tenga varios \textit{chunk} y que un \textit{chunk} pueda servir para varias consultas. La entidad maneja el identificador de la consulta, el identificador del \textit{chunk}, la similitud con la consulta del usuario y el \textit{ranking}. El \eng{ranking} hace referencia a la relevancia que tiene un \eng{chunk} entre los recuperados para aumentar el \eng{prompt} del \eng{LLM}. La posición del \eng{chunk} en el \eng{ranking} se determina ordenandolos descendentemente según su similitud.
+	\item \eng{ConsultaChunk}: esta entidad modela la relación entre las consultas y los \textit{chunks} permitiendo que una consulta tenga varios \textit{chunk} y que un \textit{chunk} pueda servir para varias consultas. La entidad maneja el identificador de la consulta, el identificador del \textit{chunk}, la similitud con la consulta del usuario y el \textit{ranking}. El \eng{ranking} hace referencia a la relevancia que tiene un \eng{chunk} entre los recuperados para aumentar el \eng{prompt} del \eng{LLM}. La posición del \eng{chunk} en el \eng{ranking} se determina ordenándolos descendentemente según su similitud.
 \end{itemize}
 
 Las relaciones entre las entidades son:
@@ -28,10 +28,9 @@ Las relaciones entre las entidades son:
 	\item Un \eng{chunk} puede ser usado por cero o varias consultas.
 \end{itemize}
 
-El diagrama entidad relación se muestra en esta imagen ~\ref{fig:Diagramas/Entidad_Relacion}
+El diagrama entidad relación se muestra en la imagen ~\ref{fig:Diagramas/Entidad_Relacion} y el diagrama relacional se muestra en la imagen ~\ref{fig:Diagramas/Relacional}
+ 
 \imagendiagram{Diagramas/Entidad_Relacion}{Diagrama Entidad/Relación.}{1.2}
-
-El diagrama relacional se muestra en esta imagen ~\ref{fig:Diagramas/Relacional}
 \imagendiagram{Diagramas/Relacional}{Diagrama relacional.}{1.1}
 
 
@@ -59,14 +58,14 @@ Gracias a esta separación se garantiza la seguridad ya que no se expone directa
 
 La comunicación entre componentes (ver imagen ~\ref{fig:Arquitectura/ComunicacionArquitectura}) se realiza principalmente dentro de al red interna de \file{Docker-compose}, donde los servicios se resuelven entre sí mediante el nombre de servicio,es decir, el DNS interno, y se conectan a través de los puertos expuestos internamente. El acceso desde el exterior se gestiona usando \eng{Nginx}, que es el único componenete que publica puertos hacia internet (el puerto 80 para el protocolo HTTP y el 443 para el HTTPS). \eng{Nginx} actúa como \eng {proxy} inverso y punto de terminación TLS~\cite{diseño:TLS} (TLS es un protocolo que asegura la privacidad y la seguridad de los datos). Recibe las peticiones que hacen los usuarios a la \eng{web} \file{pythia.es} y las reenvía por HTTP interno al servicio \eng{web} en \file{web:5000} que se corresponde con la aplicación \eng{Flask} servida con \eng{Gunicorn}. Desde la aplicación, las comunicaciones con los servicios de datos se realizan dentro del entorno \eng{Docker}. La conexión con la base de datos relacional \eng{PostgreSQL} se gestiona con una conexión TCP a \file{db:5432}. La conexión con la base de datos vectorial \eng{Qdrant}, para la recuperación semántica, se realiza mediante conexión HTTP por el puerto \file{qdrant:6333}. Para generar las respuestas se invoca el servicio \eng{Ollama} por HTTP en \file{ollama:11434}. \eng{Ollama} puede ser accesible desde fuera del \eng{host} gracias al mapeo de puertos \file{11435:11434}. Por último, el contenedor \eng{ollama-init} se comunica con \eng{Ollama} de forma interna durante el arranque para descargar el modelo y dejarlo disponible antes de su uso. En el diagrama~\ref{fig:Arquitectura/Peticiones} se puede observar como atiende el sistema las peticiones de los usuarios.
 
-\imagendiagram{Arquitectura/ComunicacionArquitectura}{Diagrama de la comunicación entre los principales componentes del sistema.}{1.1}
+\imagendiagram{Arquitectura/ComunicacionArquitectura}{Diagrama de la comunicación entre los principales componentes del sistema.}{1.2}
 
-\imagendiagram{Arquitectura/Peticiones}{Diagrama de la gestión de peticiones del sistema.}{1.1}
+\imagendiagram{Arquitectura/Peticiones}{Diagrama de la gestión de peticiones del sistema.}{1.2}
 
 \subsection{Arquitectura cliente-servidor multicapa}
 Desde el punto de vista lógico el sistema se estructura siguiendo una arquitectura cliente-servidor multicapa~\cite{diseño:tresNiveles}, organizada en tres niveles claramente diferenciados. Estos niveles se corresponden con la capa de presentación, la capa de aplicación y la capa de persistencia y servicios externos (ver arquitectura en la imagen~\ref{fig:Arquitectura/ArquitecturaLogica}.
 
-\imagendiagram{Arquitectura/ArquitecturaLogica}{Arquitectura cliente-servidor multicapa.}{1.1}
+\imagendiagram{Arquitectura/ArquitecturaLogica}{Arquitectura cliente-servidor multicapa.}{1.2}
 
 \begin{itemize}
 \tightlist
@@ -80,7 +79,7 @@ La aplicación \eng{web} sigue una arquitectura MVC (\eng{Model-View-Controller}
 
 El modelo vista intención (MVC)~\cite{diseño:MVC} es un patrón arquitectónico de software que separa el código en tres capas independientes. La capa modelo donde se incluye la lógica y los datos , la capa vista donde se implementa la interfaz de usuario (\eng{frontend}) y la capa controlador que actúa de intermediario entre las acciones del usuario en las vistas y la lógica de la aplicación (rutas). En esta aplicación se implementa adaptado al ecosistema \eng{Flask} (ver diagrama~\ref{fig:Arquitectura/ModeloVistaControlador}).
 
-\imagendiagram{Arquitectura/ModeloVistaControlador}{Diagrama de la arquitectura Modelo-Vista-Controlador (MVC) del sistema.}{1.1}
+\imagendiagram{Arquitectura/ModeloVistaControlador}{Diagrama de la arquitectura Modelo-Vista-Controlador (MVC) del sistema.}{1.2}
 
 \begin{itemize}
 \tightlist
@@ -94,7 +93,7 @@ Con estas capas se mantiene el desacoplamiento de la aplicación \eng{web}, haci
 \subsection{Arquitectura del sistema \eng{RAG}}
 El sistema \eng{RAG} se integra dentro de la capa de aplicación. Es el encargado de integrar en el sistema la generación de respuestas. u diseño se basa en la combinación de recuperación semántica sobre una base de datos vectorial y generación de texto mediante un modelo de lenguaje (\eng{LLM}). A nivel de arquitectura se divide en dos \eng{pipelines}~\cite{book:RAG_SimpleGuide}, el de indexación y el de generación (ver diagrama~\ref{fig:Arquitectura/ArquitecturaRAG}).
 
-\imagendiagram{Arquitectura/ArquitecturaRAG}{Diagrama de la arquitectura del modelo \eng{RAG}.}{1.1}
+\imagendiagram{Arquitectura/ArquitecturaRAG}{Diagrama de la arquitectura del modelo \eng{RAG}.}{1.2}
 
 El \textbf{\eng{pipeline} de indexación} se ejecuta cuando se cargan los documentos en la aplicación, ya bien sea de manera manual o mediante \eng{web scraping}. Por cada documento se va a llevar a cabo una conversión a \file{Markdown} para que todos tengan una estructura similar que el \eng{LLM} entienda fácilmente. De estos documentos se extrae, limpia y normaliza su texto, posteriormente se segmenta en \eng{chunks} con solapamiento y se generar sus \eng{embeddings}. Los cuales se van a almacenar en la base de datos vectorial (\eng{Qdrant}). Este proceso se ejecuta de forma asíncrona para evitar bloquear la interfaz \eng{web}. Cuando acaba la indexación de los documentos se envía un correo electrónico al usuario parta notificárselo.
 

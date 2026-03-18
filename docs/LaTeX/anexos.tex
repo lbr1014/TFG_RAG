@@ -11,6 +11,7 @@
 \usepackage{pdflscape}
 \usepackage{textcomp}
 \usepackage{xparse}
+\usepackage{svg}
 
 
 %Cabeceras
@@ -67,15 +68,9 @@
 }
 
 % Marcado semántico
-\newcommand{\file}[1]{
-	\texttt{#1}
-}
-\newcommand{\ext}[1]{
-	\texttt{#1}
-}
-\newcommand{
-	\code}[1]{\texttt{#1}
-}
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\ext}[1]{\texttt{#1}}
+\newcommand{	\code}[1]{\texttt{#1}}
 
 %Palabras en ingles
 \newcommand{\eng}[1]{\textit{#1}}
@@ -106,6 +101,14 @@
 	\begin{figure}
 		\centering
 		\includegraphics[width=#3\textwidth]{#1}
+		\caption{#2}\label{fig:#1}
+	\end{figure}
+}
+
+\newcommand{\imagendiagramsvg}[3]{
+	\begin{figure}
+		\centering
+		\includesvg[width=#3\textwidth]{#1}
 		\caption{#2}\label{fig:#1}
 	\end{figure}
 }
