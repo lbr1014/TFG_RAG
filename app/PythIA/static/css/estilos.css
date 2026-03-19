@@ -67,6 +67,7 @@ body{
 }
 
 .main-content{
+  width: 100%;
   max-width: 1000px;
   margin: 0 auto;
   padding: 40px 20px;
@@ -311,6 +312,10 @@ body{
   gap: 10px;
 }
 
+.header-layout{
+  flex-wrap: nowrap;
+}
+
 .btn-header-menu{
   min-width: 48px;
   min-height: 48px;
@@ -515,6 +520,13 @@ body{
 }
 
 @media (max-width: 767.98px){
+  .welcome,
+  .last-login{
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 767.98px){
   .page-scroll{
     min-height: auto;
   }
@@ -539,9 +551,19 @@ body{
   }
 
   .header-actions{
-    width: 100%;
+    width: auto;
     justify-content: flex-end;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .header-layout{
+    align-items: flex-start;
+  }
+
+  .user-info{
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .auth-container{

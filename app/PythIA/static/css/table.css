@@ -53,10 +53,33 @@
 }
 
 .cell-question{
-  min-width: 260px;
+  min-width: 0;
   max-width: 420px;
   white-space: normal;
   word-break: break-word;
+}
+
+@media (max-width: 767.98px){
+  .cell-question{
+    max-width: none;
+  }
+
+  .table-actions{
+    justify-content: flex-start;
+  }
+
+  .table-actions > *{
+    width: 100%;
+  }
+
+  .table-actions form{
+    width: 100%;
+  }
+
+  .table-actions .btn{
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .pagination{
@@ -94,8 +117,16 @@
   gap: .5rem;
 }
 
+.table-actions form{
+  margin: 0;
+}
+
 .table-actions .btn{
   min-width: 96px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .table-actions .btn-outline-light{

@@ -3,32 +3,40 @@
 
 {% block title %}Historial{% endblock %}
 
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+{% endblock %}
+
 {% block content %}
 
-    <div class="main-content" style="margin-bottom: 30px;">
-        <h1>Historial de consultas</h1>
+    <div class="container py-4 py-md-5">
+      <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <h1>Historial de consultas</h1>
 
-        {% if not consultas %}
-        <div class="alert alert-info">No hay consultas todavía.</div>
-        {% else %}
-        <div>
-            {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
+            {% if not consultas %}
+            <div class="alert alert-info">No hay consultas todavía.</div>
+            {% else %}
+            <div>
+                {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
 
-            {% if total_pages > 1 %}
-            <div class="pagination">
-                {% if page > 1 %}
-                <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">&laquo; Anterior</a>
-                {% endif %}
+                {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% if page > 1 %}
+                    <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">&laquo; Anterior</a>
+                    {% endif %}
 
-                <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_consultas }} consultas)</span>
+                    <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_consultas }} consultas)</span>
 
-                {% if page < total_pages %}
-                <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">Siguiente &raquo;</a>
+                    {% if page < total_pages %}
+                    <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">Siguiente &raquo;</a>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
             {% endif %}
         </div>
-        {% endif %}
+      </div>
     </div>
 
 
