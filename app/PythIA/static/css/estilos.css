@@ -12,6 +12,30 @@
   --app-radius-lg: 24px;
   --app-radius-md: 18px;
   --app-radius-sm: 14px;
+  --app-header-bg: #2c3e50;
+  --app-dropdown-bg: #ffffff;
+  --app-dropdown-text: #212529;
+  --app-dropdown-hover: rgba(108,117,125,.18);
+  --app-input-bg: rgba(255,255,255,.92);
+  --app-input-text: #1f2d3d;
+}
+
+body[data-theme="light"]{
+  --app-bg-top: #edf3f8;
+  --app-bg-mid: #dbe7f1;
+  --app-bg-bottom: #cfddea;
+  --app-text: #233241;
+  --app-text-soft: rgba(35,50,65,.84);
+  --app-text-muted: rgba(35,50,65,.68);
+  --app-surface-bg: linear-gradient(180deg, rgba(255,255,255,.88) 0%, rgba(247,250,253,.82) 100%);
+  --app-surface-border: 1px solid rgba(76,103,130,.16);
+  --app-surface-shadow: 0 16px 42px rgba(50,72,94,.12), inset 0 1px 0 rgba(255,255,255,.65);
+  --app-header-bg: #d7e3ee;
+  --app-dropdown-bg: #ffffff;
+  --app-dropdown-text: #233241;
+  --app-dropdown-hover: rgba(76,103,130,.12);
+  --app-input-bg: rgba(255,255,255,.96);
+  --app-input-text: #233241;
 }
 
 body{
@@ -31,8 +55,8 @@ body{
 }
 
 .main-header{
-  background-color: #2c3e50;
-  color: #fff;
+  background-color: var(--app-header-bg);
+  color: var(--app-text);
   position: sticky;
   top: 0;
   left: 0;
@@ -165,11 +189,11 @@ body{
 .form-input{
   width: 100%;
   padding: .75rem .9rem;
-  background: rgba(255,255,255,.92);
+  background: var(--app-input-bg);
   border: 1px solid rgba(255,255,255,.18);
   border-radius: var(--app-radius-sm);
   font-size: .95rem;
-  color: #1f2d3d;
+  color: var(--app-input-text);
   transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
 }
 
@@ -332,13 +356,21 @@ body{
 }
 
 .dropdown-menu{
+  background: var(--app-dropdown-bg);
+  color: var(--app-dropdown-text);
   border: 0;
   border-radius: 16px;
   box-shadow: 0 16px 36px rgba(0,0,0,.24);
   padding: .5rem;
 }
 
+.dropdown-header{
+  font-weight: 700;
+  color: var(--app-text-muted);
+}
+
 .dropdown-item{
+  color: var(--app-dropdown-text);
   border-radius: 10px;
   padding: .6rem .85rem;
 }
@@ -348,8 +380,13 @@ body{
 .dropdown-item:active,
 .dropdown-item.active,
 .dropdown-item:focus-visible{
-  background-color: rgba(108,117,125,.18);
-  color: #212529;
+  background-color: var(--app-dropdown-hover);
+  color: var(--app-dropdown-text);
+}
+
+.theme-option.active{
+  font-weight: 700;
+  background-color: var(--app-dropdown-hover);
 }
 
 .app-badge{

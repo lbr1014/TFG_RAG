@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/luz.css') }}">
     {% block styles %}{% endblock %}
 </head>
-<body>
+<body data-theme="dark">
 
 <header class="main-header px-3 px-md-4 py-3">
   <div class="container-fluid px-0">
@@ -29,7 +29,7 @@
             {% if current_user.last_login %}
               {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
             {% else %}
-              —
+              -
             {% endif %}
           </p>
         {% else %}
@@ -67,7 +67,19 @@
             </ul>
           </div>
 
-          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-header d-none d-md-inline-flex">Cerrar sesión</a>
+          <div class="dropdown d-none d-md-block">
+            <button class="btn btn-outline-light btn-header" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Configuración
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><h6 class="dropdown-header">Apariencia</h6></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="dark">Modo oscuro</button></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="light">Modo claro</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
+            </ul>
+          </div>
 
           <div class="dropdown d-md-none">
             <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu">
@@ -75,6 +87,7 @@
             </button>
 
             <ul class="dropdown-menu dropdown-menu-end">
+              <li><h6 class="dropdown-header">Opciones</h6></li>
               {% if current_user.is_admin %}
                 {% if request.endpoint != 'admin.documents_list_page' %}
                   <li><a class="dropdown-item" href="{{ url_for('admin.documents_list_page') }}">Administrar documentos</a></li>
@@ -91,10 +104,15 @@
                 <li><a class="dropdown-item" href="{{ url_for('main.edit_user') }}">Editar usuario</a></li>
               {% endif %}
               {% if request.endpoint != 'main.pag_principal' %}
-                <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}">Pagina principal</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}">Página principal</a></li>
               {% endif %}
+
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar sesion</a></li>
+              <li><h6 class="dropdown-header">Configuracion</h6></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="dark">Modo oscuro</button></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="light">Modo claro</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
             </ul>
           </div>
         {% endif %}

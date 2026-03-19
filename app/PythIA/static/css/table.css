@@ -141,6 +141,45 @@
   background: rgba(255,255,255,.10);
 }
 
+body[data-theme="light"] .app-table{
+  --bs-table-color: #233241;
+  --bs-table-border-color: rgba(76,103,130,.14);
+  --bs-table-hover-bg: rgba(76,103,130,.06);
+  --bs-table-hover-color: #233241;
+}
+
+body[data-theme="light"] .app-table thead th{
+  background: rgba(76,103,130,.10);
+  color: #233241;
+  border-bottom-color: rgba(76,103,130,.18);
+}
+
+body[data-theme="light"] .app-table tbody td,
+body[data-theme="light"] .app-table details summary,
+body[data-theme="light"] .page-info{
+  color: #233241;
+}
+
+body[data-theme="light"] .app-table .details-row td,
+body[data-theme="light"] .app-table details pre,
+body[data-theme="light"] .chunks-pre{
+  background: rgba(76,103,130,.06);
+  border-color: rgba(76,103,130,.12);
+  color: #233241;
+}
+
+body[data-theme="light"] .table-actions .btn-outline-light{
+  color: #233241;
+  border-color: rgba(76,103,130,.30);
+  background: rgba(255,255,255,.55);
+}
+
+body[data-theme="light"] .table-actions .btn-outline-light:hover{
+  color: #233241;
+  border-color: rgba(76,103,130,.45);
+  background: rgba(76,103,130,.10);
+}
+
 .chunks-modal-panel{
   border-radius: var(--app-radius-md);
   color: #fff;
