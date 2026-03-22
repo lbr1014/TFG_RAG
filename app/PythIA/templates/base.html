@@ -9,93 +9,118 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/luz.css') }}">
     {% block styles %}{% endblock %}
 </head>
-<body>
+<body data-theme="dark">
 
-<header class="main-header d-flex justify-content-between align-items-center gap-3 px-3 px-md-4 py-3">
-  <div class="user-info">
-    {% if current_user.is_authenticated %}
-      <p class="welcome mb-0">Hola, <strong>{{ current_user.nombre }}</strong></p>
+<header class="main-header shadow-sm">
+  <div class="container-fluid px-3 px-md-4">
+    <div class="header-layout d-flex align-items-center justify-content-between gap-3 py-2 flex-wrap">
+      <div class="d-flex align-items-center gap-3 header-brand">
+        <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
+        <div class="user-info">
+          {% if current_user.is_authenticated %}
+            <p class="welcome mb-0">Hola, <strong>{{ current_user.nombre }}</strong></p>
 
-      {% if current_user.is_admin %}
-        <span class="app-badge admin mt-1">Administrador</span>
-      {% else %}
-        <span class="app-badge user mt-1">Usuario</span>
-      {% endif %}
+            {% if current_user.is_admin %}
+              <span class="app-badge admin mt-1">Administrador</span>
+            {% else %}
+              <span class="app-badge user mt-1">Usuario</span>
+            {% endif %}
 
-      <p class="last-login mb-0">
-        Último inicio:
-        {% if current_user.last_login %}
-          {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-        {% else %}
-          —
+            <p class="last-login mb-0">
+              Último inicio:
+              {% if current_user.last_login %}
+                {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
+          {% else %}
+            <p class="welcome mb-0"><strong>{{ titulo or "Bienvenido" }}</strong></p>
+            <p class="home-author mb-0 mt-1">{{ autor }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="header-actions d-flex align-items-center gap-2 flex-wrap justify-content-md-end">
+        {% if current_user.is_authenticated %}
+          <div class="dropdown d-none d-md-block">
+            <button class="btn btn-light btn-header" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Opciones
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+              {% if current_user.is_admin %}
+                {% if request.endpoint != 'admin.documents_list_page' %}
+                  <li><a class="dropdown-item" href="{{ url_for('admin.documents_list_page') }}">Administrar documentos</a></li>
+                {% endif %}
+                {% if request.endpoint != 'admin.users' %}
+                  <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">Administrar usuarios</a></li>
+                {% endif %}
+              {% endif %}
+
+              {% if request.endpoint != 'main.historial' %}
+                <li><a class="dropdown-item" href="{{ url_for('main.historial') }}">Historial de consultas</a></li>
+              {% endif %}
+              {% if request.endpoint != 'main.edit_user' %}
+                <li><a class="dropdown-item" href="{{ url_for('main.edit_user') }}">Editar usuario</a></li>
+              {% endif %}
+              {% if request.endpoint != 'main.pag_principal' %}
+                <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}">Página principal</a></li>
+              {% endif %}
+            </ul>
+          </div>
+
+          <div class="dropdown d-none d-md-block">
+            <button class="btn btn-outline-light btn-header" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Configuración
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end mobile-nav-menu">
+              <li><h6 class="dropdown-header">Apariencia</h6></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="dark">Modo oscuro</button></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="light">Modo claro</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
+            </ul>
+          </div>
+
+          <div class="dropdown d-md-none">
+            <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu">
+              <span class="menu-dots" aria-hidden="true">&#8942;</span>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><h6 class="dropdown-header">Opciones</h6></li>
+              {% if current_user.is_admin %}
+                {% if request.endpoint != 'admin.documents_list_page' %}
+                  <li><a class="dropdown-item" href="{{ url_for('admin.documents_list_page') }}">Administrar documentos</a></li>
+                {% endif %}
+                {% if request.endpoint != 'admin.users' %}
+                  <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">Administrar usuarios</a></li>
+                {% endif %}
+              {% endif %}
+
+              {% if request.endpoint != 'main.historial' %}
+                <li><a class="dropdown-item" href="{{ url_for('main.historial') }}">Historial de consultas</a></li>
+              {% endif %}
+              {% if request.endpoint != 'main.edit_user' %}
+                <li><a class="dropdown-item" href="{{ url_for('main.edit_user') }}">Editar usuario</a></li>
+              {% endif %}
+              {% if request.endpoint != 'main.pag_principal' %}
+                <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}">Página principal</a></li>
+              {% endif %}
+
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">Configuracion</h6></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="dark">Modo oscuro</button></li>
+              <li><button type="button" class="dropdown-item theme-option" data-theme-value="light">Modo claro</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
+            </ul>
+          </div>
         {% endif %}
-      </p>
-    {% else %}
-      <p class="welcome mb-0"><strong>{{ titulo or "Bienvenido" }}</strong></p>
-      <p class="home-author mb-0 mt-1">{{ autor }}</p>
-    {% endif %}
-  </div>
-
-  <div class="header-actions d-flex align-items-center gap-2">
-    {% if current_user.is_authenticated %}
-      <div class="dropdown d-none d-md-block">
-        <button class="btn btn-light btn-header" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Opciones
-        </button>
-
-        <ul class="dropdown-menu dropdown-menu-end">
-          {% if current_user.is_admin %}
-            {% if request.endpoint != 'admin.documents_list_page' %}
-              <li><a class="dropdown-item" href="{{ url_for('admin.documents_list_page') }}">Administrar documentos</a></li>
-            {% endif %}
-            {% if request.endpoint != 'admin.users' %}
-              <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">Administrar usuarios</a></li>
-            {% endif %}
-          {% endif %}
-
-          {% if request.endpoint != 'main.historial' %}
-            <li><a class="dropdown-item" href="{{ url_for('main.historial') }}">Historial de consultas</a></li>
-          {% endif %}
-          {% if request.endpoint != 'main.edit_user' %}
-            <li><a class="dropdown-item" href="{{ url_for('main.edit_user') }}">Editar usuario</a></li>
-          {% endif %}
-          {% if request.endpoint != 'main.pag_principal' %}
-            <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}">Página principal</a></li>
-          {% endif %}
-        </ul>
       </div>
-
-      <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-header d-none d-md-inline-flex">Cerrar sesión</a>
-
-      <div class="dropdown d-md-none">
-        <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu">
-          <span class="menu-dots" aria-hidden="true">&#8942;</span>
-        </button>
-
-        <ul class="dropdown-menu dropdown-menu-end">
-          {% if current_user.is_admin %}
-            {% if request.endpoint != 'admin.documents_list_page' %}
-              <li><a class="dropdown-item" href="{{ url_for('admin.documents_list_page') }}">Administrar documentos</a></li>
-            {% endif %}
-            {% if request.endpoint != 'admin.users' %}
-              <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">Administrar usuarios</a></li>
-            {% endif %}
-          {% endif %}
-
-          {% if request.endpoint != 'main.historial' %}
-            <li><a class="dropdown-item" href="{{ url_for('main.historial') }}">Historial de consultas</a></li>
-          {% endif %}
-          {% if request.endpoint != 'main.edit_user' %}
-            <li><a class="dropdown-item" href="{{ url_for('main.edit_user') }}">Editar usuario</a></li>
-          {% endif %}
-          {% if request.endpoint != 'main.pag_principal' %}
-            <li><a class="dropdown-item" href="{{ url_for('main.pag_principal') }}">Pagina principal</a></li>
-          {% endif %}
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar sesion</a></li>
-        </ul>
-      </div>
-    {% endif %}
+    </div>
   </div>
 </header>
 

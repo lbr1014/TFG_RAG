@@ -57,6 +57,8 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
   const deleteName = document.getElementById("deleteItemName")
   const confirmBtn = document.getElementById("confirmDeleteBtn")
 
+  if (!deleteModal || !deleteName || !confirmBtn) return
+
   let currentFormId = null
 
   deleteModal.addEventListener("show.bs.modal", function (event) {
@@ -78,8 +80,39 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
   })
 }
 
+function initThemeSelector() {
+  const body = document.body;
+  if (!body) return;
+
+  const storageKey = "pythia_theme";
+  const buttons = document.querySelectorAll(".theme-option");
+
+  function applyTheme(theme) {
+    const resolvedTheme = theme === "light" ? "light" : "dark";
+    body.setAttribute("data-theme", resolvedTheme);
+    localStorage.setItem(storageKey, resolvedTheme);
+
+    buttons.forEach((button) => {
+      const isActive = button.dataset.themeValue === resolvedTheme;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  }
+
+  const savedTheme = localStorage.getItem(storageKey) || body.getAttribute("data-theme") || "dark";
+  applyTheme(savedTheme);
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", function () {
+      applyTheme(button.dataset.themeValue);
+    });
+  });
+}
+
 initLightEffect();
 
 initChunksModal();
 
 initDeleteModal();
+
+initThemeSelector();

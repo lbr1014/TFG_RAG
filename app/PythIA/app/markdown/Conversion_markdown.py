@@ -1,12 +1,14 @@
 import base64
 import os
 import re
+import shutil
 import sys
 import tempfile
 from pathlib import Path
 
 import requests
-from pdf2image import convert_from_path
+from PIL import Image
+from pdf2image import convert_from_path, pdfinfo_from_path
 
 PROMPT_BASE = """
 You are converting a Spanish PDF (often legal / administrative) into clean Markdown.
@@ -28,7 +30,7 @@ Rules:
 - If there is an image, wrap a short description in <img></img>.
 - Wrap watermarks in <watermark>...</watermark>.
 - Wrap page numbers in <page_number>...</page_number>.
-- Prefer ☐ and ☑ for check boxes.
+- Prefer ☑ and ☒ for check boxes.
 
 Index / table of contents:
 - If a line has a section title followed by dots and then a page number
@@ -41,8 +43,15 @@ Return only valid Markdown, no explanations.
 
 MODEL_NAME = os.getenv("OCR_MODEL_NAME", "blaifa/Nanonets-OCR-s")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434").rstrip("/")
-OLLAMA_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "300"))
+OLLAMA_CONNECT_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10"))
 DEFAULT_NUM_GPU = int(os.getenv("OLLAMA_NUM_GPU", "0"))
+PDF_RENDER_DPI = int(os.getenv("PDF_RENDER_DPI", "200"))
+OCR_MAX_IMAGE_SIDE = int(os.getenv("OCR_MAX_IMAGE_SIDE", "1600"))
+OCR_RETRY_MAX_IMAGE_SIDES = [
+    int(value.strip())
+    for value in os.getenv("OCR_RETRY_MAX_IMAGE_SIDES", "1600,1280,1024").split(",")
+    if value.strip()
+]
 
 
 class OllamaOCRException(RuntimeError):
@@ -86,7 +95,7 @@ def _post_ollama_chat(payload: dict) -> dict:
     response = requests.post(
         f"{OLLAMA_BASE_URL}/api/chat",
         json=payload,
-        timeout=OLLAMA_TIMEOUT_SECONDS,
+        timeout=(OLLAMA_CONNECT_TIMEOUT_SECONDS, None),
     )
 
     try:
@@ -103,18 +112,53 @@ def _post_ollama_chat(payload: dict) -> dict:
         raise OllamaOCRException("Ollama devolvio una respuesta no JSON en /api/chat.") from exc
 
 
-def pdf_to_images(pdf_path: Path, dpi: int = 300):
-    """Devuelve una lista de rutas a imágenes PNG generadas a partir del PDF."""
-    images = convert_from_path(str(pdf_path), dpi=dpi)
+def get_pdf_page_count(pdf_path: Path) -> int:
+    info = pdfinfo_from_path(str(pdf_path))
+    pages = int(info.get("Pages", 0))
+    if pages <= 0:
+        raise RuntimeError(f"No se pudo determinar el numero de paginas de {pdf_path.name}.")
+    return pages
 
-    tmp_dir = Path(tempfile.mkdtemp(prefix="nanonets_ocr_"))
-    image_paths = []
-    for i, img in enumerate(images, start=1):
-        img_path = tmp_dir / f"{pdf_path.stem}_page_{i}.png"
-        img.save(img_path, "PNG")
-        image_paths.append(img_path)
 
-    return image_paths
+def pdf_page_to_image(pdf_path: Path, page_number: int, output_dir: Path, dpi: int = PDF_RENDER_DPI) -> Path:
+    """
+    Convierte una sola página del PDF en PNG para evitar cargar el documento completo en memoria.
+    """
+    images = convert_from_path(
+        str(pdf_path),
+        dpi=dpi,
+        first_page=page_number,
+        last_page=page_number,
+        fmt="png",
+        single_file=True,
+    )
+    if not images:
+        raise RuntimeError(f"No se pudo convertir la pagina {page_number} de {pdf_path.name}.")
+
+    img_path = output_dir / f"{pdf_path.stem}_page_{page_number}.png"
+    images[0].save(img_path, "PNG")
+    return img_path
+
+
+def resize_image_for_ocr(image_path: Path, max_side: int) -> Path:
+    """
+    Limita el tamaño de la imagen para evitar fallos internos del modelo visual en Ollama.
+    """
+    with Image.open(image_path) as image:
+        width, height = image.size
+        longest_side = max(width, height)
+        if longest_side <= max_side:
+            return image_path
+
+        scale = max_side / longest_side
+        resized = image.resize(
+            (max(1, int(width * scale)), max(1, int(height * scale))),
+            Image.Resampling.LANCZOS,
+        )
+
+        resized_path = image_path.with_name(f"{image_path.stem}_max{max_side}{image_path.suffix}")
+        resized.save(resized_path, "PNG", optimize=True)
+        return resized_path
 
 
 def ocr_page_with_nanonets(image_path: Path, page_number: int, total_pages: int) -> str:
@@ -127,18 +171,32 @@ def ocr_page_with_nanonets(image_path: Path, page_number: int, total_pages: int)
           "Use consistent headings and formatting across pages.\n"
     )
 
-    image_base64 = base64.b64encode(image_path.read_bytes()).decode("ascii")
     attempts = [DEFAULT_NUM_GPU]
     if DEFAULT_NUM_GPU != 0:
         attempts.append(0)
 
     last_error = None
-    for num_gpu in attempts:
-        try:
-            data = _post_ollama_chat(_build_chat_payload(user_content, image_base64, num_gpu))
-            return data["message"]["content"]
-        except (OllamaOCRException, KeyError) as exc:
-            last_error = exc
+    temp_files_to_delete = []
+    try:
+        for max_side in OCR_RETRY_MAX_IMAGE_SIDES or [OCR_MAX_IMAGE_SIDE]:
+            candidate_path = resize_image_for_ocr(image_path, max_side)
+            if candidate_path != image_path:
+                temp_files_to_delete.append(candidate_path)
+
+            image_base64 = base64.b64encode(candidate_path.read_bytes()).decode("ascii")
+
+            for num_gpu in attempts:
+                try:
+                    data = _post_ollama_chat(_build_chat_payload(user_content, image_base64, num_gpu))
+                    return data["message"]["content"]
+                except (OllamaOCRException, KeyError) as exc:
+                    last_error = exc
+    finally:
+        for temp_path in temp_files_to_delete:
+            try:
+                temp_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
     raise OllamaOCRException(
         f"Fallo el OCR de la pagina {page_number}/{total_pages} con {image_path.name}: {last_error}"
@@ -149,7 +207,7 @@ def clean_index_dots(markdown: str) -> str:
     """
     Postprocesado: líneas tipo
     '1. OBJETO DEL CONTRATO............. 3'
-    → '1. OBJETO DEL CONTRATO 3'
+    -> '1. OBJETO DEL CONTRATO 3'
 
     Evita líneas que sean solo puntos.
     """
@@ -158,15 +216,13 @@ def clean_index_dots(markdown: str) -> str:
 
     for line in markdown.splitlines():
         stripped = line.strip()
-        if stripped and all(c == "." for c in stripped):
-            # Se omiten líneaa que solo tienen puntos
+        if stripped and all(char == "." for char in stripped):
             continue
 
-        m = pattern.match(line)
-        if m:
-            left, _, right = m.groups()
-            new_line = f"{left.strip()} {right.strip()}"
-            cleaned_lines.append(new_line)
+        match = pattern.match(line)
+        if match:
+            left, _, right = match.groups()
+            cleaned_lines.append(f"{left.strip()} {right.strip()}")
         else:
             cleaned_lines.append(line)
 
@@ -197,10 +253,10 @@ def normalize_headings(markdown: str) -> str:
     letter_multi_re = re.compile(r"^([A-Z])\.(\d+(?:\.\d+)*)\.\s*(.*)$")
 
     def is_mostly_upper(text: str) -> bool:
-        letters = [c for c in text if c.isalpha()]
+        letters = [char for char in text if char.isalpha()]
         if not letters:
             return False
-        upper = sum(1 for c in letters if c.isupper())
+        upper = sum(1 for char in letters if char.isupper())
         return upper / len(letters) >= 0.7
 
     for line in lines:
@@ -216,39 +272,35 @@ def normalize_headings(markdown: str) -> str:
         if raw.startswith((" ", "\t", "-", "*", ">", "|", "<")):
             out_lines.append(raw)
             continue
-
+        
         # 1) Títulos tipo "1. TEXTO" (requiere mayúsculas)
-        m = single_num_re.match(stripped)
-        if m:
-            num, title = m.groups()
+        match = single_num_re.match(stripped)
+        if match:
+            num, title = match.groups()
             if is_mostly_upper(title):
                 out_lines.append(f"# {num}. {title.strip()}")
-                continue  # ya procesado
+                continue
 
         # 2) Títulos tipo "1.1. Texto"
-        m = level2_re.match(stripped)
-        if m:
-            num, title = m.groups()
+        match = level2_re.match(stripped)
+        if match:
+            num, title = match.groups()
             out_lines.append(f"## {num}. {title.strip()}")
             continue
 
         # 3) Títulos tipo "1.1.1. Texto"
-        m = level3_re.match(stripped)
-        if m:
-            num, title = m.groups()
+        match = level3_re.match(stripped)
+        if match:
+            num, title = match.groups()
             out_lines.append(f"### {num}. {title.strip()}")
             continue
 
         # 4) Códigos tipo "G.2.2." o "G.2.2. Texto"
-        m = letter_multi_re.match(stripped)
-        if m:
-            letter, nums, title = m.groups()
+        match = letter_multi_re.match(stripped)
+        if match:
+            letter, nums, title = match.groups()
             code = f"{letter}.{nums}."
-            if title:
-                out_lines.append(f"### {code} {title.strip()}")
-            else:
-                # Solo el código sin texto, también lo marcamos como sección
-                out_lines.append(f"### {code}")
+            out_lines.append(f"### {code} {title.strip()}".rstrip())
             continue
 
         # Si nada encaja, dejamos la línea tal cual
@@ -260,16 +312,25 @@ def normalize_headings(markdown: str) -> str:
 def process_pdf(pdf_path: Path, output_dir: Path, on_page_start=None):
     print(f"Procesando {pdf_path.name}...")
 
-    image_paths = pdf_to_images(pdf_path)
-    total_pages = len(image_paths)
+    total_pages = get_pdf_page_count(pdf_path)
     page_markdowns = []
+    tmp_dir = Path(tempfile.mkdtemp(prefix="nanonets_ocr_"))
 
-    for i, img_path in enumerate(image_paths, start=1):
-        if on_page_start is not None:
-            on_page_start(i, total_pages)
-        print(f"  - Página {i}/{total_pages}")
-        md_page = ocr_page_with_nanonets(img_path, i, total_pages)
-        page_markdowns.append(md_page)
+    try:
+        for page_number in range(1, total_pages + 1):
+            if on_page_start is not None:
+                on_page_start(page_number, total_pages)
+            print(f"  - Pagina {page_number}/{total_pages}")
+            img_path = pdf_page_to_image(pdf_path, page_number, tmp_dir)
+            try:
+                page_markdowns.append(ocr_page_with_nanonets(img_path, page_number, total_pages))
+            finally:
+                try:
+                    img_path.unlink(missing_ok=True)
+                except OSError:
+                    pass
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
     full_md = "\n\n".join(page_markdowns)
     full_md = clean_index_dots(full_md)
@@ -278,7 +339,7 @@ def process_pdf(pdf_path: Path, output_dir: Path, on_page_start=None):
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"{pdf_path.stem}.md"
     out_path.write_text(full_md, encoding="utf-8")
-    print(f"  → Markdown guardado en: {out_path}")
+    print(f"Markdown guardado en: {out_path}")
 
 
 def main():

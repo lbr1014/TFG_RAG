@@ -264,7 +264,12 @@ class DocumentosService:
                 raise JobCancelledError("Conversión a Markdown cancelada por el usuario.")
             if on_current_doc:
                 on_current_doc(doc.nombre)
-            if self.convert_document_to_markdown(doc, on_page_start=on_page_start):
+            page_callback = None
+            if on_page_start is not None:
+                def page_callback(page: int, total_pages: int, doc_index=i, total_docs=total):
+                    on_page_start(doc_index, total_docs, page, total_pages)
+
+            if self.convert_document_to_markdown(doc, on_page_start=page_callback):
                 converted += 1
             else:
                 skipped += 1

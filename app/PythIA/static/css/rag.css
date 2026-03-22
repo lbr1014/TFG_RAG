@@ -6,12 +6,12 @@
 
 .rag-title{
   margin: 0;
-  color: #ffffff;
+  color: var(--app-text);
   font-weight: 800;
 }
 
 .rag-subtitle{
-  color: rgba(255,255,255,.78);
+  color: var(--app-text-soft);
   font-size: 0.98rem;
   line-height: 1.6;
 }
@@ -20,7 +20,7 @@
 .rag-section-title,
 .rag-debug summary,
 .rag-meta strong{
-  color: #ffffff;
+  color: var(--app-text);
   font-weight: 700;
 }
 
@@ -28,21 +28,21 @@
   min-height: 140px;
   resize: vertical;
   border-radius: var(--app-radius-sm);
-  border: 1px solid rgba(255,255,255,.16);
-  background: rgba(255,255,255,.92);
-  color: #1f2d3d;
+  border: 1px solid var(--app-input-border);
+  background: var(--app-input-bg);
+  color: var(--app-input-text);
 }
 
 .rag-textarea:focus{
-  border-color: #ffffff;
-  background: rgba(255,255,255,.88);
-  box-shadow: 0 0 0 3px rgba(219,220,221,.18), 0 4px 14px rgba(219,220,221,.25);
+  border-color: var(--app-input-focus-border);
+  background: var(--app-input-hover-bg);
+  box-shadow: var(--app-input-focus-ring);
 }
 
 .rag-status{
   min-height: 1.2em;
   font-size: .95rem;
-  color: rgba(255,255,255,.78);
+  color: var(--app-text-soft);
   text-align: center;
 }
 
@@ -55,6 +55,12 @@
   min-width: 190px;
 }
 
+.rag-form .btn-modelo{
+  width: min(100%, 680px);
+  min-height: 64px;
+  border-radius: 22px;
+}
+
 .rag-result,
 .rag-debug{
   border-top: 1px solid rgba(255,255,255,.10);
@@ -65,15 +71,72 @@
 .rag-chunk{
   padding: 14px 16px;
   border-radius: var(--app-radius-sm);
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
-  color: #ffffff;
+  background: var(--app-inset-bg);
+  border: var(--app-inset-border);
+  color: var(--app-text);
   white-space: pre-wrap;
   line-height: 1.6;
 }
 
 .rag-meta{
-  color: rgba(255,255,255,.88);
+  color: var(--app-text-soft);
+}
+
+body[data-theme="light"] .rag-result,
+body[data-theme="light"] .rag-debug{
+  border-top-color: rgba(17,17,17,.10);
+}
+
+body[data-theme="light"] .rag-card,
+body[data-theme="light"] .rag-card.app-surface{
+  background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(239,247,255,.95) 100%);
+  border: 1px solid rgba(125,165,205,.16);
+  box-shadow: 0 18px 38px rgba(72,114,156,.10), inset 0 1px 0 rgba(255,255,255,.88);
+}
+
+body[data-theme="light"] .rag-title,
+body[data-theme="light"] .rag-label,
+body[data-theme="light"] .rag-section-title,
+body[data-theme="light"] .rag-debug summary,
+body[data-theme="light"] .rag-meta strong{
+  color: #111111;
+}
+
+body[data-theme="light"] .rag-subtitle,
+body[data-theme="light"] .rag-meta,
+body[data-theme="light"] .rag-status{
+  color: rgba(17,17,17,.72);
+}
+
+body[data-theme="light"] .rag-textarea{
+  background: #ffffff;
+  color: #111111;
+  border-color: rgba(115,164,214,.24);
+}
+
+body[data-theme="light"] .rag-textarea::placeholder{
+  color: rgba(17,17,17,.50);
+}
+
+body[data-theme="light"] .rag-answer,
+body[data-theme="light"] .rag-chunk{
+  background: rgba(111, 181, 237, .08);
+  border: 1px solid rgba(94, 154, 204, .20);
+  color: #111111;
+}
+
+body[data-theme="light"] .rag-form .btn-outline-light{
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(94, 154, 204, .42);
+  color: #111111;
+  box-shadow: 0 10px 20px rgba(88, 173, 230, .10);
+}
+
+body[data-theme="light"] .rag-form .btn-outline-light:hover,
+body[data-theme="light"] .rag-form .btn-outline-light:focus{
+  background: rgba(226,242,255,.96);
+  border-color: rgba(94, 154, 204, .52);
+  color: #111111;
 }
 
 @media (min-width: 768px){

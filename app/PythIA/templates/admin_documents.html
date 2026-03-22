@@ -143,8 +143,8 @@
               <thead>
                 <tr>
                   <th>Archivo</th>
-                  <th class="d-none d-md-table-cell" style="width: 150px;">Tamano</th>
-                  <th class="d-none d-lg-table-cell" style="width: 210px;">Modificado</th>
+                  <th class="d-none d-md-table-cell" style="width: 150px;">Tamaño</th>
+                  <th class="d-none d-lg-table-cell" style="width: 210px;">Cargado</th>
                   <th style="width: 105px;">Chunks</th>
                   <th style="width: 140px;">Estado</th>
                   <th class="text-end" style="width: 120px;">Acciones</th>
@@ -218,7 +218,7 @@
               <a class="page-link" href="{{ url_for('admin.documents_list_page', page=page-1) }}">&laquo; Anterior</a>
             {% endif %}
 
-            <span class="page-info">Pagina {{ page }} de {{ total_pages }} ({{ total_docs }} documentos)</span>
+            <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_docs }} documentos)</span>
 
             {% if page < total_pages %}
               <a class="page-link" href="{{ url_for('admin.documents_list_page', page=page+1) }}">Siguiente &raquo;</a>

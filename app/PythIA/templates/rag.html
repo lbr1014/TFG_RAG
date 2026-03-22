@@ -3,14 +3,14 @@
 {% block title %}Consultar al modelo{% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css', v='20260322-theme') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container py-4 py-md-5">
   <div class="row justify-content-center">
     <div class="col-12 col-lg-10 col-xl-9">
-      <section class="rag-card">
+      <section class="rag-card app-surface">
         <div class="mb-4">
           <h2 class="rag-title mt-3 mb-2">Preguntar al modelo (RAG)</h2>
           <p class="rag-subtitle mb-0">
@@ -49,7 +49,7 @@
                     <strong>Archivo:</strong> <span id="filename"></span>
                   </div>
                   <div class="col-12 col-md-4">
-                    <strong>Titulo:</strong> <span id="title"></span>
+                    <strong>Título:</strong> <span id="title"></span>
                   </div>
                   <div class="col-12 col-md-4">
                     <strong>Segmento:</strong> <span id="segment_index"></span>

@@ -13,7 +13,7 @@ from ..decorators import admin_required
 from ..documentos import DocumentosService, Documento, JobCancelledError
 from ..extensions import db
 from ..forms import AdminCreateUserForm
-from ..markdown_conversion_state import MarkdownConversionState
+from ..markdown_conversion_state import MarkdownConversionState, send_markdown_finished_email
 from ..rag.PrototipoRAG import (
     index_pliegos_dir,
     qdrant_count_chunks_by_filename,
@@ -154,7 +154,7 @@ def convert_documents_to_markdown():
     db.session.commit()
 
     app_obj = current_app._get_current_object()
-    executor.submit(markdown_async, app_obj, job.id)
+    executor.submit(markdown_async, app_obj, job.id, current_user.email, documents_page_url())
 
     return jsonify({"job_id": job.id}), 202
 
@@ -197,7 +197,7 @@ def markdown_conversion_status(job_id: int):
     )
 
 
-def markdown_async(app, job_id: int) -> None:
+def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
     zone_now = datetime.now(ZoneInfo("Europe/Madrid"))
 
     with app.app_context():
@@ -236,10 +236,12 @@ def markdown_async(app, job_id: int) -> None:
                 job.message = f"Convirtiendo {nombre}..."
                 db.session.commit()
 
-            def on_page_start(page: int, total_pages: int):
+            def on_page_start(doc_index: int, total_docs: int, page: int, total_pages: int):
                 if should_cancel():
                     raise JobCancelledError("Conversión a Markdown cancelada por el usuario.")
                 current_message = (job.message or "Convirtiendo documento...").split(" Página ", 1)[0]
+                completed = (doc_index - 1) + (page / total_pages if total_pages else 1)
+                job.progress = int((completed / total_docs) * 100) if total_docs and total_docs > 0 else 100
                 job.message = f"{current_message} Página {page}/{total_pages}"
                 db.session.commit()
 
@@ -266,6 +268,15 @@ def markdown_async(app, job_id: int) -> None:
                 job.message = f"Conversión completada. {stats['converted']} documentos convertidos."
             job.finished_at = zone_now
             db.session.commit()
+            send_markdown_finished_email(
+                to_email=user_email,
+                ok=True,
+                message="La conversion a Markdown ha terminado correctamente.",
+                job_id=job.id,
+                docs_url=docs_url,
+                converted_docs=stats.get("converted", 0),
+                skipped_docs=stats.get("skipped", 0),
+            )
         except JobCancelledError:
             db.session.rollback()
             job = MarkdownConversionState.query.get(job_id)
@@ -282,6 +293,13 @@ def markdown_async(app, job_id: int) -> None:
                 job.message = "Fallo la Conversión a Markdown."
                 job.finished_at = zone_now
                 db.session.commit()
+                send_markdown_finished_email(
+                    to_email=user_email,
+                    ok=False,
+                    message=f"La conversion a Markdown ha fallado: {job.error}",
+                    job_id=job.id,
+                    docs_url=docs_url,
+                )
             finally:
                 app.logger.exception("Error en markdown_async")
         finally:

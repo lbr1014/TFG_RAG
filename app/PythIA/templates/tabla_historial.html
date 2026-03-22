@@ -1,19 +1,17 @@
 {% macro consultas_historial(consultas, meta_by_consulta, current_user, delete_url_endpoint) %}
-  {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
-  {% endblock %}
+
   <div class="table-card">
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0 app-table">
         <thead>
           <tr>
             {% if current_user.is_admin %}
-              <th>Usuario</th>
+              <th class="d-none d-lg-table-cell">Usuario</th>
             {% endif %}
             <th>Fecha</th>
             <th>Pregunta</th>
-            <th>Documento</th>
-            <th>Tiempo (s)</th>
+            <th class="d-none d-md-table-cell">Documento</th>
+            <th class="d-none d-md-table-cell">Tiempo (s)</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -32,12 +30,19 @@
 
             <tr id="consulta-{{ c.id }}">
               {% if current_user.is_admin %}
-                <td>{{ c.user.nombre }}</td>
+                <td class="d-none d-lg-table-cell">{{ c.user.nombre }}</td>
               {% endif %}
-              <td>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</td>
+              <td>
+                <div>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</div>
+                <div class="doc-meta-inline d-md-none mt-1">
+                  <span>{{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</span>
+                  <span class="doc-meta-separator">&bull;</span>
+                  <span>{{ "%.3f"|format(c.tiempo_respuestas) }} s</span>
+                </div>
+              </td>
               <td class="cell-question">{{ c.pregunta }}</td>
-              <td>{{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</td>
-              <td>{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
+              <td class="d-none d-md-table-cell">{{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</td>
+              <td class="d-none d-md-table-cell">{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
               <td>
                 <div class="table-actions">
                   <button type="button"

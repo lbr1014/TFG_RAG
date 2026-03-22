@@ -2,23 +2,52 @@
    PÁGINA DE INICIO
    ========================= */
 
+body.landing-page[data-theme="light"]{
+  --app-bg-top: #3f566d;
+  --app-bg-mid: #34495e;
+  --app-bg-bottom: #2b3d4f;
+  --app-bg-accent: #2f4357;
+  --app-bg-glow: rgba(92, 122, 153, 0.30);
+  --app-bg-glow-soft: rgba(92, 122, 153, 0.06);
+  --app-bg-glow-stop-1: 28%;
+  --app-bg-glow-stop-2: 52%;
+  --app-text: #ffffff;
+  --app-text-soft: rgba(255,255,255,.82);
+  --app-text-muted: rgba(255,255,255,.72);
+  --app-surface-bg: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.08) 100%);
+  --app-surface-border: 1px solid rgba(255,255,255,.14);
+  --app-surface-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,.06);
+  --app-inset-bg: rgba(255,255,255,.06);
+  --app-inset-border: 1px solid rgba(255,255,255,.14);
+  --app-header-bg: #2c3e50;
+  --app-header-glow: linear-gradient(to bottom, rgba(255,255,255,.08), rgba(255,255,255,.06) 20%, transparent 60%);
+  --app-header-line: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  --app-header-btn-light-bg: #ffffff;
+  --app-header-btn-light-text: #000000;
+  --app-header-btn-light-border: rgba(255,255,255,.88);
+  --app-header-btn-light-hover-bg: #f4f7fb;
+  --app-header-btn-light-hover-text: #1f2d3d;
+  --app-header-btn-outline-bg: transparent;
+  --app-header-btn-outline-text: rgba(255,255,255,.92);
+  --app-header-btn-outline-border: rgba(255,255,255,.72);
+  --app-header-btn-outline-hover-bg: rgba(255,255,255,.10);
+  --app-header-btn-outline-hover-text: #ffffff;
+  --app-header-btn-outline-hover-border: rgba(255,255,255,.92);
+  --app-btn-hero-primary-bg: #ffffff;
+  --app-btn-hero-primary-text: #2c3e50;
+  --app-btn-hero-primary-hover-bg: #f3f7fa;
+  --app-btn-hero-primary-hover-text: #22313f;
+  --app-btn-hero-secondary-bg: rgba(255,255,255,.06);
+  --app-btn-hero-secondary-text: #ffffff;
+  --app-btn-hero-secondary-border: rgba(255,255,255,.18);
+  --app-btn-hero-secondary-hover-bg: rgba(255,255,255,.12);
+}
+
 .home-hero h1,
 .home-hero h2,
 .home-hero h3,
 .home-hero p {
   color: #ffffff;
-}
-
-.logo-header{
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  display: block;
-  border: none;
-  outline: none;
-  box-shadow: none;
-  background: transparent;
-  border-radius: 50%;
 }
 
 .main-content.home-hero{
