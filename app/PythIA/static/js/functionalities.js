@@ -57,6 +57,8 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
   const deleteName = document.getElementById("deleteItemName")
   const confirmBtn = document.getElementById("confirmDeleteBtn")
 
+  if (!deleteModal || !deleteName || !confirmBtn) return
+
   let currentFormId = null
 
   deleteModal.addEventListener("show.bs.modal", function (event) {

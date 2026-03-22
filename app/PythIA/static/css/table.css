@@ -142,59 +142,70 @@
 }
 
 body[data-theme="light"] .app-table{
-  --bs-table-color: #233241;
+  --bs-table-color: #111111;
   --bs-table-border-color: rgba(76,103,130,.14);
   --bs-table-hover-bg: rgba(76,103,130,.06);
-  --bs-table-hover-color: #233241;
+  --bs-table-hover-color: #111111;
 }
 
 body[data-theme="light"] .app-table thead th{
-  background: rgba(76,103,130,.10);
-  color: #233241;
-  border-bottom-color: rgba(76,103,130,.18);
+  background: rgba(141,189,235,.12);
+  color: #111111;
+  border-bottom-color: rgba(105,145,186,.16);
 }
 
 body[data-theme="light"] .app-table tbody td,
 body[data-theme="light"] .app-table details summary,
 body[data-theme="light"] .page-info{
-  color: #233241;
+  color: #111111;
 }
 
 body[data-theme="light"] .app-table .details-row td,
 body[data-theme="light"] .app-table details pre,
 body[data-theme="light"] .chunks-pre{
-  background: rgba(76,103,130,.06);
-  border-color: rgba(76,103,130,.12);
-  color: #233241;
+  background: rgba(141,189,235,.08);
+  border-color: rgba(105,145,186,.10);
+  color: #111111;
 }
 
 body[data-theme="light"] .table-actions .btn-outline-light{
-  color: #233241;
-  border-color: rgba(76,103,130,.30);
-  background: rgba(255,255,255,.55);
+  color: #111111;
+  border-color: rgba(105,145,186,.24);
+  background: rgba(255,255,255,.72);
 }
 
 body[data-theme="light"] .table-actions .btn-outline-light:hover{
-  color: #233241;
-  border-color: rgba(76,103,130,.45);
-  background: rgba(76,103,130,.10);
+  color: #111111;
+  border-color: rgba(105,145,186,.38);
+  background: rgba(141,189,235,.12);
+}
+
+body[data-theme="light"] .page-link{
+  background: rgba(255,255,255,.88);
+  border-color: rgba(105,145,186,.22);
+  color: #111111;
+}
+
+body[data-theme="light"] .page-link:hover{
+  background: #ffffff;
+  border-color: rgba(105,145,186,.34);
 }
 
 .chunks-modal-panel{
   border-radius: var(--app-radius-md);
-  color: #fff;
+  color: var(--app-modal-panel-text);
 }
 
 .chunks-modal-title{
   margin: 0;
   font-size: 1.1rem;
   line-height: 1.2;
-  color: #fff;
+  color: var(--app-modal-title);
 }
 
 .chunks-modal-sub{
   margin: .35rem 0 0 0;
-  color: rgba(255,255,255,.75);
+  color: var(--app-modal-sub);
   font-size: 13px;
 }
 

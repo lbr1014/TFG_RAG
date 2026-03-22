@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tarjetas.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/luz.css') }}">
 </head>
-<body>
+<body class="landing-page">
 
   <header class="main-header shadow-sm">
     <div class="container-fluid">
@@ -32,7 +32,7 @@
             <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu">
               <span class="menu-dots" aria-hidden="true">&#8942;</span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end">
+            <ul class="dropdown-menu dropdown-menu-end mobile-nav-menu">
               <li><a class="dropdown-item" href="{{ url_for('auth.login') }}">Iniciar sesión</a></li>
               <li><a class="dropdown-item" href="{{ url_for('auth.singup') }}">Registrarse</a></li>
             </ul>

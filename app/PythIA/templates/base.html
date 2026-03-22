@@ -11,31 +11,34 @@
 </head>
 <body data-theme="dark">
 
-<header class="main-header px-3 px-md-4 py-3">
-  <div class="container-fluid px-0">
-    <div class="header-layout d-flex justify-content-between align-items-start align-items-md-center gap-3">
-      <div class="user-info">
-        {% if current_user.is_authenticated %}
-          <p class="welcome mb-0">Hola, <strong>{{ current_user.nombre }}</strong></p>
+<header class="main-header shadow-sm">
+  <div class="container-fluid px-3 px-md-4">
+    <div class="header-layout d-flex align-items-center justify-content-between gap-3 py-2 flex-wrap">
+      <div class="d-flex align-items-center gap-3 header-brand">
+        <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
+        <div class="user-info">
+          {% if current_user.is_authenticated %}
+            <p class="welcome mb-0">Hola, <strong>{{ current_user.nombre }}</strong></p>
 
-          {% if current_user.is_admin %}
-            <span class="app-badge admin mt-1">Administrador</span>
-          {% else %}
-            <span class="app-badge user mt-1">Usuario</span>
-          {% endif %}
-
-          <p class="last-login mb-0">
-            Último inicio:
-            {% if current_user.last_login %}
-              {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+            {% if current_user.is_admin %}
+              <span class="app-badge admin mt-1">Administrador</span>
             {% else %}
-              -
+              <span class="app-badge user mt-1">Usuario</span>
             {% endif %}
-          </p>
-        {% else %}
-          <p class="welcome mb-0"><strong>{{ titulo or "Bienvenido" }}</strong></p>
-          <p class="home-author mb-0 mt-1">{{ autor }}</p>
-        {% endif %}
+
+            <p class="last-login mb-0">
+              Último inicio:
+              {% if current_user.last_login %}
+                {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
+          {% else %}
+            <p class="welcome mb-0"><strong>{{ titulo or "Bienvenido" }}</strong></p>
+            <p class="home-author mb-0 mt-1">{{ autor }}</p>
+          {% endif %}
+        </div>
       </div>
 
       <div class="header-actions d-flex align-items-center gap-2 flex-wrap justify-content-md-end">
@@ -72,7 +75,7 @@
               Configuración
             </button>
 
-            <ul class="dropdown-menu dropdown-menu-end">
+            <ul class="dropdown-menu dropdown-menu-end mobile-nav-menu">
               <li><h6 class="dropdown-header">Apariencia</h6></li>
               <li><button type="button" class="dropdown-item theme-option" data-theme-value="dark">Modo oscuro</button></li>
               <li><button type="button" class="dropdown-item theme-option" data-theme-value="light">Modo claro</button></li>

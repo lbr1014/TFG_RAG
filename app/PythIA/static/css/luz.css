@@ -35,3 +35,9 @@
     0 14px 30px rgba(59, 93, 122, 0.55),
     inset 0 4px 10px rgba(0, 0, 0, 0.22);
 }
+
+body[data-theme="light"] .luz:hover{
+  box-shadow:
+    0 16px 34px rgba(96, 151, 205, 0.26),
+    inset 0 2px 8px rgba(255, 255, 255, 0.45);
+}

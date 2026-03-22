@@ -135,6 +135,71 @@
   font-weight: 700;
 }
 
+body[data-theme="light"] .upload-dropzone{
+  background: rgba(111, 181, 237, .08);
+  border: 1px dashed rgba(94, 154, 204, .28);
+}
+
+body[data-theme="light"] .upload-dropzone .form-label{
+  color: #111111;
+}
+
+body[data-theme="light"] .upload-dropzone .form-text{
+  color: rgba(17,17,17,.68);
+}
+
+body[data-theme="light"] .documents-subtitle{
+  color: rgba(17,17,17,.70);
+}
+
+body[data-theme="light"] .documents-counter{
+  background: rgba(111, 181, 237, .10);
+  border: 1px solid rgba(94, 154, 204, .22);
+  color: #111111;
+}
+
+body[data-theme="light"] .doc-name{
+  color: #111111;
+}
+
+body[data-theme="light"] .doc-meta-inline{
+  color: rgba(17,17,17,.66);
+}
+
+body[data-theme="light"] .doc-status{
+  background: rgba(111, 181, 237, .10);
+  border: 1px solid rgba(94, 154, 204, .22);
+  color: #111111;
+}
+
+body[data-theme="light"] .upload-card .btn-light{
+  background: linear-gradient(135deg, #6ab8ea 0%, #56ace2 50%, #4398cf 100%);
+  border: 1px solid rgba(86,172,226,.42);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(86, 172, 226, .24);
+}
+
+body[data-theme="light"] .upload-card .btn-light:hover,
+body[data-theme="light"] .upload-card .btn-light:focus{
+  background: linear-gradient(135deg, #7ac3ef 0%, #63b4e7 50%, #4aa3d7 100%);
+  border-color: rgba(86,172,226,.54);
+  color: #ffffff;
+}
+
+body[data-theme="light"] .upload-card .btn-outline-light{
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(94, 154, 204, .42);
+  color: #111111;
+  box-shadow: 0 10px 20px rgba(88, 173, 230, .10);
+}
+
+body[data-theme="light"] .upload-card .btn-outline-light:hover,
+body[data-theme="light"] .upload-card .btn-outline-light:focus{
+  background: rgba(226,242,255,.96);
+  border-color: rgba(94, 154, 204, .52);
+  color: #111111;
+}
+
 @media (max-width: 991.98px){
   .main-content.documents-page-shell{
     max-width: 100%;
