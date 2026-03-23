@@ -1,7 +1,67 @@
 \capitulo{5}{Aspectos relevantes del desarrollo del proyecto}
 
-Este apartado pretende recoger los aspectos más interesantes del desarrollo del proyecto, comentados por los autores del mismo.
-Debe incluir desde la exposición del ciclo de vida utilizado, hasta los detalles de mayor relevancia de las fases de análisis, diseño e implementación.
-Se busca que no sea una mera operación de copiar y pegar diagramas y extractos del código fuente, sino que realmente se justifiquen los caminos de solución que se han tomado, especialmente aquellos que no sean triviales.
-Puede ser el lugar más adecuado para documentar los aspectos más interesantes del diseño y de la implementación, con un mayor hincapié en aspectos tales como el tipo de arquitectura elegido, los índices de las tablas de la base de datos, normalización y desnormalización, distribución en ficheros3, reglas de negocio dentro de las bases de datos (EDVHV GH GDWRV DFWLYDV), aspectos de desarrollo relacionados con el WWW...
-Este apartado, debe convertirse en el resumen de la experiencia práctica del proyecto, y por sí mismo justifica que la memoria se convierta en un documento útil, fuente de referencia para los autores, los tutores y futuros alumnos.
+En este apartado se van a explicar los aspectos más importantes del proyecto. Se van a recoger los distintos retos se han encontrado durante el desarrollo indicando como se solventaron. También, se van a explicar las decisiones más relevantes que se han tomado para llevar a cabo el proyecto. 
+
+\section{Inicio del proyecto}
+
+Actualmente la mayor parte de las personas utilizan procesadores del lenguaje, ya bien sea a través de~\myhref{https://chat.openai.com}{ChatGPT},~\myhref{https://claude.ai}{Claude},~\myhref{https://gemini.google.com/app}{Gemini} o~\myhref{https://notebooklm.google.com/}{NotbookLM}, pero la mayor parte de los usuarios no conocen lo suficiente de su funcionamiento como para sacarle el máximo partido. Generalmente los \eng{prompts} de estos usuarios son escuetos, sin el contexto adecuado, lo que permite que el modelo alucine en sus respuestas dándoles información errónea que generalmente no contrastan. En este contexto surgió la idea del proyecto, generar un \eng{LLM} especializado en licitaciones del estado, concretamente en las de la Junta de Gobierno de la Diputación Provincial de Burgos.
+
+Para evitar que fuese el usuario el que le tuviera que otorgar el contexto al modelo se decidió implementar un \eng{RAG} que contuviera todos las licitaciones de la Junta de Gobierno de la Diputación Provincial de Burgos publicadas en la página de \contsec{}. Además, para evitar alucinaciones del modelo se decidió limitar sus respuestas a la información que le proporciona el \eng{RAG}.
+
+Otro problema típico de los \eng{LLM} es la fecha de entrenamiento, ya que no son capaces de contestar preguntas posteriores a esta fecha, ya que no conocen su respuesta. Para evitar este problema de desactulización se decidió incluir un programa de \eng{web scraping} para que se pueda extraer de forma periódica las nuevas licitaciones y volver a descargar aquellas que hayan sido actualizadas. 
+
+\section{Web Scraping}
+
+Tras formalizar la idea se comenzó con el proyecto realizando la aplicación de \eng{Web Scraping} para extraer las licitaciones de la página de \contsec{} de manera automática. Se desarrollaron diferentes soluciones utilizando \eng{Selenium} y \eng{Playwright}, optando finalmente por el uso de \eng{Playwright} en modo asíncrono, ya que permite gestionar de forma automática las esperas y la interacción con elementos dinámicos, haciendo que el sistema sea más robusto frente a fallos y \eng{timeouts} que con los programas realizados con \eng{Selenium}. Además, al usar \eng{Playwright} asíncrono (\eng{asyncio}) se pudo incorporar procesamiento concurrente, ya que permite procesar varias tareas en paralelo, para optimizar el tiempo de extracción y descarga de datos. 
+
+La elevada complejidad de la página debido al uso de contenido dinámico e \eng{iframes} supuso un reto. Para solventarlo se tuvieron que desarrollar mecanismos específicos para la localización de elementos y la navegación entre distintos contextos. Finalmente, los datos obtenidos se normalizan y almacenan en un archivo \file{JSON}. Este archivo se usa para descargar los pliegos finales.
+
+Cabe destacar que durante el desarrollo del proyecto se actualizó la página \contsec{}, por lo cual hubo que realizar cambios en el programa ya desarrollado, modificando selectores y flujos de navegación para mantener su funcionamiento.
+
+\section{\eng{Retrieval Augmented Generation} (\eng{RAG})}
+
+Durante el desarrollo del sistema \eng{RAG} se han evaluado distintos enfoques para cada uno de sus componentes principales, con el objetivo de optimizar la calidad de las respuestas, la eficiencia del sistema y su facilidad de despliegue. A continuación, se describen los elementos más relevantes analizados, las pruebas realizadas y la justificación de las decisiones finales adoptadas.
+
+\subsection{\eng{Tokenizer}}
+
+Uno de los primeros aspectos analizados fue el uso del \eng{tokenizer}, ya que es el encargado de transformar el texto en unidades básicas (\eng{tokens}) que son la entrada real de los modelos de lenguaje (\eng{LLM}). Su correcto funcionamiento es clave tanto para el procesamiento del texto como para el control del tamaño de los fragmentos (\eng{chunks}).
+
+Se realizaron pruebas con diversos \eng{tokenizers} asociados a distintos modelos de lenguaje (como \eng{LLaMA} o \eng{Mistral}), así como con el \eng{tokenizer} incluido en los modelos de \eng{embeddings}. Se observó que utilizar el \eng{tokenizer} del propio modelo de \eng{embeddings} simplifica el \eng{pipeline} y evita inconsistencias entre la representación del texto y su vectorización. Además, permite conocer directamente el número máximo de \eng{tokens} admitido por el modelo, facilitando el control del tamaño de entrada.
+
+Por este motivo, finalmente se optó por utilizar el \eng{tokenizer} del modelo de \eng{embeddings} (\file{SentenceTransformer}), garantizando coherencia entre el proceso de \eng{chunking} y la generación de \eng{embeddings}.
+
+\subsection{\eng{Chunking}}
+
+El \eng{Chunking} consiste en dividir los documentos en fragmentos manejables. Es fundamental para ajustarse a la ventana de contexto del modelo y para mejorar la recuperación semántica. El texto se puede segmentar por longitud fija (\eng{tokens}), por secciones o párrafos o por significado semántico.
+
+Este proceso fue uno de los procesos más experimentados, probándose diferentes estrategias como el \eng{Chunking} por tamaño fijo de caracteres, por \eng{tokens} con \eng{overloap} (solapamiento) para mantener el contexto o basado en secciones o frases. 
+
+Durante las pruebas se  comprobó que el uso exclusivo de \eng{chunks} por tamaño fijo generaba fragmentos poco naturales, afectando negativamente a la recuperación. Por otro lado, el \eng{chunking} semántico puro resultaba más complejo y costoso. Por ello se optó por una estrategia híbrida, en al cual se agrupa previamente por frases o secciones y después se divide por \eng{tokens} con solapamiento. Consiguiendo así un equilibrio entre la coherencia semántica y el control técnico del tamaño, lo que mejora la calidad de la recuperación.
+
+\subsection{\eng{Embeddings}}
+
+Los \eng{embeddings} son representaciones vectoriales del texto que capturas su significado semántico. Permiten comparar las consultas de los usuarios con los fragmentos de los documentos y realizar búsquedas por similitud. Son la base del funcionamiento del sistema de recuperación del \eng{RAG}. Por lo cual para elegir el modelo final se probaron varios comparando su calidad semántica, la velocidad de ejecución y el consumo de recursos. Finalmente, se seleccionó el modelo \file{sentence-transformers/all-MiniLM-L6-v2} debido a que ofrece buen equilibrio entre rendimiento y coste computacional. Además, su integración es sencilla y su dimensión de \eng{embedding} es suficiente para tareas de recuperación semántica.
+
+\subsection{Base de datos vectorial}
+
+La base de datos vectorial es la encargada de almacena los \eng{embeddings} y permitir realizar búsquedas en espacios de alta dimensión. Tras estudiar diversas opciones (ver sección~\hyperref[basedatos_vectorial]{4.8.1}) se eligió \eng{Qdrant} ya que, al tener soporte nativo par ala búsqueda vectorial simplifica mucho su uso eficiente. Además, permite almacenar metadatos junto con los \eng{chunks} y \eng{embeddings}, lo que se consideró de utilidad para aumentar el contexto de los \eng{chunks}. Otra ventaja que se observó con las pruebas es que permite trabajar tanto en local como en entornos distribuidos, lo que facilita el despliegue del sistema.
+
+\subsection{\eng{Retriever} (mecanismo de recuperación)}
+
+Es el componente encargado de buscar en la base vectorial los fragmentos más relevantes para una consulta. Su calidad es crítica, ya que determina el contexto que se proporcionará al modelo. Se basa en la búsqueda por similitud vectorial, principalmente por similitud coseno. 
+
+Se hicieron diversas pruebas en las cuales se analizó como afectaba el números de \eng{chunks} recuperados para cada consulta, la utilización de metadatos para el filtrado y el impacto del tamaño del \eng{chunk} en la recuperación. En estas pruebas se observó que un valor intermedio de \eng{chunks} recuperados por cada pregunta permite encontrar un equilibrio entre la precisión y el ruido. También, se vio que el uso de metadatos (como el nombre del documento) mejora la trazabilidad de la información recuperada. 
+
+Finalmente, se optó por un \eng{retriever} basado en \eng{Qdrant} con búsqueda por similitud coseno y recuperación de varios \eng{chunks} relevantes.
+
+\subsection{\eng{Augmentation}}
+
+este proceso consiste en combinar la consulta del usuario con los fragmentos recuperados para construir un \eng{prompt} enriquecido. Esta fase incluye técnicas de ingeniería de \eng{prompts} para mejorar la calidad de la respuesta. En el desarrollo del \eng{RAG} se probaron distintas estartegias como la concatenación suimple de fragmentos, la inclusión estructurada mediante el uso de etiquetas y el control del número máximo de \eng{tokens} del \eng{prompt}.
+
+Se comprobó que un exceso de contexto degrada la respuesta del modelo, pero un contexto insuficiente reduce su precisión. Por ello se optó por una estrategia que permite seleccionar los \eng{chunks} más relevantes, una inclusión estructurada en el \eng{prompt} y un control estricto del tamaño total que permite reservar \eng{tokens} para la respuesta.
+
+\subsection{\eng{LLM}}
+
+Es el encargado de generar la respuesta final utilizando el contexto proporcionado. La elección del modelo (tamaño, arquitectura, si es local o una \ext{API}) afecta directamente a la calidad, latencia y coste del sistema.
+
+Se han realizado pruebas con diversos modelos locales como \eng{Mistral} o \eng{LLaMA} 3.1 (8B). Finalmente, se ha seleccionado \eng{LLaMA} 3.1-8B, ya que tiene buen rendimiento en tareas de comprensión y generación. Otro aspecto que se tuvo en cuenta fue que permite el control total sobre el sistema sin dependencias externas. Además, se han ajustado parámetros como el número máximo de \eng{tokens} nuevos, la longitud máxima de entrada y el formato del \eng{prompt}. Lo que permitió mejorar la calidad de las respuestas y adaptarlas al contexto del sistema.

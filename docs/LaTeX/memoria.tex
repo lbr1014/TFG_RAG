@@ -47,7 +47,11 @@
 \clubpenalty100000
 
 % Hipervínculos
-\let\oldhref\href\renewcommand{\href}[2]{\oldhref{#1}{#2}\footnote{\url{#1}}}
+\NewDocumentCommand{\myhref}{m m O{#1}}{%
+  \href{#1}{#2}\footnote{\url{#3}}%
+}
+
+\newcommand{\contsec}{\myhref{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}[https://tinyurl.com/48ay5679]}
 
 % Marcado semántico
 \newcommand{\file}[1]{
