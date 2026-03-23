@@ -8,25 +8,35 @@ on:
 jobs:
   sonarqube:
     name: SonarQube
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+
+    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
       
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r prototipos/Flask/requirements.txt
-          pip install pytest pytest-cov
+          pip install -r app/PythIA/requirements_docker.txt
 
       - name: Run tests with coverage
-        working-directory: prototipos/Flask
+        working-directory: app/PythIA
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          PYTHONPATH: ${{ github.workspace }}/prototipos/Flask
+          PYTHONPATH: ${{ github.workspace }}/app/PythIA
+          DATABASE_URL: "sqlite:///:memory:"
+          QDRANT_URL: http://localhost:6333
         run: |
-          pytest --cov=app --cov-report=xml
+          python -m coverage run --source=app -m unittest discover -s tests -t .
+          python -m coverage xml -o coverage.xml
+          python -m coverage report -m
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
