@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import os
 import re
@@ -6,7 +7,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-import requests
+import httpx
 from PIL import Image
 from pdf2image import convert_from_path, pdfinfo_from_path
 
@@ -44,18 +45,29 @@ Return only valid Markdown, no explanations.
 MODEL_NAME = os.getenv("OCR_MODEL_NAME", "blaifa/Nanonets-OCR-s")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434").rstrip("/")
 OLLAMA_CONNECT_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10"))
+OLLAMA_READ_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_READ_TIMEOUT_SECONDS", "300"))
 DEFAULT_NUM_GPU = int(os.getenv("OLLAMA_NUM_GPU", "0"))
 PDF_RENDER_DPI = int(os.getenv("PDF_RENDER_DPI", "200"))
 OCR_MAX_IMAGE_SIDE = int(os.getenv("OCR_MAX_IMAGE_SIDE", "1600"))
 OCR_RETRY_MAX_IMAGE_SIDES = [
     int(value.strip())
-    for value in os.getenv("OCR_RETRY_MAX_IMAGE_SIDES", "1600,1280,1024").split(",")
+    for value in os.getenv("OCR_RETRY_MAX_IMAGE_SIDES", "1600,1280,1024,896,768").split(",")
     if value.strip()
 ]
+OCR_PAGE_FAILURE_MODE = os.getenv("OCR_PAGE_FAILURE_MODE", "placeholder").strip().lower()
 
 
 class OllamaOCRException(RuntimeError):
     """Error de OCR contra Ollama con contexto suficiente para depuración."""
+
+
+def _page_failure_markdown(page_number: int, total_pages: int, error: Exception) -> str:
+    message = str(error).replace("\n", " ").strip()
+    return (
+        f"<!-- OCR failed on page {page_number}/{total_pages}: {message} -->\n\n"
+        f"> [OCR no disponible para la pagina {page_number}/{total_pages}. "
+        "La conversion continuo con el resto del documento.]"
+    )
 
 
 def _build_chat_payload(user_content: str, image_base64: str, num_gpu: int) -> dict:
@@ -75,7 +87,7 @@ def _build_chat_payload(user_content: str, image_base64: str, num_gpu: int) -> d
     }
 
 
-def _response_error_details(response: requests.Response) -> str:
+def _response_error_details(response: httpx.Response) -> str:
     try:
         data = response.json()
     except ValueError:
@@ -91,16 +103,19 @@ def _response_error_details(response: requests.Response) -> str:
     return str(data)[:500]
 
 
-def _post_ollama_chat(payload: dict) -> dict:
-    response = requests.post(
-        f"{OLLAMA_BASE_URL}/api/chat",
-        json=payload,
-        timeout=(OLLAMA_CONNECT_TIMEOUT_SECONDS, None),
-    )
+async def _post_ollama_chat_async(client: httpx.AsyncClient, payload: dict) -> dict:
+    try:
+        response = await client.post("/api/chat", json=payload)
+    except httpx.TimeoutException as exc:
+        raise OllamaOCRException(
+            f"Timeout en Ollama tras {OLLAMA_READ_TIMEOUT_SECONDS}s con el modelo '{MODEL_NAME}'."
+        ) from exc
+    except httpx.HTTPError as exc:
+        raise OllamaOCRException(f"No se pudo conectar con Ollama: {exc}") from exc
 
     try:
         response.raise_for_status()
-    except requests.HTTPError as exc:
+    except httpx.HTTPStatusError as exc:
         details = _response_error_details(response)
         raise OllamaOCRException(
             f"Ollama devolvio HTTP {response.status_code} para el modelo '{MODEL_NAME}': {details}"
@@ -161,7 +176,12 @@ def resize_image_for_ocr(image_path: Path, max_side: int) -> Path:
         return resized_path
 
 
-def ocr_page_with_nanonets(image_path: Path, page_number: int, total_pages: int) -> str:
+async def ocr_page_with_nanonets_async(
+    client: httpx.AsyncClient,
+    image_path: Path,
+    page_number: int,
+    total_pages: int,
+) -> str:
     """
     Llama a Ollama con Nanonets-OCR-s para una página. Para ello se usa la GPU
     """
@@ -187,7 +207,10 @@ def ocr_page_with_nanonets(image_path: Path, page_number: int, total_pages: int)
 
             for num_gpu in attempts:
                 try:
-                    data = _post_ollama_chat(_build_chat_payload(user_content, image_base64, num_gpu))
+                    data = await _post_ollama_chat_async(
+                        client,
+                        _build_chat_payload(user_content, image_base64, num_gpu),
+                    )
                     return data["message"]["content"]
                 except (OllamaOCRException, KeyError) as exc:
                     last_error = exc
@@ -309,26 +332,44 @@ def normalize_headings(markdown: str) -> str:
     return "\n".join(out_lines)
 
 
-def process_pdf(pdf_path: Path, output_dir: Path, on_page_start=None):
+async def process_pdf_async(pdf_path: Path, output_dir: Path, on_page_start=None):
     print(f"Procesando {pdf_path.name}...")
 
     total_pages = get_pdf_page_count(pdf_path)
     page_markdowns = []
     tmp_dir = Path(tempfile.mkdtemp(prefix="nanonets_ocr_"))
+    timeout = httpx.Timeout(
+        connect=OLLAMA_CONNECT_TIMEOUT_SECONDS,
+        read=OLLAMA_READ_TIMEOUT_SECONDS,
+        write=OLLAMA_READ_TIMEOUT_SECONDS,
+        pool=OLLAMA_CONNECT_TIMEOUT_SECONDS,
+    )
 
     try:
-        for page_number in range(1, total_pages + 1):
-            if on_page_start is not None:
-                on_page_start(page_number, total_pages)
-            print(f"  - Pagina {page_number}/{total_pages}")
-            img_path = pdf_page_to_image(pdf_path, page_number, tmp_dir)
-            try:
-                page_markdowns.append(ocr_page_with_nanonets(img_path, page_number, total_pages))
-            finally:
+        async with httpx.AsyncClient(base_url=OLLAMA_BASE_URL, timeout=timeout) as client:
+            for page_number in range(1, total_pages + 1):
+                if on_page_start is not None:
+                    on_page_start(page_number, total_pages)
+                print(f"  - Pagina {page_number}/{total_pages}")
+                img_path = pdf_page_to_image(pdf_path, page_number, tmp_dir)
                 try:
-                    img_path.unlink(missing_ok=True)
-                except OSError:
-                    pass
+                    try:
+                        page_markdowns.append(
+                            await ocr_page_with_nanonets_async(client, img_path, page_number, total_pages)
+                        )
+                    except OllamaOCRException as exc:
+                        if OCR_PAGE_FAILURE_MODE == "raise":
+                            raise
+                        print(
+                            f"  ! OCR omitido en pagina {page_number}/{total_pages}: {exc}",
+                            file=sys.stderr,
+                        )
+                        page_markdowns.append(_page_failure_markdown(page_number, total_pages, exc))
+                finally:
+                    try:
+                        img_path.unlink(missing_ok=True)
+                    except OSError:
+                        pass
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
@@ -340,6 +381,10 @@ def process_pdf(pdf_path: Path, output_dir: Path, on_page_start=None):
     out_path = output_dir / f"{pdf_path.stem}.md"
     out_path.write_text(full_md, encoding="utf-8")
     print(f"Markdown guardado en: {out_path}")
+
+
+def process_pdf(pdf_path: Path, output_dir: Path, on_page_start=None):
+    asyncio.run(process_pdf_async(pdf_path, output_dir, on_page_start=on_page_start))
 
 
 def main():

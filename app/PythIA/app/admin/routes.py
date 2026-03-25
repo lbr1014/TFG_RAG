@@ -22,7 +22,7 @@ from ..rag.PrototipoRAG import (
 from ..usuario import User
 from ..vector_update_state import VectorUpdateState, send_update_finished_email
 from ..web_scraping_state import WebScrapingSate, send_scraping_finished_email
-from app.async_tasks import executor
+from app.async_tasks import executor, markdown_executor
 
 
 USERS = "admin.users"
@@ -154,7 +154,7 @@ def convert_documents_to_markdown():
     db.session.commit()
 
     app_obj = current_app._get_current_object()
-    executor.submit(markdown_async, app_obj, job.id, current_user.email, documents_page_url())
+    markdown_executor.submit(markdown_async, app_obj, job.id, current_user.email, documents_page_url())
 
     return jsonify({"job_id": job.id}), 202
 
