@@ -29,6 +29,7 @@ class Documento(db.Model):
     chunks = db.Column(db.Integer, nullable=False,  default=0)
     hash = db.Column(db.String(100),  nullable=False, index=True)
     status = db.Column(db.String(25), nullable=False,default="cargado", index=True)
+    markdown_content = db.Column(db.Text, nullable=True)
     error_message = db.Column(db.Text, nullable=True)
     
     def __init__(self, **kwargs):
@@ -89,7 +90,7 @@ class DocumentosService:
         return self.markdown_path_for_filename(doc.nombre)
 
     def has_markdown(self, doc: Documento) -> bool:
-        return self.markdown_path_for_doc(doc).exists()
+        return bool(doc.markdown_content) or self.markdown_path_for_doc(doc).exists()
 
     def get_markdown_status_map(self, docs: Iterable[Documento]) -> dict[int, bool]:
         return {doc.id: self.has_markdown(doc) for doc in docs}
@@ -160,6 +161,7 @@ class DocumentosService:
         
         doc = Documento.query.filter_by(path=rel_path).first()
         if not doc:
+            existing_markdown = self._read_markdown_if_exists_by_filename(p.name)
             doc = Documento(
                 nombre=p.name,
                 path=rel_path,
@@ -167,20 +169,30 @@ class DocumentosService:
                 modified_at=mtime,
                 chunks=0,
                 hash=file_hash,
-                status=status or "cargado",
+                status=self._status_for_existing_markdown(status or "cargado", existing_markdown),
+                markdown_content=existing_markdown,
                 error_message=None,
             )
             db.session.add(doc)
             
         else:
+            hash_changed = doc.hash != file_hash
             
             doc.nombre = p.name
             doc.size_bytes = stat.st_size
             doc.modified_at = mtime
             doc.hash = file_hash
+            if hash_changed:
+                doc.markdown_content = None
+                self.delete_markdown_file(doc)
+            elif not doc.markdown_content:
+                doc.markdown_content = self._read_markdown_if_exists(doc)
+
             if status is not None:
-                doc.status = status
+                doc.status = self._status_for_existing_markdown(status, doc.markdown_content)
                 doc.error_message = None
+            elif doc.markdown_content and doc.status != "indexado":
+                doc.status = "con markdown"
 
     def delete_document(self, doc_id: int) -> None:
         """
@@ -220,6 +232,32 @@ class DocumentosService:
                 md_path.unlink()
         except Exception:
             pass
+        doc.markdown_content = None
+
+    def _read_markdown_if_exists_by_filename(self, filename: str) -> str | None:
+        md_path = self.markdown_path_for_filename(filename)
+        if not md_path.exists():
+            return None
+        return md_path.read_text(encoding="utf-8")
+
+    def _read_markdown_if_exists(self, doc: Documento) -> str | None:
+        return self._read_markdown_if_exists_by_filename(doc.nombre)
+
+    def _status_for_existing_markdown(self, base_status: str, markdown_content: str | None) -> str:
+        if markdown_content and base_status != "indexado":
+            return "con markdown"
+        return base_status
+
+    def persist_markdown_for_document(self, doc: Documento) -> bool:
+        markdown_content = self._read_markdown_if_exists(doc)
+        if markdown_content is None:
+            return False
+
+        doc.markdown_content = markdown_content
+        if doc.status != "indexado":
+            doc.status = "con markdown"
+        doc.error_message = None
+        return True
 
     def delete_document_relations(self, doc: Documento) -> None:
         chunk_ids_subq = db.session.query(Chunk.id).filter(Chunk.document_id == doc.id).subquery()
@@ -238,7 +276,16 @@ class DocumentosService:
         db.session.commit()
 
     def convert_document_to_markdown(self, doc: Documento, on_page_start=None) -> bool:
+        if doc.markdown_content:
+            if doc.status != "indexado":
+                doc.status = "con markdown"
+            doc.error_message = None
+            db.session.commit()
+            return False
         if self.has_markdown(doc):
+            changed = self.persist_markdown_for_document(doc)
+            if changed:
+                db.session.commit()
             return False
         if self.markdown_converter is None:
             raise RuntimeError("No hay conversor de Markdown configurado.")
@@ -248,6 +295,9 @@ class DocumentosService:
             raise FileNotFoundError(f"PDF no existe en contenedor: {pdf_path}")
 
         self.markdown_converter(pdf_path, self.markdown_dir, on_page_start=on_page_start)
+        if not self.persist_markdown_for_document(doc):
+            raise RuntimeError(f"No se pudo guardar el Markdown generado para {doc.nombre}.")
+        db.session.commit()
         return True
 
     def convert_pending_to_markdown(self, on_progress=None, on_current_doc=None, should_cancel=None, on_page_start=None) -> dict[str, int]:
@@ -255,11 +305,34 @@ class DocumentosService:
         skipped = 0
 
         docs = Documento.query.order_by(Documento.modified_at.desc()).all()
-        total = len(docs)
+        pending_docs = []
+        changed_existing = False
+
+        for doc in docs:
+            if doc.markdown_content:
+                if doc.status not in {"indexado", "con markdown"}:
+                    doc.status = "con markdown"
+                    doc.error_message = None
+                    changed_existing = True
+                skipped += 1
+                continue
+
+            if self.has_markdown(doc):
+                if self.persist_markdown_for_document(doc):
+                    changed_existing = True
+                skipped += 1
+                continue
+
+            pending_docs.append(doc)
+
+        if changed_existing:
+            db.session.commit()
+
+        total = len(pending_docs)
         if on_progress:
             on_progress(0, total)
 
-        for i, doc in enumerate(docs, start=1):
+        for i, doc in enumerate(pending_docs, start=1):
             if should_cancel and should_cancel():
                 raise JobCancelledError("Conversión a Markdown cancelada por el usuario.")
             if on_current_doc:
@@ -289,7 +362,7 @@ class DocumentosService:
         from .rag.PrototipoRAG import index_pdf
 
         self.purge_missing_files()
-        docs = Documento.query.filter(Documento.status.in_(["cargado", "fallido"])).all()
+        docs = Documento.query.filter(Documento.status.in_(["cargado", "con markdown", "fallido"])).all()
 
         total = len(docs)
         indexed = 0
