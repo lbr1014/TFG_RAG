@@ -40,6 +40,9 @@ services:
       - "11435:11434"
     volumes:
       - ollama:/root/.ollama
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "sh", "-lc", "ollama list >/dev/null 2>&1 || exit 1"]
@@ -84,6 +87,8 @@ services:
       - RAG_MAX_WORKERS=${RAG_MAX_WORKERS:-4}
       - DOCS_DIR=/data/pliegos
       - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --capture-output --log-level debug
+      - OLLAMA_NUM_GPU=-1
+
 
     restart: unless-stopped
     volumes:

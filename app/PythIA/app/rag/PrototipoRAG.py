@@ -97,8 +97,15 @@ class Settings:
 
     # Ollama
     _ollama_num_gpu = os.getenv("OLLAMA_NUM_GPU")
-    OLLAMA_NUM_GPU: Optional[int] = (
-        int(_ollama_num_gpu) if _ollama_num_gpu not in (None, "") else None
+    OLLAMA_NUM_GPU: int = (
+        int(_ollama_num_gpu)
+        if _ollama_num_gpu not in (None, "")
+        else (-1 if torch is not None and torch.cuda.is_available() else 0)
+    )
+    OLLAMA_NUM_GPU_SOURCE: str = (
+        "env"
+        if _ollama_num_gpu not in (None, "")
+        else ("auto-cuda-full-offload" if torch is not None and torch.cuda.is_available() else "auto-cpu")
     )
     OLLAMA_CONNECT_TIMEOUT_SECONDS: float = float(
         os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10")
@@ -142,11 +149,11 @@ def _embedding_execution_backend() -> str:
 
 def _ollama_execution_backend() -> str:
     num_gpu = settings.OLLAMA_NUM_GPU
-    if num_gpu is None:
-        return "sin fijar desde la app (Ollama decide CPU/GPU)"
+    if num_gpu == -1:
+        return f"GPU (num_gpu=-1, all layers when possible, source={settings.OLLAMA_NUM_GPU_SOURCE})"
     if num_gpu > 0:
-        return f"GPU (num_gpu={num_gpu})"
-    return "CPU (num_gpu=0)"
+        return f"GPU (num_gpu={num_gpu} layers, source={settings.OLLAMA_NUM_GPU_SOURCE})"
+    return f"CPU (num_gpu=0, source={settings.OLLAMA_NUM_GPU_SOURCE})"
 
 
 # =========================
@@ -798,11 +805,10 @@ async def ask_ollama(
         "model": model,
         "prompt": full_prompt,
         "stream": True,
-    }
-    if settings.OLLAMA_NUM_GPU is not None:
-        request_payload["options"] = {
+        "options": {
             "num_gpu": settings.OLLAMA_NUM_GPU,
-        }
+        },
+    }
 
     logger.info(
         "Consulta a Ollama | model=%s | backend=%s | base_url=%s",
