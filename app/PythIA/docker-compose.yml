@@ -35,6 +35,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: flask_ollama
+    gpus: all
     ports:
       - "11435:11434"
     volumes:
@@ -63,6 +64,7 @@ services:
     build: .
     init: true
     container_name: flask_web
+    gpus: all
     env_file: 
       - .env
       - secret.env
@@ -78,6 +80,8 @@ services:
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - QDRANT_URL=http://qdrant:6333
+      - RAG_MODEL_DEVICE=${RAG_MODEL_DEVICE:-cuda}
+      - RAG_MAX_WORKERS=${RAG_MAX_WORKERS:-4}
       - DOCS_DIR=/data/pliegos
       - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --capture-output --log-level debug
 

@@ -12,7 +12,7 @@ from app.chunk import Chunk
 from app.consultaChunk import ConsultaChunk
 logger = logging.getLogger(__name__)
 
-from .PrototipoRAG import QueryCancelledError, obtener_mejor_chunk
+from .PrototipoRAG import OllamaTimeoutError, QueryCancelledError, obtener_mejor_chunk
 from qdrant_client import models as qmodels
 
 EMPTY_ANSWER: Dict[str, Any] = {
@@ -23,7 +23,7 @@ EMPTY_ANSWER: Dict[str, Any] = {
     "chunk": "",
 }
 
-def rag_answer(question: str, should_cancel=None, on_status=None, user_id: int | None = None) -> Dict[str, Any]:
+async def rag_answer(question: str, should_cancel=None, on_status=None, user_id: int | None = None) -> Dict[str, Any]:
     """
     Devuelve dict con:
       answer, title, filename, segment_index, chunk
@@ -40,13 +40,18 @@ def rag_answer(question: str, should_cancel=None, on_status=None, user_id: int |
     try:
         if on_status:
             on_status("Preparando consulta...")
-        data = obtener_mejor_chunk(
+        data = await obtener_mejor_chunk(
             question,
             should_cancel=should_cancel,
             on_status=on_status,
         )
     except QueryCancelledError:
         raise
+    except OllamaTimeoutError as e:
+        logger.warning("Timeout consultando Ollama: %s", e)
+        data = message_error(
+            "El modelo está tardando demasiado en responder. Inténtalo de nuevo en unos segundos."
+        )
     except Exception as e:
         logger.exception("Error en rag_answer: %s", e)
         data = message_error("Ha ocurrido un error consultando el sistema. Inténtalo de nuevo.")

@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -135,11 +136,13 @@ def run_rag_query_async(app, job_id: int, user_id: int) -> None:
                 job.message = message
                 db.session.commit()
 
-            result = rag_answer(
-                job.question,
-                should_cancel=should_cancel,
-                on_status=on_status,
-                user_id=user_id,
+            result = asyncio.run(
+                rag_answer(
+                    job.question,
+                    should_cancel=should_cancel,
+                    on_status=on_status,
+                    user_id=user_id,
+                )
             )
 
             db.session.refresh(job)
