@@ -7,6 +7,7 @@ from ..forms import EditUserForm
 from ..usuario import User
 from app.consulta import Consulta
 from app.rag.PrototipoRAG import qdrant_get_payloads
+from ..inetrnacionalizacion.tarduccion import t
 
 def paginate_consultas(base_query, per_page=10):
     """
@@ -43,7 +44,7 @@ def inicio():
     return render_template(
         "index.html",
         titulo="PythIA",
-        autor="Autora: Lydia Blanco Ruiz"
+        autor=t("app.author")
     )
 
 @main_bp.route("/pagina_principal")
@@ -87,7 +88,7 @@ def edit_user():
                 exists = User.get_by_email(new_email)
                             
                 if exists:
-                    form.email.errors.append("Ya existe un usuario con ese email.")
+                    form.email.errors.append(t("auth.email_exists"))
                     return render_template("edit_user.html", form=form, user=current_user)
 
             current_user.email = new_email

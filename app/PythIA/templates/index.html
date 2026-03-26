@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ current_locale }}">
 <head>
     <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}inicio{% endblock %}</title>
@@ -24,17 +24,17 @@
 
         <div class="d-flex align-items-center gap-2">
           <div class="d-none d-md-flex align-items-center gap-2">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-header">Iniciar sesión</a>
-            <a href="{{ url_for('auth.singup') }}" class="btn btn-outline-light btn-header">Registrarse</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-header">{{ t("landing.login") }}</a>
+            <a href="{{ url_for('auth.singup') }}" class="btn btn-outline-light btn-header">{{ t("landing.signup") }}</a>
           </div>
 
           <div class="dropdown d-md-none">
-            <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu">
+            <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ t('nav.open_menu') }}">
               <span class="menu-dots" aria-hidden="true">&#8942;</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end mobile-nav-menu">
-              <li><a class="dropdown-item" href="{{ url_for('auth.login') }}">Iniciar sesión</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('auth.singup') }}">Registrarse</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.login') }}">{{ t("landing.login") }}</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.singup') }}">{{ t("landing.signup") }}</a></li>
             </ul>
           </div>
         </div>
@@ -47,79 +47,64 @@
       <div class="container py-5">
 
         <section class="hero-block mx-auto text-center">
-          <span class="hero-badge luz">Responde todas tus preguntas</span>
+          <span class="hero-badge luz">{{ t("landing.hero_badge") }}</span>
 
           <h2 class="hero-title mt-3">
-            Accede a información clave sobre las licitaciones.
+            {{ t("landing.hero_title") }}
           </h2>
 
           <p class="hero-subtitle mx-auto">
-            PythIA utiliza un modelo LLM combinado con un sistema RAG para localizar información precisa en los pliegos 
-            de la Junta de Gobierno de la Diputación Provincial de Burgos y generar respuestas claras, rápidas y contextualizadas 
-            sobre los procedimientos de contratación pública.
+            {{ t("landing.hero_subtitle") }}
           </p>
 
           <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-hero-primary">Obtener acceso</a>
-            <a href="https://github.com/lbr1014/TFG_RAG" target="_blank" rel="noopener noreferrer"  class="btn btn-hero-secondary">Más información</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-hero-primary">{{ t("landing.get_access") }}</a>
+            <a href="https://github.com/lbr1014/TFG_RAG" target="_blank" rel="noopener noreferrer" class="btn btn-hero-secondary">{{ t("landing.more_info") }}</a>
           </div>
         </section>
 
-        <!-- Cajas rotatorias -->
         <section class="info-rotator-section mt-5">
           <div id="infoCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
             <div class="carousel-inner">
-
               <div class="carousel-item active">
                 <div class="info-card mx-auto luz">
                   <div class="info-card-icon">📜</div>
-                  <h3>Consulta pliegos concretos</h3>
-                  <p>
-                    Obtén respuestas sobre el contenido de los pliegos de licitación de la Junta de Gobierno de la Diputación Provincial de Burgos.
-                  </p>
+                  <h3>{{ t("landing.card_1_title") }}</h3>
+                  <p>{{ t("landing.card_1_text") }}</p>
                 </div>
               </div>
 
               <div class="carousel-item">
                 <div class="info-card mx-auto luz">
                   <div class="info-card-icon">🤖</div>
-                  <h3>Respuestas con LLM + RAG</h3>
-                  <p>
-                    El sistema combina generación de lenguaje natural con recuperación de contexto documental para responder con mayor precisión.
-                  </p>
+                  <h3>{{ t("landing.card_2_title") }}</h3>
+                  <p>{{ t("landing.card_2_text") }}</p>
                 </div>
               </div>
 
               <div class="carousel-item">
                 <div class="info-card mx-auto luz">
                   <div class="info-card-icon">🎯</div>
-                  <h3>Respuestas sin alucinaciones</h3>
-                  <p>
-                    El sistema asegura respuestas sin alucionaciones indicando claramente cuando la pregunta se sale del contenido de los pliegos.
-                  </p>
+                  <h3>{{ t("landing.card_3_title") }}</h3>
+                  <p>{{ t("landing.card_3_text") }}</p>
                 </div>
               </div>
 
               <div class="carousel-item">
                 <div class="info-card mx-auto luz">
                   <div class="info-card-icon">🕵️</div>
-                  <h3>Búsqueda precisa de información</h3>
-                  <p>
-                    Localiza cláusulas, requisitos y datos relevantes dentro de la documentación administrativa sin revisar manualmente todo el expediente.
-                  </p>
+                  <h3>{{ t("landing.card_4_title") }}</h3>
+                  <p>{{ t("landing.card_4_text") }}</p>
                 </div>
               </div>
 
               <div class="carousel-item">
                 <div class="info-card mx-auto luz">
                   <div class="info-card-icon">⏳</div>
-                  <h3>Acceso rápido y claro</h3>
-                  <p>
-                    Reduce el tiempo de análisis documental y facilita la consulta de información clave de forma ágil, visual y estructurada.
-                  </p>
+                  <h3>{{ t("landing.card_5_title") }}</h3>
+                  <p>{{ t("landing.card_5_text") }}</p>
                 </div>
               </div>
-
             </div>
 
             <div class="carousel-indicators position-static mt-4">

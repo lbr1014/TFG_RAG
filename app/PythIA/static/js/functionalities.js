@@ -56,6 +56,7 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
   const deleteModal = document.getElementById("deleteConfirmModal")
   const deleteName = document.getElementById("deleteItemName")
   const confirmBtn = document.getElementById("confirmDeleteBtn")
+  const deleteQuestion = deleteModal?.querySelector(".delete-modal-question")
 
   if (!deleteModal || !deleteName || !confirmBtn) return
 
@@ -69,6 +70,10 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
       const formId = button.getAttribute("data-form-id")
 
       deleteName.textContent = itemName
+      if (deleteQuestion) {
+          const template = deleteQuestion.dataset.deleteTemplate || "{item}"
+          deleteQuestion.firstChild.textContent = template.replace("__ITEM__", "").trim().replace(/\s+\?$/, " ")
+      }
       currentFormId = formId
 
   })

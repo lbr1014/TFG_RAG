@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "tabla_historial.html" import consultas_historial with context %}
 
-{% block title %}Página principal{% endblock %}
+{% block title %}{{ t("nav.home") }}{% endblock %}
 
 {% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
@@ -13,34 +13,32 @@
       <div class="col-12 col-xl-10">
         <div class="d-grid d-md-flex justify-content-center mb-4">
           <a href="{{ url_for('rag.rag_page') }}" class="btn btn-modelo luz">
-            Consultar al modelo
+            {{ t("history.query_button") }}
           </a>
         </div>
 
-        <h1>Historial de consultas</h1>
+        <h1>{{ t("history.title") }}</h1>
 
         {% if not consultas %}
-          <div class="alert alert-info">Realiza tu primera consulta.</div>
+          <div class="alert alert-info">{{ t("history.empty_home") }}</div>
         {% else %}
           {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
 
           {% if total_pages > 1 %}
             <div class="pagination">
               {% if page > 1 %}
-                <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">&laquo; Anterior</a>
+                <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">{{ t("common.previous") }}</a>
               {% endif %}
 
-              <span class="page-info">Página {{ page }} de {{ total_pages }} ({{ total_consultas }} consultas)</span>
+              <span class="page-info">{{ t("common.page", page=page, total_pages=total_pages, total_items=total_consultas, items_label=t("history.title")|lower) }}</span>
 
               {% if page < total_pages %}
-                <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">Siguiente &raquo;</a>
+                <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">{{ t("common.next") }}</a>
               {% endif %}
             </div>
           {% endif %}
-
         {% endif %}
       </div>
     </div>
   </div>
-
 {% endblock %}

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, flash, redirect, request, url_for
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -12,6 +12,7 @@ from .vector_update_state import VectorUpdateState
 from .web_scraping_state import WebScrapingSate
 from .rag_query_state import RAGQueryState
 from .markdown_conversion_state import MarkdownConversionState
+from .inetrnacionalizacion.tarduccion import init_app as init_i18n, t
 
 def create_app():
     load_dotenv("secret.env")
@@ -52,10 +53,16 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+    init_i18n(app)
 
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
-    login_manager.login_message = "Debes iniciar sesión para acceder a esta página."
+    login_manager.login_message = t("auth.login_required")
+
+    @login_manager.unauthorized_handler
+    def _unauthorized():
+        flash(t("auth.login_required"), "warning")
+        return redirect(url_for("auth.login", next=request.path))
 
     @login_manager.user_loader
     def load_user(user_id: str):

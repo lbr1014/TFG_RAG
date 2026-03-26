@@ -6,13 +6,13 @@
         <thead>
           <tr>
             {% if current_user.is_admin %}
-              <th class="d-none d-lg-table-cell">Usuario</th>
+              <th class="d-none d-lg-table-cell">{{ t("history.user") }}</th>
             {% endif %}
-            <th>Fecha</th>
-            <th>Pregunta</th>
-            <th class="d-none d-md-table-cell">Documento</th>
-            <th class="d-none d-md-table-cell">Tiempo (s)</th>
-            <th>Acciones</th>
+            <th>{{ t("history.date") }}</th>
+            <th>{{ t("history.question") }}</th>
+            <th class="d-none d-md-table-cell">{{ t("history.document") }}</th>
+            <th class="d-none d-md-table-cell">{{ t("history.time") }}</th>
+            <th>{{ t("common.actions") }}</th>
           </tr>
         </thead>
 
@@ -23,7 +23,6 @@
             {% set stored_fragments = (c.fragmentos or [])|sort(attribute="ranking") %}
             {% set best_fragment = (stored_fragments|first) if (stored_fragments|length > 0) else none %}
             {% set best_fragment_meta = best_fragment.get("metadata") if best_fragment else {} %}
-
             {% set used = (c.consultaChunks or []) %}
             {% set used_sorted = used|sort(attribute="ranking") %}
             {% set best_cc = (used_sorted|first) if (used_sorted|length > 0) else none %}
@@ -50,7 +49,7 @@
                           data-bs-toggle="modal"
                           data-bs-target="#chunksModal"
                           data-consulta-id="{{ c.id }}">
-                    Detalles
+                    {{ t("history.details") }}
                   </button>
 
                   <form id="delete-consulta-form-{{ c.id }}"
@@ -61,9 +60,9 @@
                             class="btn btn-sm btn-danger"
                             data-bs-toggle="modal"
                             data-bs-target="#deleteConfirmModal"
-                            data-item-name="la consulta #{{ c.id }}"
+                            data-item-name="{{ t('history.delete_item', id=c.id) }}"
                             data-form-id="delete-consulta-form-{{ c.id }}">
-                      Borrar
+                      {{ t("common.delete") }}
                     </button>
                   </form>
                 </div>
@@ -73,9 +72,9 @@
             <tr class="details-row">
               <td colspan="{% if current_user.is_admin %}6{% else %}5{% endif %}">
                 <details>
-                  <summary>Ver respuesta</summary>
+                  <summary>{{ t("history.view_answer") }}</summary>
                   <div style="margin-top:.5rem;">
-                    <p><strong>Respuesta:</strong><br>{{ c.respuesta }}</p>
+                    <p><strong>{{ t("history.answer") }}</strong><br>{{ c.respuesta }}</p>
                   </div>
                 </details>
               </td>
@@ -83,20 +82,20 @@
 
             <template id="chunks-content-{{ c.id }}">
               <div>
-                <h3 class="chunks-modal-title">Chunks usados - consulta #{{ c.id }}</h3>
+                <h3 class="chunks-modal-title">{{ t("history.chunks_details", id=c.id) }}</h3>
                 <p class="chunks-modal-sub">
                   {{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }} · {{ c.pregunta }}
                 </p>
               </div>
 
               <div class="chunks-card">
-                <p style="margin:0 0 .4rem 0;"><strong>Mejor fragmento (ranking #1)</strong></p>
+                <p style="margin:0 0 .4rem 0;"><strong>{{ t("history.best_fragment") }}</strong></p>
 
                 <div class="chunks-meta-grid">
-                  <div><b>Archivo:</b> {{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</div>
-                  <div><b>Titulo:</b> {{ (best_fragment_meta.get("title") if best_fragment else qm_best.get("title")) or "-" }}</div>
-                  <div><b>Segmento:</b> {{ best_fragment_meta.get("segment_index") if best_fragment and best_fragment_meta.get("segment_index") is not none else (qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "-") }}</div>
-                  <div><b>Similitud:</b>
+                  <div><b>{{ t("history.file") }}</b> {{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</div>
+                  <div><b>{{ t("history.title_label") }}</b> {{ (best_fragment_meta.get("title") if best_fragment else qm_best.get("title")) or "-" }}</div>
+                  <div><b>{{ t("history.segment") }}</b> {{ best_fragment_meta.get("segment_index") if best_fragment and best_fragment_meta.get("segment_index") is not none else (qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "-") }}</div>
+                  <div><b>{{ t("history.similarity") }}</b>
                     {% if best_fragment %}{{ "%.6f"|format(best_fragment.get("similitud", 0.0)) }}{% elif best_cc %}{{ "%.6f"|format(best_cc.similitud) }}{% else %}-{% endif %}
                   </div>
                 </div>
@@ -107,7 +106,7 @@
                   <pre class="chunks-pre">{{ qc_best.get("content") }}</pre>
                 {% else %}
                   <div class="alert alert-warning" style="margin-top:.6rem;">
-                    No se pudo recuperar el contenido del mejor chunk.
+                    {{ t("history.best_chunk_missing") }}
                   </div>
                 {% endif %}
               </div>
@@ -115,7 +114,7 @@
               {% set fragment_count = stored_fragments|length if stored_fragments|length > 0 else used_sorted|length %}
               <div class="chunks-card">
                 <p style="margin:0 0 .4rem 0;">
-                  <strong>Top {{ [10, fragment_count]|min }} de {{ fragment_count }} chunks usados</strong>
+                  <strong>{{ t("history.top_chunks", shown=[10, fragment_count]|min, total=fragment_count) }}</strong>
                 </p>
 
                 {% if stored_fragments|length > 0 %}
@@ -124,10 +123,10 @@
                       <table class="table table-hover align-middle mb-0 app-table">
                         <thead>
                           <tr>
-                            <th>Ranking</th>
-                            <th>Similitud</th>
-                            <th>Documento</th>
-                            <th>Segmento</th>
+                            <th>{{ t("history.ranking") }}</th>
+                            <th>{{ t("history.similarity") }}</th>
+                            <th>{{ t("history.document") }}</th>
+                            <th>{{ t("history.segment") }}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -145,17 +144,17 @@
                     </div>
                   </div>
                 {% elif used_sorted|length == 0 %}
-                  <div class="alert alert-info">Esta consulta no tiene chunks asociados en la base de datos.</div>
+                  <div class="alert alert-info">{{ t("history.no_chunks") }}</div>
                 {% else %}
                   <div class="table-card mt-3">
                     <div class="table-responsive">
                       <table class="table table-hover align-middle mb-0 app-table">
                         <thead>
                           <tr>
-                            <th>Ranking</th>
-                            <th>Similitud</th>
-                            <th>Documento</th>
-                            <th>Segmento</th>
+                            <th>{{ t("history.ranking") }}</th>
+                            <th>{{ t("history.similarity") }}</th>
+                            <th>{{ t("history.document") }}</th>
+                            <th>{{ t("history.segment") }}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -175,7 +174,6 @@
                 {% endif %}
               </div>
             </template>
-
           {% endfor %}
         </tbody>
       </table>

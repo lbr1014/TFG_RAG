@@ -11,6 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let activeJob = null;
 
+  function tr(key, params) {
+    return window.pythiaTranslate ? window.pythiaTranslate(key, params) : key;
+  }
+
+  function errorSuffix(error) {
+    return error ? ` Error: ${error}` : "";
+  }
+
   function toggleButtons(disabled) {
     uploadForm?.querySelectorAll("button").forEach((button) => {
       button.disabled = disabled;
@@ -45,9 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setUIRunning(message) {
     showProgressBox();
-    if (text) {
-      text.textContent = message;
-    }
+    if (text) text.textContent = message;
     if (bar) {
       bar.style.animation = "none";
       bar.style.width = "0%";
@@ -60,9 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showProgressBox();
     bar.style.animation = "none";
     bar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
-    if (text) {
-      text.textContent = message;
-    }
+    if (text) text.textContent = message;
   }
 
   function setUIDone(message) {
@@ -83,9 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       bar.style.animation = "none";
       bar.style.width = "100%";
     }
-    if (text) {
-      text.textContent = message;
-    }
+    if (text) text.textContent = message;
     setActiveJob(null, null);
     toggleButtons(false);
   }
@@ -122,33 +124,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (status === "running" || status === "queued") {
           const message = currentDoc
-            ? `Actualizando base vectorial... (${progress}%) - ${currentDoc}`
-            : `Actualizando base vectorial... (${progress}%)`;
+            ? tr("vector.updating_doc", { progress, name: currentDoc })
+            : tr("vector.updating", { progress });
           setUIProgress(progress, message);
           await new Promise((resolve) => window.setTimeout(resolve, 1000));
           continue;
         }
 
         if (status === "done") {
-          setUIDone("Base vectorial actualizada.");
+          setUIDone(tr("vector.done_ui"));
           return;
         }
 
         if (status === "cancelled") {
-          setUICancelled("Actualizacion vectorial cancelada.");
+          setUICancelled(tr("vector.cancelled_ui"));
           return;
         }
 
         if (status === "failed") {
-          const error = data.error ? ` Error: ${data.error}` : "";
-          setUIFailed(`Fallo la actualizacion de la base vectorial.${error}`);
+          setUIFailed(tr("vector.failed_ui", { error_suffix: errorSuffix(data.error) }));
           return;
         }
 
-        setUIFailed("Estado de actualizacion desconocido.");
+        setUIFailed(tr("vector.unknown_state"));
         return;
       } catch (error) {
-        setUIFailed("No se pudo consultar el estado del job.");
+        setUIFailed(tr("vector.status_error"));
         return;
       }
     }
@@ -159,19 +160,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!vectorForm) return;
 
     try {
-      setUIRunning("Lanzando actualizacion de base vectorial...");
+      setUIRunning(tr("vector.starting_ui"));
       const data = await fetchJson(vectorForm.action, { method: "POST" });
 
       if (!data.job_id) {
-        setUIFailed("No se recibio el identificador del job.");
+        setUIFailed(tr("vector.no_job_id"));
         return;
       }
 
       setActiveJob("vector", data.job_id);
-      setUIProgress(0, "Actualizando base vectorial... (0%)");
+      setUIProgress(0, tr("vector.updating", { progress: 0 }));
       pollVectorJob(data.job_id);
     } catch (error) {
-      setUIFailed("No se pudo iniciar la actualizacion.");
+      setUIFailed(tr("vector.start_error"));
     }
   }
 
@@ -183,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await fetchJson(statusUrl);
         const status = data.status;
         const progress = Number(data.progress ?? 0);
-        const message = data.message || `Convirtiendo documentos a Markdown... (${progress}%)`;
+        const message = data.message || tr("markdown.converting_doc", { name: progress + "%" });
 
         if (status === "running" || status === "queued") {
           setUIProgress(progress, message);
@@ -192,25 +193,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (status === "done") {
-          setUIDone(data.message || "Conversion a Markdown completada.");
+          setUIDone(data.message || tr("markdown.done_stats", { count: 0 }));
           return;
         }
 
         if (status === "cancelled") {
-          setUICancelled(data.message || "Conversion a Markdown cancelada.");
+          setUICancelled(data.message || tr("markdown.cancelled"));
           return;
         }
 
         if (status === "failed") {
-          const error = data.error ? ` Error: ${data.error}` : "";
-          setUIFailed(`Fallo la conversion a Markdown.${error}`);
+          setUIFailed(data.message || tr("markdown.failed"));
           return;
         }
 
-        setUIFailed("Estado de conversion desconocido.");
+        setUIFailed(tr("markdown.unknown_state"));
         return;
       } catch (error) {
-        setUIFailed("No se pudo consultar el estado de la conversion.");
+        setUIFailed(tr("markdown.status_error"));
         return;
       }
     }
@@ -221,19 +221,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!markdownForm) return;
 
     try {
-      setUIRunning("Lanzando conversion a Markdown...");
+      setUIRunning(tr("markdown.starting_ui"));
       const data = await fetchJson(markdownForm.action, { method: "POST" });
 
       if (!data.job_id) {
-        setUIFailed("No se recibio el identificador del job.");
+        setUIFailed(tr("markdown.no_job_id"));
         return;
       }
 
       setActiveJob("markdown", data.job_id);
-      setUIProgress(0, "Convirtiendo documentos a Markdown... (0%)");
+      setUIProgress(0, tr("markdown.starting_ui"));
       pollMarkdownJob(data.job_id);
     } catch (error) {
-      setUIFailed("No se pudo iniciar la conversion a Markdown.");
+      setUIFailed(tr("markdown.start_error"));
     }
   }
 
@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await fetchJson(statusUrl);
         const status = data.status;
         const progress = Number(data.progress ?? 0);
-        const message = data.message || `Web scraping... (${progress}%)`;
+        const message = data.message || tr("scraping.starting_ui");
 
         if (status === "running" || status === "queued") {
           setUIProgress(progress, message);
@@ -254,25 +254,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (status === "done") {
-          setUIDone("Web scraping completado.");
+          setUIDone(tr("scraping.done_ui"));
           return;
         }
 
         if (status === "cancelled") {
-          setUICancelled("Web scraping cancelado.");
+          setUICancelled(tr("scraping.cancelled"));
           return;
         }
 
         if (status === "failed") {
-          const error = data.error ? ` Error: ${data.error}` : "";
-          setUIFailed(`Fallo el web scraping.${error}`);
+          setUIFailed(tr("scraping.failed_ui", { error_suffix: errorSuffix(data.error) }));
           return;
         }
 
-        setUIFailed("Estado de scraping desconocido.");
+        setUIFailed(tr("scraping.unknown_state"));
         return;
       } catch (error) {
-        setUIFailed("No se pudo consultar el estado del scraping.");
+        setUIFailed(tr("scraping.status_error"));
         return;
       }
     }
@@ -283,19 +282,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!scrapingForm) return;
 
     try {
-      setUIRunning("Lanzando web scraping...");
+      setUIRunning(tr("scraping.starting_ui"));
       const data = await fetchJson(scrapingForm.action, { method: "POST" });
 
       if (!data.job_id) {
-        setUIFailed("No se recibio el identificador del scraping.");
+        setUIFailed(tr("scraping.no_job_id"));
         return;
       }
 
       setActiveJob("scraping", data.job_id);
-      setUIProgress(0, "Web scraping... (0%)");
+      setUIProgress(0, tr("scraping.starting_ui"));
       pollScrapingJob(data.job_id);
     } catch (error) {
-      setUIFailed("No se pudo iniciar el web scraping.");
+      setUIFailed(tr("scraping.start_error"));
     }
   }
 
@@ -306,17 +305,17 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       if (activeJob.type === "vector") {
         await fetchJson(`/admin/vector-db/cancel/${activeJob.jobId}`, { method: "POST" });
-        setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, "Cancelando actualizacion vectorial...");
+        setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, tr("vector.cancelling"));
       } else if (activeJob.type === "markdown") {
         await fetchJson(`/admin/documents/markdown/cancel/${activeJob.jobId}`, { method: "POST" });
-        setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, "Cancelando conversion a Markdown...");
+        setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, tr("markdown.cancelling"));
       } else if (activeJob.type === "scraping") {
         await fetchJson(`/admin/documents/web_scraping/cancel/${activeJob.jobId}`, { method: "POST" });
-        setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, "Cancelando web scraping...");
+        setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, tr("scraping.cancelling"));
       }
     } catch (error) {
       cancelButton.disabled = false;
-      setUIFailed(error.message || "No se pudo cancelar el proceso.");
+      setUIFailed(error.message || tr("process.cancel_error"));
     }
   }
 
@@ -329,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedId = sessionStorage.getItem("admin_active_job_id");
   if (savedType && savedId) {
     setActiveJob(savedType, savedId);
-    setUIRunning("Reanudando seguimiento del proceso...");
+    setUIRunning(tr("process.resume_tracking"));
     if (savedType === "vector") {
       pollVectorJob(savedId);
     } else if (savedType === "markdown") {

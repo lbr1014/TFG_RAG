@@ -23,6 +23,7 @@ from ..usuario import User
 from ..vector_update_state import VectorUpdateState, send_update_finished_email
 from ..web_scraping_state import WebScrapingSate, send_scraping_finished_email
 from app.async_tasks import executor, markdown_executor
+from ..inetrnacionalizacion.tarduccion import get_locale, localize_runtime_message, t, translate_for
 
 
 USERS = "admin.users"
@@ -80,7 +81,7 @@ def create_user():
         is_admin = form.is_admin.data
 
         if User.get_by_email(email):
-            form.email.errors.append("Ya existe un usuario con ese email.")
+            form.email.errors.append(t("auth.email_exists"))
             return render_template("admin_create_user.html", form=form)
 
         user = User(nombre=nombre, email=email)
@@ -143,10 +144,11 @@ def upload_documents():
 @login_required
 @admin_required
 def convert_documents_to_markdown():
+    lang = get_locale()
     job = MarkdownConversionState(
         status="queued",
         progress=0,
-        message="En cola",
+        message=translate_for(lang, "jobs.queued_short"),
         cancel_requested=False,
         error=None,
     )
@@ -154,7 +156,7 @@ def convert_documents_to_markdown():
     db.session.commit()
 
     app_obj = current_app._get_current_object()
-    markdown_executor.submit(markdown_async, app_obj, job.id, current_user.email, documents_page_url())
+    markdown_executor.submit(markdown_async, app_obj, job.id, current_user.email, documents_page_url(), lang)
 
     return jsonify({"job_id": job.id}), 202
 
@@ -166,16 +168,16 @@ def cancel_markdown_conversion(job_id: int):
     job = MarkdownConversionState.query.get_or_404(job_id)
 
     if job.status in {"done", "failed", "cancelled"}:
-        return jsonify({"status": job.status, "message": "El job ya ha terminado."}), 200
+        return jsonify({"status": job.status, "message": t("jobs.already_finished")}), 200
 
     job.cancel_requested = True
-    job.message = "Cancelando Conversión a Markdown..."
+    job.message = t("markdown.cancelling")
     if job.status == "queued":
         job.status = "cancelled"
         job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
     db.session.commit()
 
-    return jsonify({"status": job.status, "message": job.message}), 202
+    return jsonify({"status": job.status, "message": localize_runtime_message(job.message)}), 202
 
 
 @admin_bp.get("/documents/markdown/status/<int:job_id>")
@@ -190,14 +192,14 @@ def markdown_conversion_status(job_id: int):
         {
             "status": job.status,
             "progress": job.progress,
-            "message": job.message,
+            "message": localize_runtime_message(job.message),
             "error": job.error,
             "cancel_requested": bool(job.cancel_requested),
         }
     )
 
 
-def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
+def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str = "es") -> None:
     zone_now = datetime.now(ZoneInfo("Europe/Madrid"))
 
     with app.app_context():
@@ -208,7 +210,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
         try:
             if job.cancel_requested:
                 job.status = "cancelled"
-                job.message = "Conversión a Markdown cancelada."
+                job.message = translate_for(lang, "markdown.cancelled")
                 job.finished_at = zone_now
                 db.session.commit()
                 return
@@ -216,7 +218,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             job.status = "running"
             job.started_at = zone_now
             job.progress = 0
-            job.message = "Iniciando Conversión a Markdown..."
+            job.message = translate_for(lang, "markdown.starting")
             job.error = None
             db.session.commit()
 
@@ -226,23 +228,23 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
 
             def on_progress(i: int, total: int):
                 if should_cancel():
-                    raise JobCancelledError("Conversión a Markdown cancelada por el usuario.")
+                    raise JobCancelledError(translate_for(lang, "markdown.cancelled"))
                 job.progress = int((i / total) * 100) if total and total > 0 else 100
                 db.session.commit()
 
             def on_current_doc(nombre: str):
                 if should_cancel():
-                    raise JobCancelledError("Conversión a Markdown cancelada por el usuario.")
-                job.message = f"Convirtiendo {nombre}..."
+                    raise JobCancelledError(translate_for(lang, "markdown.cancelled"))
+                job.message = translate_for(lang, "markdown.converting_doc", name=nombre)
                 db.session.commit()
 
             def on_page_start(doc_index: int, total_docs: int, page: int, total_pages: int):
                 if should_cancel():
-                    raise JobCancelledError("Conversión a Markdown cancelada por el usuario.")
-                current_message = (job.message or "Convirtiendo documento...").split(" Página ", 1)[0]
+                    raise JobCancelledError(translate_for(lang, "markdown.cancelled"))
+                current_message = (job.message or translate_for(lang, "markdown.converting_default")).split(" Página ", 1)[0].split(" Page ", 1)[0]
                 completed = (doc_index - 1) + (page / total_pages if total_pages else 1)
                 job.progress = int((completed / total_docs) * 100) if total_docs and total_docs > 0 else 100
-                job.message = f"{current_message} Página {page}/{total_pages}"
+                job.message = translate_for(lang, "markdown.converting_doc_page", name=current_message.removesuffix("..."), page=page, total_pages=total_pages)
                 db.session.commit()
 
             stats = documentos_service().convert_pending_to_markdown(
@@ -255,7 +257,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             db.session.refresh(job)
             if job.cancel_requested:
                 job.status = "cancelled"
-                job.message = "Conversión a Markdown cancelada."
+                job.message = translate_for(lang, "markdown.cancelled")
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
                 return
@@ -263,15 +265,15 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             job.status = "done"
             job.progress = 100
             if stats["converted"] == 0:
-                job.message = "No habia documentos pendientes de convertir."
+                job.message = translate_for(lang, "markdown.none_pending")
             else:
-                job.message = f"Conversión completada. {stats['converted']} documentos convertidos."
+                job.message = translate_for(lang, "markdown.done_stats", count=stats["converted"])
             job.finished_at = zone_now
             db.session.commit()
             send_markdown_finished_email(
                 to_email=user_email,
                 ok=True,
-                message="La conversion a Markdown ha terminado correctamente.",
+                message=translate_for(lang, "markdown.done_email"),
                 job_id=job.id,
                 docs_url=docs_url,
                 converted_docs=stats.get("converted", 0),
@@ -282,7 +284,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             job = MarkdownConversionState.query.get(job_id)
             if job:
                 job.status = "cancelled"
-                job.message = "Conversión a Markdown cancelada."
+                job.message = translate_for(lang, "markdown.cancelled")
                 job.error = None
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
@@ -290,13 +292,13 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             try:
                 job.status = "failed"
                 job.error = str(exc)
-                job.message = "Fallo la Conversión a Markdown."
+                job.message = translate_for(lang, "markdown.failed")
                 job.finished_at = zone_now
                 db.session.commit()
                 send_markdown_finished_email(
                     to_email=user_email,
                     ok=False,
-                    message=f"La conversion a Markdown ha fallado: {job.error}",
+                    message=translate_for(lang, "markdown.failed_email", error=job.error),
                     job_id=job.id,
                     docs_url=docs_url,
                 )
@@ -310,6 +312,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str) -> None:
 @login_required
 @admin_required
 def update_vector_db():
+    lang = get_locale()
     job = VectorUpdateState(
         status="queued",
         progress=0,
@@ -321,7 +324,7 @@ def update_vector_db():
     db.session.commit()
 
     app_obj = current_app._get_current_object()
-    executor.submit(documentos_async, app_obj, job.id, current_user.email, documents_page_url())
+    executor.submit(documentos_async, app_obj, job.id, current_user.email, documents_page_url(), lang)
 
     return jsonify({"job_id": job.id}), 202
 
@@ -333,7 +336,7 @@ def cancel_vector_db(job_id: int):
     job = VectorUpdateState.query.get_or_404(job_id)
 
     if job.status in {"done", "failed", "cancelled"}:
-        return jsonify({"status": job.status, "message": "El job ya ha terminado."}), 200
+        return jsonify({"status": job.status, "message": t("jobs.already_finished")}), 200
 
     job.cancel_requested = True
     if job.status == "queued":
@@ -341,10 +344,10 @@ def cancel_vector_db(job_id: int):
         job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
     db.session.commit()
 
-    return jsonify({"status": job.status, "message": "Cancelando Actualización vectorial..."}), 202
+    return jsonify({"status": job.status, "message": t("vector.cancelling")}), 202
 
 
-def documentos_async(app, job_id: int, user_email: str, docs_url: str) -> None:
+def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str = "es") -> None:
     zone_now = datetime.now(ZoneInfo("Europe/Madrid"))
     with app.app_context():
         job = VectorUpdateState.query.get(job_id)
@@ -370,13 +373,13 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str) -> None:
 
             def on_current_doc(nombre: str):
                 if should_cancel():
-                    raise JobCancelledError("Actualización cancelada por el usuario.")
+                    raise JobCancelledError(translate_for(lang, "vector.cancelled_by_user"))
                 job.current_doc = nombre
                 db.session.commit()
 
             def on_progress(i: int, total: int):
                 if should_cancel():
-                    raise JobCancelledError("Actualización cancelada por el usuario.")
+                    raise JobCancelledError(translate_for(lang, "vector.cancelled_by_user"))
                 job.progress = int((i / total) * 100) if total and total > 0 else 100
                 db.session.commit()
 
@@ -401,7 +404,7 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             send_update_finished_email(
                 to_email=user_email,
                 ok=True,
-                message="La actualización de la base de datos vectorial ha terminado correctamente.",
+                message=translate_for(lang, "vector.done_email"),
                 job_id=job.id,
                 docs_url=docs_url,
                 indexed_docs=stats.get("indexed", 0),
@@ -424,7 +427,7 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str) -> None:
                 send_update_finished_email(
                     to_email=user_email,
                     ok=False,
-                    message=f"La Actualización de qdrant ha fallado: {job.error}",
+                    message=translate_for(lang, "vector.failed_email", error=job.error),
                     job_id=job.id,
                     docs_url=docs_url,
                     indexed_docs=None,
@@ -524,10 +527,11 @@ def view_document(doc_id: int):
 @login_required
 @admin_required
 def web_scraping_documents():
+    lang = get_locale()
     job = WebScrapingSate(
         status="queued",
         progress=0,
-        message="En cola",
+        message=translate_for(lang, "jobs.queued_short"),
         cancel_requested=False,
         error=None,
     )
@@ -535,7 +539,7 @@ def web_scraping_documents():
     db.session.commit()
 
     app_obj = current_app._get_current_object()
-    executor.submit(scraping_async, app_obj, job.id, current_user.email, documents_page_url())
+    executor.submit(scraping_async, app_obj, job.id, current_user.email, documents_page_url(), lang)
 
     return jsonify({"job_id": job.id}), 202
 
@@ -547,16 +551,16 @@ def cancel_web_scraping(job_id: int):
     job = WebScrapingSate.query.get_or_404(job_id)
 
     if job.status in {"done", "failed", "cancelled"}:
-        return jsonify({"status": job.status, "message": "El job ya ha terminado."}), 200
+        return jsonify({"status": job.status, "message": t("jobs.already_finished")}), 200
 
     job.cancel_requested = True
-    job.message = "Cancelando Web Scraping..."
+    job.message = t("scraping.cancelling")
     if job.status == "queued":
         job.status = "cancelled"
         job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
     db.session.commit()
 
-    return jsonify({"status": job.status, "message": job.message}), 202
+    return jsonify({"status": job.status, "message": localize_runtime_message(job.message)}), 202
 
 
 @admin_bp.get("/documents/web_scraping/status/<int:job_id>")
@@ -570,14 +574,14 @@ def web_scraping_status(job_id: int):
         {
             "status": job.status,
             "progress": job.progress,
-            "message": job.message,
+            "message": localize_runtime_message(job.message),
             "error": job.error,
             "cancel_requested": bool(job.cancel_requested),
         }
     )
 
 
-def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
+def scraping_async(app, job_id: int, user_email: str, docs_url: str, lang: str = "es") -> None:
     zone_now = datetime.now(ZoneInfo("Europe/Madrid"))
 
     with app.app_context():
@@ -588,7 +592,7 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
         try:
             if job.cancel_requested:
                 job.status = "cancelled"
-                job.message = "Web Scraping cancelado."
+                job.message = translate_for(lang, "scraping.cancelled")
                 job.finished_at = zone_now
                 db.session.commit()
                 return
@@ -596,7 +600,7 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             job.status = "running"
             job.started_at = zone_now
             job.progress = 0
-            job.message = "Iniciando Web Scraping..."
+            job.message = translate_for(lang, "scraping.starting")
             job.error = None
             db.session.commit()
 
@@ -618,7 +622,7 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
 
             def run_script_with_cancel(script_path: Path, progress: int | None = None, message: str | None = None) -> None:
                 if should_cancel():
-                    raise JobCancelledError("Web Scraping cancelado por el usuario.")
+                    raise JobCancelledError(translate_for(lang, "scraping.cancelled"))
 
                 if progress is not None:
                     job.progress = progress
@@ -635,7 +639,7 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
                         except subprocess.TimeoutExpired:
                             proc.kill()
                             proc.wait()
-                        raise JobCancelledError("Web Scraping cancelado por el usuario.")
+                        raise JobCancelledError(translate_for(lang, "scraping.cancelled"))
 
                     code = proc.poll()
                     if code is not None:
@@ -650,14 +654,14 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
 
             before_files = {p.name for p in base_pliegos.glob("*.pdf")}
 
-            run_script_with_cancel(script_1, message="Ejecutando script 1/2...")
-            run_script_with_cancel(script_2, progress=50, message="Ejecutando script 2/2...")
+            run_script_with_cancel(script_1, message=translate_for(lang, "scraping.script_1"))
+            run_script_with_cancel(script_2, progress=50, message=translate_for(lang, "scraping.script_2"))
 
             if should_cancel():
-                raise JobCancelledError("Web Scraping cancelado por el usuario.")
+                raise JobCancelledError(translate_for(lang, "scraping.cancelled"))
 
             job.progress = 90
-            job.message = "Sincronizando PDFs en la base de datos..."
+            job.message = translate_for(lang, "scraping.syncing")
             db.session.commit()
             documentos_service().sync_from_folder()
             after_files = {p.name for p in base_pliegos.glob("*.pdf")}
@@ -665,18 +669,18 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             synced_total_docs = len(after_files)
 
             if should_cancel():
-                raise JobCancelledError("Web Scraping cancelado por el usuario.")
+                raise JobCancelledError(translate_for(lang, "scraping.cancelled"))
 
             job.status = "done"
             job.progress = 100
-            job.message = "Web Scraping terminado."
+            job.message = translate_for(lang, "scraping.done")
             job.finished_at = zone_now
             db.session.commit()
 
             send_scraping_finished_email(
                 to_email=user_email,
                 ok=True,
-                message="El Web Scraping ha terminado correctamente.",
+                message=translate_for(lang, "scraping.done_email"),
                 job_id=job.id,
                 docs_url=docs_url,
                 extracted_docs=extracted_docs,
@@ -687,7 +691,7 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             job = WebScrapingSate.query.get(job_id)
             if job:
                 job.status = "cancelled"
-                job.message = "Web Scraping cancelado."
+                job.message = translate_for(lang, "scraping.cancelled")
                 job.error = None
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
@@ -695,13 +699,13 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str) -> None:
             try:
                 job.status = "failed"
                 job.error = str(exc)
-                job.message = "Fallo el Web Scraping."
+                job.message = translate_for(lang, "scraping.failed")
                 job.finished_at = zone_now
                 db.session.commit()
                 send_scraping_finished_email(
                     to_email=user_email,
                     ok=False,
-                    message=f"El Web Scraping ha fallado: {job.error}",
+                    message=translate_for(lang, "scraping.failed_email", error=job.error),
                     job_id=job.id,
                     docs_url=docs_url,
                     extracted_docs=None,

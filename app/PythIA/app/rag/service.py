@@ -10,9 +10,10 @@ from app.extensions import db
 from app.consulta import Consulta
 from app.chunk import Chunk
 from app.consultaChunk import ConsultaChunk
+from app.inetrnacionalizacion.tarduccion import translate_for
 logger = logging.getLogger(__name__)
 
-from .PrototipoRAG import QueryCancelledError, obtener_mejor_chunk
+from .PrototipoRAG import OllamaTimeoutError, QueryCancelledError, obtener_mejor_chunk
 from qdrant_client import models as qmodels
 
 EMPTY_ANSWER: Dict[str, Any] = {
@@ -23,14 +24,14 @@ EMPTY_ANSWER: Dict[str, Any] = {
     "chunk": "",
 }
 
-def rag_answer(question: str, should_cancel=None, on_status=None, user_id: int | None = None) -> Dict[str, Any]:
+async def rag_answer(question: str, should_cancel=None, on_status=None, user_id: int | None = None, lang: str = "es") -> Dict[str, Any]:
     """
     Devuelve dict con:
       answer, title, filename, segment_index, chunk
     y además guarda la consulta en BBDD asociada al usuario logueado.
     """
     question = (question or "").strip()
-    invalid = validate_question(question)
+    invalid = validate_question(question, lang=lang)
     if invalid:
         return invalid
 
@@ -39,17 +40,20 @@ def rag_answer(question: str, should_cancel=None, on_status=None, user_id: int |
 
     try:
         if on_status:
-            on_status("Preparando consulta...")
-        data = obtener_mejor_chunk(
+            on_status(translate_for(lang, "rag.preparing"))
+        data = await obtener_mejor_chunk(
             question,
             should_cancel=should_cancel,
             on_status=on_status,
         )
     except QueryCancelledError:
         raise
+    except OllamaTimeoutError as e:
+        logger.warning("Timeout consultando Ollama: %s", e)
+        data = message_error(translate_for(lang, "rag.timeout_error"))
     except Exception as e:
         logger.exception("Error en rag_answer: %s", e)
-        data = message_error("Ha ocurrido un error consultando el sistema. Inténtalo de nuevo.")
+        data = message_error(translate_for(lang, "rag.system_error"))
 
     elapsed = time.perf_counter() - start
 
@@ -71,11 +75,11 @@ def message_error(msg: str) -> Dict[str, Any]:
     out["answer"] = msg
     return out
 
-def validate_question(question: str) -> Optional[Dict[str, Any]]:
+def validate_question(question: str, lang: str = "es") -> Optional[Dict[str, Any]]:
     if not question:
-        return message_error("Escribe una pregunta.")
+        return message_error(translate_for(lang, "rag.empty_question"))
     if len(question) > 2000:
-        return message_error("La pregunta es demasiado larga (máx. 2000 caracteres).")
+        return message_error(translate_for(lang, "rag.question_too_long"))
     return None
 
 def try_persist(question: str, data: Dict[str, Any], elapsed: float, user_id: int | None = None) -> None:

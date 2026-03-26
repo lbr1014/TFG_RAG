@@ -10,24 +10,25 @@
       <div class="modal-header delete-modal-header border-0">
         <div class="delete-modal-heading">
           <h2 class="modal-title delete-modal-title" id="deleteConfirmModalLabel">
-            Confirmar borrado
+            {{ t("modal.delete_title") }}
           </h2>
           <p class="delete-modal-sub">
-            Esta acción no se puede deshacer.
+            {{ t("modal.delete_subtitle") }}
           </p>
         </div>
 
         <button type="button"
                 class="btn-close"
                 data-bs-dismiss="modal"
-                aria-label="Cerrar">
+                aria-label="{{ t('common.close') }}">
         </button>
       </div>
 
       <div class="modal-body delete-modal-body">
-        <p class="delete-modal-question">
-          ¿Seguro que quieres borrar
-          <span class="delete-modal-file" id="deleteItemName"></span>?
+        <p class="delete-modal-question"
+           data-delete-template="{{ t('modal.delete_question', item='__ITEM__') }}">
+          {{ t("modal.delete_question", item="") }}
+          <span class="delete-modal-file" id="deleteItemName"></span>
         </p>
       </div>
 
@@ -35,13 +36,13 @@
         <button type="button"
                 class="btn btn-outline-light btn-header"
                 data-bs-dismiss="modal">
-          Cancelar
+          {{ t("common.cancel") }}
         </button>
 
         <button id="confirmDeleteBtn"
                 type="submit"
                 class="btn btn-danger btn-header">
-          Borrar
+          {{ t("common.delete") }}
         </button>
       </div>
 

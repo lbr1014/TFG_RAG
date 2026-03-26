@@ -21,13 +21,17 @@ from pathlib import Path
 from typing import Any, Generic, Iterable, Optional, Type, TypeVar, Dict
 from uuid import UUID, uuid4
 
-import requests
+import httpx
 from pydantic import BaseModel, Field
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError, PdfStreamError
 from qdrant_client import QdrantClient
 from qdrant_client import models as qmodels
 from sentence_transformers import SentenceTransformer
+try:
+    import torch
+except ImportError:  # pragma: no cover - entorno sin torch fuera de Docker
+    torch = None
 
 from hashlib import sha256
 
@@ -36,6 +40,10 @@ logger = logging.getLogger(__name__)
 
 
 class QueryCancelledError(RuntimeError):
+    pass
+
+
+class OllamaTimeoutError(RuntimeError):
     pass
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
@@ -77,8 +85,43 @@ class Settings:
     """
     
     # Embeddings
-    TEXT_EMBEDDING_MODEL_ID: str = "sentence-transformers/all-MiniLM-L6-v2"
-    RAG_MODEL_DEVICE: str = "cpu"
+    TEXT_EMBEDDING_MODEL_ID: str = os.getenv(
+        "TEXT_EMBEDDING_MODEL_ID",
+        "sentence-transformers/all-MiniLM-L6-v2",
+    )
+    RAG_MODEL_DEVICE: str = os.getenv(
+        "RAG_MODEL_DEVICE",
+        "cuda" if torch is not None and torch.cuda.is_available() else "cpu",
+    )
+    EMBEDDING_BATCH_SIZE: int = int(os.getenv("EMBEDDING_BATCH_SIZE", "32"))
+
+    # Ollama
+    _ollama_num_gpu = os.getenv("OLLAMA_NUM_GPU")
+    OLLAMA_NUM_GPU: int = (
+        int(_ollama_num_gpu)
+        if _ollama_num_gpu not in (None, "")
+        else (-1 if torch is not None and torch.cuda.is_available() else 0)
+    )
+    OLLAMA_NUM_GPU_SOURCE: str = (
+        "env"
+        if _ollama_num_gpu not in (None, "")
+        else ("auto-cuda-full-offload" if torch is not None and torch.cuda.is_available() else "auto-cpu")
+    )
+    OLLAMA_CONNECT_TIMEOUT_SECONDS: float = float(
+        os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10")
+    )
+    _ollama_read_timeout = os.getenv("OLLAMA_READ_TIMEOUT_SECONDS")
+    OLLAMA_READ_TIMEOUT_SECONDS: Optional[float] = (
+        float(_ollama_read_timeout)
+        if _ollama_read_timeout not in (None, "")
+        else None
+    )
+    OLLAMA_WRITE_TIMEOUT_SECONDS: float = float(
+        os.getenv("OLLAMA_WRITE_TIMEOUT_SECONDS", "120")
+    )
+    OLLAMA_POOL_TIMEOUT_SECONDS: float = float(
+        os.getenv("OLLAMA_POOL_TIMEOUT_SECONDS", "10")
+    )
 
     # Qdrant
     USE_QDRANT_CLOUD: bool = False
@@ -89,6 +132,28 @@ class Settings:
 
 
 settings = Settings()
+
+
+def _embedding_execution_backend() -> str:
+    device = settings.RAG_MODEL_DEVICE
+    if device.startswith("cuda"):
+        if torch is None:
+            return f"{device} (torch no disponible)"
+        if not torch.cuda.is_available():
+            return f"{device} (CUDA no disponible)"
+        gpu_name = torch.cuda.get_device_name(0)
+        gpu_count = torch.cuda.device_count()
+        return f"GPU {device} ({gpu_name}, total_gpus={gpu_count})"
+    return f"CPU ({device})"
+
+
+def _ollama_execution_backend() -> str:
+    num_gpu = settings.OLLAMA_NUM_GPU
+    if num_gpu == -1:
+        return f"GPU (num_gpu=-1, all layers when possible, source={settings.OLLAMA_NUM_GPU_SOURCE})"
+    if num_gpu > 0:
+        return f"GPU (num_gpu={num_gpu} layers, source={settings.OLLAMA_NUM_GPU_SOURCE})"
+    return f"CPU (num_gpu=0, source={settings.OLLAMA_NUM_GPU_SOURCE})"
 
 
 # =========================
@@ -176,7 +241,12 @@ class EmbeddingModelSingleton:
         Returns:
             Vector o lista de vectores de embeddings.
         """
-        emb = self._model.encode(input_text)
+        emb = self._model.encode(
+            input_text,
+            batch_size=settings.EMBEDDING_BATCH_SIZE,
+            convert_to_numpy=True,
+            show_progress_bar=False,
+        )
         if to_list:
             if isinstance(input_text, list):
                 #  Lista de vectores
@@ -190,6 +260,11 @@ start_model = time.perf_counter()
 # Instancia única disponible para el resto del código
 embedding_model = EmbeddingModelSingleton()
 logger.info("Tiempo carga modelo embeddings: %.3f s", time.perf_counter() - start_model)
+logger.info(
+    "Modelo de embeddings cargado en %s | model_id=%s",
+    _embedding_execution_backend(),
+    settings.TEXT_EMBEDDING_MODEL_ID,
+)
 
 
 # =========================
@@ -667,6 +742,10 @@ def recuperacion_chunk(user_query: str, k: int = 10) -> list[VectorBaseDocument]
     Dada una pregunta del usuario, recupera los chunks más similares
     desde Qdrant.
     """
+    logger.info(
+        "Recuperando chunks para consulta RAG con embeddings en %s",
+        _embedding_execution_backend(),
+    )
     # Embedding de la pregunta
     query_vector = embedding_model(user_query, to_list=True)
 
@@ -679,6 +758,10 @@ def recuperacion_chunk_con_scores(user_query: str, k: int = 10) -> list[qmodels.
     """
     Recupera los k chunks más similares desde Qdrant, incluyendo score e id del punto.
     """
+    logger.info(
+        "Recuperando chunks para consulta RAG con embeddings en %s",
+        _embedding_execution_backend(),
+    )
     # Embedding de la pregunta
     query_vector = embedding_model(user_query, to_list=True)
     try:
@@ -701,7 +784,7 @@ def recuperacion_chunk_con_scores(user_query: str, k: int = 10) -> list[qmodels.
 # =========================
 # Ollama
 # =========================
-def ask_ollama(
+async def ask_ollama(
     prompt: str,
     model: str = "llama3.1:8b-instruct-q4_K_M",
     should_cancel=None,
@@ -712,44 +795,65 @@ def ask_ollama(
     if should_cancel and should_cancel():
         raise QueryCancelledError("Consulta cancelada por el usuario.")
 
-    url = f"{OLLAMA_BASE_URL}/api/generate"
-
     full_prompt = (
         "Responde en español de forma breve y precisa.\n\n"
         f"{prompt}"
     )
-
-    resp = requests.post(
-        url,
-        json={
-            "model": model,
-            "prompt": full_prompt,
-            "stream": True,
-        },
-        timeout=120,
-        stream=True,
-    )
-    resp.raise_for_status()
     chunks: list[str] = []
 
+    request_payload = {
+        "model": model,
+        "prompt": full_prompt,
+        "stream": True,
+        "options": {
+            "num_gpu": settings.OLLAMA_NUM_GPU,
+        },
+    }
+
+    logger.info(
+        "Consulta a Ollama | model=%s | backend=%s | base_url=%s",
+        model,
+        _ollama_execution_backend(),
+        OLLAMA_BASE_URL,
+    )
+
+    timeout = httpx.Timeout(
+        connect=settings.OLLAMA_CONNECT_TIMEOUT_SECONDS,
+        read=settings.OLLAMA_READ_TIMEOUT_SECONDS,
+        write=settings.OLLAMA_WRITE_TIMEOUT_SECONDS,
+        pool=settings.OLLAMA_POOL_TIMEOUT_SECONDS,
+    )
     try:
-        for line in resp.iter_lines(decode_unicode=True):
-            if should_cancel and should_cancel():
-                raise QueryCancelledError("Consulta cancelada por el usuario.")
+        async with httpx.AsyncClient(base_url=OLLAMA_BASE_URL, timeout=timeout) as client:
+            async with client.stream(
+                "POST",
+                "/api/generate",
+                json=request_payload,
+            ) as resp:
+                resp.raise_for_status()
 
-            if not line:
-                continue
+                async for line in resp.aiter_lines():
+                    if should_cancel and should_cancel():
+                        raise QueryCancelledError("Consulta cancelada por el usuario.")
+                    if not line:
+                        continue
 
-            payload = json.loads(line)
-            piece = payload.get("response")
-            if piece:
-                chunks.append(piece)
+                    payload = json.loads(line)
+                    piece = payload.get("response")
+                    if piece:
+                        chunks.append(piece)
 
-            if payload.get("done"):
-                break
-    finally:
-        resp.close()
-
+                    if payload.get("done"):
+                        break
+    except httpx.TimeoutException as exc:
+        timeout_label = (
+            f"{settings.OLLAMA_READ_TIMEOUT_SECONDS:g} s"
+            if settings.OLLAMA_READ_TIMEOUT_SECONDS is not None
+            else "sin limite"
+        )
+        raise OllamaTimeoutError(
+            f"Ollama ha superado el tiempo de espera de lectura ({timeout_label})."
+        ) from exc
     return "".join(chunks)
 
 
@@ -779,7 +883,7 @@ def obtener_chunk_de_query(user_query: str) -> dict | None:
     }
     
     
-def obtener_mejor_chunk(
+async def obtener_mejor_chunk(
     user_query: str,
     model: str = "llama3.1:8b-instruct-q4_K_M",
     should_cancel=None,
@@ -864,7 +968,7 @@ def obtener_mejor_chunk(
     if on_status:
         on_status("Generando respuesta del modelo...")
 
-    answer = ask_ollama(prompt, model=model, should_cancel=should_cancel)
+    answer = await ask_ollama(prompt, model=model, should_cancel=should_cancel)
 
     return {
         "answer": answer,

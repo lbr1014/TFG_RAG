@@ -35,10 +35,14 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: flask_ollama
+    gpus: all
     ports:
       - "11435:11434"
     volumes:
       - ollama:/root/.ollama
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "sh", "-lc", "ollama list >/dev/null 2>&1 || exit 1"]
@@ -63,6 +67,7 @@ services:
     build: .
     init: true
     container_name: flask_web
+    gpus: all
     env_file: 
       - .env
       - secret.env
@@ -78,8 +83,12 @@ services:
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - QDRANT_URL=http://qdrant:6333
+      - RAG_MODEL_DEVICE=${RAG_MODEL_DEVICE:-cuda}
+      - RAG_MAX_WORKERS=${RAG_MAX_WORKERS:-4}
       - DOCS_DIR=/data/pliegos
       - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --capture-output --log-level debug
+      - OLLAMA_NUM_GPU=-1
+
 
     restart: unless-stopped
     volumes:

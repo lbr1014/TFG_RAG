@@ -6,6 +6,7 @@ from . import auth_bp
 from ..forms import LoginForm, SignupForm, ForgotPasswordForm, ResetPasswordForm
 from ..usuario import User
 from ..extensions import db, mail
+from ..inetrnacionalizacion.tarduccion import t
 
 def _serializer() -> URLSafeTimedSerializer:
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="password-reset")
@@ -35,7 +36,7 @@ def login():
             login_user(user)
             return redirect(url_for("main.pag_principal"))
 
-        form.password.errors.append("Email o contraseña incorrectos.")
+        form.password.errors.append(t("auth.invalid_credentials"))
 
     return render_template("login.html", form=form)
 
@@ -55,7 +56,7 @@ def singup():
         password = form.password.data
 
         if User.get_by_email(email):
-            form.email.errors.append("Ya existe un usuario con ese email.")
+            form.email.errors.append(t("auth.email_exists"))
             return render_template("singup.html", form=form)
 
         user = User(nombre=nombre, email=email)
@@ -83,21 +84,13 @@ def forgot_password():
             reset_url = url_for("auth.reset_password", token=token, _external=True)
 
             msg = Message(
-                subject="Recuperación de contraseña",
+                subject=t("auth.recovery_subject"),
                 recipients=[user.email],
             )
-            msg.body = f"""Hola {user.nombre},
-
-            Has solicitado recuperar tu contraseña.
-            Abre este enlace para crear una nueva:
-
-            {reset_url}
-
-            Si no lo has solicitado tú, ignora este correo.
-            """
+            msg.body = t("auth.recovery_body", name=user.nombre, reset_url=reset_url)
             mail.send(msg)
 
-            flash("Si el email existe, hemos enviado un enlace para recuperar la contraseña.", "info")
+            flash(t("auth.recovery_sent"), "info")
 
         return redirect(url_for("auth.login"))
 
@@ -108,19 +101,19 @@ def forgot_password():
 def reset_password(token: str):
     email = verify_reset_token(token, max_age_seconds=3600)  
     if not email:
-        flash("El enlace de recuperación no es válido o ha caducado.", "warning")
+        flash(t("auth.invalid_reset_link_expired"), "warning")
         return redirect(url_for("auth.forgot_password"))
 
     user = User.get_by_email(email)
     if not user:
-        flash("El enlace de recuperación no es válido.", "warning")
+        flash(t("auth.invalid_reset_link"), "warning")
         return redirect(url_for("auth.forgot_password"))
 
     form = ResetPasswordForm()
     if form.validate_on_submit():
         user.set_password(form.password.data)
         db.session.commit()
-        flash("Contraseña cambiada. Ya puedes iniciar sesión.", "success")
+        flash(t("auth.password_changed"), "success")
         return redirect(url_for("auth.login"))
 
     return render_template("reset_password.html", form=form)
