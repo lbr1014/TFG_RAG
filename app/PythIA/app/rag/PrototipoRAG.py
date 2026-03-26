@@ -127,6 +127,28 @@ class Settings:
 settings = Settings()
 
 
+def _embedding_execution_backend() -> str:
+    device = settings.RAG_MODEL_DEVICE
+    if device.startswith("cuda"):
+        if torch is None:
+            return f"{device} (torch no disponible)"
+        if not torch.cuda.is_available():
+            return f"{device} (CUDA no disponible)"
+        gpu_name = torch.cuda.get_device_name(0)
+        gpu_count = torch.cuda.device_count()
+        return f"GPU {device} ({gpu_name}, total_gpus={gpu_count})"
+    return f"CPU ({device})"
+
+
+def _ollama_execution_backend() -> str:
+    num_gpu = settings.OLLAMA_NUM_GPU
+    if num_gpu is None:
+        return "sin fijar desde la app (Ollama decide CPU/GPU)"
+    if num_gpu > 0:
+        return f"GPU (num_gpu={num_gpu})"
+    return "CPU (num_gpu=0)"
+
+
 # =========================
 # Tokenizer / EmbeddingModelSingleton
 # =========================
@@ -231,6 +253,11 @@ start_model = time.perf_counter()
 # Instancia única disponible para el resto del código
 embedding_model = EmbeddingModelSingleton()
 logger.info("Tiempo carga modelo embeddings: %.3f s", time.perf_counter() - start_model)
+logger.info(
+    "Modelo de embeddings cargado en %s | model_id=%s",
+    _embedding_execution_backend(),
+    settings.TEXT_EMBEDDING_MODEL_ID,
+)
 
 
 # =========================
@@ -708,6 +735,10 @@ def recuperacion_chunk(user_query: str, k: int = 10) -> list[VectorBaseDocument]
     Dada una pregunta del usuario, recupera los chunks más similares
     desde Qdrant.
     """
+    logger.info(
+        "Recuperando chunks para consulta RAG con embeddings en %s",
+        _embedding_execution_backend(),
+    )
     # Embedding de la pregunta
     query_vector = embedding_model(user_query, to_list=True)
 
@@ -720,6 +751,10 @@ def recuperacion_chunk_con_scores(user_query: str, k: int = 10) -> list[qmodels.
     """
     Recupera los k chunks más similares desde Qdrant, incluyendo score e id del punto.
     """
+    logger.info(
+        "Recuperando chunks para consulta RAG con embeddings en %s",
+        _embedding_execution_backend(),
+    )
     # Embedding de la pregunta
     query_vector = embedding_model(user_query, to_list=True)
     try:
@@ -768,6 +803,13 @@ async def ask_ollama(
         request_payload["options"] = {
             "num_gpu": settings.OLLAMA_NUM_GPU,
         }
+
+    logger.info(
+        "Consulta a Ollama | model=%s | backend=%s | base_url=%s",
+        model,
+        _ollama_execution_backend(),
+        OLLAMA_BASE_URL,
+    )
 
     timeout = httpx.Timeout(
         connect=settings.OLLAMA_CONNECT_TIMEOUT_SECONDS,
