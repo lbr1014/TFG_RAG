@@ -6,6 +6,8 @@ from zoneinfo import ZoneInfo
 from typing import Iterable, Optional
 from werkzeug.utils import secure_filename
 import hashlib
+import re
+import unicodedata
 
 from .extensions  import db
 from .chunk import Chunk
@@ -30,6 +32,8 @@ class Documento(db.Model):
     hash = db.Column(db.String(100),  nullable=False, index=True)
     status = db.Column(db.String(25), nullable=False,default="cargado", index=True)
     error_message = db.Column(db.Text, nullable=True)
+    numero_expediente = db.Column(db.String(255), nullable=True, index=True)
+    tipo_documento = db.Column(db.String(30), nullable=True, index=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -43,6 +47,35 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _normalize_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value or "")
+    normalized = "".join(char for char in normalized if not unicodedata.combining(char))
+    return normalized.lower().strip()
+
+
+def infer_document_metadata_from_filename(filename: str) -> tuple[str | None, str | None]:
+    stem = Path(filename or "").stem
+    if "__" not in stem:
+        return None, None
+
+    expediente_part, doc_part = stem.split("__", 1)
+    expediente = expediente_part.strip() or None
+
+    match = re.match(r"(?P<doc>.+?)_(?P<index>\d+)$", doc_part.strip())
+    if match:
+        raw_doc_name = match.group("doc").strip()
+    else:
+        raw_doc_name = doc_part.strip()
+
+    normalized_doc_name = _normalize_text(raw_doc_name).replace("_", " ")
+    if "clausulas administrativas" in normalized_doc_name or "administrativ" in normalized_doc_name:
+        return expediente, "administrativo"
+    if "prescripciones tecnicas" in normalized_doc_name or "tecnic" in normalized_doc_name:
+        return expediente, "tecnico"
+
+    return expediente, None
 
 
 class DocumentosService:
@@ -157,6 +190,7 @@ class DocumentosService:
 
         rel_path = str(p)
         file_hash = sha256_file(p)
+        numero_expediente, tipo_documento = infer_document_metadata_from_filename(p.name)
         
         doc = Documento.query.filter_by(path=rel_path).first()
         if not doc:
@@ -169,6 +203,8 @@ class DocumentosService:
                 hash=file_hash,
                 status=status or "cargado",
                 error_message=None,
+                numero_expediente=numero_expediente,
+                tipo_documento=tipo_documento,
             )
             db.session.add(doc)
             
@@ -178,6 +214,8 @@ class DocumentosService:
             doc.size_bytes = stat.st_size
             doc.modified_at = mtime
             doc.hash = file_hash
+            doc.numero_expediente = numero_expediente
+            doc.tipo_documento = tipo_documento
             if status is not None:
                 doc.status = status
                 doc.error_message = None
@@ -332,7 +370,12 @@ class DocumentosService:
                 Chunk.query.filter(Chunk.document_id == doc.id).delete(synchronize_session=False)
                 db.session.commit()
 
-                vector_docs = index_pdf(pdf_path, document_id=doc.id)
+                vector_docs = index_pdf(
+                    pdf_path,
+                    document_id=doc.id,
+                    numero_expediente=doc.numero_expediente,
+                    tipo_documento=doc.tipo_documento,
+                )
                 if not vector_docs:
                     raise RuntimeError("index_pdf devolvió 0 chunks (PDF sin texto o ruta inválida)")
                 
@@ -367,6 +410,8 @@ def update_sql(doc, vector_docs) -> None:
         meta = vd.metadata or {}
         seg = int(meta.get("segment_index", -1))
         sha = (meta.get("sha256") or meta.get("doc_sha256") or "").strip()
+        numero_expediente = meta.get("numero_expediente")
+        tipo_documento = meta.get("tipo_documento")
 
         if seg < 0 or not sha:
             continue
@@ -380,12 +425,16 @@ def update_sql(doc, vector_docs) -> None:
                 doc_sha256=sha,
                 n_chars=len(vd.content or ""),
                 n_tokens=None,  
+                numero_expediente=numero_expediente,
+                tipo_documento=tipo_documento,
             )
             db.session.add(c)
             db.session.flush() 
         else:
             c.qdrant_point_id = qid
             c.n_chars = len(vd.content or "")
+            c.numero_expediente = numero_expediente
+            c.tipo_documento = tipo_documento
 
         exists = Embedding.query.filter_by(chunk_id=c.id, model_id=embedding_model.model_id).first()
         if not exists:

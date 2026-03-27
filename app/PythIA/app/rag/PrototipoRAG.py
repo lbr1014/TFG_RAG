@@ -979,7 +979,12 @@ async def obtener_mejor_chunk(
         "retrieved": retrieved, 
     }
 
-def index_pdf(pdf_path: Path, document_id: int | None = None) -> list[VectorBaseDocument]:
+def index_pdf(
+    pdf_path: Path,
+    document_id: int | None = None,
+    numero_expediente: str | None = None,
+    tipo_documento: str | None = None,
+) -> list[VectorBaseDocument]:
     """
     Esta función indexa un PDF para ello lee el texto, lo trocea en chunks, calcula embeddings y guarda los puntos en Qdrant.
     """
@@ -1036,6 +1041,8 @@ def index_pdf(pdf_path: Path, document_id: int | None = None) -> list[VectorBase
                 "filename": pdf_path.name,
                 "title": title,
                 "sha256": doc_hash,
+                "numero_expediente": numero_expediente,
+                "tipo_documento": tipo_documento,
             }
             if document_id is not None:
                 base_meta["document_id"] = int(document_id)

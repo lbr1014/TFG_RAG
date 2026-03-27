@@ -25,6 +25,8 @@ class Chunk(db.Model):
     # Metadatos
     n_chars = db.Column(db.Integer, nullable=True)
     n_tokens = db.Column(db.Integer, nullable=True)
+    numero_expediente = db.Column(db.String(255), nullable=True, index=True)
+    tipo_documento = db.Column(db.String(30), nullable=True, index=True)
 
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
 
