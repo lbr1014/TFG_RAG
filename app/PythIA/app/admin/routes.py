@@ -28,6 +28,21 @@ from ..inetrnacionalizacion.tarduccion import get_locale, localize_runtime_messa
 
 USERS = "admin.users"
 DOCUMENTS = "admin.documents_list_page"
+MARKDOWN_JOB_MESSAGE_MAX_LENGTH = 255
+
+
+def _fit_job_message(message: str | None, max_length: int = MARKDOWN_JOB_MESSAGE_MAX_LENGTH) -> str | None:
+    if message is None:
+        return None
+    if len(message) <= max_length:
+        return message
+    if max_length <= 3:
+        return message[:max_length]
+    return message[: max_length - 3].rstrip() + "..."
+
+
+def _set_markdown_job_message(job: MarkdownConversionState, message: str | None) -> None:
+    job.message = _fit_job_message(message)
 
 
 @admin_bp.route("/users")
@@ -171,7 +186,7 @@ def cancel_markdown_conversion(job_id: int):
         return jsonify({"status": job.status, "message": t("jobs.already_finished")}), 200
 
     job.cancel_requested = True
-    job.message = t("markdown.cancelling")
+    _set_markdown_job_message(job, t("markdown.cancelling"))
     if job.status == "queued":
         job.status = "cancelled"
         job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
@@ -210,7 +225,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
         try:
             if job.cancel_requested:
                 job.status = "cancelled"
-                job.message = translate_for(lang, "markdown.cancelled")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.cancelled"))
                 job.finished_at = zone_now
                 db.session.commit()
                 return
@@ -218,9 +233,10 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             job.status = "running"
             job.started_at = zone_now
             job.progress = 0
-            job.message = translate_for(lang, "markdown.starting")
+            _set_markdown_job_message(job, translate_for(lang, "markdown.starting"))
             job.error = None
             db.session.commit()
+            current_doc_name: str | None = None
 
             def should_cancel() -> bool:
                 db.session.refresh(job)
@@ -233,9 +249,11 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
                 db.session.commit()
 
             def on_current_doc(nombre: str):
+                nonlocal current_doc_name
                 if should_cancel():
                     raise JobCancelledError(translate_for(lang, "markdown.cancelled"))
-                job.message = translate_for(lang, "markdown.converting_doc", name=nombre)
+                current_doc_name = nombre
+                _set_markdown_job_message(job, translate_for(lang, "markdown.converting_doc", name=nombre))
                 db.session.commit()
 
             def on_page_start(doc_index: int, total_docs: int, page: int, total_pages: int):
@@ -244,7 +262,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
                 current_message = (job.message or translate_for(lang, "markdown.converting_default")).split(" Página ", 1)[0].split(" Page ", 1)[0]
                 completed = (doc_index - 1) + (page / total_pages if total_pages else 1)
                 job.progress = int((completed / total_docs) * 100) if total_docs and total_docs > 0 else 100
-                job.message = translate_for(lang, "markdown.converting_doc_page", name=current_message.removesuffix("..."), page=page, total_pages=total_pages)
+                _set_markdown_job_message(job, translate_for(lang, "markdown.converting_doc_page", name=current_doc_name or current_message.removeprefix("Convirtiendo ").removeprefix("Converting ").removesuffix("..."), page=page, total_pages=total_pages))
                 db.session.commit()
 
             stats = documentos_service().convert_pending_to_markdown(
@@ -257,7 +275,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             db.session.refresh(job)
             if job.cancel_requested:
                 job.status = "cancelled"
-                job.message = translate_for(lang, "markdown.cancelled")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.cancelled"))
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
                 return
@@ -265,9 +283,9 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             job.status = "done"
             job.progress = 100
             if stats["converted"] == 0:
-                job.message = translate_for(lang, "markdown.none_pending")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.none_pending"))
             else:
-                job.message = translate_for(lang, "markdown.done_stats", count=stats["converted"])
+                _set_markdown_job_message(job, translate_for(lang, "markdown.done_stats", count=stats["converted"]))
             job.finished_at = zone_now
             db.session.commit()
             send_markdown_finished_email(
@@ -284,15 +302,19 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             job = MarkdownConversionState.query.get(job_id)
             if job:
                 job.status = "cancelled"
-                job.message = translate_for(lang, "markdown.cancelled")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.cancelled"))
                 job.error = None
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
         except Exception as exc:
+            db.session.rollback()
             try:
+                job = MarkdownConversionState.query.get(job_id)
+                if not job:
+                    raise
                 job.status = "failed"
                 job.error = str(exc)
-                job.message = translate_for(lang, "markdown.failed")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.failed"))
                 job.finished_at = zone_now
                 db.session.commit()
                 send_markdown_finished_email(

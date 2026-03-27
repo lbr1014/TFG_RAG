@@ -10,6 +10,10 @@ from pathlib import Path
 import httpx
 from PIL import Image
 from pdf2image import convert_from_path, pdfinfo_from_path
+try:
+    import torch
+except ImportError:  # pragma: no cover - entorno sin torch fuera de Docker
+    torch = None
 
 PROMPT_BASE = """
 You are converting a Spanish PDF (often legal / administrative) into clean Markdown.
@@ -46,7 +50,17 @@ MODEL_NAME = os.getenv("OCR_MODEL_NAME", "blaifa/Nanonets-OCR-s")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434").rstrip("/")
 OLLAMA_CONNECT_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10"))
 OLLAMA_READ_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_READ_TIMEOUT_SECONDS", "300"))
-DEFAULT_NUM_GPU = int(os.getenv("OLLAMA_NUM_GPU", "0"))
+_ollama_num_gpu = os.getenv("OLLAMA_NUM_GPU")
+DEFAULT_NUM_GPU = (
+    int(_ollama_num_gpu)
+    if _ollama_num_gpu not in (None, "")
+    else (-1 if torch is not None and torch.cuda.is_available() else 0)
+)
+OLLAMA_NUM_GPU_SOURCE = (
+    "env"
+    if _ollama_num_gpu not in (None, "")
+    else ("auto-cuda-full-offload" if torch is not None and torch.cuda.is_available() else "auto-cpu")
+)
 PDF_RENDER_DPI = int(os.getenv("PDF_RENDER_DPI", "200"))
 OCR_MAX_IMAGE_SIDE = int(os.getenv("OCR_MAX_IMAGE_SIDE", "1600"))
 OCR_RETRY_MAX_IMAGE_SIDES = [
@@ -59,6 +73,22 @@ OCR_PAGE_FAILURE_MODE = os.getenv("OCR_PAGE_FAILURE_MODE", "placeholder").strip(
 
 class OllamaOCRException(RuntimeError):
     """Error de OCR contra Ollama con contexto suficiente para depuración."""
+
+
+def _ocr_execution_backend() -> str:
+    if DEFAULT_NUM_GPU == -1:
+        if torch is not None and torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0)
+            gpu_count = torch.cuda.device_count()
+            return (
+                "GPU "
+                f"(num_gpu=-1, all layers when possible, gpu={gpu_name}, total_gpus={gpu_count}, "
+                f"source={OLLAMA_NUM_GPU_SOURCE})"
+            )
+        return f"GPU solicitada (num_gpu=-1, source={OLLAMA_NUM_GPU_SOURCE})"
+    if DEFAULT_NUM_GPU > 0:
+        return f"GPU parcial (num_gpu={DEFAULT_NUM_GPU}, source={OLLAMA_NUM_GPU_SOURCE})"
+    return f"CPU (num_gpu=0, source={OLLAMA_NUM_GPU_SOURCE})"
 
 
 def _page_failure_markdown(page_number: int, total_pages: int, error: Exception) -> str:
@@ -333,7 +363,10 @@ def normalize_headings(markdown: str) -> str:
 
 
 async def process_pdf_async(pdf_path: Path, output_dir: Path, on_page_start=None):
-    print(f"Procesando {pdf_path.name}...")
+    print(
+        f"Procesando {pdf_path.name}... "
+        f"OCR model={MODEL_NAME} | backend={_ocr_execution_backend()} | base_url={OLLAMA_BASE_URL}"
+    )
 
     total_pages = get_pdf_page_count(pdf_path)
     page_markdowns = []
