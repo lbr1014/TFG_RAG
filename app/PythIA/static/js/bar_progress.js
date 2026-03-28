@@ -20,8 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function toggleButtons(disabled) {
-    uploadForm?.querySelectorAll("button").forEach((button) => {
-      button.disabled = disabled;
+    [uploadForm, vectorForm, markdownForm, scrapingForm].forEach((form) => {
+      form?.querySelectorAll("button").forEach((button) => {
+        if (button === cancelButton) return;
+        button.disabled = disabled;
+      });
     });
   }
 
@@ -203,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (status === "failed") {
-          setUIFailed(data.message || tr("markdown.failed"));
+          setUIFailed(`${data.message || tr("markdown.failed")}${errorSuffix(data.error)}`);
           return;
         }
 

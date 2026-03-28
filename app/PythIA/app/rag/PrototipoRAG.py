@@ -437,21 +437,6 @@ def qdrant_delete_by_filename(filename: str) -> None:
         ),
     )
     
-def qdrant_count_chunks_by_filename(filename: str) -> int:
-    """
-    Cuenta cuántos chunks hay indexados en Qdrant para un PDF.
-    
-    Argumentos:
-        filename: Nombre del archivo PDF a eliminar de la base vectorial.
-    """
-    VectorBaseDocument._ensure_collection()
-    res = qdrant.count(
-        collection_name=VectorBaseDocument.get_collection_name(),
-        count_filter=_qdrant_filter_by_filename(filename),
-        exact=True,
-    )
-    return int(getattr(res, "count", 0))
-
 def qdrant_get_payloads(point_ids: list[str]) -> dict[str, dict]:
     ids = [i for i in point_ids if i]
     if not ids:

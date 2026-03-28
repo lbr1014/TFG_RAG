@@ -16,7 +16,6 @@ from ..forms import AdminCreateUserForm
 from ..markdown_conversion_state import MarkdownConversionState, send_markdown_finished_email
 from ..rag.PrototipoRAG import (
     index_pliegos_dir,
-    qdrant_count_chunks_by_filename,
     qdrant_delete_by_filename,
 )
 from ..usuario import User
@@ -28,6 +27,42 @@ from ..inetrnacionalizacion.tarduccion import get_locale, localize_runtime_messa
 
 USERS = "admin.users"
 DOCUMENTS = "admin.documents_list_page"
+MARKDOWN_JOB_MESSAGE_MAX_LENGTH = 255
+
+
+def _fit_job_message(message: str | None, max_length: int = MARKDOWN_JOB_MESSAGE_MAX_LENGTH) -> str | None:
+    if message is None:
+        return None
+    if len(message) <= max_length:
+        return message
+    if max_length <= 3:
+        return message[:max_length]
+    return message[: max_length - 3].rstrip() + "..."
+
+
+def _set_markdown_job_message(job: MarkdownConversionState, message: str | None) -> None:
+    job.message = _fit_job_message(message)
+
+
+def _send_markdown_email_safe(**kwargs) -> None:
+    try:
+        send_markdown_finished_email(**kwargs)
+    except Exception:
+        current_app.logger.exception("No se pudo enviar el correo de fin de conversion a Markdown")
+
+
+def _send_vector_email_safe(**kwargs) -> None:
+    try:
+        send_update_finished_email(**kwargs)
+    except Exception:
+        current_app.logger.exception("No se pudo enviar el correo de fin de actualizacion vectorial")
+
+
+def _send_scraping_email_safe(**kwargs) -> None:
+    try:
+        send_scraping_finished_email(**kwargs)
+    except Exception:
+        current_app.logger.exception("No se pudo enviar el correo de fin de web scraping")
 
 
 @admin_bp.route("/users")
@@ -106,7 +141,6 @@ def documentos_service() -> DocumentosService:
         pliegos_dir(),
         index_pliegos_dir=index_pliegos_dir,
         delete_chunks=qdrant_delete_by_filename,
-        count_chunks=qdrant_count_chunks_by_filename,
         markdown_dir=markdown_dir(),
         markdown_converter=convert_pdf_to_markdown,
     )
@@ -171,7 +205,7 @@ def cancel_markdown_conversion(job_id: int):
         return jsonify({"status": job.status, "message": t("jobs.already_finished")}), 200
 
     job.cancel_requested = True
-    job.message = t("markdown.cancelling")
+    _set_markdown_job_message(job, t("markdown.cancelling"))
     if job.status == "queued":
         job.status = "cancelled"
         job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
@@ -210,7 +244,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
         try:
             if job.cancel_requested:
                 job.status = "cancelled"
-                job.message = translate_for(lang, "markdown.cancelled")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.cancelled"))
                 job.finished_at = zone_now
                 db.session.commit()
                 return
@@ -218,9 +252,10 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             job.status = "running"
             job.started_at = zone_now
             job.progress = 0
-            job.message = translate_for(lang, "markdown.starting")
+            _set_markdown_job_message(job, translate_for(lang, "markdown.starting"))
             job.error = None
             db.session.commit()
+            current_doc_name: str | None = None
 
             def should_cancel() -> bool:
                 db.session.refresh(job)
@@ -233,9 +268,11 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
                 db.session.commit()
 
             def on_current_doc(nombre: str):
+                nonlocal current_doc_name
                 if should_cancel():
                     raise JobCancelledError(translate_for(lang, "markdown.cancelled"))
-                job.message = translate_for(lang, "markdown.converting_doc", name=nombre)
+                current_doc_name = nombre
+                _set_markdown_job_message(job, translate_for(lang, "markdown.converting_doc", name=nombre))
                 db.session.commit()
 
             def on_page_start(doc_index: int, total_docs: int, page: int, total_pages: int):
@@ -244,7 +281,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
                 current_message = (job.message or translate_for(lang, "markdown.converting_default")).split(" Página ", 1)[0].split(" Page ", 1)[0]
                 completed = (doc_index - 1) + (page / total_pages if total_pages else 1)
                 job.progress = int((completed / total_docs) * 100) if total_docs and total_docs > 0 else 100
-                job.message = translate_for(lang, "markdown.converting_doc_page", name=current_message.removesuffix("..."), page=page, total_pages=total_pages)
+                _set_markdown_job_message(job, translate_for(lang, "markdown.converting_doc_page", name=current_doc_name or current_message.removeprefix("Convirtiendo ").removeprefix("Converting ").removesuffix("..."), page=page, total_pages=total_pages))
                 db.session.commit()
 
             stats = documentos_service().convert_pending_to_markdown(
@@ -257,7 +294,7 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             db.session.refresh(job)
             if job.cancel_requested:
                 job.status = "cancelled"
-                job.message = translate_for(lang, "markdown.cancelled")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.cancelled"))
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
                 return
@@ -265,12 +302,12 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             job.status = "done"
             job.progress = 100
             if stats["converted"] == 0:
-                job.message = translate_for(lang, "markdown.none_pending")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.none_pending"))
             else:
-                job.message = translate_for(lang, "markdown.done_stats", count=stats["converted"])
-            job.finished_at = zone_now
+                _set_markdown_job_message(job, translate_for(lang, "markdown.done_stats", count=stats["converted"]))
+            job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
             db.session.commit()
-            send_markdown_finished_email(
+            _send_markdown_email_safe(
                 to_email=user_email,
                 ok=True,
                 message=translate_for(lang, "markdown.done_email"),
@@ -284,18 +321,22 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             job = MarkdownConversionState.query.get(job_id)
             if job:
                 job.status = "cancelled"
-                job.message = translate_for(lang, "markdown.cancelled")
+                _set_markdown_job_message(job, translate_for(lang, "markdown.cancelled"))
                 job.error = None
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
         except Exception as exc:
+            db.session.rollback()
             try:
+                job = MarkdownConversionState.query.get(job_id)
+                if not job:
+                    raise
                 job.status = "failed"
                 job.error = str(exc)
-                job.message = translate_for(lang, "markdown.failed")
-                job.finished_at = zone_now
+                _set_markdown_job_message(job, translate_for(lang, "markdown.failed"))
+                job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
-                send_markdown_finished_email(
+                _send_markdown_email_safe(
                     to_email=user_email,
                     ok=False,
                     message=translate_for(lang, "markdown.failed_email", error=job.error),
@@ -398,10 +439,10 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
 
             job.status = "done"
             job.progress = 100
-            job.finished_at = zone_now
+            job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
             db.session.commit()
 
-            send_update_finished_email(
+            _send_vector_email_safe(
                 to_email=user_email,
                 ok=True,
                 message=translate_for(lang, "vector.done_email"),
@@ -419,12 +460,16 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
         except Exception as exc:
+            db.session.rollback()
             try:
+                job = VectorUpdateState.query.get(job_id)
+                if not job:
+                    raise
                 job.status = "failed"
                 job.error = str(exc)
-                job.finished_at = zone_now
+                job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
-                send_update_finished_email(
+                _send_vector_email_safe(
                     to_email=user_email,
                     ok=False,
                     message=translate_for(lang, "vector.failed_email", error=job.error),
@@ -502,8 +547,21 @@ def delete_document(doc_id: int):
 @admin_required
 def download_document(doc_id: int):
     doc = Documento.query.get_or_404(doc_id)
-    pdf_path = Path(doc.path)
+    fmt = (request.args.get("format") or "pdf").strip().lower()
+    svc = documentos_service()
 
+    if fmt == "markdown":
+        md_path = svc.markdown_path_for_doc(doc)
+        if not md_path.exists():
+            abort(404)
+        return send_file(
+            md_path,
+            as_attachment=True,
+            download_name=md_path.name,
+            mimetype="text/markdown; charset=utf-8",
+        )
+
+    pdf_path = Path(doc.path)
     if not pdf_path.exists():
         abort(404)
 
@@ -515,8 +573,21 @@ def download_document(doc_id: int):
 @admin_required
 def view_document(doc_id: int):
     doc = Documento.query.get_or_404(doc_id)
-    pdf_path = Path(doc.path)
+    fmt = (request.args.get("format") or "pdf").strip().lower()
+    svc = documentos_service()
 
+    if fmt == "markdown":
+        md_path = svc.markdown_path_for_doc(doc)
+        if not md_path.exists():
+            abort(404)
+        return send_file(
+            md_path,
+            as_attachment=False,
+            download_name=md_path.name,
+            mimetype="text/markdown; charset=utf-8",
+        )
+
+    pdf_path = Path(doc.path)
     if not pdf_path.exists():
         abort(404)
 
@@ -674,10 +745,10 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             job.status = "done"
             job.progress = 100
             job.message = translate_for(lang, "scraping.done")
-            job.finished_at = zone_now
+            job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
             db.session.commit()
 
-            send_scraping_finished_email(
+            _send_scraping_email_safe(
                 to_email=user_email,
                 ok=True,
                 message=translate_for(lang, "scraping.done_email"),
@@ -696,13 +767,17 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
                 job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
         except Exception as exc:
+            db.session.rollback()
             try:
+                job = WebScrapingSate.query.get(job_id)
+                if not job:
+                    raise
                 job.status = "failed"
                 job.error = str(exc)
                 job.message = translate_for(lang, "scraping.failed")
-                job.finished_at = zone_now
+                job.finished_at = datetime.now(ZoneInfo("Europe/Madrid"))
                 db.session.commit()
-                send_scraping_finished_email(
+                _send_scraping_email_safe(
                     to_email=user_email,
                     ok=False,
                     message=translate_for(lang, "scraping.failed_email", error=job.error),

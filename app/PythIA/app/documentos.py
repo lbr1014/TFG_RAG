@@ -9,7 +9,7 @@ import hashlib
 import re
 import unicodedata
 
-from .extensions  import db
+from .extensions import db
 from .chunk import Chunk
 from .embedding import Embedding
 from .consultaChunk import ConsultaChunk
@@ -84,7 +84,6 @@ class DocumentosService:
         docs_dir: Path,
         index_pliegos_dir,              
         delete_chunks,              
-        count_chunks,
         markdown_dir: Path | None = None,
         markdown_converter=None,
     ):
@@ -95,7 +94,6 @@ class DocumentosService:
 
         self.index_pliegos_dir = index_pliegos_dir
         self.delete_chunks = delete_chunks
-        self.count_chunks = count_chunks
         self.markdown_converter = markdown_converter
 
     def filename(self, filename: str) -> str:
@@ -141,7 +139,7 @@ class DocumentosService:
             if not f or not f.filename:
                 continue
             
-            nombre=secure_filename(f.filename)
+            nombre = self.filename(f.filename)
             
             if not nombre.lower().endswith(".pdf"):
                 continue
@@ -246,10 +244,9 @@ class DocumentosService:
 
         self.delete_markdown_file(doc)
         
-        # Borrra base de datos        
-        if doc:
-            db.session.delete(doc)
-            db.session.commit()
+        # Borrra base de datos
+        db.session.delete(doc)
+        db.session.commit()
 
     def delete_markdown_file(self, doc: Documento) -> None:
         try:
@@ -293,11 +290,19 @@ class DocumentosService:
         skipped = 0
 
         docs = Documento.query.order_by(Documento.modified_at.desc()).all()
-        total = len(docs)
+        pending_docs = []
+
+        for doc in docs:
+            if self.has_markdown(doc):
+                skipped += 1
+                continue
+            pending_docs.append(doc)
+
+        total = len(pending_docs)
         if on_progress:
             on_progress(0, total)
 
-        for i, doc in enumerate(docs, start=1):
+        for i, doc in enumerate(pending_docs, start=1):
             if should_cancel and should_cancel():
                 raise JobCancelledError("Conversión a Markdown cancelada por el usuario.")
             if on_current_doc:

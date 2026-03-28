@@ -139,7 +139,13 @@
                     <td>{{ d.chunks if d.chunks is not none else 0 }}</td>
                     <td>
                       <div class="d-flex flex-column gap-1">
-                        <span class="doc-status">{{ d.status }}</span>
+                        <span class="doc-status">
+                          {% if markdown_status.get(d.id) %}
+                            {{ t("docs.status_with_markdown") }}
+                          {% else %}
+                            {{ d.status }}
+                          {% endif %}
+                        </span>
                         {% if markdown_status.get(d.id) %}
                           <span class="badge text-bg-success">{{ t("docs.with_markdown") }}</span>
                         {% else %}
@@ -150,17 +156,31 @@
 
                     <td class="text-end">
                       <div class="table-actions">
-                        <a href="{{ url_for('admin.view_document', doc_id=d.id) }}"
+                        <a href="{{ url_for('admin.view_document', doc_id=d.id, format='pdf') }}"
                            class="btn btn-sm btn-outline-light"
                            target="_blank"
                            rel="noopener noreferrer">
-                          {{ t("common.view") }}
+                          {{ t("docs.view_pdf") }}
                         </a>
 
-                        <a href="{{ url_for('admin.download_document', doc_id=d.id) }}"
+                        <a href="{{ url_for('admin.download_document', doc_id=d.id, format='pdf') }}"
                            class="btn btn-sm btn-outline-light">
-                          {{ t("common.download") }}
+                          {{ t("docs.download_pdf") }}
                         </a>
+
+                        {% if markdown_status.get(d.id) %}
+                          <a href="{{ url_for('admin.view_document', doc_id=d.id, format='markdown') }}"
+                             class="btn btn-sm btn-outline-light"
+                             target="_blank"
+                             rel="noopener noreferrer">
+                            {{ t("docs.view_markdown") }}
+                          </a>
+
+                          <a href="{{ url_for('admin.download_document', doc_id=d.id, format='markdown') }}"
+                             class="btn btn-sm btn-outline-light">
+                            {{ t("docs.download_markdown") }}
+                          </a>
+                        {% endif %}
 
                         <form id="delete-form-{{ d.id }}"
                               method="POST"
