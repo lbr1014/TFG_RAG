@@ -166,12 +166,6 @@ body{
   background-attachment: fixed;
 }
 
-.page-scroll{
-  min-height: calc(100vh - 88px);
-  position: relative;
-  z-index: 0;
-}
-
 .main-header{
   background-color: var(--app-header-bg);
   color: #ffffff;
@@ -382,18 +376,43 @@ body[data-theme="light"] .main-header .welcome strong{
   color: #ffffff;
 }
 
-.main-content{
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 24px 20px 40px;
-  text-align: center;
+body[data-theme="light"] .app-breadcrumb .breadcrumb-item,
+body[data-theme="light"] .app-breadcrumb .breadcrumb-item.active,
+body[data-theme="light"] .app-breadcrumb .breadcrumb-item + .breadcrumb-item::before{
+  color: rgba(17,17,17,.72);
 }
 
-.main-content h1{
-  font-size: clamp(1.85rem, 4vw, 2.2rem);
-  font-weight: 800;
-  margin-bottom: 25px;
+body[data-theme="light"] .app-breadcrumb .breadcrumb-item a{
+  color: #245ea8;
+}
+
+.app-breadcrumb-shell{
+  padding: 1rem 1.25rem 0;
+}
+
+.app-breadcrumb{
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-size: .95rem;
+}
+
+.app-breadcrumb .breadcrumb-item,
+.app-breadcrumb .breadcrumb-item.active,
+.app-breadcrumb .breadcrumb-item + .breadcrumb-item::before{
+  color: rgba(255,255,255,.84);
+}
+
+.app-breadcrumb .breadcrumb-item a{
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.app-breadcrumb .breadcrumb-item a:hover,
+.app-breadcrumb .breadcrumb-item a:focus{
+  text-decoration: underline;
 }
 
 .logo-header{
@@ -828,13 +847,6 @@ body[data-theme="light"] .dropdown-menu{
   color: #ffffff;
 }
 
-.main-content > .container:first-child{
-  background: var(--app-surface-bg);
-  border: var(--app-surface-border);
-  box-shadow: var(--app-surface-shadow);
-  backdrop-filter: var(--app-surface-blur);
-  border-radius: var(--app-radius-lg);
-}
 
 .app-badge.admin{ background:#e67e22; }
 .app-badge.user{ background:#3498db; }
@@ -994,10 +1006,6 @@ body[data-theme="light"] .chunks-modal-panel .btn-close{
 }
 
 @media (max-width: 991.98px){
-  .main-content{
-    padding: 32px 16px;
-  }
-
   .app-brand{
     max-width: calc(100% - 64px);
   }
@@ -1028,10 +1036,6 @@ body[data-theme="light"] .chunks-modal-panel .btn-close{
 }
 
 @media (max-width: 767.98px){
-  .page-scroll{
-    min-height: auto;
-  }
-
   .main-header .container-fluid,
   .main-header{
     padding-left: 0;
@@ -1081,8 +1085,8 @@ body[data-theme="light"] .chunks-modal-panel .btn-close{
     margin-top: .3rem;
   }
 
-  .main-content > .container:first-child{
-    border-radius: var(--app-radius-md);
+  .app-breadcrumb-shell{
+    padding: .85rem 1rem 0;
   }
 
   .auth-container{

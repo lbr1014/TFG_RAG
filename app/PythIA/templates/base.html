@@ -135,11 +135,77 @@
   </div>
 </header>
 
-  <div class="page-scroll">
-    <main class="main-content{% block main_content_class %}{% endblock %}">
-        {% block content %}{% endblock %}
-    </main>
-  </div>
+  {% set breadcrumb_items = [] %}
+  {% if request.endpoint == 'main.pag_principal' %}
+    {% set breadcrumb_items = [{"label": t("nav.home")}] %}
+  {% elif request.endpoint == 'main.historial' %}
+    {% set breadcrumb_items = [
+      {"label": t("nav.home"), "url": url_for('main.pag_principal')},
+      {"label": t("history.title")}
+    ] %}
+  {% elif request.endpoint == 'main.edit_user' %}
+    {% set breadcrumb_items = [
+      {"label": t("nav.home"), "url": url_for('main.pag_principal')},
+      {"label": t("user.edit_title")}
+    ] %}
+  {% elif request.endpoint == 'admin.documents_list_page' %}
+    {% set breadcrumb_items = [
+      {"label": t("nav.home"), "url": url_for('main.pag_principal')},
+      {"label": t("docs.manage_title")}
+    ] %}
+  {% elif request.endpoint == 'admin.users' %}
+    {% set breadcrumb_items = [
+      {"label": t("nav.home"), "url": url_for('main.pag_principal')},
+      {"label": t("users.title")}
+    ] %}
+  {% elif request.endpoint == 'admin.create_user' %}
+    {% set breadcrumb_items = [
+      {"label": t("nav.home"), "url": url_for('main.pag_principal')},
+      {"label": t("users.title"), "url": url_for('admin.users')},
+      {"label": t("admin.create_user_title")}
+    ] %}
+  {% elif request.endpoint == 'rag.rag_page' %}
+    {% set breadcrumb_items = [
+      {"label": t("nav.home"), "url": url_for('main.pag_principal')},
+      {"label": t("rag.page_title")}
+    ] %}
+  {% elif request.endpoint == 'auth.login' %}
+    {% set breadcrumb_items = [{"label": t("auth.login_title")}] %}
+  {% elif request.endpoint == 'auth.singup' %}
+    {% set breadcrumb_items = [{"label": t("auth.signup_title")}] %}
+  {% elif request.endpoint == 'auth.forgot_password' %}
+    {% set breadcrumb_items = [
+      {"label": t("auth.login_title"), "url": url_for('auth.login')},
+      {"label": t("auth.forgot_password_title")}
+    ] %}
+  {% elif request.endpoint == 'auth.reset_password' %}
+    {% set breadcrumb_items = [
+      {"label": t("auth.login_title"), "url": url_for('auth.login')},
+      {"label": t("auth.reset_password_title")}
+    ] %}
+  {% endif %}
+
+  {% if breadcrumb_items %}
+    <nav aria-label="breadcrumb" class="app-breadcrumb-shell">
+      <ol class="breadcrumb app-breadcrumb mb-0">
+        {% for item in breadcrumb_items %}
+          {% if item.url and not loop.last %}
+            <li class="breadcrumb-item">
+              <a href="{{ item.url }}">{{ item.label }}</a>
+            </li>
+          {% else %}
+            <li class="breadcrumb-item{% if loop.last %} active{% endif %}"{% if loop.last %} aria-current="page"{% endif %}>
+              {{ item.label }}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </nav>
+  {% endif %}
+
+  <main class="{% block main_content_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
   <script>
     window.PYTHIA_I18N = {{ client_translations|tojson }};
     window.pythiaTranslate = function(key, params) {
