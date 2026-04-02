@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ current_locale }}">
+<html lang="{{ current_locale }}" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ t("app.default_title") }}{% endblock %}</title>
@@ -9,15 +9,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/luz.css') }}">
     {% block styles %}{% endblock %}
 </head>
-<body data-theme="dark">
+<body class="{% block body_class %}{% endblock %}" data-theme="dark">
 
 <header class="main-header shadow-sm">
   <div class="container-fluid px-3 px-lg-4">
-    <nav class="navbar navbar-expand-lg navbar-dark app-navbar py-2">
-      <a class="navbar-brand app-brand me-0" href="{{ url_for('main.pag_principal') if current_user.is_authenticated else url_for('main.inicio') }}">
-        <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
-        <div class="user-info">
-          {% if current_user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg app-navbar py-2">
+      {% if current_user.is_authenticated %}
+        <a class="navbar-brand app-brand me-0" href="{{ url_for('main.pag_principal') }}">
+          <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
+          <div class="user-info">
             <div class="user-summary">
               <p class="welcome mb-0">{{ t("nav.hello", name=current_user.nombre) }}</p>
               {% if current_user.is_admin %}
@@ -34,19 +34,24 @@
                 -
               {% endif %}
             </p>
-          {% else %}
-            <p class="welcome mb-0"><strong>{{ titulo or t("app.welcome") }}</strong></p>
-            <p class="home-author mb-0">{{ autor }}</p>
-          {% endif %}
+          </div>
+        </a>
+      {% else %}
+        <div class="navbar-brand app-brand me-0 app-brand-static" aria-current="page">
+          <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
+          <div class="user-info">
+            <p class="welcome mb-0"><strong>{% block guest_header_title %}{{ titulo or t("app.welcome") }}{% endblock %}</strong></p>
+            <p class="home-author mb-0">{% block guest_header_subtitle %}{{ autor or "" }}{% endblock %}</p>
+          </div>
         </div>
-      </a>
+      {% endif %}
 
       {% if current_user.is_authenticated %}
-        <button class="navbar-toggler border-0 shadow-none app-navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="{{ t('nav.open_menu') }}">
+        <button class="navbar-toggler border-0 shadow-none app-navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="{{ t('nav.open_menu') }}">
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse app-navbar-collapse" id="mainNavbar">
+        <div class="collapse navbar-collapse app-navbar-collapse d-none d-lg-flex" id="mainNavbarDesktop">
           <ul class="navbar-nav app-navbar-nav mx-auto mb-2 mb-lg-0">
             {% if request.endpoint != 'main.pag_principal' %}
               <li class="nav-item">
@@ -76,7 +81,7 @@
           </ul>
 
           <div class="app-navbar-tools">
-            <div class="dropdown d-none d-lg-block">
+            <div class="dropdown">
               <button class="btn btn-outline-light btn-header dropdown-toggle app-settings-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ t("nav.settings") }}
               </button>
@@ -101,39 +106,84 @@
                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">{{ t("nav.logout") }}</a></li>
               </ul>
             </div>
-
-            <div class="d-lg-none app-mobile-panel">
-              <div class="mobile-nav-section">
-                <div class="offcanvas-section-label">{{ t("nav.appearance") }}</div>
-                <div class="list-group app-offcanvas-group">
-                  <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="dark">{{ t("nav.dark_mode") }}</button>
-                  <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="light">{{ t("nav.light_mode") }}</button>
-                </div>
-              </div>
-
-              <div class="mobile-nav-section">
-                <div class="offcanvas-section-label">{{ t("nav.internationalization") }}</div>
-                <div class="list-group app-offcanvas-group">
-                  {% for lang_code, lang_name in supported_languages.items() %}
-                    <form method="POST" action="{{ url_for('set_language_route') }}" class="m-0">
-                      <input type="hidden" name="lang" value="{{ lang_code }}">
-                      <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
-                      <button type="submit" class="list-group-item list-group-item-action{% if current_locale == lang_code %} active{% endif %}">
-                        {{ t("lang." ~ lang_code) }}
-                      </button>
-                    </form>
-                  {% endfor %}
-                </div>
-              </div>
-
-              <a class="btn btn-light btn-header w-100 mt-3" href="{{ url_for('auth.logout') }}">{{ t("nav.logout") }}</a>
-            </div>
           </div>
+        </div>
+      {% else %}
+        <div class="guest-header-actions">
+          {% block guest_header_actions %}{% endblock %}
         </div>
       {% endif %}
     </nav>
   </div>
 </header>
+
+{% if current_user.is_authenticated %}
+  <div class="offcanvas offcanvas-end app-navbar-offcanvas d-lg-none" tabindex="-1" id="mainNavbar" aria-labelledby="mainNavbarLabel">
+    <div class="offcanvas-header">
+      <div>
+        <h5 class="offcanvas-title mb-0" id="mainNavbarLabel">{{ t("nav.settings") }}</h5>
+        <p class="offcanvas-subtitle mb-0">{{ t("nav.open_menu") }}</p>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ t('common.close') }}"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="navbar-nav justify-content-end flex-grow-1 pe-0 app-navbar-nav-mobile">
+        {% if request.endpoint != 'main.pag_principal' %}
+          <li class="nav-item">
+            <a class="nav-link app-nav-link" href="{{ url_for('main.pag_principal') }}">{{ t("nav.home") }}</a>
+          </li>
+        {% endif %}
+        {% if request.endpoint != 'main.historial' %}
+          <li class="nav-item">
+            <a class="nav-link app-nav-link" href="{{ url_for('main.historial') }}">{{ t("nav.query_history") }}</a>
+          </li>
+        {% endif %}
+        {% if request.endpoint != 'main.edit_user' %}
+          <li class="nav-item">
+            <a class="nav-link app-nav-link" href="{{ url_for('main.edit_user') }}">{{ t("nav.edit_user") }}</a>
+          </li>
+        {% endif %}
+        {% if current_user.is_admin and request.endpoint != 'admin.documents_list_page' %}
+          <li class="nav-item">
+            <a class="nav-link app-nav-link" href="{{ url_for('admin.documents_list_page') }}">{{ t("nav.manage_documents") }}</a>
+          </li>
+        {% endif %}
+        {% if current_user.is_admin and request.endpoint != 'admin.users' %}
+          <li class="nav-item">
+            <a class="nav-link app-nav-link" href="{{ url_for('admin.users') }}">{{ t("nav.manage_users") }}</a>
+          </li>
+        {% endif %}
+      </ul>
+
+      <div class="app-mobile-panel mt-3">
+        <div class="mobile-nav-section">
+          <div class="offcanvas-section-label">{{ t("nav.appearance") }}</div>
+          <div class="list-group app-offcanvas-group">
+            <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="dark">{{ t("nav.dark_mode") }}</button>
+            <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="light">{{ t("nav.light_mode") }}</button>
+          </div>
+        </div>
+
+        <div class="mobile-nav-section">
+          <div class="offcanvas-section-label">{{ t("nav.internationalization") }}</div>
+          <div class="list-group app-offcanvas-group">
+            {% for lang_code, lang_name in supported_languages.items() %}
+              <form method="POST" action="{{ url_for('set_language_route') }}" class="m-0">
+                <input type="hidden" name="lang" value="{{ lang_code }}">
+                <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+                <button type="submit" class="list-group-item list-group-item-action{% if current_locale == lang_code %} active{% endif %}">
+                  {{ t("lang." ~ lang_code) }}
+                </button>
+              </form>
+            {% endfor %}
+          </div>
+        </div>
+
+        <a class="btn btn-light btn-header w-100 mt-3" href="{{ url_for('auth.logout') }}">{{ t("nav.logout") }}</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
 
   {% set breadcrumb_items = [] %}
   {% if request.endpoint == 'main.pag_principal' %}
@@ -203,8 +253,10 @@
     </nav>
   {% endif %}
 
-  <main class="{% block main_content_class %}{% endblock %}">
-    {% block content %}{% endblock %}
+  <main class="app-main-shell {% block main_content_class %}{% endblock %}">
+    <div class="{% block page_width_class %}app-page-width{% endblock %}">
+      {% block content %}{% endblock %}
+    </div>
   </main>
   <script>
     window.PYTHIA_I18N = {{ client_translations|tojson }};

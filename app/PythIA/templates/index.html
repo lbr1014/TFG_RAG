@@ -1,127 +1,93 @@
-<!DOCTYPE html>
-<html lang="{{ current_locale }}">
-<head>
-    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}inicio{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/tarjetas.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/luz.css') }}">
-</head>
-<body class="landing-page">
+{% extends "base.html" %}
 
-  <header class="main-header shadow-sm">
-    <div class="container-fluid">
-      <div class="d-flex align-items-center justify-content-between gap-3 py-2 flex-wrap">
-        <div class="d-flex align-items-center gap-2">
-          <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
-          <div class="hero-title mt-3">
-            <h1>{{ titulo }}</h1>
+{% block title %}inicio{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+{% block guest_header_title %}{{ titulo }}{% endblock %}
+{% block guest_header_subtitle %}{{ autor }}{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tarjetas.css') }}">
+{% endblock %}
+
+{% block guest_header_actions %}
+  <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-header">{{ t("landing.login") }}</a>
+  <a href="{{ url_for('auth.singup') }}" class="btn btn-outline-light btn-header">{{ t("landing.signup") }}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="main-content home-hero">
+    <div class="container py-5">
+      <section class="hero-block mx-auto text-center">
+        <span class="hero-badge luz">{{ t("landing.hero_badge") }}</span>
+
+        <h2 class="hero-title mt-3">
+          {{ t("landing.hero_title") }}
+        </h2>
+
+        <p class="hero-subtitle mx-auto">
+          {{ t("landing.hero_subtitle") }}
+        </p>
+
+        <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+          <a href="{{ url_for('auth.login') }}" class="btn btn-hero-primary">{{ t("landing.get_access") }}</a>
+          <a href="https://github.com/lbr1014/TFG_RAG" target="_blank" rel="noopener noreferrer" class="btn btn-hero-secondary">{{ t("landing.more_info") }}</a>
+        </div>
+      </section>
+
+      <section class="info-rotator-section mt-5">
+        <div id="infoCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <div class="info-card mx-auto luz">
+                <div class="info-card-icon">&#128196;</div>
+                <h3>{{ t("landing.card_1_title") }}</h3>
+                <p>{{ t("landing.card_1_text") }}</p>
+              </div>
+            </div>
+
+            <div class="carousel-item">
+              <div class="info-card mx-auto luz">
+                <div class="info-card-icon">&#129302;</div>
+                <h3>{{ t("landing.card_2_title") }}</h3>
+                <p>{{ t("landing.card_2_text") }}</p>
+              </div>
+            </div>
+
+            <div class="carousel-item">
+              <div class="info-card mx-auto luz">
+                <div class="info-card-icon">&#127919;</div>
+                <h3>{{ t("landing.card_3_title") }}</h3>
+                <p>{{ t("landing.card_3_text") }}</p>
+              </div>
+            </div>
+
+            <div class="carousel-item">
+              <div class="info-card mx-auto luz">
+                <div class="info-card-icon">&#128373;</div>
+                <h3>{{ t("landing.card_4_title") }}</h3>
+                <p>{{ t("landing.card_4_text") }}</p>
+              </div>
+            </div>
+
+            <div class="carousel-item">
+              <div class="info-card mx-auto luz">
+                <div class="info-card-icon">&#9203;</div>
+                <h3>{{ t("landing.card_5_title") }}</h3>
+                <p>{{ t("landing.card_5_text") }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-indicators position-static mt-4">
+            <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+            <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
           </div>
         </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <div class="d-none d-md-flex align-items-center gap-2">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-header">{{ t("landing.login") }}</a>
-            <a href="{{ url_for('auth.singup') }}" class="btn btn-outline-light btn-header">{{ t("landing.signup") }}</a>
-          </div>
-
-          <div class="dropdown d-md-none">
-            <button class="btn btn-outline-light btn-header btn-header-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ t('nav.open_menu') }}">
-              <span class="menu-dots" aria-hidden="true">&#8942;</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end mobile-nav-menu">
-              <li><a class="dropdown-item" href="{{ url_for('auth.login') }}">{{ t("landing.login") }}</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('auth.singup') }}">{{ t("landing.signup") }}</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
-  </header>
-
-  <div class="page-scroll">
-    <main class="main-content home-hero">
-      <div class="container py-5">
-
-        <section class="hero-block mx-auto text-center">
-          <span class="hero-badge luz">{{ t("landing.hero_badge") }}</span>
-
-          <h2 class="hero-title mt-3">
-            {{ t("landing.hero_title") }}
-          </h2>
-
-          <p class="hero-subtitle mx-auto">
-            {{ t("landing.hero_subtitle") }}
-          </p>
-
-          <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-hero-primary">{{ t("landing.get_access") }}</a>
-            <a href="https://github.com/lbr1014/TFG_RAG" target="_blank" rel="noopener noreferrer" class="btn btn-hero-secondary">{{ t("landing.more_info") }}</a>
-          </div>
-        </section>
-
-        <section class="info-rotator-section mt-5">
-          <div id="infoCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <div class="info-card mx-auto luz">
-                  <div class="info-card-icon">📜</div>
-                  <h3>{{ t("landing.card_1_title") }}</h3>
-                  <p>{{ t("landing.card_1_text") }}</p>
-                </div>
-              </div>
-
-              <div class="carousel-item">
-                <div class="info-card mx-auto luz">
-                  <div class="info-card-icon">🤖</div>
-                  <h3>{{ t("landing.card_2_title") }}</h3>
-                  <p>{{ t("landing.card_2_text") }}</p>
-                </div>
-              </div>
-
-              <div class="carousel-item">
-                <div class="info-card mx-auto luz">
-                  <div class="info-card-icon">🎯</div>
-                  <h3>{{ t("landing.card_3_title") }}</h3>
-                  <p>{{ t("landing.card_3_text") }}</p>
-                </div>
-              </div>
-
-              <div class="carousel-item">
-                <div class="info-card mx-auto luz">
-                  <div class="info-card-icon">🕵️</div>
-                  <h3>{{ t("landing.card_4_title") }}</h3>
-                  <p>{{ t("landing.card_4_text") }}</p>
-                </div>
-              </div>
-
-              <div class="carousel-item">
-                <div class="info-card mx-auto luz">
-                  <div class="info-card-icon">⏳</div>
-                  <h3>{{ t("landing.card_5_title") }}</h3>
-                  <p>{{ t("landing.card_5_text") }}</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="carousel-indicators position-static mt-4">
-              <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-              <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-              <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-              <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
-              <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </main>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='js/functionalities.js') }}"></script>
-</body>
-</html>
+{% endblock %}

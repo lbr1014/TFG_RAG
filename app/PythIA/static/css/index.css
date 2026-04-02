@@ -1,80 +1,38 @@
-/* =========================
-   PÁGINA DE INICIO
-   ========================= */
-
-body.landing-page[data-theme="light"]{
-  --app-bg-top: #3f566d;
-  --app-bg-mid: #34495e;
-  --app-bg-bottom: #2b3d4f;
-  --app-bg-accent: #2f4357;
-  --app-bg-glow: rgba(92, 122, 153, 0.30);
-  --app-bg-glow-soft: rgba(92, 122, 153, 0.06);
-  --app-bg-glow-stop-1: 28%;
-  --app-bg-glow-stop-2: 52%;
-  --app-text: #ffffff;
-  --app-text-soft: rgba(255,255,255,.82);
-  --app-text-muted: rgba(255,255,255,.72);
-  --app-surface-bg: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.08) 100%);
-  --app-surface-border: 1px solid rgba(255,255,255,.14);
-  --app-surface-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,.06);
-  --app-inset-bg: rgba(255,255,255,.06);
-  --app-inset-border: 1px solid rgba(255,255,255,.14);
-  --app-header-bg: #2c3e50;
-  --app-header-glow: linear-gradient(to bottom, rgba(255,255,255,.08), rgba(255,255,255,.06) 20%, transparent 60%);
-  --app-header-line: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
-  --app-header-btn-light-bg: #ffffff;
-  --app-header-btn-light-text: #000000;
-  --app-header-btn-light-border: rgba(255,255,255,.88);
-  --app-header-btn-light-hover-bg: #f4f7fb;
-  --app-header-btn-light-hover-text: #1f2d3d;
-  --app-header-btn-outline-bg: transparent;
-  --app-header-btn-outline-text: rgba(255,255,255,.92);
-  --app-header-btn-outline-border: rgba(255,255,255,.72);
-  --app-header-btn-outline-hover-bg: rgba(255,255,255,.10);
-  --app-header-btn-outline-hover-text: #ffffff;
-  --app-header-btn-outline-hover-border: rgba(255,255,255,.92);
-  --app-btn-hero-primary-bg: #ffffff;
-  --app-btn-hero-primary-text: #2c3e50;
-  --app-btn-hero-primary-hover-bg: #f3f7fa;
-  --app-btn-hero-primary-hover-text: #22313f;
-  --app-btn-hero-secondary-bg: rgba(255,255,255,.06);
-  --app-btn-hero-secondary-text: #ffffff;
-  --app-btn-hero-secondary-border: rgba(255,255,255,.18);
-  --app-btn-hero-secondary-hover-bg: rgba(255,255,255,.12);
-}
-
 .home-hero h1,
 .home-hero h2,
-.home-hero h3,
-.home-hero p {
-  color: #ffffff;
+.home-hero h3 {
+  color: var(--app-heading);
 }
 
-.main-content.home-hero{
+.home-hero p {
+  color: var(--app-text);
+}
+
+.main-content.home-hero {
   max-width: 100%;
   padding: 0;
   text-align: center;
 }
 
-.hero-block{
+.hero-block {
   max-width: 980px;
-  padding: 60px 20px 20px;
+  padding: 3.75rem 1.25rem 1.25rem;
 }
 
-.hero-badge{
+.hero-badge {
   display: inline-block;
-  padding: 8px 16px;
+  padding: 0.55rem 1rem;
   border-radius: 999px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.14);
-  color: #e8f1f8;
-  font-size: 13px;
+  background: var(--app-primary-soft);
+  border: 1px solid rgba(var(--app-primary-rgb), 0.14);
+  color: var(--app-heading);
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: .3px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
-.hero-title{
+.hero-title {
   font-size: clamp(2rem, 5vw, 4rem);
   line-height: 1.08;
   font-weight: 800;
@@ -83,11 +41,16 @@ body.landing-page[data-theme="light"]{
   margin-right: auto;
 }
 
-.hero-subtitle{
+.hero-subtitle {
   max-width: 760px;
-  margin-top: 20px;
+  margin-top: 1.25rem;
   font-size: clamp(1rem, 2vw, 1.35rem);
   line-height: 1.7;
-  color: rgba(255,255,255,.82);
+  color: var(--app-text-soft);
 }
 
+@media (max-width: 768px) {
+  .hero-block {
+    padding-top: 2.25rem;
+  }
+}

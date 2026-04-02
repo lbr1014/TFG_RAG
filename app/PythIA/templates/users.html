@@ -7,10 +7,10 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container px-0">
+  <div class="py-4 py-md-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
       <h1 class="mb-0">{{ t("users.title") }}</h1>
-      <a href="{{ url_for('admin.create_user') }}" class="btn btn-secondary align-self-center align-self-md-auto">{{ t("users.add") }}</a>
+      <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary align-self-center align-self-md-auto">{{ t("users.add") }}</a>
     </div>
 
     <div class="table-card">
@@ -23,7 +23,7 @@
               <th class="d-none d-lg-table-cell">{{ t("common.email") }}</th>
               <th class="d-none d-lg-table-cell">{{ t("users.admin_col") }}</th>
               <th class="d-none d-lg-table-cell">{{ t("users.last_login_col") }}</th>
-              <th>{{ t("common.actions") }}</th>
+              <th class="text-center" style="width: 172px;">{{ t("common.actions") }}</th>
             </tr>
           </thead>
 
@@ -60,7 +60,7 @@
                   {% endif %}
                 </td>
 
-                <td>
+                <td class="text-center">
                   {% if u.id == current_user.id %}
                     <em>{{ t("users.you") }}</em>
                   {% else %}

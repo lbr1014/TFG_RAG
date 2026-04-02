@@ -19,7 +19,7 @@
   margin-bottom: 12px;
   font-size: 1.7rem;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--app-heading);
 }
 
 .info-card p{
@@ -27,7 +27,7 @@
   max-width: 540px;
   font-size: 1.05rem;
   line-height: 1.7;
-  color: rgba(255,255,255,.82);
+  color: var(--app-text-soft);
 }
 
 .carousel-indicators [data-bs-target]{
@@ -36,15 +36,15 @@
   border-radius: 50%;
   border: 0;
   margin: 0 6px;
-  background-color: rgba(255,255,255,.35);
+  background-color: rgba(var(--app-primary-rgb), .28);
 }
 
 .carousel-indicators .active{
-  background-color: #ffffff;
+  background-color: var(--app-primary);
 }
 
 .home-author{
-  color: rgba(255,255,255,.82);
+  color: var(--app-text-muted);
   font-size: 14px;
 }
 

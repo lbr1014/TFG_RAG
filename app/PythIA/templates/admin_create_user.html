@@ -1,46 +1,47 @@
 {% extends "base.html" %}
 
 {% block title %}{{ t("admin.create_user_title") }}{% endblock %}
+{% block body_class %}auth-screen{% endblock %}
 
 {% block content %}
   <div class="auth-page">
     <div class="auth-container">
       <h1>{{ t("admin.create_user_title") }}</h1>
+      <p class="auth-subtitle">{{ t("users.add") }}</p>
 
       <form method="POST">
         {{ form.hidden_tag() }}
 
-        <div class="form-group">
-          {{ form.nombre.label }}
-          {{ form.nombre(class="form-input") }}
+        <div class="mb-3">
+          {{ form.nombre.label(class="form-label") }}
+          {{ form.nombre(class="form-control form-control-lg") }}
           {% for error in form.nombre.errors %}
-            <p class="error">{{ error }}</p>
+            <div class="invalid-feedback d-block">{{ error }}</div>
           {% endfor %}
         </div>
 
-        <div class="form-group">
-          {{ form.email.label }}
-          {{ form.email(class="form-input") }}
+        <div class="mb-3">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control form-control-lg", placeholder="email@example.com") }}
           {% for error in form.email.errors %}
-            <p class="error">{{ error }}</p>
+            <div class="invalid-feedback d-block">{{ error }}</div>
           {% endfor %}
         </div>
 
-        <div class="form-group">
-          {{ form.password.label }}
-          {{ form.password(class="form-input") }}
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control form-control-lg") }}
           {% for error in form.password.errors %}
-            <p class="error">{{ error }}</p>
+            <div class="invalid-feedback d-block">{{ error }}</div>
           {% endfor %}
         </div>
 
-        <div class="form-group">
-          <label class="checkbox-row">
-            {{ form.is_admin }} {{ form.is_admin.label.text }}
-          </label>
+        <div class="form-check">
+          {{ form.is_admin(class="form-check-input") }}
+          {{ form.is_admin.label(class="form-check-label") }}
         </div>
 
-        {{ form.submit(class="btn btn-primary") }}
+        {{ form.submit(class="btn btn-primary btn-lg") }}
       </form>
 
       <div class="links">

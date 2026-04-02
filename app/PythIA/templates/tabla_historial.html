@@ -12,7 +12,7 @@
             <th>{{ t("history.question") }}</th>
             <th class="d-none d-md-table-cell">{{ t("history.document") }}</th>
             <th class="d-none d-md-table-cell">{{ t("history.time") }}</th>
-            <th>{{ t("common.actions") }}</th>
+            <th class="text-center" style="width: 172px;">{{ t("common.actions") }}</th>
           </tr>
         </thead>
 
@@ -42,7 +42,7 @@
               <td class="cell-question">{{ c.pregunta }}</td>
               <td class="d-none d-md-table-cell">{{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</td>
               <td class="d-none d-md-table-cell">{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
-              <td>
+              <td class="text-center">
                 <div class="table-actions">
                   <button type="button"
                           class="btn btn-sm btn-outline-light"

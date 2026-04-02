@@ -8,33 +8,39 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container py-4 py-md-5">
-    <div class="row justify-content-center">
-      <div class="col-12 col-xl-10">
-        <h1>{{ t("history.title") }}</h1>
+  <div class="py-4 py-md-5">
+    <h1>{{ t("history.title") }}</h1>
 
-        {% if not consultas %}
-          <div class="alert alert-info">{{ t("history.empty") }}</div>
-        {% else %}
-          <div>
-            {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
+    {% if not consultas %}
+      <div class="alert alert-info">{{ t("history.empty") }}</div>
+    {% else %}
+      <div>
+        {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
 
-            {% if total_pages > 1 %}
-              <div class="pagination">
-                {% if page > 1 %}
-                  <a class="page-link" href="{{ url_for('main.pag_principal', page=page-1) }}">{{ t("common.previous") }}</a>
-                {% endif %}
+        {% if total_pages > 1 %}
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
+            <p class="page-info mb-0">{{ t("common.page", page=page, total_pages=total_pages, total_items=total_consultas, items_label=t("history.title")|lower) }}</p>
 
-                <span class="page-info">{{ t("common.page", page=page, total_pages=total_pages, total_items=total_consultas, items_label=t("history.title")|lower) }}</span>
-
-                {% if page < total_pages %}
-                  <a class="page-link" href="{{ url_for('main.pag_principal', page=page+1) }}">{{ t("common.next") }}</a>
-                {% endif %}
-              </div>
-            {% endif %}
+            <nav aria-label="Paginacion historial">
+              <ul class="pagination pagination-sm justify-content-center mb-0">
+                <li class="page-item{% if page <= 1 %} disabled{% endif %}">
+                  <a class="page-link" href="{% if page > 1 %}{{ url_for('main.historial', page=page-1) }}{% else %}#{% endif %}"{% if page <= 1 %} tabindex="-1" aria-disabled="true"{% endif %}>
+                    {{ t("common.previous") }}
+                  </a>
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link">{{ page }}/{{ total_pages }}</span>
+                </li>
+                <li class="page-item{% if page >= total_pages %} disabled{% endif %}">
+                  <a class="page-link" href="{% if page < total_pages %}{{ url_for('main.historial', page=page+1) }}{% else %}#{% endif %}"{% if page >= total_pages %} tabindex="-1" aria-disabled="true"{% endif %}>
+                    {{ t("common.next") }}
+                  </a>
+                </li>
+              </ul>
+            </nav>
           </div>
         {% endif %}
       </div>
-    </div>
+    {% endif %}
   </div>
 {% endblock %}
