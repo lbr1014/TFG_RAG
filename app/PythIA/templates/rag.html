@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "components/form_errors.html" import render_form_errors with context %}
 
 {% block title %}{{ t("rag.page_title") }}{% endblock %}
 
@@ -14,8 +15,9 @@
           <p class="rag-subtitle mb-0">{{ t("rag.subtitle") }}</p>
         </div>
 
-        <form id="rag-form" method="post" class="rag-form">
+        <form id="rag-form" method="post" class="rag-form" novalidate>
           {{ form.csrf_token }}
+          {{ render_form_errors(form) }}
 
           <div class="mb-3">
             {{ form.question.label(class="form-label rag-label") }}
@@ -101,6 +103,31 @@
     cancelButton.classList.add("d-none");
   }
 
+  function setErrorUI(message) {
+    statusEl.textContent = message;
+    statusEl.classList.add("is-error");
+  }
+
+  function validateQuestion() {
+    const value = questionEl.value.trim();
+
+    if (!value) {
+      setErrorUI(tr("rag.empty_question"));
+      questionEl.focus();
+      return false;
+    }
+
+    if (value.length > 2000) {
+      setErrorUI(tr("rag.question_too_long"));
+      questionEl.focus();
+      return false;
+    }
+
+    statusEl.classList.remove("is-error");
+    statusEl.textContent = "";
+    return true;
+  }
+
   function applyResult(result) {
     answerEl.textContent = result?.answer || tr("rag.no_answer");
     filenameEl.textContent = result?.filename || "-";
@@ -173,6 +200,10 @@
     stopPolling();
     clearResult();
 
+    if (!validateQuestion()) {
+      return;
+    }
+
     try {
       const formData = new FormData(form);
       setRunningUI(tr("rag.sending"));
@@ -203,6 +234,12 @@
     } catch (error) {
       statusEl.textContent = error.message || tr("rag.cancel_error");
       statusEl.classList.add("is-error");
+    }
+  });
+
+  questionEl.addEventListener("input", () => {
+    if (statusEl.classList.contains("is-error")) {
+      validateQuestion();
     }
   });
 </script>

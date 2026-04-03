@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "components/form_errors.html" import render_form_errors with context %}
 
 {% block title %}{{ t("admin.create_user_title") }}{% endblock %}
 {% block body_class %}auth-screen{% endblock %}
@@ -9,8 +10,9 @@
       <h1>{{ t("admin.create_user_title") }}</h1>
       <p class="auth-subtitle">{{ t("users.add") }}</p>
 
-      <form method="POST">
+      <form method="POST" novalidate>
         {{ form.hidden_tag() }}
+        {{ render_form_errors(form) }}
 
         <div class="mb-3">
           {{ form.nombre.label(class="form-label") }}

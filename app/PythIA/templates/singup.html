@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "components/form_errors.html" import render_form_errors with context %}
 
 {% block title %}{{ t("auth.signup_title") }}{% endblock %}
 {% block body_class %}auth-screen{% endblock %}
@@ -10,8 +11,9 @@
     <div class="auth-container">
       <h1>{{ t("auth.signup_title") }}</h1>
 
-      <form method="POST" action="{{ url_for('auth.singup') }}">
+      <form method="POST" action="{{ url_for('auth.singup') }}" novalidate>
         {{ form.hidden_tag() }}
+        {{ render_form_errors(form) }}
 
         <div class="mb-3">
           {{ form.nombre.label(class="form-label") }}

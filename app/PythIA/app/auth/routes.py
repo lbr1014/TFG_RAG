@@ -46,6 +46,7 @@ def logout():
     logout_user()
     return redirect(url_for("main.inicio"))
 
+@auth_bp.route("/signup", methods=["GET", "POST"])
 @auth_bp.route("/singup", methods=["GET", "POST"])
 def singup():
     form = SignupForm()
