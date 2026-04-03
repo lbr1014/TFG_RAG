@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% from "components/form_errors.html" import render_form_errors with context %}
+{% set header_guest_title = "PythIA" %}
+{% set header_guest_subtitle = "" %}
+{% set header_force_guest = true %}
 
 {% block title %}{{ t("auth.login_title") }}{% endblock %}
 {% block body_class %}auth-screen{% endblock %}
-{% block guest_header_title %}PythIA{% endblock %}
-{% block guest_header_subtitle %}{% endblock %}
 
 {% block content %}
   <div class="auth-page">
