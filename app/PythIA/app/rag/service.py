@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
+import unicodedata
 from typing import Any, Dict, Optional
 
 from flask_login import current_user
@@ -24,6 +26,119 @@ EMPTY_ANSWER: Dict[str, Any] = {
     "chunk": "",
 }
 
+EXPEDIENTE_KEYWORDS = {
+    "administrativo",
+    "administrativa",
+    "administrativos",
+    "administrativas",
+    "tecnico",
+    "tecnica",
+    "tecnicos",
+    "tecnicas",
+    "pliego",
+    "pliegos",
+    "documento",
+    "documentos",
+    "sobre",
+    "del",
+    "de",
+    "que",
+    "y",
+    "o",
+}
+
+
+def normalize_text(value: str | None) -> str:
+    value = (value or "").strip().lower()
+    if not value:
+        return ""
+    normalized = unicodedata.normalize("NFKD", value)
+    normalized = "".join(ch for ch in normalized if not unicodedata.combining(ch))
+    return re.sub(r"\s+", " ", normalized).strip()
+
+
+def detect_tipo_documento(question: str) -> str | None:
+    normalized = normalize_text(question)
+    asks_admin = any(
+        token in normalized
+        for token in (
+            "pliego administrativo",
+            "pliegos administrativos",
+            "clausulas administrativas",
+            "clausula administrativa",
+        )
+    )
+    asks_tech = any(
+        token in normalized
+        for token in (
+            "pliego tecnico",
+            "pliegos tecnicos",
+            "prescripciones tecnicas",
+            "prescripcion tecnica",
+        )
+    )
+
+    if asks_admin and not asks_tech:
+        return "administrativo"
+    if asks_tech and not asks_admin:
+        return "tecnico"
+    return None
+
+
+def extract_expediente_candidate(question: str) -> str | None:
+    question = (question or "").strip()
+    if not question:
+        return None
+
+    quoted = re.search(
+        r'expediente(?:\s+n[uú]mero|\s+n[ºo.]?)?\s*[:#-]?\s*["“](.+?)["”]',
+        question,
+        re.IGNORECASE,
+    )
+    if quoted:
+        return quoted.group(1).strip() or None
+
+    match = re.search(
+        r"expediente(?:\s+n[uú]mero|\s+n[ºo.]?)?\s*[:#-]?\s*([A-Za-z0-9][A-Za-z0-9/_.-]*(?:\s+[A-Za-z0-9][A-Za-z0-9/_.-]*){0,5})",
+        question,
+        re.IGNORECASE,
+    )
+    if not match:
+        return None
+
+    words = match.group(1).strip().split()
+    while words and normalize_text(words[-1]) in EXPEDIENTE_KEYWORDS:
+        words.pop()
+    candidate = " ".join(words).strip(" ,.;:")
+    return candidate or None
+
+
+def resolve_numero_expediente(question: str) -> str | None:
+    candidate = extract_expediente_candidate(question)
+    if not candidate:
+        return None
+
+    normalized_candidate = normalize_text(candidate)
+    available = (
+        db.session.query(Chunk.numero_expediente)
+        .filter(Chunk.numero_expediente.isnot(None))
+        .distinct()
+        .all()
+    )
+    existing_values = [value for (value,) in available if value]
+
+    for value in existing_values:
+        if normalize_text(value) == normalized_candidate:
+            return value
+
+    compact_candidate = re.sub(r"[\s./_-]+", "", normalized_candidate)
+    for value in existing_values:
+        normalized_value = normalize_text(value)
+        if re.sub(r"[\s./_-]+", "", normalized_value) == compact_candidate:
+            return value
+
+    return candidate
+
 async def rag_answer(question: str, should_cancel=None, on_status=None, user_id: int | None = None, lang: str = "es") -> Dict[str, Any]:
     """
     Devuelve dict con:
@@ -37,6 +152,8 @@ async def rag_answer(question: str, should_cancel=None, on_status=None, user_id:
 
     start = time.perf_counter()
     data: Dict[str, Any]
+    numero_expediente = resolve_numero_expediente(question)
+    tipo_documento = detect_tipo_documento(question)
 
     try:
         if on_status:
@@ -45,6 +162,8 @@ async def rag_answer(question: str, should_cancel=None, on_status=None, user_id:
             question,
             should_cancel=should_cancel,
             on_status=on_status,
+            numero_expediente=numero_expediente,
+            tipo_documento=tipo_documento,
         )
     except QueryCancelledError:
         raise

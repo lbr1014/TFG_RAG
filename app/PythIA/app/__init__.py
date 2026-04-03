@@ -1,5 +1,4 @@
 from flask import Flask, flash, redirect, request, url_for
-from pathlib import Path
 import os
 from dotenv import load_dotenv
 
@@ -15,6 +14,23 @@ from .markdown_conversion_state import MarkdownConversionState
 from .error_handling import register_error_handlers
 from .inetrnacionalizacion.tarduccion import init_app as init_i18n, t
 
+
+def _build_database_url_from_env() -> str | None:
+    db_url = _build_database_url_from_env()
+    if db_url:
+        return db_url
+
+    user = os.environ.get("POSTGRES_USER")
+    password = os.environ.get("POSTGRES_PASSWORD")
+    database = os.environ.get("POSTGRES_DB")
+    host = os.environ.get("POSTGRES_HOST", "db")
+    port = os.environ.get("POSTGRES_PORT", "5432")
+
+    if not user or not password or not database:
+        return None
+
+    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
+
 def create_app():
     load_dotenv("secret.env")
     app = Flask(
@@ -29,7 +45,7 @@ def create_app():
     app.config["SECRET_KEY"] = SECRET_KEY 
     db_url = os.environ.get("DATABASE_URL")
     if not db_url:
-        raise RuntimeError("DATABASE_URL no está definida (Postgres requerido).")
+        raise RuntimeError("DATABASE_URL no está definida y no se pudo construir con POSTGRES_*.")
 
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)

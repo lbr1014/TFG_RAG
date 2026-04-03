@@ -722,7 +722,40 @@ def iter_clean_lines(text: str) -> Iterable[str]:
         if line:
             yield line
 
-def recuperacion_chunk(user_query: str, k: int = 10) -> list[VectorBaseDocument]:
+
+def build_metadata_filter(
+    numero_expediente: str | None = None,
+    tipo_documento: str | None = None,
+) -> qmodels.Filter | None:
+    must: list[qmodels.FieldCondition] = []
+
+    if numero_expediente:
+        must.append(
+            qmodels.FieldCondition(
+                key="metadata.numero_expediente",
+                match=qmodels.MatchValue(value=numero_expediente),
+            )
+        )
+
+    if tipo_documento:
+        must.append(
+            qmodels.FieldCondition(
+                key="metadata.tipo_documento",
+                match=qmodels.MatchValue(value=tipo_documento),
+            )
+        )
+
+    if not must:
+        return None
+
+    return qmodels.Filter(must=must)
+
+def recuperacion_chunk(
+    user_query: str,
+    k: int = 10,
+    numero_expediente: str | None = None,
+    tipo_documento: str | None = None,
+) -> list[VectorBaseDocument]:
     """
     Dada una pregunta del usuario, recupera los chunks más similares
     desde Qdrant.
@@ -735,11 +768,24 @@ def recuperacion_chunk(user_query: str, k: int = 10) -> list[VectorBaseDocument]
     query_vector = embedding_model(user_query, to_list=True)
 
     # Búsqueda vectorial en Qdrant
-    docs = VectorBaseDocument.search(query_vector=query_vector, limit=k)
+    query_filter = build_metadata_filter(
+        numero_expediente=numero_expediente,
+        tipo_documento=tipo_documento,
+    )
+    docs = VectorBaseDocument.search(
+        query_vector=query_vector,
+        limit=k,
+        query_filter=query_filter,
+    )
 
     return docs
 
-def recuperacion_chunk_con_scores(user_query: str, k: int = 10) -> list[qmodels.ScoredPoint]:
+def recuperacion_chunk_con_scores(
+    user_query: str,
+    k: int = 10,
+    numero_expediente: str | None = None,
+    tipo_documento: str | None = None,
+) -> list[qmodels.ScoredPoint]:
     """
     Recupera los k chunks más similares desde Qdrant, incluyendo score e id del punto.
     """
@@ -749,6 +795,10 @@ def recuperacion_chunk_con_scores(user_query: str, k: int = 10) -> list[qmodels.
     )
     # Embedding de la pregunta
     query_vector = embedding_model(user_query, to_list=True)
+    query_filter = build_metadata_filter(
+        numero_expediente=numero_expediente,
+        tipo_documento=tipo_documento,
+    )
     try:
         VectorBaseDocument._ensure_collection()
 
@@ -757,6 +807,7 @@ def recuperacion_chunk_con_scores(user_query: str, k: int = 10) -> list[qmodels.
             collection_name=VectorBaseDocument.get_collection_name(),
             query=query_vector,
             limit=k,
+            query_filter=query_filter,
             with_payload=True,
             with_vectors=False,
         )
@@ -842,7 +893,11 @@ async def ask_ollama(
     return "".join(chunks)
 
 
-def obtener_chunk_de_query(user_query: str) -> dict | None:
+def obtener_chunk_de_query(
+    user_query: str,
+    numero_expediente: str | None = None,
+    tipo_documento: str | None = None,
+) -> dict | None:
     """
     Toma una pregunta de usuario, recupera el chunk más relevante de Qdrant
     y devuelve:
@@ -853,7 +908,12 @@ def obtener_chunk_de_query(user_query: str) -> dict | None:
 
     Devuelve None si no hay resultados.
     """
-    docs = recuperacion_chunk(user_query, k=1)
+    docs = recuperacion_chunk(
+        user_query,
+        k=1,
+        numero_expediente=numero_expediente,
+        tipo_documento=tipo_documento,
+    )
     if not docs:
         return None
 
@@ -873,6 +933,8 @@ async def obtener_mejor_chunk(
     model: str = "llama3.1:8b-instruct-q4_K_M",
     should_cancel=None,
     on_status=None,
+    numero_expediente: str | None = None,
+    tipo_documento: str | None = None,
     ) -> dict:
     """
     1) Recupera de Qdrant los 10 chunk más parecido a la pregunta.
@@ -893,7 +955,12 @@ async def obtener_mejor_chunk(
     if on_status:
         on_status("Recuperando fragmentos relevantes...")
 
-    points = recuperacion_chunk_con_scores(user_query, k=10)
+    points = recuperacion_chunk_con_scores(
+        user_query,
+        k=10,
+        numero_expediente=numero_expediente,
+        tipo_documento=tipo_documento,
+    )
     if not points:
         return {
             "answer": "No he encontrado ningún fragmento relevante en la base de datos.",
@@ -902,6 +969,10 @@ async def obtener_mejor_chunk(
             "segment_index": -1,
             "chunk": "",
             "retrieved": [],
+            "applied_filters": {
+                "numero_expediente": numero_expediente,
+                "tipo_documento": tipo_documento,
+            },
         }
     
     # Normaliza a lista de dicts
@@ -961,7 +1032,11 @@ async def obtener_mejor_chunk(
         "filename": best.get("filename", ""),
         "segment_index": best.get("segment_index", -1),
         "chunk": best.get("chunk", ""),
-        "retrieved": retrieved, 
+        "retrieved": retrieved,
+        "applied_filters": {
+            "numero_expediente": numero_expediente,
+            "tipo_documento": tipo_documento,
+        },
     }
 
 def index_pdf(
