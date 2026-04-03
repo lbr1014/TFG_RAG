@@ -112,10 +112,10 @@ body[data-theme="light"] {
   --app-surface-shadow: 0 20px 52px rgba(37, 99, 235, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.92);
   --app-inset-bg: rgba(219, 234, 254, 0.7);
   --app-inset-border: 1px solid rgba(59, 130, 246, 0.14);
-  --app-header-bg: rgba(255, 255, 255, 0.92);
-  --app-header-glow: linear-gradient(to bottom, rgba(37, 99, 235, 0.08), transparent 62%);
-  --app-header-line: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.22), transparent);
-  --app-dropdown-bg: #ffffff;
+  --app-header-bg: rgba(219, 234, 254, 0.92);
+  --app-header-glow: linear-gradient(to bottom, rgba(96, 165, 250, 0.18), rgba(191, 219, 254, 0.08) 54%, transparent 100%);
+  --app-header-line: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+  --app-dropdown-bg: #eff6ff;
   --app-dropdown-text: #0f172a;
   --app-dropdown-hover: rgba(37, 99, 235, 0.1);
   --app-header-btn-light-bg: #2563eb;
