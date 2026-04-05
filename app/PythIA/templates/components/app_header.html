@@ -9,7 +9,7 @@
     <nav class="navbar navbar-expand-lg app-navbar py-2">
       {% if show_authenticated_header %}
         <a class="navbar-brand app-brand me-0" href="{{ url_for('main.pag_principal') }}">
-          <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
+          <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="Logo PythIA" class="logo-header">
           <div class="user-info">
             <div class="user-summary">
               <p class="welcome mb-0">{{ t("nav.hello", name=current_user.nombre) }}</p>
@@ -31,7 +31,7 @@
         </a>
       {% else %}
         <div class="navbar-brand app-brand me-0 app-brand-static" aria-current="page">
-          <img src="{{ url_for('static', filename='img/PythIA_logo.png') }}" alt="Logo PythIA" class="logo-header">
+          <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="Logo PythIA" class="logo-header">
           <div class="user-info">
             <p class="welcome mb-0"><strong>{{ guest_title }}</strong></p>
             <p class="home-author mb-0">{{ guest_subtitle }}</p>
