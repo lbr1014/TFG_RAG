@@ -1,3 +1,6 @@
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+
 from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from math import ceil
@@ -119,6 +122,168 @@ def historial():
         page=page,
         total_pages=total_pages,
         total_consultas=total_consultas
+    )
+
+
+def _month_sequence(total_months: int = 12):
+    today = datetime.now().date().replace(day=1)
+    months = []
+    year = today.year
+    month = today.month
+
+    for _ in range(total_months):
+        months.append((year, month))
+        month -= 1
+        if month == 0:
+            month = 12
+            year -= 1
+
+    months.reverse()
+    return months
+
+
+def _safe_created_at(consulta: Consulta) -> datetime:
+    created_at = consulta.created_at or datetime.now()
+    return created_at.replace(tzinfo=None) if created_at.tzinfo else created_at
+
+
+def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
+    consultas = sorted(consultas, key=lambda item: _safe_created_at(item))
+    recent_months = _month_sequence(12)
+    monthly_counts = {month: 0 for month in recent_months}
+    monthly_times = defaultdict(list)
+    daily_counts = {}
+    weekday_counts = {day: 0 for day in range(7)}
+    hourly_counts = {hour: 0 for hour in range(24)}
+    user_counter = defaultdict(int)
+
+    start_year, start_month = recent_months[0]
+    end_year, end_month = recent_months[-1]
+    calendar_start = date(start_year, start_month, 1)
+    if end_month == 12:
+        calendar_end = date(end_year + 1, 1, 1) - timedelta(days=1)
+    else:
+        calendar_end = date(end_year, end_month + 1, 1) - timedelta(days=1)
+
+    current_day = calendar_start
+    while current_day <= calendar_end:
+        daily_counts[current_day.isoformat()] = 0
+        current_day += timedelta(days=1)
+
+    for consulta in consultas:
+        created_at = _safe_created_at(consulta)
+        month_key = (created_at.year, created_at.month)
+        if month_key in monthly_counts:
+            monthly_counts[month_key] += 1
+            monthly_times[month_key].append(float(consulta.tiempo_respuestas or 0))
+        day_key = created_at.date().isoformat()
+        if day_key in daily_counts:
+            daily_counts[day_key] += 1
+        weekday_counts[created_at.weekday()] += 1
+        hourly_counts[created_at.hour] += 1
+        user_name = getattr(getattr(consulta, "user", None), "nombre", None)
+        if user_name:
+            user_counter[user_name] += 1
+
+    monthly_queries = [
+        {
+            "month": f"{year:04d}-{month:02d}-01",
+            "count": monthly_counts[(year, month)],
+        }
+        for year, month in recent_months
+    ]
+    monthly_avg_time = [
+        {
+            "month": f"{year:04d}-{month:02d}-01",
+            "avg_time": round(sum(values) / len(values), 2) if values else 0,
+        }
+        for (year, month), values in (
+            ((year, month), monthly_times.get((year, month), []))
+            for year, month in recent_months
+        )
+    ]
+
+    summary = {
+        "total_queries": len(consultas),
+        "avg_response_time": round(
+            sum(float(consulta.tiempo_respuestas or 0) for consulta in consultas) / len(consultas),
+            2,
+        ) if consultas else 0,
+        "active_days": len({_safe_created_at(consulta).date().isoformat() for consulta in consultas}),
+        "first_query_at": consultas[0].created_at.isoformat() if consultas else None,
+        "last_query_at": consultas[-1].created_at.isoformat() if consultas else None,
+    }
+
+    payload = {
+        "summary": summary,
+        "monthly_queries": monthly_queries,
+        "monthly_avg_time": monthly_avg_time,
+        "daily_queries": [
+            {"date": iso_date, "count": count}
+            for iso_date, count in daily_counts.items()
+        ],
+        "weekday_queries": [
+            {"weekday": weekday, "count": count}
+            for weekday, count in weekday_counts.items()
+        ],
+        "hourly_queries": [
+            {"hour": hour, "count": count}
+            for hour, count in hourly_counts.items()
+        ],
+    }
+
+    if include_top_users:
+        payload["top_users"] = [
+            {"user": name, "count": count}
+            for name, count in sorted(user_counter.items(), key=lambda item: (-item[1], item[0]))[:8]
+        ]
+
+    return payload
+
+
+@main_bp.get("/stats")
+@login_required
+def stats_page():
+    selected_user = current_user
+    selected_user_id = None
+    users = []
+    is_global_scope = False
+
+    if current_user.is_admin:
+        users = User.query.order_by(User.nombre.asc(), User.email.asc()).all()
+        selected_user_id = request.args.get("user_id", type=int)
+        if selected_user_id:
+            selected_user = User.get_by_id(selected_user_id)
+            if not selected_user:
+                abort(404)
+        else:
+            selected_user = None
+            is_global_scope = True
+
+    base_query = Consulta.query.order_by(Consulta.created_at.asc())
+    if selected_user is not None:
+        base_query = base_query.filter(Consulta.user_id == int(selected_user.id))
+
+    consultas = base_query.all()
+    stats_payload = build_usage_stats_payload(
+        consultas,
+        include_top_users=current_user.is_admin and is_global_scope,
+    )
+
+    scope_title = (
+        t("stats.scope_global")
+        if is_global_scope
+        else t("stats.scope_user", name=selected_user.nombre)
+    )
+
+    return render_template(
+        "stats.html",
+        stats_payload=stats_payload,
+        stats_scope_title=scope_title,
+        is_global_scope=is_global_scope,
+        users=users,
+        selected_user=selected_user,
+        selected_user_id=selected_user_id,
     )
     
 def best_pid_for_consulta(consulta) -> str:
