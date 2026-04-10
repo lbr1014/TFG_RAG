@@ -153,11 +153,7 @@
                       <div class="d-flex flex-column gap-1">
                         {% if markdown_status.get(d.id) %}
                           <span class="badge text-bg-success">{{ t("docs.with_markdown") }}</span>
-                          {% if d.markdown_updated_at %}
-                            <span class="doc-status small">{{ d.markdown_updated_at.strftime("%Y-%m-%d %H:%M:%S") }}</span>
-                          {% else %}
-                            <span class="doc-status small">{{ t("docs.markdown_ready") }}</span>
-                          {% endif %}
+                          <span class="doc-status small">{{ t("docs.markdown_ready") }}</span>
                         {% else %}
                           <span class="badge text-bg-secondary">{{ t("docs.without_markdown") }}</span>
                           <span class="doc-status small">{{ t("docs.markdown_pending") }}</span>

@@ -365,7 +365,7 @@ def normalize_headings(markdown: str) -> str:
     return "\n".join(out_lines)
 
 
-async def process_pdf_async(pdf_path: Path, output_dir: Path, on_page_start=None):
+async def process_pdf_async(pdf_path: Path, on_page_start=None) -> str:
     print(
         f"Procesando {pdf_path.name}... "
         f"OCR model={MODEL_NAME} | backend={_ocr_execution_backend()} | base_url={OLLAMA_BASE_URL}"
@@ -413,15 +413,20 @@ async def process_pdf_async(pdf_path: Path, output_dir: Path, on_page_start=None
     full_md = clean_index_dots(full_md)
     full_md = normalize_headings(full_md)
 
+    return full_md
+
+
+def process_pdf(pdf_path: Path, on_page_start=None) -> str:
+    return asyncio.run(process_pdf_async(pdf_path, on_page_start=on_page_start))
+
+
+def save_markdown_to_file(pdf_path: Path, output_dir: Path, on_page_start=None) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
+    full_md = process_pdf(pdf_path, on_page_start=on_page_start)
     out_path = output_dir / f"{pdf_path.stem}.md"
     out_path.write_text(full_md, encoding="utf-8")
     print(f"Markdown guardado en: {out_path}")
     return out_path
-
-
-def process_pdf(pdf_path: Path, output_dir: Path, on_page_start=None):
-    return asyncio.run(process_pdf_async(pdf_path, output_dir, on_page_start=on_page_start))
 
 
 def main():
@@ -438,7 +443,7 @@ def main():
         sys.exit(1)
 
     for pdf in pdf_files:
-        process_pdf(pdf, out_dir)
+        save_markdown_to_file(pdf, out_dir)
 
 
 if __name__ == "__main__":

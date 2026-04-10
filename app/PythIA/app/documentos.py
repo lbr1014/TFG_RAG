@@ -38,13 +38,10 @@ class Documento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(255), nullable=False, index=True)
     path = db.Column(db.String(500), unique=True, nullable=False)
-    markdown_path = db.Column(db.String(500), nullable=True)
     size_bytes = db.Column(db.Integer, nullable=False)
     modified_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
-    markdown_updated_at = db.Column(db.DateTime(timezone=True), nullable=True)
     chunks = db.Column(db.Integer, nullable=False, default=0)
     hash = db.Column(db.String(100), nullable=False, index=True)
-    markdown_source_hash = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(25), nullable=False, default="cargado", index=True)
     markdown_content = db.Column(db.Text, nullable=True)
     error_message = db.Column(db.Text, nullable=True)
@@ -128,7 +125,6 @@ class DocumentosService:
         docs_dir: Path,
         index_pliegos_dir,
         delete_chunks,
-        markdown_dir: Path | None = None,
         markdown_converter=None,
     ):
         """Construye el servicio con sus dependencias principales.
@@ -137,13 +133,10 @@ class DocumentosService:
             docs_dir: Directorio base donde se almacenan los PDFs.
             index_pliegos_dir: Dependencia para la función de pliegos.
             delete_chunks: Función que elimina chunks previos del indice.
-            markdown_dir: Directorio opcional para los archivos Markdown.
             markdown_converter: Función opcional para convertir PDFs a Markdown.
         """
         self.docs_dir = docs_dir
         self.docs_dir.mkdir(parents=True, exist_ok=True)
-        self.markdown_dir = markdown_dir or (self.docs_dir / "markdown")
-        self.markdown_dir.mkdir(parents=True, exist_ok=True)
 
         self.index_pliegos_dir = index_pliegos_dir
         self.delete_chunks = delete_chunks
@@ -156,12 +149,12 @@ class DocumentosService:
             filename: Nombre de archivo original.
 
         Returns:
-            El nombre sanitizado para usarlo en disco.
+            El nombre seguro para usarlo en disco.
         """
         return secure_filename(filename or "")
 
     def resolve_pdf_path(self, filename: str) -> Path:
-        """Resuelve la ruta absoluta de un PDF permitido.
+        """Resuelve la ruta absoluta de un PDF.
 
         Args:
             filename: Nombre del archivo PDF.
@@ -192,33 +185,6 @@ class DocumentosService:
             error_out=False,
         )
 
-    def markdown_path_for_filename(self, filename: str) -> Path:
-        """Calcula la ruta Markdown asociada a un nombre de archivo.
-
-        Args:
-            filename: Nombre del archivo origen.
-
-        Returns:
-            La ruta del archivo Markdown correspondiente.
-        """
-        safe = self.filename(filename)
-        if not safe:
-            raise ValueError("Nombre de archivo invalido")
-        return self.markdown_dir / f"{Path(safe).stem}.md"
-
-    def markdown_path_for_doc(self, doc: Documento) -> Path:
-        """Obtiene la ruta Markdown asociada a un documento.
-
-        Args:
-            doc: Documento del que se quiere obtener la ruta Markdown.
-
-        Returns:
-            La ruta del archivo Markdown asociado.
-        """
-        if doc.markdown_path:
-            return Path(doc.markdown_path)
-        return self.markdown_path_for_filename(doc.nombre)
-
     def has_markdown(self, doc: Documento) -> bool:
         """Comprueba si un documento dispone de Markdown valido.
 
@@ -228,43 +194,7 @@ class DocumentosService:
         Returns:
             ``True`` si el documento tiene Markdown actual y valido.
         """
-        if doc.markdown_content:
-            return True
-        if not doc.markdown_path or not doc.markdown_source_hash:
-            return False
-        md_path = Path(doc.markdown_path)
-        return md_path.exists() and doc.markdown_source_hash == doc.hash
-
-    def clear_markdown_metadata(self, doc: Documento) -> None:
-        """Limpia los metadatos de Markdown de un documento.
-
-        Args:
-            doc: Documento cuyos metadatos se van a reiniciar.
-
-        Returns:
-            None.
-        """
-        doc.markdown_path = None
-        doc.markdown_source_hash = None
-        doc.markdown_updated_at = None
-
-    def sync_markdown_metadata_from_disk(self, doc: Documento) -> None:
-        """Sincroniza los metadatos de Markdown leyendo el disco.
-
-        Args:
-            doc: Documento que se va a sincronizar.
-
-        Returns:
-            None.
-        """
-        md_path = self.markdown_path_for_filename(doc.nombre)
-        if not md_path.exists():
-            self.clear_markdown_metadata(doc)
-            return
-
-        doc.markdown_path = str(md_path)
-        doc.markdown_source_hash = doc.hash
-        doc.markdown_updated_at = datetime.fromtimestamp(md_path.stat().st_mtime, MADRID_TZ)
+        return bool(doc.markdown_content)
 
     def get_markdown_status_map(self, docs: Iterable[Documento]) -> dict[int, bool]:
         """Calcula si cada documento de una coleccion tiene Markdown.
@@ -335,7 +265,7 @@ class DocumentosService:
             if Path(doc.path).exists():
                 continue
 
-            self.delete_markdown_file(doc)
+            self.clear_markdown_content(doc)
             try:
                 self.delete_chunks(doc.nombre)
             except Exception:
@@ -366,25 +296,20 @@ class DocumentosService:
 
         doc = Documento.query.filter_by(path=rel_path).first()
         if not doc:
-            existing_markdown = self._read_markdown_if_exists_by_filename(p.name)
             doc = Documento(
                 nombre=p.name,
                 path=rel_path,
-                markdown_path=None,
                 size_bytes=stat.st_size,
                 modified_at=mtime,
-                markdown_updated_at=None,
                 chunks=0,
                 hash=file_hash,
-                markdown_source_hash=None,
-                markdown_content=existing_markdown,
-                status=self._status_for_existing_markdown(status or "cargado", existing_markdown),
+                markdown_content=None,
+                status=status or "cargado",
                 error_message=None,
                 numero_expediente=numero_expediente,
                 tipo_documento=tipo_documento,
             )
             db.session.add(doc)
-            self.sync_markdown_metadata_from_disk(doc)
             return
 
         previous_hash = doc.hash
@@ -398,15 +323,7 @@ class DocumentosService:
         doc.tipo_documento = tipo_documento
 
         if hash_changed:
-            doc.markdown_content = None
-            self.delete_markdown_file(doc)
-        elif not doc.markdown_content:
-            doc.markdown_content = self._read_markdown_if_exists(doc)
-
-        if previous_hash != file_hash:
-            self.delete_markdown_file(doc)
-        elif not self.has_markdown(doc):
-            self.sync_markdown_metadata_from_disk(doc)
+            self.clear_markdown_content(doc)
 
         if status is not None:
             doc.status = self._status_for_existing_markdown(status, doc.markdown_content)
@@ -441,59 +358,20 @@ class DocumentosService:
         except Exception:
             pass
 
-        self.delete_markdown_file(doc)
+        self.clear_markdown_content(doc)
         db.session.delete(doc)
         db.session.commit()
 
-    def delete_markdown_file(self, doc: Documento) -> None:
-        """Elimina de disco el Markdown asociado a un documento.
+    def clear_markdown_content(self, doc: Documento) -> None:
+        """Limpia el contenido Markdown asociado a un documento.
 
         Args:
-            doc: Documento cuyo Markdown debe eliminarse.
+            doc: Documento cuyo Markdown debe limpiarse.
 
         Returns:
             None.
         """
-        try:
-            candidate_paths: list[Path] = []
-            if doc.markdown_path:
-                candidate_paths.append(Path(doc.markdown_path))
-            if doc.nombre:
-                candidate_paths.append(self.markdown_path_for_filename(doc.nombre))
-
-            for md_path in candidate_paths:
-                if md_path.exists():
-                    md_path.unlink()
-        except Exception:
-            pass
-
         doc.markdown_content = None
-        self.clear_markdown_metadata(doc)
-
-    def _read_markdown_if_exists_by_filename(self, filename: str) -> str | None:
-        """Lee un archivo Markdown si existe para un nombre dado.
-
-        Args:
-            filename: Nombre del archivo origen.
-
-        Returns:
-            El contenido Markdown o ``None`` si no existe.
-        """
-        md_path = self.markdown_path_for_filename(filename)
-        if not md_path.exists():
-            return None
-        return md_path.read_text(encoding="utf-8")
-
-    def _read_markdown_if_exists(self, doc: Documento) -> str | None:
-        """Lee el Markdown asociado a un documento si existe.
-
-        Args:
-            doc: Documento cuyo Markdown se quiere leer.
-
-        Returns:
-            El contenido Markdown o ``None`` si no existe.
-        """
-        return self._read_markdown_if_exists_by_filename(doc.nombre)
 
     def _status_for_existing_markdown(self, base_status: str, markdown_content: str | None) -> str:
         """Determina el estado correcto cuando ya existe Markdown.
@@ -508,25 +386,6 @@ class DocumentosService:
         if markdown_content and base_status != "indexado":
             return STATUS_WITH_MARKDOWN
         return base_status
-
-    def persist_markdown_for_document(self, doc: Documento) -> bool:
-        """Carga el Markdown de un documento desde disco a la base de datos.
-
-        Args:
-            doc: Documento que se quiere actualizar.
-
-        Returns:
-            ``True`` si se encontro y persistio contenido Markdown.
-        """
-        markdown_content = self._read_markdown_if_exists(doc)
-        if markdown_content is None:
-            return False
-
-        doc.markdown_content = markdown_content
-        if doc.status != "indexado":
-            doc.status = STATUS_WITH_MARKDOWN
-        doc.error_message = None
-        return True
 
     def delete_document_relations(self, doc: Documento) -> None:
         """Elimina chunks y relaciones asociadas a un documento.
@@ -569,11 +428,6 @@ class DocumentosService:
             db.session.commit()
             return False
 
-        if self.has_markdown(doc):
-            if self.persist_markdown_for_document(doc):
-                db.session.commit()
-            return False
-
         if self.markdown_converter is None:
             raise RuntimeError("No hay conversor de Markdown configurado.")
 
@@ -581,13 +435,13 @@ class DocumentosService:
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF no existe en contenedor: {pdf_path}")
 
-        md_path = self.markdown_converter(pdf_path, self.markdown_dir, on_page_start=on_page_start)
-        doc.markdown_path = str(md_path)
-        doc.markdown_source_hash = doc.hash
-        doc.markdown_updated_at = datetime.now(MADRID_TZ)
-
-        if not self.persist_markdown_for_document(doc):
+        markdown_content = self.markdown_converter(pdf_path, on_page_start=on_page_start)
+        if not markdown_content:
             raise RuntimeError(f"No se pudo guardar el Markdown generado para {doc.nombre}.")
+        doc.markdown_content = markdown_content
+        if doc.status != "indexado":
+            doc.status = STATUS_WITH_MARKDOWN
+        doc.error_message = None
 
         db.session.commit()
         return True
@@ -608,12 +462,6 @@ class DocumentosService:
                 if doc.status not in {"indexado", STATUS_WITH_MARKDOWN}:
                     doc.status = STATUS_WITH_MARKDOWN
                     doc.error_message = None
-                    changed_existing = True
-                skipped += 1
-                continue
-
-            if self.has_markdown(doc):
-                if self.persist_markdown_for_document(doc):
                     changed_existing = True
                 skipped += 1
                 continue
@@ -908,4 +756,3 @@ def update_sql(doc, vector_docs) -> None:
                 distance="cosine",
             )
             db.session.add(e)
-

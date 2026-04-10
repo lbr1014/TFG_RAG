@@ -10,7 +10,7 @@ import subprocess
 import sys
 from zoneinfo import ZoneInfo
 
-from flask import abort, current_app, jsonify, redirect, render_template, request, send_file, url_for
+from flask import Response, abort, current_app, jsonify, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 
 from . import admin_bp
@@ -304,7 +304,6 @@ def documentos_service() -> DocumentosService:
         pliegos_dir(),
         index_pliegos_dir=index_pliegos_dir,
         delete_chunks=qdrant_delete_by_filename,
-        markdown_dir=markdown_dir(),
         markdown_converter=convert_pdf_to_markdown,
     )
 
@@ -318,31 +317,19 @@ def documents_page_url() -> str:
     return f"{request.host_url.rstrip('/')}{url_for('admin.documents_list_page')}"
 
 
-def markdown_dir() -> Path:
-    """Obtiene y crea el directorio de archivos Markdown.
-
-    Returns:
-        La ruta absoluta al directorio donde se guardan los Markdown.
-    """
-    base = (pliegos_dir() / "markdown").resolve()
-    base.mkdir(parents=True, exist_ok=True)
-    return base
-
-
-def convert_pdf_to_markdown(pdf_path: Path, output_dir: Path, on_page_start=None) -> Path:
+def convert_pdf_to_markdown(pdf_path: Path, on_page_start=None) -> str:
     """Convierte un PDF a Markdown mediante el procesador configurado.
 
     Args:
         pdf_path: Ruta del PDF origen.
-        output_dir: Directorio donde se guardara el Markdown generado.
         on_page_start: Callback opcional invocado al comenzar cada pagina.
 
     Returns:
-        La ruta del archivo Markdown generado.
+        El contenido Markdown generado.
     """
     from ..markdown.Conversion_markdown import process_pdf
 
-    return process_pdf(pdf_path, output_dir, on_page_start=on_page_start)
+    return process_pdf(pdf_path, on_page_start=on_page_start)
 
 
 @admin_bp.post("/documents/upload")
@@ -972,18 +959,13 @@ def download_document(doc_id: int):
     """
     doc = Documento.query.get_or_404(doc_id)
     fmt = (request.args.get("format") or "pdf").strip().lower()
-    svc = documentos_service()
 
     if fmt == "markdown":
-        md_path = svc.markdown_path_for_doc(doc)
-        if not md_path.exists():
+        if not doc.markdown_content:
             abort(404)
-        return send_file(
-            md_path,
-            as_attachment=True,
-            download_name=md_path.name,
-            mimetype="text/markdown; charset=utf-8",
-        )
+        response = Response(doc.markdown_content, mimetype="text/markdown; charset=utf-8")
+        response.headers["Content-Disposition"] = f'attachment; filename="{Path(doc.nombre).stem}.md"'
+        return response
 
     pdf_path = Path(doc.path)
     if not pdf_path.exists():
@@ -1006,18 +988,11 @@ def view_document(doc_id: int):
     """
     doc = Documento.query.get_or_404(doc_id)
     fmt = (request.args.get("format") or "pdf").strip().lower()
-    svc = documentos_service()
 
     if fmt == "markdown":
-        md_path = svc.markdown_path_for_doc(doc)
-        if not md_path.exists():
+        if not doc.markdown_content:
             abort(404)
-        return send_file(
-            md_path,
-            as_attachment=False,
-            download_name=md_path.name,
-            mimetype="text/markdown; charset=utf-8",
-        )
+        return Response(doc.markdown_content, mimetype="text/markdown; charset=utf-8")
 
     pdf_path = Path(doc.path)
     if not pdf_path.exists():
