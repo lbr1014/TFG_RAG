@@ -16,7 +16,6 @@ class DocumentosUnitTest(BaseAppTestCase):
             self._docs_dir,
             index_pliegos_dir=lambda path: {},
             delete_chunks=MagicMock(),
-            markdown_dir=self._docs_dir / "markdown",
             markdown_converter=MagicMock(),
         )
 
@@ -44,10 +43,6 @@ class DocumentosUnitTest(BaseAppTestCase):
     def test_delete_document_removes_record_and_files(self):
         service = self._service()
         doc = self.create_document(nombre="borrar.pdf")
-        markdown_path = Path(service.markdown_path_for_filename(doc.nombre))
-        markdown_path.parent.mkdir(parents=True, exist_ok=True)
-        markdown_path.write_text("contenido", encoding="utf-8")
-        doc.markdown_path = str(markdown_path)
         doc.markdown_content = "contenido"
         service.delete_chunks = MagicMock()
         self.create_chunk(document=doc)
@@ -56,8 +51,26 @@ class DocumentosUnitTest(BaseAppTestCase):
 
         self.assertIsNone(db.session.get(Documento, doc.id))
         self.assertFalse(Path(doc.path).exists())
-        self.assertFalse(markdown_path.exists())
         service.delete_chunks.assert_called_once_with("borrar.pdf")
+
+    def test_has_markdown_uses_document_attribute(self):
+        service = self._service()
+        doc = self.create_document(nombre="detectable.pdf")
+        self.assertFalse(service.has_markdown(doc))
+
+        doc.markdown_content = "# Convertido"
+        self.assertTrue(service.has_markdown(doc))
+
+    def test_convert_document_to_markdown_persists_content_in_same_row(self):
+        service = self._service()
+        doc = self.create_document(nombre="restaurar.pdf")
+        service.markdown_converter = MagicMock(return_value="# Markdown")
+
+        converted = service.convert_document_to_markdown(doc)
+
+        self.assertTrue(converted)
+        self.assertEqual(doc.markdown_content, "# Markdown")
+        self.assertEqual(doc.status, "con markdown")
 
     @patch("app.main.routes.qdrant_get_payloads", return_value={"legacy-qid": {"metadata": {"filename": "legacy.pdf"}, "content": "texto"}})
     def test_build_meta_by_consulta_uses_fragmentos_and_legacy_qdrant(self, mock_qdrant):

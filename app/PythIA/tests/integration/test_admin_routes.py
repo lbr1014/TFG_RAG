@@ -65,3 +65,17 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertIsNotNone(job)
         self.assertEqual(job.status, "queued")
         mock_submit.assert_called_once()
+
+    def test_admin_can_view_and_download_markdown_from_document_row(self):
+        doc = self.create_document(nombre="pliego.pdf")
+        doc.markdown_content = "# Markdown"
+        db.session.commit()
+
+        view_response = self.client.get(f"/admin/documents/{doc.id}/view?format=markdown")
+        download_response = self.client.get(f"/admin/documents/{doc.id}/download?format=markdown")
+
+        self.assertEqual(view_response.status_code, 200)
+        self.assertEqual(view_response.data.decode("utf-8"), "# Markdown")
+        self.assertEqual(download_response.status_code, 200)
+        self.assertEqual(download_response.data.decode("utf-8"), "# Markdown")
+        self.assertIn('filename="pliego.md"', download_response.headers["Content-Disposition"])
