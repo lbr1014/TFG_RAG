@@ -1,631 +1,58 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con helpers de internacionalización, incluyendo la función de traducción, localización de formularios y mensajes en tiempo de ejecución.
+"""
+
 import re
 
 from flask import g, has_request_context, redirect, request, session, url_for
-
-
-DEFAULT_LANGUAGE = "es"
-SUPPORTED_LANGUAGES = {
-    "es": "Español",
-    "en": "English",
-}
+from .español import TRANSLATIONS_ES
+from .ingles import TRANSLATIONS_EN
+from .keys import LANGUAGE_ES, LANGUAGE_EN, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, DIRECT_RUNTIME_MESSAGE_MAP
 
 
 TRANSLATIONS = {
-    "es": {
-        "app.default_title": "Mi web",
-        "app.welcome": "Bienvenido",
-        "app.author": "Autora: Lydia Blanco Ruiz",
-        "common.email": "Email",
-        "common.password": "Contraseña",
-        "common.name": "Nombre",
-        "common.save_changes": "Guardar cambios",
-        "common.cancel": "Cancelar",
-        "common.delete": "Borrar",
-        "common.actions": "Acciones",
-        "common.yes": "Sí",
-        "common.no": "No",
-        "common.view": "Ver",
-        "common.download": "Descargar",
-        "common.page": "Página {page} de {total_pages} ({total_items} {items_label})",
-        "common.previous": "« Anterior",
-        "common.next": "Siguiente »",
-        "common.loading": "Cargando...",
-        "common.close": "Cerrar",
-        "validation.required": "Este campo es obligatorio.",
-        "validation.email": "Introduce un correo electrónico válido.",
-        "validation.min_length_2": "Debe tener al menos 2 caracteres.",
-        "validation.min_length_6": "Debe tener al menos 6 caracteres.",
-        "validation.min_length_8": "Debe tener al menos 8 caracteres.",
-        "validation.max_length_255": "No puede superar los 255 caracteres.",
-        "validation.max_length_2000": "No puede superar los 2000 caracteres.",
-        "validation.password_security": "Debe incluir mayúsculas, minúsculas y al menos un número.",
-        "validation.summary_title": "Revisa los errores del formulario.",
-        "nav.hello": "Hola, {name}",
-        "nav.admin": "Administrador",
-        "nav.user": "Usuario",
-        "nav.last_login": "Último inicio:",
-        "nav.options": "Opciones",
-        "nav.manage_documents": "Administrar documentos",
-        "nav.manage_users": "Administrar usuarios",
-        "nav.query_history": "Historial de consultas",
-        "nav.edit_user": "Editar usuario",
-        "nav.usage_stats": "Estadísticas",
-        "nav.home": "Página principal",
-        "nav.settings": "Configuración",
-        "nav.appearance": "Apariencia",
-        "nav.dark_mode": "Modo oscuro",
-        "nav.light_mode": "Modo claro",
-        "nav.internationalization": "Internacionalización",
-        "nav.language": "Idioma",
-        "nav.logout": "Cerrar sesión",
-        "nav.open_menu": "Abrir menú",
-        "lang.es": "Español",
-        "lang.en": "Inglés",
-        "landing.login": "Iniciar sesión",
-        "landing.signup": "Registrarse",
-        "landing.hero_badge": "Responde todas tus preguntas",
-        "landing.hero_title": "Accede a información clave sobre las licitaciones.",
-        "landing.hero_subtitle": "PythIA utiliza un modelo LLM combinado con un sistema RAG para localizar información precisa en los pliegos de la Junta de Gobierno de la Diputación Provincial de Burgos y generar respuestas claras, rápidas y contextualizadas sobre los procedimientos de contratación pública.",
-        "landing.get_access": "Obtener acceso",
-        "landing.more_info": "Más información",
-        "landing.card_1_title": "Consulta pliegos concretos",
-        "landing.card_1_text": "Obtén respuestas sobre el contenido de los pliegos de licitación de la Junta de Gobierno de la Diputación Provincial de Burgos.",
-        "landing.card_2_title": "Respuestas con LLM + RAG",
-        "landing.card_2_text": "El sistema combina generación de lenguaje natural con recuperación de contexto documental para responder con mayor precisión.",
-        "landing.card_3_title": "Respuestas sin alucinaciones",
-        "landing.card_3_text": "El sistema asegura respuestas sin alucinaciones indicando claramente cuando la pregunta se sale del contenido de los pliegos.",
-        "landing.card_4_title": "Búsqueda precisa de información",
-        "landing.card_4_text": "Localiza cláusulas, requisitos y datos relevantes dentro de la documentación administrativa sin revisar manualmente todo el expediente.",
-        "landing.card_5_title": "Acceso rápido y claro",
-        "landing.card_5_text": "Reduce el tiempo de análisis documental y facilita la consulta de información clave de forma ágil, visual y estructurada.",
-        "auth.login_title": "Inicio de sesión",
-        "auth.login_submit": "Iniciar sesión",
-        "auth.no_account": "¿No tienes cuenta? Regístrate",
-        "auth.already_account": "¿Ya tienes cuenta? Inicia sesión",
-        "auth.forgot_password_link": "¿Olvidaste tu contraseña?",
-        "auth.back_home": "Volver al inicio",
-        "auth.signup_title": "Registro",
-        "auth.signup_submit": "Crear cuenta",
-        "auth.forgot_password_title": "Recuperar contraseña",
-        "auth.forgot_password_submit": "Recuperar contraseña",
-        "auth.back_login": "Volver al login",
-        "auth.reset_password_title": "Restablecer contraseña",
-        "auth.new_password_title": "Nueva contraseña",
-        "auth.reset_password_submit": "Cambiar contraseña",
-        "auth.repeat_password": "Repite la contraseña",
-        "auth.new_password": "Nueva contraseña",
-        "auth.password_mismatch": "Las contraseñas no coinciden",
-        "auth.login_required": "Debes iniciar sesión para acceder a esta página.",
-        "auth.invalid_credentials": "Email o contraseña incorrectos.",
-        "auth.email_exists": "Ya existe un usuario con ese email.",
-        "auth.recovery_subject": "Recuperación de contraseña",
-        "auth.recovery_body": "Hola {name},\n\nHas solicitado recuperar tu contraseña.\nAbre este enlace para crear una nueva:\n\n{reset_url}\n\nSi no lo has solicitado tú, ignora este correo.",
-        "auth.recovery_sent": "Si el email existe, hemos enviado un enlace para recuperar la contraseña.",
-        "auth.invalid_reset_link_expired": "El enlace de recuperación no es válido o ha caducado.",
-        "auth.invalid_reset_link": "El enlace de recuperación no es válido.",
-        "auth.password_changed": "Contraseña cambiada. Ya puedes iniciar sesión.",
-        "user.edit_title": "Editar usuario",
-        "user.leave_empty_password": "Dejar vacío para no cambiarla",
-        "user.cancel_edit": "Cancelar",
-        "users.title": "Gestión de usuarios",
-        "users.add": "Añadir usuario",
-        "users.id": "ID",
-        "users.admin_col": "Admin",
-        "users.last_login_col": "Último login",
-        "users.you": "Tú",
-        "users.no_login": "Sin inicio",
-        "users.remove_admin": "Quitar admin",
-        "users.make_admin": "Hacer admin",
-        "users.delete_item": "el usuario {name}",
-        "admin.create_user_title": "Crear nuevo usuario",
-        "admin.create_user_submit": "Crear usuario",
-        "admin.back_users": "Volver a gestión de usuarios",
-        "admin.is_admin": "Administrador",
-        "docs.page_title": "Documentos cargados",
-        "docs.manage_title": "Administrar documentos",
-        "docs.manage_subtitle": "Carga documentos en el sistema, ejecuta el web scraping o actualiza la base de datos vectorial.",
-        "docs.upload_label": "Carga uno o varios PDF",
-        "docs.upload_help": "Formato admitido: PDF. Puedes seleccionar varios archivos a la vez.",
-        "docs.upload_button": "Subir documentos",
-        "docs.scraping_button": "Web Scraping",
-        "docs.markdown_button": "Convertir pendientes a Markdown",
-        "docs.vector_button": "Actualizar base vectorial",
-        "docs.progress_aria": "Progreso del proceso",
-        "docs.running_default": "Ejecutando proceso...",
-        "docs.cancel_process": "Cancelar proceso",
-        "docs.loaded_title": "Documentos cargados",
-        "docs.loaded_subtitle": "Revisa el estado de cada archivo y elimina los que ya no necesites.",
-        "docs.count": "{count} documentos",
-        "docs.empty": "No hay documentos PDF cargados.",
-        "docs.file": "Archivo",
-        "docs.size": "Tamaño",
-        "docs.uploaded": "Cargado",
-        "docs.chunks": "Chunks",
-        "docs.status": "Estado",
-        "docs.markdown_status": "Markdown",
-        "docs.indexed": "Indexado",
-        "docs.not_indexed": "Sin indexar",
-        "docs.processing": "Procesando",
-        "docs.failed": "Fallido",
-        "docs.with_markdown": "Markdown",
-        "docs.without_markdown": "Sin Markdown",
-        "docs.markdown_ready": "Convertido",
-        "docs.markdown_pending": "Pendiente",
-        "docs.view_pdf": "Ver PDF",
-        "docs.download_pdf": "Descargar PDF",
-        "docs.view_markdown": "Ver Markdown",
-        "docs.download_markdown": "Descargar Markdown",
-        "history.title": "Historial de consultas",
-        "history.empty_home": "Realiza tu primera consulta.",
-        "history.empty": "No hay consultas todavía.",
-        "history.query_button": "Consultar al modelo",
-        "history.user": "Usuario",
-        "history.date": "Fecha",
-        "history.question": "Pregunta",
-        "history.document": "Documento",
-        "history.time": "Tiempo (s)",
-        "history.details": "Detalles",
-        "history.delete_item": "la consulta #{id}",
-        "history.view_answer": "Ver respuesta",
-        "history.answer": "Respuesta:",
-        "history.chunks_details": "Chunks usados - consulta #{id}",
-        "history.best_fragment": "Mejor fragmento (ranking #1)",
-        "history.file": "Archivo:",
-        "history.title_label": "Título:",
-        "history.segment": "Segmento:",
-        "history.similarity": "Similitud:",
-        "history.best_chunk_missing": "No se pudo recuperar el contenido del mejor chunk.",
-        "history.top_chunks": "Top {shown} de {total} chunks usados",
-        "history.ranking": "Ranking",
-        "history.no_chunks": "Esta consulta no tiene chunks asociados en la base de datos.",
-        "stats.page_title": "Estadísticas",
-        "stats.subtitle": "Consulta gráficas para ver el uso del modelo.",
-        "stats.scope_global": "Estadísticas del uso global",
-        "stats.scope_user": "Estadísticas del usuario {name}",
-        "stats.filter_label": "Usuario",
-        "stats.filter_all_users": "Todos los usuarios",
-        "stats.filter_help": "Selecciona un usuario concreto o el uso global",
-        "stats.total_queries": "Consultas totales",
-        "stats.average_time": "Tiempo medio",
-        "stats.active_days": "Días con actividad",
-        "stats.last_query": "Última consulta",
-        "stats.no_queries": "Todavía no hay consultas para mostrar estadísticas.",
-        "stats.chart_monthly_queries": "Consultas por mes",
-        "stats.chart_monthly_queries_help": "Muestra el volumen mensual de consultas durante los últimos 12 meses.",
-        "stats.chart_monthly_toggle_label": "Cambiar visualización de consultas por mes",
-        "stats.chart_monthly_view_bars": "Barras",
-        "stats.chart_monthly_view_calendar": "Calendario",
-        "stats.chart_avg_time": "Tiempo medio de respuesta por mes",
-        "stats.chart_avg_time_help": "Permite detectar si el tiempo de respuesta del modelo está subiendo o bajando.",
-        "stats.chart_weekdays": "Consultas por día de la semana",
-        "stats.chart_weekdays_help": "Resume qué días concentran más actividad.",
-        "stats.chart_hours": "Consultas por franja horaria",
-        "stats.chart_hours_help": "Ayuda a identificar las horas de mayor uso.",
-        "stats.chart_hours_toggle_label": "Cambiar visualización de consultas por franja horaria",
-        "stats.chart_hours_view_bars": "Barras",
-        "stats.chart_hours_view_heatmap": "Mapa de calor",
-        "stats.chart_top_users": "Usuarios con más consultas",
-        "stats.chart_top_users_help": "Disponible en la vista global para administradores.",
-        "stats.day_0": "Lun",
-        "stats.day_1": "Mar",
-        "stats.day_2": "Mié",
-        "stats.day_3": "Jue",
-        "stats.day_4": "Vie",
-        "stats.day_5": "Sáb",
-        "stats.day_6": "Dom",
-        "stats.metric_seconds": "s",
-        "stats.metric_no_data": "Sin datos",
-        "modal.delete_title": "Confirmar borrado",
-        "modal.delete_subtitle": "Esta acción no se puede deshacer.",
-        "modal.delete_question": "¿Seguro que quieres borrar {item}?",
-        "modal.chunks_title": "Detalles de chunks",
-        "rag.page_title": "Consultar al modelo",
-        "rag.open_page": "Realizar consulta",
-        "rag.title": "Preguntar al modelo (RAG)",
-        "rag.subtitle": "Haz preguntas claras sobre los pliegos. Para forzar un expediente concreto, menciona \"expediente <numero>\". Para limitar la búsqueda, indica \"pliego técnico\" o \"pliego administrativo\".",
-        "rag.question_label": "Pregunta",
-        "rag.question_placeholder": "Escribe tu pregunta sobre los pliegos...",
-        "rag.ask_button": "Preguntar",
-        "rag.cancel_button": "Cancelar consulta",
-        "rag.answer_title": "Respuesta",
-        "rag.fragment_used": "Fragmento usado",
-        "rag.no_answer": "Sin respuesta.",
-        "rag.no_chunk": "No se ha recuperado ningún fragmento.",
-        "rag.querying": "Consultando...",
-        "rag.sending": "Enviando consulta...",
-        "rag.cancelled": "Consulta cancelada.",
-        "rag.failed": "La consulta ha fallado.",
-        "rag.status_error": "No se pudo consultar el estado de la consulta.",
-        "rag.unexpected_error": "Ha ocurrido un error.",
-        "rag.cancel_error": "No se pudo cancelar la consulta.",
-        "rag.invalid_question": "Escribe una pregunta válida.",
-        "rag.empty_question": "Escribe una pregunta.",
-        "rag.question_too_long": "La pregunta es demasiado larga (máx. 2000 caracteres).",
-        "rag.preparing": "Preparando consulta...",
-        "rag.starting": "Iniciando consulta...",
-        "rag.queued": "Consulta en cola.",
-        "rag.done": "Consulta finalizada.",
-        "rag.cancelling": "Cancelando consulta...",
-        "rag.system_error": "Ha ocurrido un error consultando el sistema. Inténtalo de nuevo.",
-        "rag.timeout_error": "El modelo está tardando demasiado en responder. Inténtalo de nuevo en unos segundos.",
-        "jobs.already_finished": "El proceso ya ha terminado.",
-        "jobs.queued_short": "En cola",
-        "jobs.cancelled_generic": "Proceso cancelado.",
-        "jobs.failed_generic": "El proceso ha fallado.",
-        "markdown.cancelling": "Cancelando conversión a Markdown...",
-        "markdown.cancelled": "Conversión a Markdown cancelada.",
-        "markdown.starting": "Iniciando conversión a Markdown...",
-        "markdown.converting_doc": "Convirtiendo {name}...",
-        "markdown.converting_doc_page": "Convirtiendo {name}... Página {page}/{total_pages}",
-        "markdown.converting_default": "Convirtiendo documento...",
-        "markdown.starting_ui": "Lanzando conversión a Markdown...",
-        "markdown.no_job_id": "No se recibió el identificador del proceso.",
-        "markdown.start_error": "No se pudo iniciar la conversión a Markdown.",
-        "markdown.status_error": "No se pudo consultar el estado de la conversión.",
-        "markdown.unknown_state": "Estado de conversión desconocido.",
-        "markdown.none_pending": "No había documentos pendientes de convertir.",
-        "markdown.done_stats": "Conversión completada. {count} documentos convertidos.",
-        "markdown.done_stats_with_failures": "Conversión completada. {count} documentos convertidos y {failed} con error.",
-        "markdown.done_email": "La conversión a Markdown ha terminado correctamente.",
-        "markdown.failed": "Falló la conversión a Markdown.",
-        "markdown.failed_email": "La conversión a Markdown ha fallado: {error}",
-        "vector.cancelling": "Cancelando actualización vectorial...",
-        "vector.cancelled_by_user": "Actualización cancelada por el usuario.",
-        "vector.updating": "Actualizando base vectorial... ({progress}%)",
-        "vector.updating_doc": "Actualizando base vectorial... ({progress}%) - {name}",
-        "vector.done_ui": "Base vectorial actualizada.",
-        "vector.cancelled_ui": "Actualización vectorial cancelada.",
-        "vector.failed_ui": "Falló la actualización de la base vectorial.{error_suffix}",
-        "vector.unknown_state": "Estado de actualización desconocido.",
-        "vector.starting_ui": "Lanzando actualización de base vectorial...",
-        "vector.no_job_id": "No se recibió el identificador del proceso.",
-        "vector.start_error": "No se pudo iniciar la actualización.",
-        "vector.status_error": "No se pudo consultar el estado del proceso.",
-        "vector.done_email": "La actualización de la base de datos vectorial ha terminado correctamente.",
-        "vector.failed_email": "La actualización de Qdrant ha fallado: {error}",
-        "scraping.cancelling": "Cancelando web scraping...",
-        "scraping.cancelled": "Web scraping cancelado.",
-        "scraping.starting": "Iniciando web scraping...",
-        "scraping.script_1": "Ejecutando script 1/2...",
-        "scraping.script_2": "Ejecutando script 2/2...",
-        "scraping.syncing": "Sincronizando PDFs en la base de datos...",
-        "scraping.done": "Web scraping terminado.",
-        "scraping.done_ui": "Web scraping completado.",
-        "scraping.failed": "Falló el web scraping.",
-        "scraping.failed_ui": "Falló el web scraping.{error_suffix}",
-        "scraping.unknown_state": "Estado de scraping desconocido.",
-        "scraping.starting_ui": "Lanzando web scraping...",
-        "scraping.no_job_id": "No se recibió el identificador del scraping.",
-        "scraping.start_error": "No se pudo iniciar el web scraping.",
-        "scraping.status_error": "No se pudo consultar el estado del scraping.",
-        "scraping.done_email": "El web scraping ha terminado correctamente.",
-        "scraping.failed_email": "El web scraping ha fallado: {error}",
-        "process.cancel_error": "No se pudo cancelar el proceso.",
-        "process.resume_tracking": "Reanudando seguimiento del proceso...",
-        "errors.bad_request_title": "Solicitud no válida",
-        "errors.bad_request_message": "La solicitud no se ha podido procesar. Revisa los datos enviados.",
-        "errors.forbidden_title": "Acceso denegado",
-        "errors.forbidden_message": "No tienes permisos para acceder a este recurso.",
-        "errors.not_found_title": "Página no encontrada",
-        "errors.not_found_message": "El recurso solicitado no existe o ya no está disponible.",
-        "errors.server_title": "Error interno",
-        "errors.server_message": "Ha ocurrido un error inesperado. Inténtalo de nuevo más tarde.",
-    },
-    "en": {
-        "app.default_title": "My site",
-        "app.welcome": "Welcome",
-        "app.author": "Author: Lydia Blanco Ruiz",
-        "common.email": "Email",
-        "common.password": "Password",
-        "common.name": "Name",
-        "common.save_changes": "Save changes",
-        "common.cancel": "Cancel",
-        "common.delete": "Delete",
-        "common.actions": "Actions",
-        "common.yes": "Yes",
-        "common.no": "No",
-        "common.view": "View",
-        "common.download": "Download",
-        "common.page": "Page {page} of {total_pages} ({total_items} {items_label})",
-        "common.previous": "« Previous",
-        "common.next": "Next »",
-        "common.loading": "Loading...",
-        "common.close": "Close",
-        "validation.required": "This field is required.",
-        "validation.email": "Enter a valid email address.",
-        "validation.min_length_2": "Must be at least 2 characters long.",
-        "validation.min_length_6": "Must be at least 6 characters long.",
-        "validation.min_length_8": "Must be at least 8 characters long.",
-        "validation.max_length_255": "Must not exceed 255 characters.",
-        "validation.max_length_2000": "Must not exceed 2000 characters.",
-        "validation.password_security": "Must include uppercase, lowercase, and at least one number.",
-        "validation.summary_title": "Please review the form errors.",
-        "nav.hello": "Hello, {name}",
-        "nav.admin": "Administrator",
-        "nav.user": "User",
-        "nav.last_login": "Last login:",
-        "nav.options": "Options",
-        "nav.manage_documents": "Manage documents",
-        "nav.manage_users": "Manage users",
-        "nav.query_history": "Query history",
-        "nav.edit_user": "Edit user",
-        "nav.usage_stats": "Statistics",
-        "nav.home": "Home",
-        "nav.settings": "Settings",
-        "nav.appearance": "Appearance",
-        "nav.dark_mode": "Dark mode",
-        "nav.light_mode": "Light mode",
-        "nav.internationalization": "Internationalization",
-        "nav.language": "Language",
-        "nav.logout": "Log out",
-        "nav.open_menu": "Open menu",
-        "lang.es": "Spanish",
-        "lang.en": "English",
-        "landing.login": "Log in",
-        "landing.signup": "Sign up",
-        "landing.hero_badge": "Get answers to all your questions",
-        "landing.hero_title": "Access key information about tenders.",
-        "landing.hero_subtitle": "PythIA uses an LLM combined with a RAG system to locate precise information in the tender documents of the Provincial Council of Burgos Governing Board and generate clear, fast, contextualized answers about public procurement procedures.",
-        "landing.get_access": "Get access",
-        "landing.more_info": "More information",
-        "landing.card_1_title": "Consult specific tender documents",
-        "landing.card_1_text": "Get answers about the content of tender documents from the Provincial Council of Burgos Governing Board.",
-        "landing.card_2_title": "Answers with LLM + RAG",
-        "landing.card_2_text": "The system combines natural language generation with document-context retrieval to answer more accurately.",
-        "landing.card_3_title": "Answers without hallucinations",
-        "landing.card_3_text": "The system delivers answers without hallucinations and clearly indicates when a question falls outside the tender documents.",
-        "landing.card_4_title": "Precise information retrieval",
-        "landing.card_4_text": "Find clauses, requirements, and relevant data inside administrative documentation without manually reviewing the whole file.",
-        "landing.card_5_title": "Fast and clear access",
-        "landing.card_5_text": "Reduce document analysis time and make key information easier to consult in an agile, visual, structured way.",
-        "auth.login_title": "Log in",
-        "auth.login_submit": "Log in",
-        "auth.no_account": "Don't have an account? Sign up",
-        "auth.already_account": "Already have an account? Log in",
-        "auth.forgot_password_link": "Forgot your password?",
-        "auth.back_home": "Back to home",
-        "auth.signup_title": "Sign up",
-        "auth.signup_submit": "Create account",
-        "auth.forgot_password_title": "Recover password",
-        "auth.forgot_password_submit": "Recover password",
-        "auth.back_login": "Back to login",
-        "auth.reset_password_title": "Reset password",
-        "auth.new_password_title": "New password",
-        "auth.reset_password_submit": "Change password",
-        "auth.repeat_password": "Repeat password",
-        "auth.new_password": "New password",
-        "auth.password_mismatch": "Passwords do not match",
-        "auth.login_required": "You must log in to access this page.",
-        "auth.invalid_credentials": "Incorrect email or password.",
-        "auth.email_exists": "A user with that email already exists.",
-        "auth.recovery_subject": "Password recovery",
-        "auth.recovery_body": "Hello {name},\n\nYou requested a password reset.\nOpen this link to create a new one:\n\n{reset_url}\n\nIf this wasn't you, please ignore this email.",
-        "auth.recovery_sent": "If the email exists, we have sent a password recovery link.",
-        "auth.invalid_reset_link_expired": "The recovery link is invalid or has expired.",
-        "auth.invalid_reset_link": "The recovery link is invalid.",
-        "auth.password_changed": "Password changed. You can now log in.",
-        "user.edit_title": "Edit user",
-        "user.leave_empty_password": "Leave blank to keep it unchanged",
-        "user.cancel_edit": "Cancel",
-        "users.title": "User management",
-        "users.add": "Add user",
-        "users.id": "ID",
-        "users.admin_col": "Admin",
-        "users.last_login_col": "Last login",
-        "users.you": "You",
-        "users.no_login": "No login yet",
-        "users.remove_admin": "Remove admin",
-        "users.make_admin": "Make admin",
-        "users.delete_item": "user {name}",
-        "admin.create_user_title": "Create new user",
-        "admin.create_user_submit": "Create user",
-        "admin.back_users": "Back to user management",
-        "admin.is_admin": "Administrator",
-        "docs.page_title": "Uploaded documents",
-        "docs.manage_title": "Manage documents",
-        "docs.manage_subtitle": "Upload documents into the system, run web scraping, or update the vector database.",
-        "docs.upload_label": "Upload one or more PDFs",
-        "docs.upload_help": "Accepted format: PDF. You can select multiple files at once.",
-        "docs.upload_button": "Upload documents",
-        "docs.scraping_button": "Web scraping",
-        "docs.markdown_button": "Convert pending files to Markdown",
-        "docs.vector_button": "Update vector database",
-        "docs.progress_aria": "Process progress",
-        "docs.running_default": "Running process...",
-        "docs.cancel_process": "Cancel process",
-        "docs.loaded_title": "Uploaded documents",
-        "docs.loaded_subtitle": "Review the status of each file and remove the ones you no longer need.",
-        "docs.count": "{count} documents",
-        "docs.empty": "There are no uploaded PDF documents.",
-        "docs.file": "File",
-        "docs.size": "Size",
-        "docs.uploaded": "Uploaded",
-        "docs.chunks": "Chunks",
-        "docs.status": "Status",
-        "docs.markdown_status": "Markdown",
-        "docs.indexed": "Indexed",
-        "docs.not_indexed": "Not indexed",
-        "docs.processing": "Processing",
-        "docs.failed": "Failed",
-        "docs.with_markdown": "Markdown",
-        "docs.without_markdown": "No Markdown",
-        "docs.markdown_ready": "Converted",
-        "docs.markdown_pending": "Pending",
-        "docs.view_pdf": "View PDF",
-        "docs.download_pdf": "Download PDF",
-        "docs.view_markdown": "View Markdown",
-        "docs.download_markdown": "Download Markdown",
-        "history.title": "Query history",
-        "history.empty_home": "Run your first query.",
-        "history.empty": "There are no queries yet.",
-        "history.query_button": "Query the model",
-        "history.user": "User",
-        "history.date": "Date",
-        "history.question": "Question",
-        "history.document": "Document",
-        "history.time": "Time (s)",
-        "history.details": "Details",
-        "history.delete_item": "query #{id}",
-        "history.view_answer": "View answer",
-        "history.answer": "Answer:",
-        "history.chunks_details": "Used chunks - query #{id}",
-        "history.best_fragment": "Best fragment (rank #1)",
-        "history.file": "File:",
-        "history.title_label": "Title:",
-        "history.segment": "Segment:",
-        "history.similarity": "Similarity:",
-        "history.best_chunk_missing": "The best chunk content could not be recovered.",
-        "history.top_chunks": "Top {shown} of {total} used chunks",
-        "history.ranking": "Rank",
-        "history.no_chunks": "This query has no associated chunks in the database.",
-        "stats.page_title": "Statistics",
-        "stats.subtitle": "Check the charts to see model usage.",
-        "stats.scope_global": "Statistics for global usage",
-        "stats.scope_user": "Statistics for user {name}",
-        "stats.filter_label": "User",
-        "stats.filter_all_users": "All users",
-        "stats.filter_help": "Select a specific user or global usage",
-        "stats.total_queries": "Total queries",
-        "stats.average_time": "Average time",
-        "stats.active_days": "Active days",
-        "stats.last_query": "Last query",
-        "stats.no_queries": "There are no queries yet to display statistics.",
-        "stats.chart_monthly_queries": "Queries by month",
-        "stats.chart_monthly_queries_help": "Shows monthly query volume over the last 12 months.",
-        "stats.chart_monthly_toggle_label": "Change the queries by month visualization",
-        "stats.chart_monthly_view_bars": "Bars",
-        "stats.chart_monthly_view_calendar": "Calendar",
-        "stats.chart_avg_time": "Average response time by month",
-        "stats.chart_avg_time_help": "Helps detect whether model response time is rising or falling.",
-        "stats.chart_weekdays": "Queries by weekday",
-        "stats.chart_weekdays_help": "Summarizes which days concentrate the most activity.",
-        "stats.chart_hours": "Queries by hour",
-        "stats.chart_hours_help": "Helps identify peak usage hours.",
-        "stats.chart_hours_toggle_label": "Change the queries by hour visualization",
-        "stats.chart_hours_view_bars": "Bars",
-        "stats.chart_hours_view_heatmap": "Heatmap",
-        "stats.chart_top_users": "Users with most queries",
-        "stats.chart_top_users_help": "Available in the global admin view.",
-        "stats.day_0": "Mon",
-        "stats.day_1": "Tue",
-        "stats.day_2": "Wed",
-        "stats.day_3": "Thu",
-        "stats.day_4": "Fri",
-        "stats.day_5": "Sat",
-        "stats.day_6": "Sun",
-        "stats.metric_seconds": "s",
-        "stats.metric_no_data": "No data",
-        "modal.delete_title": "Confirm deletion",
-        "modal.delete_subtitle": "This action cannot be undone.",
-        "modal.delete_question": "Are you sure you want to delete {item}?",
-        "modal.chunks_title": "Chunk details",
-        "rag.page_title": "Query the model",
-        "rag.open_page": "Run query",
-        "rag.title": "Ask the model (RAG)",
-        "rag.subtitle": "Ask clear questions about the tender documents. To force a specific case file, mention \"expediente <number>\". To limit the search, say \"technical specifications\" or \"administrative tender documents\".",
-        "rag.question_label": "Question",
-        "rag.question_placeholder": "Write your question about the tender documents...",
-        "rag.ask_button": "Ask",
-        "rag.cancel_button": "Cancel query",
-        "rag.answer_title": "Answer",
-        "rag.fragment_used": "Used fragment",
-        "rag.no_answer": "No answer.",
-        "rag.no_chunk": "No fragment could be recovered.",
-        "rag.querying": "Querying...",
-        "rag.sending": "Sending query...",
-        "rag.cancelled": "Query cancelled.",
-        "rag.failed": "The query failed.",
-        "rag.status_error": "The query status could not be checked.",
-        "rag.unexpected_error": "An unexpected error occurred.",
-        "rag.cancel_error": "The query could not be cancelled.",
-        "rag.invalid_question": "Write a valid question.",
-        "rag.empty_question": "Write a question.",
-        "rag.question_too_long": "The question is too long (max. 2000 characters).",
-        "rag.preparing": "Preparing query...",
-        "rag.starting": "Starting query...",
-        "rag.queued": "Query queued.",
-        "rag.done": "Query finished.",
-        "rag.cancelling": "Cancelling query...",
-        "rag.system_error": "An error occurred while querying the system. Please try again.",
-        "rag.timeout_error": "The model is taking too long to respond. Try again in a few seconds.",
-        "jobs.already_finished": "The process has already finished.",
-        "jobs.queued_short": "Queued",
-        "jobs.cancelled_generic": "Process cancelled.",
-        "jobs.failed_generic": "The process failed.",
-        "markdown.cancelling": "Cancelling Markdown conversion...",
-        "markdown.cancelled": "Markdown conversion cancelled.",
-        "markdown.starting": "Starting Markdown conversion...",
-        "markdown.converting_doc": "Converting {name}...",
-        "markdown.converting_doc_page": "Converting {name}... Page {page}/{total_pages}",
-        "markdown.converting_default": "Converting document...",
-        "markdown.starting_ui": "Starting Markdown conversion...",
-        "markdown.no_job_id": "The process identifier was not received.",
-        "markdown.start_error": "Markdown conversion could not be started.",
-        "markdown.status_error": "The conversion status could not be checked.",
-        "markdown.unknown_state": "Unknown conversion state.",
-        "markdown.none_pending": "There were no pending documents to convert.",
-        "markdown.done_stats": "Conversion completed. {count} documents converted.",
-        "markdown.done_stats_with_failures": "Conversion completed. {count} documents converted and {failed} failed.",
-        "markdown.done_email": "Markdown conversion finished successfully.",
-        "markdown.failed": "Markdown conversion failed.",
-        "markdown.failed_email": "Markdown conversion failed: {error}",
-        "vector.cancelling": "Cancelling vector database update...",
-        "vector.cancelled_by_user": "Update cancelled by the user.",
-        "vector.updating": "Updating vector database... ({progress}%)",
-        "vector.updating_doc": "Updating vector database... ({progress}%) - {name}",
-        "vector.done_ui": "Vector database updated.",
-        "vector.cancelled_ui": "Vector database update cancelled.",
-        "vector.failed_ui": "Vector database update failed.{error_suffix}",
-        "vector.unknown_state": "Unknown update state.",
-        "vector.starting_ui": "Starting vector database update...",
-        "vector.no_job_id": "The process identifier was not received.",
-        "vector.start_error": "The update could not be started.",
-        "vector.status_error": "The process status could not be checked.",
-        "vector.done_email": "The vector database update finished successfully.",
-        "vector.failed_email": "Qdrant update failed: {error}",
-        "scraping.cancelling": "Cancelling web scraping...",
-        "scraping.cancelled": "Web scraping cancelled.",
-        "scraping.starting": "Starting web scraping...",
-        "scraping.script_1": "Running script 1/2...",
-        "scraping.script_2": "Running script 2/2...",
-        "scraping.syncing": "Syncing PDFs into the database...",
-        "scraping.done": "Web scraping finished.",
-        "scraping.done_ui": "Web scraping completed.",
-        "scraping.failed": "Web scraping failed.",
-        "scraping.failed_ui": "Web scraping failed.{error_suffix}",
-        "scraping.unknown_state": "Unknown scraping state.",
-        "scraping.starting_ui": "Starting web scraping...",
-        "scraping.no_job_id": "The scraping identifier was not received.",
-        "scraping.start_error": "Web scraping could not be started.",
-        "scraping.status_error": "The scraping status could not be checked.",
-        "scraping.done_email": "Web scraping finished successfully.",
-        "scraping.failed_email": "Web scraping failed: {error}",
-        "process.cancel_error": "The process could not be cancelled.",
-        "process.resume_tracking": "Resuming process tracking...",
-        "errors.bad_request_title": "Invalid request",
-        "errors.bad_request_message": "The request could not be processed. Please review the submitted data.",
-        "errors.forbidden_title": "Access denied",
-        "errors.forbidden_message": "You do not have permission to access this resource.",
-        "errors.not_found_title": "Page not found",
-        "errors.not_found_message": "The requested resource does not exist or is no longer available.",
-        "errors.server_title": "Internal error",
-        "errors.server_message": "An unexpected error occurred. Please try again later.",
-    },
+    LANGUAGE_ES: TRANSLATIONS_ES,
+    LANGUAGE_EN: TRANSLATIONS_EN,
 }
 
 
+
 def normalize_language(lang):
+    """Normaliza un código de idioma.
+
+    Args:
+        lang: Código de idioma recibido desde sesión, formulario o cliente.
+
+    Returns:
+        Código soportado por la aplicación o el idioma por defecto.
+    """
     lang = (lang or "").lower()
     return lang if lang in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
 
 
 def get_locale():
+    """Obtiene el idioma activo de la petición actual.
+
+    Returns:
+        Código de idioma activo o idioma por defecto si no hay petición.
+    """
     if has_request_context():
         return normalize_language(session.get("lang"))
     return DEFAULT_LANGUAGE
 
 
 def translate_for(lang, key, **kwargs):
+    """Traduce una clave concreta para un idioma.
+
+    Args:
+        lang: Código de idioma solicitado.
+        key: Clave de traducción.
+        **kwargs: Valores usados para formatear la traducción.
+
+    Returns:
+        Texto traducido o la clave original si no existe traducción.
+    """
     language = normalize_language(lang)
     text = (
         TRANSLATIONS.get(language, {}).get(key)
@@ -641,45 +68,35 @@ def translate_for(lang, key, **kwargs):
 
 
 def t(key, **kwargs):
+    """Traduce una clave usando el idioma activo.
+
+    Args:
+        key: Clave de traducción.
+        **kwargs: Valores usados para formatear la traducción.
+
+    Returns:
+        Texto traducido para el idioma activo.
+    """
     return translate_for(get_locale(), key, **kwargs)
 
 
 def localize_runtime_message(message, lang=None):
+    """Traduce mensajes persistidos o generados en tiempo de ejecución.
+
+    Args:
+        message: Mensaje original guardado en base de datos o generado por un
+            proceso asíncrono.
+        lang: Idioma destino opcional.
+
+    Returns:
+        Mensaje localizado si existe una equivalencia conocida.
+    """
     if not message:
         return message
 
     language = normalize_language(lang or get_locale())
-    direct_map = {
-        "En cola": "jobs.queued_short",
-        "Consulta en cola.": "rag.queued",
-        "Cancelando consulta...": "rag.cancelling",
-        "Consulta cancelada.": "rag.cancelled",
-        "Iniciando consulta...": "rag.starting",
-        "Consulta finalizada.": "rag.done",
-        "La consulta ha fallado.": "rag.failed",
-        "Preparando consulta...": "rag.preparing",
-        "Cancelando Conversión a Markdown...": "markdown.cancelling",
-        "Conversión a Markdown cancelada.": "markdown.cancelled",
-        "Iniciando Conversión a Markdown...": "markdown.starting",
-        "No habia documentos pendientes de convertir.": "markdown.none_pending",
-        "No había documentos pendientes de convertir.": "markdown.none_pending",
-        "Fallo la Conversión a Markdown.": "markdown.failed",
-        "Falló la Conversión a Markdown.": "markdown.failed",
-        "Cancelando Actualización vectorial...": "vector.cancelling",
-        "Cancelando ActualizaciÃ³n vectorial...": "vector.cancelling",
-        "Cancelando Web Scraping...": "scraping.cancelling",
-        "Web Scraping cancelado.": "scraping.cancelled",
-        "Iniciando Web Scraping...": "scraping.starting",
-        "Ejecutando script 1/2...": "scraping.script_1",
-        "Ejecutando script 2/2...": "scraping.script_2",
-        "Sincronizando PDFs en la base de datos...": "scraping.syncing",
-        "Web Scraping terminado.": "scraping.done",
-        "Fallo el Web Scraping.": "scraping.failed",
-        "Falló el Web Scraping.": "scraping.failed",
-        "El job ya ha terminado.": "jobs.already_finished",
-    }
-    if message in direct_map:
-        return translate_for(language, direct_map[message])
+    if message in DIRECT_RUNTIME_MESSAGE_MAP:
+        return translate_for(language, DIRECT_RUNTIME_MESSAGE_MAP[message])
 
     markdown_done = re.fullmatch(r"Conversi[oó]n completada\. (\d+) documentos convertidos\.", message)
     if markdown_done:
@@ -714,27 +131,53 @@ def localize_runtime_message(message, lang=None):
     return message
 
 
-def localize_form(form):
-    if not form:
-        return form
+def _get_form_field(form, field_name):
+    """Obtiene un campo del formulario si existe.
 
-    field_map = getattr(form, "i18n_fields", {})
-    for field_name, key in field_map.items():
-        field = getattr(form, field_name, None)
+    Args:
+        form: Formulario Flask-WTF que contiene los campos.
+        field_name: Nombre del campo que se quiere localizar.
+
+    Returns:
+        Campo del formulario o ``None`` si no existe.
+    """
+    return getattr(form, field_name, None)
+
+
+def _localize_field_labels(form):
+    """Traduce las etiquetas configuradas en el formulario.
+
+    Args:
+        form: Formulario Flask-WTF con el mapa ``i18n_fields``.
+    """
+    for field_name, key in getattr(form, "i18n_fields", {}).items():
+        field = _get_form_field(form, field_name)
         if field is not None:
             field.label.text = t(key)
 
-    placeholders = getattr(form, "i18n_placeholders", {})
-    for field_name, key in placeholders.items():
-        field = getattr(form, field_name, None)
+
+def _localize_field_placeholders(form):
+    """Traduce los placeholders configurados en el formulario.
+
+    Args:
+        form: Formulario Flask-WTF con el mapa ``i18n_placeholders``.
+    """
+    for field_name, key in getattr(form, "i18n_placeholders", {}).items():
+        field = _get_form_field(form, field_name)
         if field is not None:
             render_kw = dict(field.render_kw or {})
             render_kw["placeholder"] = t(key)
             field.render_kw = render_kw
 
-    validator_map = getattr(form, "i18n_validator_messages", {})
-    for field_name, validator_messages in validator_map.items():
-        field = getattr(form, field_name, None)
+
+def _localize_validator_messages(form):
+    """Traduce los mensajes de los validadores configurados.
+
+    Args:
+        form: Formulario Flask-WTF con el mapa ``i18n_validator_messages``.
+    """
+    for field_name, validator_messages in getattr(form, "i18n_validator_messages", {}).items():
+        field = _get_form_field(form, field_name)
         if field is None:
             continue
         for validator in field.validators:
@@ -742,10 +185,32 @@ def localize_form(form):
             if key:
                 validator.message = t(key)
 
+
+def localize_form(form):
+    """Aplica traducciones a etiquetas, placeholders y validadores.
+
+    Args:
+        form: Formulario Flask-WTF con mapas de internacionalización.
+
+    Returns:
+        El mismo formulario con sus textos actualizados.
+    """
+    if not form:
+        return form
+
+    _localize_field_labels(form)
+    _localize_field_placeholders(form)
+    _localize_validator_messages(form)
+
     return form
 
 
 def get_client_translations():
+    """Obtiene las traducciones que necesita el JavaScript del cliente.
+
+    Returns:
+        Diccionario con claves de traducción y textos localizados.
+    """
     keys = [
         "common.loading",
         "validation.required",
@@ -804,6 +269,13 @@ def get_client_translations():
 
 
 def init_app(app):
+    """Registra helpers de internacionalización en la aplicación Flask.
+
+    Args:
+        app: Aplicación Flask donde se registran hooks, context processors y
+            la ruta de cambio de idioma.
+    """
+
     @app.before_request
     def _set_language():
         g.locale = get_locale()
@@ -819,7 +291,13 @@ def init_app(app):
 
     @app.post("/language")
     def set_language_route():
-        lang = normalize_language(request.form.get("lang"))
+        from app.forms import LanguageForm
+
+        form = LanguageForm()
+        if not form.validate_on_submit():
+            return redirect(request.referrer or url_for("main.inicio"))
+
+        lang = normalize_language(form.lang.data)
         session["lang"] = lang
-        next_url = request.form.get("next") or request.referrer or url_for("main.inicio")
+        next_url = form.next.data or request.referrer or url_for("main.inicio")
         return redirect(next_url)

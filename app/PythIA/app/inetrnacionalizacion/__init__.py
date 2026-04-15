@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script para exportar las utilidades de internacionalización de la aplicación.
+"""
+
 from .tarduccion import (
     DEFAULT_LANGUAGE,
     SUPPORTED_LANGUAGES,
