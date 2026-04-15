@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script para las rutas principales, historial de consultas, perfil de usuario y estadísticas de uso.
+"""
+
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
@@ -5,17 +10,27 @@ from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from math import ceil
 from . import main_bp
+from ..entities.consulta import Consulta
+from ..entities.user import User
 from ..extensions import db
-from ..forms import EditUserForm
-from ..usuario import User
-from app.consulta import Consulta
+from ..forms import EditUserForm, EmptyForm
 from app.rag.PrototipoRAG import qdrant_get_payloads
 from ..inetrnacionalizacion.tarduccion import t
 
 def paginate_consultas(base_query, per_page=10):
     """
     Aplica paginación estándar a una query de consultas.
-    Devuelve: consultas, page, total_pages, total_items
+
+    Extrae del request.args el número de página y aplica filtrado por usuario
+    si el usuario actual no es administrador. Devuelve los elementos paginados
+    con información de páginas.
+
+    Args:
+        base_query (Query): Consulta SQLAlchemy base a paginar.
+        per_page (int, optional): Elementos por página. Defaults to 10.
+
+    Returns:
+        tuple: Tupla con (items, page, total_pages, total_consultas).
     """
     page = request.args.get("page", 1, type=int)
     if page < 1:
@@ -44,6 +59,15 @@ def paginate_consultas(base_query, per_page=10):
 
 @main_bp.route("/")
 def inicio():
+    """
+    Renderiza la página de inicio de la aplicación PythIA.
+
+    Muestra la página de inicio con el título y autor de la aplicación,
+    sin requerir autenticación.
+
+    Returns:
+        str: HTML renderizado de la página de inicio.
+    """
     return render_template(
         "index.html",
         titulo="PythIA",
@@ -53,6 +77,15 @@ def inicio():
 @main_bp.route("/pagina_principal")
 @login_required
 def pag_principal():
+    """
+    Renderiza la página principal del usuario autenticado.
+
+    Obtiene las consultas más recientes del usuario (o todas si es admin),
+    las pagina y construye metadatos asociados para mostrar en la página.
+
+    Returns:
+        str: HTML renderizado de la página principal con consultas y metadata.
+    """
     q = Consulta.query.order_by(Consulta.created_at.desc())
         
     consultas, page, total_pages, total_consultas = paginate_consultas(
@@ -74,6 +107,16 @@ def pag_principal():
 @main_bp.route("/edit_user", methods=["GET", "POST"])
 @login_required
 def edit_user():
+    """
+    Gestiona la edición del perfil de usuario.
+
+    En GET: presenta el formulario de edición con los datos actuales del usuario.
+    En POST: valida y guarda cambios en nombre, email y contraseña.
+    Valida unicidad del email antes de actualizar.
+
+    Returns:
+        str: HTML renderizado del formulario de edición de usuario.
+    """
     form = EditUserForm(obj=current_user) if request.method == "GET" else EditUserForm()
 
     
@@ -107,6 +150,15 @@ def edit_user():
 @main_bp.get("/history")
 @login_required
 def historial():
+    """
+    Renderiza el historial de consultas del usuario.
+
+    Obtiene todas las consultas del usuario ordenadas por fecha descendente,
+    las pagina y construye los metadatos asociados para cada consulta.
+
+    Returns:
+        str: HTML renderizado del historial de consultas paginado.
+    """
     q = Consulta.query.order_by(Consulta.created_at.desc())
 
     consultas, page, total_pages, total_consultas = paginate_consultas(
@@ -126,6 +178,18 @@ def historial():
 
 
 def _month_sequence(total_months: int = 12):
+    """
+    Genera una secuencia de tuplas (año, mes) hacia el pasado.
+
+    Comienza desde el primer día del mes actual y retrocede el número
+    de meses especificado, retornando la secuencia en orden ascendente.
+
+    Args:
+        total_months (int, optional): Número de meses a generar. Defaults to 12.
+
+    Returns:
+        list: Lista de tuplas (año, mes) ordenadas ascendentemente.
+    """
     today = datetime.now().date().replace(day=1)
     months = []
     year = today.year
@@ -143,18 +207,82 @@ def _month_sequence(total_months: int = 12):
 
 
 def _safe_created_at(consulta: Consulta) -> datetime:
+    """
+    Obtiene la fecha de creación de una consulta sin información de zona horaria.
+
+    Si la consulta no tiene fecha de creación, devuelve la fecha/hora actual.
+    Elimina la información de zona horaria (tzinfo) si existe.
+
+    Args:
+        consulta (Consulta): Entidad de consulta a procesar.
+
+    Returns:
+        datetime: Fecha y hora sin información de zona horaria.
+    """
     created_at = consulta.created_at or datetime.now()
     return created_at.replace(tzinfo=None) if created_at.tzinfo else created_at
 
 
+def _process_consulta_stats(consulta, monthly_counts, monthly_times, daily_counts, weekday_counts, hourly_counts, user_counter):
+    """
+    Procesa y actualiza las estadísticas de una consulta individual.
+
+    Extrae información de fecha/hora de la consulta y la distribuye en los
+    contadores por mes, día, día de semana, hora y usuario.
+
+    Args:
+        consulta (Consulta): Consulta a procesar.
+        monthly_counts (dict): Contador de consultas por mes.
+        monthly_times (defaultdict): Tiempos de respuesta agrupados por mes.
+        daily_counts (dict): Contador de consultas por día.
+        weekday_counts (dict): Contador de consultas por día de semana.
+        hourly_counts (dict): Contador de consultas por hora.
+        user_counter (defaultdict): Contador de consultas por usuario.
+
+    Returns:
+        None: Actualiza los diccionarios.
+    """
+    created_at = _safe_created_at(consulta)
+    month_key = (created_at.year, created_at.month)
+    if month_key in monthly_counts:
+        monthly_counts[month_key] += 1
+        monthly_times[month_key].append(float(consulta.tiempo_respuestas or 0))
+    
+    day_key = created_at.date().isoformat()
+    if day_key in daily_counts:
+        daily_counts[day_key] += 1
+    
+    weekday_counts[created_at.weekday()] += 1
+    hourly_counts[created_at.hour] += 1
+    
+    user_name = getattr(getattr(consulta, "user", None), "nombre", None)
+    if user_name:
+        user_counter[user_name] += 1
+
+
 def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
+    """
+    Construye un payload completo de estadísticas de uso de consultas.
+
+    Procesa una lista de consultas para generar estadísticas agregadas:
+    resúmenes, consultas mensuales, tiempos promedio, histogramas diarios,
+    semanales y horarios. Opcionalmente incluye los 8 usuarios más activos.
+
+    Args:
+        consultas (list): Lista de entidades Consulta a procesar.
+        include_top_users (bool, optional): Incluir los 8 usuarios más activos. Defaults to False.
+
+    Returns:
+        dict: Diccionario con keys: summary, monthly_queries, monthly_avg_time,
+              daily_queries, weekday_queries, hourly_queries, top_users (opcional).
+    """
     consultas = sorted(consultas, key=lambda item: _safe_created_at(item))
     recent_months = _month_sequence(12)
-    monthly_counts = {month: 0 for month in recent_months}
+    monthly_counts = dict.fromkeys(recent_months, 0)
     monthly_times = defaultdict(list)
     daily_counts = {}
-    weekday_counts = {day: 0 for day in range(7)}
-    hourly_counts = {hour: 0 for hour in range(24)}
+    weekday_counts = dict.fromkeys(range(7), 0)
+    hourly_counts = dict.fromkeys(range(24), 0)
     user_counter = defaultdict(int)
 
     start_year, start_month = recent_months[0]
@@ -171,19 +299,7 @@ def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
         current_day += timedelta(days=1)
 
     for consulta in consultas:
-        created_at = _safe_created_at(consulta)
-        month_key = (created_at.year, created_at.month)
-        if month_key in monthly_counts:
-            monthly_counts[month_key] += 1
-            monthly_times[month_key].append(float(consulta.tiempo_respuestas or 0))
-        day_key = created_at.date().isoformat()
-        if day_key in daily_counts:
-            daily_counts[day_key] += 1
-        weekday_counts[created_at.weekday()] += 1
-        hourly_counts[created_at.hour] += 1
-        user_name = getattr(getattr(consulta, "user", None), "nombre", None)
-        if user_name:
-            user_counter[user_name] += 1
+        _process_consulta_stats(consulta, monthly_counts, monthly_times, daily_counts, weekday_counts, hourly_counts, user_counter)
 
     monthly_queries = [
         {
@@ -244,6 +360,16 @@ def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
 @main_bp.get("/stats")
 @login_required
 def stats_page():
+    """
+    Renderiza la página de estadísticas de uso.
+
+    Si el usuario es administrador, permite seleccionar un usuario específico
+    o ver estadísticas globales. Usuarios regulares ven sólo sus estadísticas.
+    Genera un payload completo de estadísticas y lo pasa al template.
+
+    Returns:
+        str: HTML renderizado de la página de estadísticas.
+    """
     selected_user = current_user
     selected_user_id = None
     users = []
@@ -287,6 +413,19 @@ def stats_page():
     )
     
 def best_pid_for_consulta(consulta) -> str:
+    """
+    Obtiene el ID de punto Qdrant del mejor fragmento/chunk de una consulta.
+
+    Intenta primero obtener el ID del fragmento con mejor ranking de la lista
+    de fragmentos. Si no hay fragmentos, busca el chunk con mejor ranking
+    entre los consultaChunks. Devuelve un string vacío si no hay ninguno.
+
+    Args:
+        consulta (Consulta): Consulta a procesar.
+
+    Returns:
+        str: ID de punto Qdrant del mejor fragmento, o string vacío.
+    """
     fragmentos = sorted(consulta.fragmentos or [], key=lambda item: item.get("ranking", 0))
     if fragmentos:
         return (fragmentos[0].get("qdrant_point_id") or "").strip()
@@ -301,6 +440,20 @@ def best_pid_for_consulta(consulta) -> str:
     return getattr(chunk, "qdrant_point_id", "") or ""
     
 def build_meta_by_consulta(consultas):
+    """
+    Construye un diccionario de metadatos indexado por ID de consulta.
+
+    Para cada consulta, extrae el fragmento con mejor ranking y obtiene su
+    qdrant_point_id, metadata y contenido. Para consultas sin fragmentos,
+    recupera la información desde Qdrant usando el legacy pid.
+
+    Args:
+        consultas (list): Lista de entidades Consulta a procesar.
+
+    Returns:
+        dict: Diccionario indexado por consulta.id con metadatos
+              {qdrant_point_id, metadata, content}.
+    """
     meta_by_consulta = {}
     legacy_pids = {}
 
@@ -332,6 +485,23 @@ def build_meta_by_consulta(consultas):
 @main_bp.post("/consulta/<int:consulta_id>/delete")
 @login_required
 def delete_consulta(consulta_id: int):
+    """
+    Elimina una consulta específica del usuario.
+
+    Valida el formulario CSRF y verifica que el usuario actual sea propietario
+    de la consulta o administrador. Elimina la consulta de la base de datos y
+    redirige al referrer o al historial.
+
+    Args:
+        consulta_id (int): ID de la consulta a eliminar.
+
+    Returns:
+        Response: Redirección al referrer o al historial.
+    """
+    form = EmptyForm()
+    if not form.validate_on_submit():
+        abort(400)
+
     consulta = Consulta.query.get_or_404(consulta_id)
 
     if not current_user.is_admin and consulta.user_id != int(current_user.id):
