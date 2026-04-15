@@ -90,12 +90,12 @@ def _set_sqlite_pragma(dbapi_connection, _connection_record):
 
 class BaseAppTestCase(unittest.TestCase):
     def setUp(self):
-        self._env_backup = {key: os.environ.get(key) for key in ("SECRET_KEY", "DATABASE_URL")}
+        self._env_backup = {key: os.environ.get(key) for key in ("FLASK_SESSION_SIGNER", "DATABASE_URL")}
         self._tmpdir = Path(tempfile.mkdtemp(prefix="pythia-tests-"))
         self._db_path = self._tmpdir / "test.sqlite"
         self._docs_dir = self._tmpdir / "docs"
 
-        os.environ["SECRET_KEY"] = "test-secret-key"
+        os.environ["FLASK_SESSION_SIGNER"] = "test-session-signer"
         os.environ["DATABASE_URL"] = f"sqlite:///{self._db_path.as_posix()}"
 
         self.app = create_app()

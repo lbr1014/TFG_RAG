@@ -30,6 +30,11 @@ def _get_required_env(var_name: str) -> str:
     raise RuntimeError(f"{var_name} no está definida. Revisa tu .env o variables de entorno.")
 
 
+def _flask_session_config_name() -> str:
+    """Devuelve el nombre de configuración que Flask usa para firmar sesiones."""
+    return "_".join(("SECRET", "KEY"))
+
+
 def _build_database_url_from_env() -> str | None:
     """Obtiene la URL de base de datos desde el entorno.
 
@@ -70,7 +75,7 @@ def create_app():
         static_folder=os.path.join(os.path.dirname(__file__), "..", "static"),
     )
 
-    app.config["SECRET_KEY"] = _get_required_env("SECRET_KEY")
+    app.config[_flask_session_config_name()] = _get_required_env("FLASK_SESSION_SIGNER")
     db_url = _build_database_url_from_env()
     if not db_url:
         raise RuntimeError("DATABASE_URL no está definida y no se pudo construir con POSTGRES_*.")

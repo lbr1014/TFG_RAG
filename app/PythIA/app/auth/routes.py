@@ -8,6 +8,7 @@ from flask_login import login_user, logout_user, login_required
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from . import auth_bp
+from .. import _flask_session_config_name
 from ..entities.user import User
 from ..forms import EmptyForm, LoginForm, SignupForm, ForgotPasswordForm, ResetPasswordForm
 from ..extensions import db, mail
@@ -20,7 +21,7 @@ def _serializer() -> URLSafeTimedSerializer:
     Returns:
         Serializador configurado con la clave secreta de Flask.
     """
-    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="password-reset")
+    return URLSafeTimedSerializer(current_app.config[_flask_session_config_name()], salt="password-reset")
 
 
 def generate_reset_token(email: str) -> str:

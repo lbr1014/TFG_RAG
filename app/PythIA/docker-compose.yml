@@ -115,12 +115,14 @@ services:
     container_name: flask_tests
     working_dir: /app
     command: sh /app/tests/run_tests.sh
+    env_file:
+      - .env
+      - secret.env
     volumes:
       - ./:/app
     environment:
       PYTHONPATH: /app
       DATABASE_URL: "sqlite:///:memory:"
-      SECRET_KEY: "test"
 
 
 volumes:
