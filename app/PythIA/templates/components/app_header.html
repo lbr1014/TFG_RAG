@@ -92,8 +92,9 @@
                 {% for lang_code, lang_name in supported_languages.items() %}
                   <li>
                     <form method="POST" action="{{ url_for('set_language_route') }}" class="m-0">
-                      <input type="hidden" name="lang" value="{{ lang_code }}">
-                      <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+                      {{ language_form.csrf_token }}
+                      {{ language_form.lang(value=lang_code) }}
+                      {{ language_form.next(value=(request.full_path if request.query_string else request.path)) }}
                       <button type="submit" class="dropdown-item{% if current_locale == lang_code %} active{% endif %}">
                         {{ t("lang." ~ lang_code) }}
                       </button>
@@ -101,7 +102,12 @@
                   </li>
                 {% endfor %}
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">{{ t("nav.logout") }}</a></li>
+                <li>
+                  <form method="POST" action="{{ url_for('auth.logout') }}" class="m-0">
+                    {{ logout_form.hidden_tag() }}
+                    <button type="submit" class="dropdown-item">{{ t("nav.logout") }}</button>
+                  </form>
+                </li>
               </ul>
             </div>
           </div>
@@ -173,8 +179,9 @@
           <div class="list-group app-offcanvas-group">
             {% for lang_code, lang_name in supported_languages.items() %}
               <form method="POST" action="{{ url_for('set_language_route') }}" class="m-0">
-                <input type="hidden" name="lang" value="{{ lang_code }}">
-                <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+                {{ language_form.csrf_token }}
+                {{ language_form.lang(value=lang_code) }}
+                {{ language_form.next(value=(request.full_path if request.query_string else request.path)) }}
                 <button type="submit" class="list-group-item list-group-item-action{% if current_locale == lang_code %} active{% endif %}">
                   {{ t("lang." ~ lang_code) }}
                 </button>
@@ -183,7 +190,10 @@
           </div>
         </div>
 
-        <a class="btn btn-light btn-header w-100 mt-3" href="{{ url_for('auth.logout') }}">{{ t("nav.logout") }}</a>
+        <form method="POST" action="{{ url_for('auth.logout') }}" class="m-0">
+          {{ logout_form.hidden_tag() }}
+          <button type="submit" class="btn btn-light btn-header w-100 mt-3">{{ t("nav.logout") }}</button>
+        </form>
       </div>
     </div>
   </div>

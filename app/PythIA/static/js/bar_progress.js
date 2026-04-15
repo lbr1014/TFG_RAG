@@ -19,6 +19,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return error ? ` Error: ${error}` : "";
   }
 
+  function getCsrfToken(form) {
+    return form?.querySelector('input[name="csrf_token"]')?.value
+      || document.querySelector('input[name="csrf_token"]')?.value
+      || "";
+  }
+
+  function csrfHeaders(form) {
+    const token = getCsrfToken(form);
+    return token ? { "X-CSRFToken": token } : {};
+  }
+
+  function csrfFormData(form) {
+    const data = new FormData();
+    const token = getCsrfToken(form);
+    if (token) data.append("csrf_token", token);
+    return data;
+  }
+
   function toggleButtons(disabled) {
     [uploadForm, vectorForm, markdownForm, scrapingForm].forEach((form) => {
       form?.querySelectorAll("button").forEach((button) => {
@@ -96,9 +114,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function fetchJson(url, options = {}) {
+    const headers = {
+      Accept: "application/json",
+      ...(options.headers || {}),
+    };
+
     const response = await fetch(url, {
-      headers: { Accept: "application/json" },
       ...options,
+      headers,
     });
 
     let data = {};
@@ -164,7 +187,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       setUIRunning(tr("vector.starting_ui"));
-      const data = await fetchJson(vectorForm.action, { method: "POST" });
+      const data = await fetchJson(vectorForm.action, {
+        method: "POST",
+        body: new FormData(vectorForm),
+      });
 
       if (!data.job_id) {
         setUIFailed(tr("vector.no_job_id"));
@@ -225,7 +251,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       setUIRunning(tr("markdown.starting_ui"));
-      const data = await fetchJson(markdownForm.action, { method: "POST" });
+      const data = await fetchJson(markdownForm.action, {
+        method: "POST",
+        body: new FormData(markdownForm),
+      });
 
       if (!data.job_id) {
         setUIFailed(tr("markdown.no_job_id"));
@@ -286,7 +315,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       setUIRunning(tr("scraping.starting_ui"));
-      const data = await fetchJson(scrapingForm.action, { method: "POST" });
+      const data = await fetchJson(scrapingForm.action, {
+        method: "POST",
+        body: new FormData(scrapingForm),
+      });
 
       if (!data.job_id) {
         setUIFailed(tr("scraping.no_job_id"));
@@ -307,13 +339,25 @@ document.addEventListener("DOMContentLoaded", () => {
     cancelButton.disabled = true;
     try {
       if (activeJob.type === "vector") {
-        await fetchJson(`/admin/vector-db/cancel/${activeJob.jobId}`, { method: "POST" });
+        await fetchJson(`/admin/vector-db/cancel/${activeJob.jobId}`, {
+          method: "POST",
+          headers: csrfHeaders(vectorForm),
+          body: csrfFormData(vectorForm),
+        });
         setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, tr("vector.cancelling"));
       } else if (activeJob.type === "markdown") {
-        await fetchJson(`/admin/documents/markdown/cancel/${activeJob.jobId}`, { method: "POST" });
+        await fetchJson(`/admin/documents/markdown/cancel/${activeJob.jobId}`, {
+          method: "POST",
+          headers: csrfHeaders(markdownForm),
+          body: csrfFormData(markdownForm),
+        });
         setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, tr("markdown.cancelling"));
       } else if (activeJob.type === "scraping") {
-        await fetchJson(`/admin/documents/web_scraping/cancel/${activeJob.jobId}`, { method: "POST" });
+        await fetchJson(`/admin/documents/web_scraping/cancel/${activeJob.jobId}`, {
+          method: "POST",
+          headers: csrfHeaders(scrapingForm),
+          body: csrfFormData(scrapingForm),
+        });
         setUIProgress(bar ? parseInt(bar.style.width || "0", 10) || 0 : 0, tr("scraping.cancelling"));
       }
     } catch (error) {

@@ -136,10 +136,20 @@
     chunkEl.textContent = result?.chunk || tr("rag.no_chunk");
   }
 
+  function csrfHeaders() {
+    const token = form.querySelector('input[name="csrf_token"]')?.value;
+    return token ? { "X-CSRFToken": token } : {};
+  }
+
   async function fetchJson(url, options = {}) {
+    const headers = {
+      Accept: "application/json",
+      ...(options.headers || {}),
+    };
+
     const response = await fetch(url, {
-      headers: { Accept: "application/json" },
       ...options,
+      headers,
     });
 
     const data = await response.json();
@@ -229,6 +239,8 @@
     try {
       const data = await fetchJson(`{{ url_for('rag.rag_cancel', job_id=0) }}`.replace("/0", `/${activeJobId}`), {
         method: "POST",
+        headers: csrfHeaders(),
+        body: new FormData(form),
       });
       setRunningUI(data.message || tr("rag.cancel_button"));
     } catch (error) {

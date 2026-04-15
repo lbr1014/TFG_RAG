@@ -1,6 +1,6 @@
 """
 Autora: Lydia Blanco Ruiz
-Script para construir la base de datos vectorial de un sistema RAG.
+Script con la lógica de recuperación, generación, embeddings e indexación en Qdrant para el sistema RAG.
 """
 
 # =========================
@@ -331,14 +331,13 @@ def pdf_sha256(path: Path) -> str:
 
 
 def _qdrant_filter_by_filename(filename: str) -> qmodels.Filter:
-    """
-    Construye un filtro de Qdrant para seleccionar todos los puntos asociados a un archivo PDF concreto, usando su nombre.
+    """Construye un filtro de Qdrant por nombre de archivo.
 
-    Argumentos:
+    Args:
         filename: Nombre del archivo PDF.
 
     Returns:
-        Filtro listo para usar para busqeuda o borrado.
+        Filtro listo para usar en búsquedas o borrados.
     """
     return qmodels.Filter(
         must=[

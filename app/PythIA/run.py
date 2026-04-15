@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de entrada para crear la aplicación Flask y exponerla al servidor WSGI.
+"""
+
 from app import create_app
 
 app = create_app()

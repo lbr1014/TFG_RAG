@@ -68,6 +68,7 @@
                       <form method="POST"
                             action="{{ url_for('admin.change_type', user_id=u.id) }}"
                             class="d-inline">
+                        {{ post_form.hidden_tag() }}
                         <button type="submit" class="btn btn-outline-light btn-sm">
                           {% if u.is_admin %}
                             {{ t("users.remove_admin") }}
@@ -81,6 +82,7 @@
                             method="POST"
                             action="{{ url_for('admin.delete_user', user_id=u.id) }}"
                             class="d-inline">
+                        {{ post_form.hidden_tag() }}
                         <button type="button"
                                 class="btn btn-danger btn-sm"
                                 data-bs-toggle="modal"

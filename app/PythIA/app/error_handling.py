@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script para validaciones comunes, recopilación de errores de formularios y gestión global de errores HTTP.
+"""
+
 from __future__ import annotations
 
 import re
@@ -9,13 +14,40 @@ from .inetrnacionalizacion.tarduccion import t
 
 
 class PasswordSecurity:
+    """Validador de contraseñas con reglas mínimas de seguridad.
+
+    Attributes:
+        require_upper: Indica si se exige al menos una mayúscula.
+        require_lower: Indica si se exige al menos una minúscula.
+        require_digit: Indica si se exige al menos un número.
+        message: Mensaje de error personalizado.
+    """
+
     def __init__(self, *, require_upper: bool = True, require_lower: bool = True, require_digit: bool = True, message: str | None = None):
+        """Configura las reglas de seguridad de la contraseña.
+
+        Args:
+            require_upper: Exige al menos una letra mayúscula.
+            require_lower: Exige al menos una letra minúscula.
+            require_digit: Exige al menos un dígito.
+            message: Mensaje de error opcional.
+        """
         self.require_upper = require_upper
         self.require_lower = require_lower
         self.require_digit = require_digit
         self.message = message
 
     def __call__(self, form, field):
+        """Valida el valor del campo de contraseña.
+
+        Args:
+            form: Formulario WTForms al que pertenece el campo.
+            field: Campo de contraseña que se está validando.
+
+        Raises:
+            ValidationError: Si la contraseña no cumple las reglas
+                configuradas.
+        """
         value = (field.data or "").strip()
         if not value:
             return
@@ -33,6 +65,14 @@ class PasswordSecurity:
 
 
 def collect_form_errors(form) -> list[dict[str, str]]:
+    """Recopila errores de formulario en una estructura uniforme.
+
+    Args:
+        form: Formulario Flask-WTF o WTForms.
+
+    Returns:
+        Lista de errores con nombre de campo y mensaje.
+    """
     if not form:
         return []
 
@@ -51,6 +91,11 @@ def collect_form_errors(form) -> list[dict[str, str]]:
 
 
 def wants_json_response() -> bool:
+    """Determina si la respuesta de error debe serializarse como JSON.
+
+    Returns:
+        ``True`` si la petición espera una respuesta JSON.
+    """
     if request.path.startswith("/rag/"):
         return True
     if request.is_json:
@@ -59,6 +104,16 @@ def wants_json_response() -> bool:
 
 
 def render_error_response(status_code: int, title_key: str, message_key: str):
+    """Construye una respuesta de error HTML o JSON.
+
+    Args:
+        status_code: Código HTTP que se debe devolver.
+        title_key: Clave de traducción para el título.
+        message_key: Clave de traducción para el mensaje.
+
+    Returns:
+        Tupla compatible con Flask formada por respuesta y código HTTP.
+    """
     payload = {
         "error": t(message_key),
         "title": t(title_key),
@@ -80,6 +135,12 @@ def render_error_response(status_code: int, title_key: str, message_key: str):
 
 
 def register_error_handlers(app) -> None:
+    """Registra manejadores de error y helpers de formularios en Flask.
+
+    Args:
+        app: Aplicación Flask donde se registran los manejadores.
+    """
+
     @app.context_processor
     def _inject_form_error_helpers():
         return {

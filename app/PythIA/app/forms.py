@@ -8,26 +8,49 @@ from wtforms import BooleanField, HiddenField, MultipleFileField, PasswordField,
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, ValidationError
 
 from .error_handling import PasswordSecurity
-from .inetrnacionalizacion.tarduccion import localize_form
+from .inetrnacionalizacion.tarduccion import localize_form, t
 
+# Constantes para claves de traducción de campos comunes
+"""str: Clave de traducción para el campo email."""
 EMAIL = "common.email"
+
+"""str: Clave de traducción para el campo contraseña."""
 PASSWORD = "common.password"
+
+"""str: Clave de traducción para mensaje de campo requerido."""
 VALIDATION_REQUIRED = "validation.required"
+
+"""str: Clave de traducción para mensaje de email inválido."""
 VALIDATION_EMAIL = "validation.email"
+
+"""str: Texto español para contraseña (fallback)."""
 CONTRASEÑA = "Contraseña"
+
+"""str: Clave de traducción para el campo nombre."""
 NAME = "common.name"
+
+"""str: Clave de traducción para validación de longitud mínima de nombre."""
 MIN_LENGTH_NAME = "validation.min_length_2"
-MIN_LENGTH_PASSWORD = "validation.min_length_8"
-VALIDATE_PASSWORD_SECURITY = "validation.password_security"
+
+"""str: Clave de traducción para validación de longitud mínima de contraseña."""
+MIN_LENGTH_PASSWRD = "validation.min_length_8"
+
+"""str: Clave de traducción para validación de seguridad de contraseña."""
+VALIDATE_PASSWRD_SECURITY = "validation.password_security"
 
 
 class LocalizedFlaskForm(FlaskForm):
-    """Formulario base que aplica traducciones a etiquetas y validadores.
+    """
+    Formulario base que aplica traducciones a etiquetas y validadores.
+
+    Esta clase base extiende FlaskForm para proporcionar internacionalización
+    automática de etiquetas de campos, placeholders y mensajes de validación
+    usando el sistema de traducción de la aplicación.
 
     Attributes:
-        i18n_fields: Mapa ``nombre_campo -> clave de traducción``.
-        i18n_placeholders: Mapa ``nombre_campo -> clave de placeholder``.
-        i18n_validator_messages: Mapa de mensajes de validadores por campo.
+        i18n_fields (dict): Mapa ``nombre_campo -> clave de traducción`` para etiquetas.
+        i18n_placeholders (dict): Mapa ``nombre_campo -> clave de placeholder`` para placeholders.
+        i18n_validator_messages (dict): Mapa de mensajes de validadores por campo.
     """
 
     i18n_fields = {}
@@ -35,7 +58,11 @@ class LocalizedFlaskForm(FlaskForm):
     i18n_validator_messages = {}
 
     def __init__(self, *args, **kwargs):
-        """Inicializa el formulario y localiza sus textos.
+        """
+        Inicializa el formulario y localiza sus textos.
+
+        Aplica automáticamente las traducciones configuradas en los atributos
+        de clase i18n_* al formulario y sus campos.
 
         Args:
             *args: Argumentos posicionales aceptados por ``FlaskForm``.
@@ -46,15 +73,25 @@ class LocalizedFlaskForm(FlaskForm):
 
 
 class EmptyForm(FlaskForm):
-    """Formulario CSRF para acciones POST sin campos propios."""
+    """
+    Formulario CSRF para acciones POST sin campos propios.
+
+    Se utiliza para proteger acciones que requieren validación CSRF pero no
+    necesitan campos adicionales del usuario, como eliminaciones o acciones
+    de estado.
+    """
 
 
 class LanguageForm(FlaskForm):
-    """Formulario para cambiar el idioma activo de la sesión.
+    """
+    Formulario para cambiar el idioma activo de la sesión.
+
+    Permite al usuario seleccionar un idioma diferente para la interfaz,
+    guardando la preferencia en la sesión de Flask.
 
     Attributes:
-        lang: Código del idioma solicitado.
-        next: URL de retorno tras guardar el idioma.
+        lang (HiddenField): Código del idioma solicitado (ej: 'es', 'en').
+        next (HiddenField): URL de retorno tras guardar el idioma.
     """
 
     lang = HiddenField(validators=[DataRequired()])
@@ -62,11 +99,16 @@ class LanguageForm(FlaskForm):
 
 
 class PdfUploadForm(LocalizedFlaskForm):
-    """Formulario para subir uno o varios documentos PDF.
+    """
+    Formulario para subir uno o varios documentos PDF.
+
+    Gestiona la carga de archivos PDF para su procesamiento y almacenamiento
+    en el sistema de documentos. Incluye validación personalizada para asegurar
+    que solo se acepten archivos con extensión .pdf.
 
     Attributes:
-        files: Lista de archivos seleccionados por el usuario.
-        submit: Botón de envío del formulario.
+        files (MultipleFileField): Lista de archivos seleccionados por el usuario.
+        submit (SubmitField): Botón de envío del formulario.
     """
 
     i18n_fields = {
@@ -78,25 +120,34 @@ class PdfUploadForm(LocalizedFlaskForm):
     submit = SubmitField("Subir documentos")
 
     def validate_files(self, field):
-        """Valida que se haya enviado al menos un archivo con extensión PDF.
+        """
+        Valida que se haya enviado al menos un archivo con extensión PDF.
+
+        Realiza validaciones personalizadas sobre el campo de archivos:
+        - Verifica que se haya seleccionado al menos un archivo
+        - Confirma que todos los archivos tengan extensión .pdf
 
         Args:
-            field: Campo de archivos recibido por WTForms.
+            field (MultipleFileField): Campo de archivos recibido por WTForms.
 
         Raises:
-            ValidationError: Si no hay archivos o alguno no usa la extensión
-                ``.pdf``.
+            ValidationError: Si no hay archivos o alguno no usa la extensión ``.pdf``.
         """
         files = [item for item in (field.data or []) if item and item.filename]
         if not files:
-            raise ValidationError("Selecciona al menos un PDF.")
+            raise ValidationError(t("docs.upload_pdf_required"))
         invalid = [item.filename for item in files if not item.filename.lower().endswith(".pdf")]
         if invalid:
-            raise ValidationError("Solo se admiten archivos PDF.")
+            raise ValidationError(t("docs.upload_pdf_invalid"))
 
 
 class LoginForm(LocalizedFlaskForm):
-    """Formulario de inicio de sesión."""
+    """
+    Formulario de inicio de sesión de usuarios existentes.
+
+    Gestiona la autenticación de usuarios mediante email y contraseña.
+    Incluye validaciones de formato de email y longitud mínima de contraseña.
+    """
 
     i18n_fields = {
         "email": EMAIL,
@@ -120,7 +171,12 @@ class LoginForm(LocalizedFlaskForm):
 
 
 class SignupForm(LocalizedFlaskForm):
-    """Formulario de registro de nuevos usuarios."""
+    """
+    Formulario de registro de nuevos usuarios.
+
+    Gestiona la creación de cuentas de usuario con validaciones de seguridad
+    de contraseña, confirmación de contraseña y unicidad de email.
+    """
 
     i18n_fields = {
         "nombre": NAME,
@@ -140,8 +196,8 @@ class SignupForm(LocalizedFlaskForm):
         },
         "password": {
             "DataRequired": VALIDATION_REQUIRED,
-            "Length": MIN_LENGTH_PASSWORD,
-            "PasswordSecurity": VALIDATE_PASSWORD_SECURITY,
+            "Length": MIN_LENGTH_PASSWRD,
+            "PasswordSecurity": VALIDATE_PASSWRD_SECURITY,
         },
         "confirm_password": {
             "DataRequired": VALIDATION_REQUIRED,
@@ -160,7 +216,13 @@ class SignupForm(LocalizedFlaskForm):
 
 
 class AdminCreateUserForm(LocalizedFlaskForm):
-    """Formulario de administración para crear usuarios."""
+    """
+    Formulario de administración para crear usuarios.
+
+    Permite a los administradores crear cuentas de usuario con la posibilidad
+    de asignar privilegios de administrador. Incluye todas las validaciones
+    de seguridad aplicables.
+    """
 
     i18n_fields = {
         "nombre": NAME,
@@ -180,8 +242,8 @@ class AdminCreateUserForm(LocalizedFlaskForm):
         },
         "password": {
             "DataRequired": VALIDATION_REQUIRED,
-            "Length": MIN_LENGTH_PASSWORD,
-            "PasswordSecurity": VALIDATE_PASSWORD_SECURITY,
+            "Length": MIN_LENGTH_PASSWRD,
+            "PasswordSecurity": VALIDATE_PASSWRD_SECURITY,
         },
     }
 
@@ -193,7 +255,12 @@ class AdminCreateUserForm(LocalizedFlaskForm):
 
 
 class EditUserForm(LocalizedFlaskForm):
-    """Formulario para editar los datos del usuario autenticado."""
+    """
+    Formulario para editar los datos del usuario autenticado.
+
+    Permite modificar nombre, email y contraseña del usuario actual.
+    Los campos son opcionales para permitir actualizaciones parciales.
+    """
 
     i18n_fields = {
         "nombre": NAME,
@@ -213,8 +280,8 @@ class EditUserForm(LocalizedFlaskForm):
             "Length": "validation.max_length_255",
         },
         "new_password": {
-            "Length": MIN_LENGTH_PASSWORD,
-            "PasswordSecurity": VALIDATE_PASSWORD_SECURITY,
+            "Length": MIN_LENGTH_PASSWRD,
+            "PasswordSecurity": VALIDATE_PASSWRD_SECURITY,
         },
     }
 
@@ -225,7 +292,12 @@ class EditUserForm(LocalizedFlaskForm):
 
 
 class RAGQueryForm(LocalizedFlaskForm):
-    """Formulario para enviar preguntas al sistema RAG."""
+    """
+    Formulario para enviar preguntas al sistema RAG.
+
+    Gestiona las consultas de usuarios al sistema de Retrieval-Augmented
+    Generation, con límite de longitud para optimizar el procesamiento.
+    """
 
     i18n_fields = {
         "question": "rag.question_label",
@@ -246,7 +318,12 @@ class RAGQueryForm(LocalizedFlaskForm):
 
 
 class ForgotPasswordForm(LocalizedFlaskForm):
-    """Formulario para solicitar un enlace de recuperación de contraseña."""
+    """
+    Formulario para solicitar un enlace de recuperación de contraseña.
+
+    Inicia el proceso de recuperación de contraseña enviando un email
+    con un token de restablecimiento al usuario.
+    """
 
     i18n_fields = {
         "email": EMAIL,
@@ -264,7 +341,12 @@ class ForgotPasswordForm(LocalizedFlaskForm):
 
 
 class ResetPasswordForm(LocalizedFlaskForm):
-    """Formulario para guardar una nueva contraseña tras validar el token."""
+    """
+    Formulario para guardar una nueva contraseña tras validar el token.
+
+    Completa el proceso de recuperación de contraseña permitiendo al usuario
+    establecer una nueva contraseña segura tras verificar el token enviado por email.
+    """
 
     i18n_fields = {
         "password": "auth.new_password",
@@ -274,8 +356,8 @@ class ResetPasswordForm(LocalizedFlaskForm):
     i18n_validator_messages = {
         "password": {
             "DataRequired": VALIDATION_REQUIRED,
-            "Length": MIN_LENGTH_PASSWORD,
-            "PasswordSecurity": VALIDATE_PASSWORD_SECURITY,
+            "Length": MIN_LENGTH_PASSWRD,
+            "PasswordSecurity": VALIDATE_PASSWRD_SECURITY,
         },
         "confirm_password": {
             "DataRequired": VALIDATION_REQUIRED,

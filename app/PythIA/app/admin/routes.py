@@ -1,6 +1,6 @@
 """
 Autora: Lydia Blanco Ruiz
-Script para las rutas de administracion, incluyendo gestion de usuarios, documentos y procesos en segundo plano con estado y cancelacion.
+Script para las rutas de administración, incluyendo gestión de usuarios, documentos y procesos en segundo plano con estado y cancelación.
 """
 
 from datetime import datetime
@@ -10,19 +10,23 @@ import subprocess
 import sys
 from zoneinfo import ZoneInfo
 
-from flask import Response, abort, current_app, jsonify, redirect, render_template, request, send_file, url_for
+from flask import Response, abort, current_app, flash, jsonify, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 
 from . import admin_bp
 from ..decorators import admin_required
-from ..documentos import DocumentosService, Documento, JobCancelledError
+from ..documentos import DocumentosService, JobCancelledError
+from ..entities.documento import Documento
+from ..entities.markdown_conversion_state import MarkdownConversionState
+from ..entities.user import User
+from ..entities.vector_update_state import VectorUpdateState
+from ..entities.web_scraping_state import WebScrapingSate
 from ..extensions import db
-from ..forms import AdminCreateUserForm
-from ..markdown_conversion_state import MarkdownConversionState, send_markdown_finished_email
+from ..forms import AdminCreateUserForm, EmptyForm, PdfUploadForm
+from ..markdown_conversion_state import send_markdown_finished_email
 from ..rag.PrototipoRAG import index_pliegos_dir, qdrant_delete_by_filename
-from ..usuario import User
-from ..vector_update_state import VectorUpdateState, send_update_finished_email
-from ..web_scraping_state import WebScrapingSate, send_scraping_finished_email
+from ..vector_update_state import send_update_finished_email
+from ..web_scraping_state import send_scraping_finished_email
 from app.async_tasks import executor, markdown_executor
 from ..inetrnacionalizacion.tarduccion import get_locale, localize_runtime_message, t, translate_for
 
@@ -192,6 +196,16 @@ def _send_email_safe(send_fn, log_message: str, **kwargs) -> None:
         current_app.logger.exception(log_message)
 
 
+def _validate_post_action(*, json_response: bool = False):
+    """Valida el CSRF de acciones POST sin campos propios."""
+    form = EmptyForm()
+    if form.validate_on_submit():
+        return None
+    if json_response:
+        return jsonify({"error": t("errors.bad_request_message")}), 400
+    abort(400)
+
+
 @admin_bp.route("/users")
 @login_required
 @admin_required
@@ -217,6 +231,7 @@ def change_type(user_id):
     Returns:
         Una redireccion al listado de usuarios.
     """
+    _validate_post_action()
     user = User.get_by_id(user_id)
     if not user:
         abort(404)
@@ -240,6 +255,7 @@ def delete_user(user_id):
     Returns:
         Una redireccion al listado de usuarios.
     """
+    _validate_post_action()
     user = User.get_by_id(user_id)
     if not user:
         abort(404)
@@ -340,11 +356,18 @@ def upload_documents():
     Returns:
         Una redireccion a la pagina de documentos.
     """
-    files = request.files.getlist("files")
+    form = PdfUploadForm()
+    if not form.validate_on_submit():
+        flash(t("errors.bad_request_message"), "warning")
+        return redirect(url_for(DOCUMENTS))
+
+    files = form.files.data
     if not files:
         return redirect(url_for(DOCUMENTS))
 
-    documentos_service().save_uploads(files)
+    saved = documentos_service().save_uploads(files)
+    if saved == 0:
+        flash("No se ha subido ningun PDF valido.", "warning")
     return redirect(url_for(DOCUMENTS))
 
 
@@ -357,6 +380,10 @@ def convert_documents_to_markdown():
     Returns:
         Una respuesta JSON con el identificador del job creado.
     """
+    invalid = _validate_post_action(json_response=True)
+    if invalid:
+        return invalid
+
     lang = get_locale()
     job = MarkdownConversionState(
         status="queued",
@@ -386,6 +413,10 @@ def cancel_markdown_conversion(job_id: int):
     Returns:
         Una respuesta JSON con el estado actualizado del job.
     """
+    invalid = _validate_post_action(json_response=True)
+    if invalid:
+        return invalid
+
     job = MarkdownConversionState.query.get_or_404(job_id)
 
     if job.status in {"done", "failed", "cancelled"}:
@@ -702,6 +733,10 @@ def update_vector_db():
     Returns:
         Una respuesta JSON con el identificador del job creado.
     """
+    invalid = _validate_post_action(json_response=True)
+    if invalid:
+        return invalid
+
     lang = get_locale()
     job = VectorUpdateState(
         status="queued",
@@ -731,6 +766,10 @@ def cancel_vector_db(job_id: int):
     Returns:
         Una respuesta JSON con el estado actualizado del job.
     """
+    invalid = _validate_post_action(json_response=True)
+    if invalid:
+        return invalid
+
     job = VectorUpdateState.query.get_or_404(job_id)
 
     if job.status in {"done", "failed", "cancelled"}:
@@ -921,6 +960,7 @@ def documents_list_page():
         page=pagination.page,
         total_pages=pagination.pages or 1,
         total_docs=pagination.total,
+        upload_form=PdfUploadForm(),
     )
 
 
@@ -936,6 +976,7 @@ def delete_document(doc_id: int):
     Returns:
         Una redireccion a la pagina de documentos.
     """
+    _validate_post_action()
     try:
         documentos_service().delete_document(doc_id)
     except Exception:
@@ -1010,6 +1051,10 @@ def web_scraping_documents():
     Returns:
         Una respuesta JSON con el identificador del job creado.
     """
+    invalid = _validate_post_action(json_response=True)
+    if invalid:
+        return invalid
+
     lang = get_locale()
     job = WebScrapingSate(
         status="queued",
@@ -1039,6 +1084,10 @@ def cancel_web_scraping(job_id: int):
     Returns:
         Una respuesta JSON con el estado actualizado del job.
     """
+    invalid = _validate_post_action(json_response=True)
+    if invalid:
+        return invalid
+
     job = WebScrapingSate.query.get_or_404(job_id)
 
     if job.status in {"done", "failed", "cancelled"}:
@@ -1110,6 +1159,42 @@ def _build_scraping_context() -> tuple[Path, Path, Path, Path, Path, dict[str, s
     return base_pliegos, scraper_dir, script_1, script_2, root, env
 
 
+def _execute_subprocess_with_cancellation(script_path: Path, cwd: Path, env: dict[str, str], should_cancel, lang: str) -> None:
+    """Ejecuta un subprocess con soporte de cancelacion.
+
+    Args:
+        script_path: Ruta del script que se va a ejecutar.
+        cwd: Directorio de trabajo del proceso.
+        env: Variables de entorno del proceso hijo.
+        should_cancel: Callback que indica si el job debe cancelarse.
+        lang: Codigo de idioma activo.
+
+    Returns:
+        None.
+    """
+    proc = subprocess.Popen([sys.executable, str(script_path)], cwd=str(cwd), env=env)
+    while True:
+        if should_cancel():
+            proc.terminate()
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+            raise JobCancelledError(_scraping_cancel_message(lang))
+
+        code = proc.poll()
+        if code is not None:
+            if code != 0:
+                raise subprocess.CalledProcessError(code, [sys.executable, str(script_path)])
+            return
+
+        try:
+            proc.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            continue
+
+
 def _run_scraping_script(job, script_path: Path, cwd: Path, env: dict[str, str], should_cancel, lang: str, *, progress: int | None = None, message: str | None = None) -> None:
     """Ejecuta un script de scraping con soporte de cancelacion.
 
@@ -1135,27 +1220,7 @@ def _run_scraping_script(job, script_path: Path, cwd: Path, env: dict[str, str],
         _set_job_message(job, message)
     db.session.commit()
 
-    proc = subprocess.Popen([sys.executable, str(script_path)], cwd=str(cwd), env=env)
-    while True:
-        if should_cancel():
-            proc.terminate()
-            try:
-                proc.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                proc.wait()
-            raise JobCancelledError(_scraping_cancel_message(lang))
-
-        code = proc.poll()
-        if code is not None:
-            if code != 0:
-                raise subprocess.CalledProcessError(code, [sys.executable, str(script_path)])
-            return
-
-        try:
-            proc.wait(timeout=1)
-        except subprocess.TimeoutExpired:
-            continue
+    _execute_subprocess_with_cancellation(script_path, cwd, env, should_cancel, lang)
 
 
 def _sync_scraping_results(job, base_pliegos: Path, lang: str, should_cancel) -> tuple[int, int]:

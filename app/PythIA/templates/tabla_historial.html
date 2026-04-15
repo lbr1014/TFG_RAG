@@ -56,6 +56,7 @@
                         method="POST"
                         action="{{ url_for(delete_url_endpoint, consulta_id=c.id) }}"
                         class="d-inline">
+                    {{ post_form.hidden_tag() }}
                     <button type="button"
                             class="btn btn-sm btn-danger"
                             data-bs-toggle="modal"

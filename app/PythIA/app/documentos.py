@@ -1,7 +1,8 @@
-﻿"""
-Autora: Lydia Blanco Ruiz
-Script para gestionar documentos PDF, su conversión a Markdown, y su indexación en la base de datos vectorial para RAG.
 """
+Autora: Lydia Blanco Ruiz
+Script para gestionar documentos PDF, su sincronización, conversión a Markdown e indexación en la base de datos vectorial.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -14,9 +15,10 @@ from zoneinfo import ZoneInfo
 
 from werkzeug.utils import secure_filename
 
-from .chunk import Chunk
-from .consultaChunk import ConsultaChunk
-from .embedding import Embedding
+from .entities.chunk import Chunk
+from .entities.consulta_chunk import ConsultaChunk
+from .entities.documento import Documento
+from .entities.embedding import Embedding
 from .extensions import db
 
 ALLOWED_EXT = {".pdf"}
@@ -28,35 +30,6 @@ class JobCancelledError(RuntimeError):
     """Excepción lanzada cuando un proceso largo se cancela manualmente."""
 
     pass
-
-
-class Documento(db.Model):
-    """Modelo de persistencia para los documentos gestionados por la aplicacion."""
-
-    __tablename__ = "documents"
-
-    id = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(255), nullable=False, index=True)
-    path = db.Column(db.String(500), unique=True, nullable=False)
-    size_bytes = db.Column(db.Integer, nullable=False)
-    modified_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
-    chunks = db.Column(db.Integer, nullable=False, default=0)
-    hash = db.Column(db.String(100), nullable=False, index=True)
-    status = db.Column(db.String(25), nullable=False, default="cargado", index=True)
-    markdown_content = db.Column(db.Text, nullable=True)
-    error_message = db.Column(db.Text, nullable=True)
-    numero_expediente = db.Column(db.String(255), nullable=True, index=True)
-    tipo_documento = db.Column(db.String(30), nullable=True, index=True)
-
-    def __init__(self, **kwargs):
-        """Inicializa un documento y asegura la fecha de modificación.
-
-        Args:
-            **kwargs: Valores iniciales del modelo SQLAlchemy.
-        """
-        super().__init__(**kwargs)
-        if not self.modified_at:
-            self.modified_at = datetime.now(MADRID_TZ)
 
 
 def sha256_file(path: Path) -> str:
@@ -166,8 +139,35 @@ class DocumentosService:
         if not safe:
             raise ValueError("Nombre de archivo invalido")
         if Path(safe).suffix.lower() not in ALLOWED_EXT:
-            raise ValueError("Extension no permitida")
+            raise ValueError("Extensión no permitida")
         return self.docs_dir / safe
+
+    def _is_pdf_upload(self, file_storage) -> bool:
+        """Comprueba extensión y firma del archivo subido sin consumir el stream.
+
+        Args:
+            file_storage: Archivo recibido desde un formulario Flask-WTF.
+
+        Returns:
+            ``True`` si el nombre termina en ``.pdf`` y el contenido empieza
+            con la firma ``%PDF-``.
+        """
+        filename = self.filename(getattr(file_storage, "filename", ""))
+        if not filename or Path(filename).suffix.lower() not in ALLOWED_EXT:
+            return False
+
+        stream = getattr(file_storage, "stream", None)
+        if stream is None:
+            return False
+
+        if not hasattr(stream, "seekable") or not stream.seekable():
+            return False
+
+        position = stream.tell()
+        header = stream.read(5)
+        stream.seek(position)
+
+        return header == b"%PDF-"
 
     def list_documents_paginated(self, page: int, per_page: int):
         """Obtiene documentos paginados ordenados por fecha de modificación.
@@ -220,28 +220,30 @@ class DocumentosService:
             docs = Documento.query.all()
         return sum(1 for doc in docs if not self.has_markdown(doc))
 
-    def save_uploads(self, files: Iterable) -> None:
+    def save_uploads(self, files: Iterable) -> int:
         """Guarda en disco los archivos subidos y actualiza la base de datos.
 
         Args:
             files: Coleccion de archivos recibidos en una subida.
 
         Returns:
-            None.
+            El número de PDFs guardados.
         """
+        saved = 0
         for f in files:
             if not f or not f.filename:
                 continue
 
-            nombre = self.filename(f.filename)
-            if not nombre.lower().endswith(".pdf"):
+            if not self._is_pdf_upload(f):
                 continue
 
-            dest = self.docs_dir / nombre
+            dest = self.resolve_pdf_path(f.filename)
             f.save(dest)
             self._upsert_from_path(dest, status="cargado")
+            saved += 1
 
         db.session.commit()
+        return saved
 
     def sync_from_folder(self) -> None:
         """Sincroniza la base de datos con los PDFs existentes en disco.
@@ -711,8 +713,8 @@ def update_sql(doc, vector_docs) -> None:
     Returns:
         None.
     """
-    from .chunk import Chunk
-    from .embedding import Embedding
+    from .entities.chunk import Chunk
+    from .entities.embedding import Embedding
     from .extensions import db
     from .rag.PrototipoRAG import embedding_model
 

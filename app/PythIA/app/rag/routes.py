@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script para las rutas de consulta RAG, seguimiento de estado y cancelación de consultas.
+"""
+
 import asyncio
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -6,9 +11,9 @@ from flask import Blueprint, abort, current_app, jsonify, render_template, reque
 from flask_login import current_user, login_required
 
 from app.async_tasks import executor
+from app.entities.rag_query_state import RAGQueryState
 from app.extensions import db
-from app.forms import RAGQueryForm
-from app.rag_query_state import RAGQueryState
+from app.forms import EmptyForm, RAGQueryForm
 
 from app.rag.PrototipoRAG import QueryCancelledError
 from app.rag.service import rag_answer, validate_question
@@ -20,11 +25,27 @@ rag_bp = Blueprint("rag", __name__, url_prefix="/rag")
 @rag_bp.get("/")
 @login_required
 def rag_page():
+    """Muestra la página de consulta RAG.
+
+    Returns:
+        Respuesta HTML con el formulario de consulta.
+    """
     form = RAGQueryForm()
     return render_template("rag.html", form=form)
 
 
 def get_user_job_or_404(job_id: int) -> RAGQueryState:
+    """Obtiene una consulta asíncrona del usuario actual o aborta.
+
+    Args:
+        job_id: Identificador de la consulta asíncrona.
+
+    Returns:
+        Estado de la consulta RAG perteneciente al usuario autenticado.
+
+    Raises:
+        werkzeug.exceptions.NotFound: Si no existe o no pertenece al usuario.
+    """
     job = RAGQueryState.query.filter_by(id=job_id, user_id=int(current_user.id)).first()
     if not job:
         abort(404)
@@ -34,7 +55,16 @@ def get_user_job_or_404(job_id: int) -> RAGQueryState:
 @rag_bp.post("/ask")
 @login_required
 def rag_ask():
-    question = (request.form.get("question") or "").strip()
+    """Crea o reutiliza una consulta RAG asíncrona.
+
+    Returns:
+        Respuesta JSON con el identificador del trabajo creado o reutilizado.
+    """
+    form = RAGQueryForm()
+    if not form.validate_on_submit():
+        return jsonify({"error": t("rag.invalid_question")}), 400
+
+    question = (form.question.data or "").strip()
     current_lang = get_locale()
     invalid = validate_question(question, lang=current_lang)
     if invalid:
@@ -73,6 +103,14 @@ def rag_ask():
 @rag_bp.get("/status/<int:job_id>")
 @login_required
 def rag_status(job_id: int):
+    """Devuelve el estado de una consulta RAG.
+
+    Args:
+        job_id: Identificador de la consulta asíncrona.
+
+    Returns:
+        Respuesta JSON con estado, mensaje, error y resultado.
+    """
     job = get_user_job_or_404(job_id)
     return jsonify(
         {
@@ -88,6 +126,18 @@ def rag_status(job_id: int):
 @rag_bp.post("/cancel/<int:job_id>")
 @login_required
 def rag_cancel(job_id: int):
+    """Solicita la cancelación de una consulta RAG.
+
+    Args:
+        job_id: Identificador de la consulta asíncrona.
+
+    Returns:
+        Respuesta JSON con el estado actualizado.
+    """
+    form = EmptyForm()
+    if not form.validate_on_submit():
+        return jsonify({"error": t("errors.bad_request_message")}), 400
+
     job = get_user_job_or_404(job_id)
 
     if job.status in {"done", "failed", "cancelled"}:
@@ -105,6 +155,14 @@ def rag_cancel(job_id: int):
 
 
 def run_rag_query_async(app, job_id: int, user_id: int, lang: str = "es") -> None:
+    """Ejecuta una consulta RAG dentro de un contexto de aplicación.
+
+    Args:
+        app: Aplicación Flask usada para abrir el contexto.
+        job_id: Identificador de la consulta asíncrona.
+        user_id: Identificador del usuario propietario.
+        lang: Idioma usado para mensajes de estado.
+    """
     zone_now = datetime.now(ZoneInfo("Europe/Madrid"))
 
     with app.app_context():

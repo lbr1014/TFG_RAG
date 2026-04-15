@@ -1,6 +1,6 @@
 """
 Autora: Lydia Blanco Ruiz
-Script para construir apliación Flask de RAG con autenticación, gestión de documentos y consultas.
+Script para crear y configurar la aplicación Flask principal, incluyendo extensiones, configuración, blueprints y manejadores globales.
 """
 
 import os
@@ -8,16 +8,11 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, request, url_for
 
-from .consulta import Consulta
-from .documentos import Documento, DocumentosService
+from .documentos import DocumentosService
 from .error_handling import register_error_handlers
-from .extensions import db, login_manager, mail, migrate
+from .entities import Consulta, Documento, MarkdownConversionState, RAGQueryState, User, VectorUpdateState, WebScrapingSate
+from .extensions import csrf, db, login_manager, mail, migrate
 from .inetrnacionalizacion.tarduccion import init_app as init_i18n, t
-from .markdown_conversion_state import MarkdownConversionState
-from .rag_query_state import RAGQueryState
-from .usuario import User
-from .vector_update_state import VectorUpdateState
-from .web_scraping_state import WebScrapingSate
 
 
 def _get_required_env(var_name: str) -> str:
@@ -86,6 +81,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["DOCS_DIR"] = os.environ.get("DOCS_DIR", "pliegos")
+    app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", str(50 * 1024 * 1024)))
 
     # Flask Mail
     app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "")
@@ -100,6 +96,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     mail.init_app(app)
+    csrf.init_app(app)
     init_i18n(app)
 
     login_manager.init_app(app)
@@ -127,6 +124,17 @@ def create_app():
             La instancia del usuario asociada al identificador.
         """
         return User.get_by_id(int(user_id))
+
+    @app.context_processor
+    def _inject_post_forms():
+        """Expone formularios CSRF para acciones POST simples en plantillas."""
+        from .forms import EmptyForm, LanguageForm
+
+        return {
+            "post_form": EmptyForm(),
+            "logout_form": EmptyForm(),
+            "language_form": LanguageForm(),
+        }
 
     # register blueprints
     from .main.routes import main_bp

@@ -1,36 +1,14 @@
-from __future__ import annotations
+"""
+Autora: Lydia Blanco Ruiz
+Script para enviar notificaciones por correo al finalizar procesos de actualización vectorial.
+"""
 
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from __future__ import annotations
 
 from flask import current_app
 from flask_mail import Message
 
-from app.extensions import db, mail
-
-
-class VectorUpdateState(db.Model):
-    __tablename__ = "vector_update_state"
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    status = db.Column(db.String(20), nullable=False, default="queued", index=True)
-    # queued | running | done | failed
-
-    progress = db.Column(db.Integer, nullable=False, default=0) 
-    current_doc = db.Column(db.String(255), nullable=True)
-    cancel_requested = db.Column(db.Boolean, nullable=False, default=False, index=True)
-
-    error = db.Column(db.Text, nullable=True)
-
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
-    started_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
-    finished_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if not self.created_at:
-            self.created_at = datetime.now(ZoneInfo("Europe/Madrid"))
+from app.extensions import mail
 
 
 def send_update_finished_email(
@@ -42,6 +20,17 @@ def send_update_finished_email(
     indexed_docs: int | None = None,
     failed_docs: int | None = None,
 ):
+    """Envía el correo de fin de actualización vectorial.
+
+    Args:
+        to_email: Destinatario del correo.
+        ok: Indica si el proceso terminó correctamente.
+        message: Mensaje principal del correo.
+        job_id: Identificador del proceso.
+        docs_url: URL de la página de documentos.
+        indexed_docs: Número de documentos indexados.
+        failed_docs: Número de documentos con error.
+    """
     subject = (
         "Actualización base de datos vectorial finalizada"
         if ok
@@ -58,15 +47,18 @@ def send_update_finished_email(
         details.append(f"Documentos indexados: {indexed_docs}")
     if failed_docs is not None:
         details.append(f"Documentos con error: {failed_docs}")
-    details_block = "\n".join(details) if details else "Sin metricas disponibles."
+    details_block = "\n".join(details) if details else "Sin métricas disponibles."
 
     body = (
         f"Hola,\n\n"
         f"{message}\n\n"
         f"Job ID: {job_id}\n"
         f"{details_block}\n\n"
-        f"Puedes revisar los documentos aqui:\n"
+        f"Puedes revisar los documentos aquí:\n"
         f"{resolved_docs_url}\n"
     )
     msg = Message(subject=subject, recipients=[to_email], body=body)
     mail.send(msg)
+
+
+__all__ = ["send_update_finished_email"]

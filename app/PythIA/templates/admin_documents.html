@@ -34,19 +34,18 @@
               action="{{ url_for('admin.upload_documents') }}"
               enctype="multipart/form-data"
               class="upload-panel upload-panel-compact text-start mx-auto mt-4">
+          {{ upload_form.hidden_tag() }}
 
           <div class="upload-dropzone mb-4">
-            <label for="files" class="form-label fw-semibold mb-2">{{ t("docs.upload_label") }}</label>
+            <label for="files" class="form-label fw-semibold mb-2">{{ upload_form.files.label.text }}</label>
 
-            <input
-              id="files"
-              name="files"
-              type="file"
-              class="form-control form-control-lg upload-input"
-              accept="application/pdf"
-              multiple
-              required
-            >
+            {{ upload_form.files(
+              id="files",
+              class="form-control form-control-lg upload-input",
+              accept="application/pdf",
+              multiple=True,
+              required=True
+            ) }}
 
             <div class="form-text mt-2">{{ t("docs.upload_help") }}</div>
 
@@ -77,9 +76,15 @@
           </div>
         </form>
 
-        <form id="scrapingForm" method="POST" action="{{ url_for('admin.web_scraping_documents') }}" class="d-none"></form>
-        <form id="vectorForm" method="POST" action="{{ url_for('admin.update_vector_db') }}" class="d-none"></form>
-        <form id="markdownForm" method="POST" action="{{ url_for('admin.convert_documents_to_markdown') }}" class="d-none"></form>
+        <form id="scrapingForm" method="POST" action="{{ url_for('admin.web_scraping_documents') }}" class="d-none">
+          {{ post_form.hidden_tag() }}
+        </form>
+        <form id="vectorForm" method="POST" action="{{ url_for('admin.update_vector_db') }}" class="d-none">
+          {{ post_form.hidden_tag() }}
+        </form>
+        <form id="markdownForm" method="POST" action="{{ url_for('admin.convert_documents_to_markdown') }}" class="d-none">
+          {{ post_form.hidden_tag() }}
+        </form>
 
         <div id="scraping-progress" data-finished="false" class="mt-4 d-none">
           <div class="progress upload-progress" role="progressbar" aria-label="{{ t('docs.progress_aria') }}">
@@ -193,6 +198,7 @@
                               method="POST"
                               action="{{ url_for('admin.delete_document', doc_id=d.id) }}"
                               class="d-inline">
+                          {{ post_form.hidden_tag() }}
                           <button type="button"
                                   class="btn btn-sm btn-danger"
                                   data-bs-toggle="modal"

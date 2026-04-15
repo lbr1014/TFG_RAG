@@ -1,36 +1,14 @@
-from __future__ import annotations
+"""
+Autora: Lydia Blanco Ruiz
+Script para enviar notificaciones por correo al finalizar procesos de web scraping.
+"""
 
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from __future__ import annotations
 
 from flask import current_app
 from flask_mail import Message
 
-from app.extensions import db, mail
-
-
-class WebScrapingSate(db.Model):
-    __tablename__ = "web_scraping_sate"
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    status = db.Column(db.String(20), nullable=False, default="queued", index=True)
-    # queued | running | done | failed
-
-    progress = db.Column(db.Integer, nullable=False, default=0)
-    message = db.Column(db.String(255), nullable=True)
-    cancel_requested = db.Column(db.Boolean, nullable=False, default=False, index=True)
-
-    error = db.Column(db.Text, nullable=True)
-
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
-    started_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
-    finished_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if not self.created_at:
-            self.created_at = datetime.now(ZoneInfo("Europe/Madrid"))
+from app.extensions import mail
 
 
 def send_scraping_finished_email(
@@ -42,6 +20,18 @@ def send_scraping_finished_email(
     extracted_docs: int | None = None,
     synced_total_docs: int | None = None,
 ):
+    """Envía el correo de fin de web scraping.
+
+    Args:
+        to_email: Destinatario del correo.
+        ok: Indica si el proceso terminó correctamente.
+        message: Mensaje principal del correo.
+        job_id: Identificador del proceso.
+        docs_url: URL de la página de documentos.
+        extracted_docs: Número de documentos extraídos.
+        synced_total_docs: Total de documentos sincronizados después del
+            proceso.
+    """
     subject = "Web scraping finalizado" if ok else "Web scraping fallido"
 
     base_url = current_app.config.get("FRONTEND_BASE_URL", "").rstrip("/")
@@ -51,7 +41,7 @@ def send_scraping_finished_email(
 
     details = []
     if extracted_docs is not None:
-        details.append(f"Documentos extraidos del scraping: {extracted_docs}")
+        details.append(f"Documentos extraídos del scraping: {extracted_docs}")
     if synced_total_docs is not None:
         details.append(f"Documentos sincronizados tras el proceso: {synced_total_docs}")
     details_block = "\n".join(details) if details else "Sin métricas disponibles."
@@ -61,9 +51,12 @@ def send_scraping_finished_email(
         f"{message}\n\n"
         f"Job ID: {job_id}\n"
         f"{details_block}\n\n"
-        f"Puedes revisar los documentos aqui:\n"
+        f"Puedes revisar los documentos aquí:\n"
         f"{resolved_docs_url}\n"
     )
 
     msg = Message(subject=subject, recipients=[to_email], body=body)
     mail.send(msg)
+
+
+__all__ = ["send_scraping_finished_email"]

@@ -1,20 +1,50 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script para las rutas de autenticación, registro, cierre de sesión y recuperación de contraseña.
+"""
+
 from flask import render_template, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from . import auth_bp
-from ..forms import LoginForm, SignupForm, ForgotPasswordForm, ResetPasswordForm
-from ..usuario import User
+from ..entities.user import User
+from ..forms import EmptyForm, LoginForm, SignupForm, ForgotPasswordForm, ResetPasswordForm
 from ..extensions import db, mail
 from ..inetrnacionalizacion.tarduccion import t
 
+
 def _serializer() -> URLSafeTimedSerializer:
+    """Crea el serializador usado para tokens de recuperación.
+
+    Returns:
+        Serializador configurado con la clave secreta de Flask.
+    """
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="password-reset")
 
+
 def generate_reset_token(email: str) -> str:
+    """Genera un token firmado para recuperar una contraseña.
+
+    Args:
+        email: Correo electrónico asociado a la cuenta.
+
+    Returns:
+        Token firmado que puede enviarse por correo.
+    """
     return _serializer().dumps(email)
 
+
 def verify_reset_token(token: str, max_age_seconds: int = 3600) -> str | None:
+    """Valida un token de recuperación de contraseña.
+
+    Args:
+        token: Token recibido desde el enlace de recuperación.
+        max_age_seconds: Tiempo máximo de validez del token, en segundos.
+
+    Returns:
+        Correo electrónico contenido en el token o ``None`` si no es válido.
+    """
     try:
         return _serializer().loads(token, max_age=max_age_seconds)
     except Exception:
@@ -22,6 +52,11 @@ def verify_reset_token(token: str, max_age_seconds: int = 3600) -> str | None:
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    """Muestra y procesa el formulario de inicio de sesión.
+
+    Returns:
+        Respuesta HTML del formulario o redirección al área principal.
+    """
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -40,15 +75,29 @@ def login():
 
     return render_template("login.html", form=form)
 
-@auth_bp.route("/logout")
+@auth_bp.post("/logout")
 @login_required
 def logout():
+    """Cierra la sesión del usuario autenticado mediante POST con CSRF.
+
+    Returns:
+        Redirección a la página de inicio o al área principal si el CSRF no es
+        válido.
+    """
+    form = EmptyForm()
+    if not form.validate_on_submit():
+        return redirect(url_for("main.pag_principal"))
     logout_user()
     return redirect(url_for("main.inicio"))
 
 @auth_bp.route("/signup", methods=["GET", "POST"])
 @auth_bp.route("/singup", methods=["GET", "POST"])
 def singup():
+    """Muestra y procesa el formulario de registro.
+
+    Returns:
+        Respuesta HTML del formulario o redirección al área principal.
+    """
     form = SignupForm()
 
     if form.validate_on_submit():
@@ -74,6 +123,11 @@ def singup():
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
+    """Solicita el envío de un enlace de recuperación de contraseña.
+
+    Returns:
+        Respuesta HTML del formulario o redirección al login.
+    """
     form = ForgotPasswordForm()
 
     if form.validate_on_submit():
@@ -100,6 +154,14 @@ def forgot_password():
 
 @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token: str):
+    """Restablece la contraseña a partir de un token válido.
+
+    Args:
+        token: Token firmado incluido en el enlace de recuperación.
+
+    Returns:
+        Respuesta HTML del formulario o redirección al login.
+    """
     email = verify_reset_token(token, max_age_seconds=3600)  
     if not email:
         flash(t("auth.invalid_reset_link_expired"), "warning")
