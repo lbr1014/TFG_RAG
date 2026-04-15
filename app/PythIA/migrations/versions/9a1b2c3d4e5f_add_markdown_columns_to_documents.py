@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de migración de Alembic para evolucionar el esquema de la base de datos.
+"""
+
 """add markdown columns to documents
 
 Revision ID: 9a1b2c3d4e5f

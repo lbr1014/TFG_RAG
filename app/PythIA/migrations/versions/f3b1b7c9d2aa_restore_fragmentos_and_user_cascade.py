@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de migración de Alembic para evolucionar el esquema de la base de datos.
+"""
+
 """restore fragmentos and user cascade
 
 Revision ID: f3b1b7c9d2aa

@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de migración de Alembic para evolucionar el esquema de la base de datos.
+"""
+
 """add chunk and embedding metadata tables
 
 Revision ID: 30877695294e

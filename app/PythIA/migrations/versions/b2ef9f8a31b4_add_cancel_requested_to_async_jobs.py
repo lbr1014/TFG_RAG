@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de migración de Alembic para evolucionar el esquema de la base de datos.
+"""
+
 """add cancel requested to async jobs
 
 Revision ID: b2ef9f8a31b4

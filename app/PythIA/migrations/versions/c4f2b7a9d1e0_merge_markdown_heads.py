@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de migración de Alembic para evolucionar el esquema de la base de datos.
+"""
+
 """merge markdown migration heads
 
 Revision ID: c4f2b7a9d1e0

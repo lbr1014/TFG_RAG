@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de configuración del entorno de migraciones de Alembic.
+"""
+
 import logging
 from logging.config import fileConfig
 

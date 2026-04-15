@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script de migración de Alembic para evolucionar el esquema de la base de datos.
+"""
+
 """drop markdown file metadata from documents
 
 Revision ID: a7d9e4c2b1f0
