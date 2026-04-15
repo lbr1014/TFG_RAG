@@ -10,8 +10,10 @@ from unittest.mock import MagicMock, patch
 from tests.support import BaseAppTestCase
 
 from app.extensions import db
+from app.entities.markdown_conversion_state import MarkdownConversionState
 from app.entities.user import User
 from app.entities.vector_update_state import VectorUpdateState
+from app.entities.web_scraping_state import WebScrapingSate
 
 
 class AdminRoutesIntegrationTest(BaseAppTestCase):
@@ -84,3 +86,108 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(download_response.status_code, 200)
         self.assertEqual(download_response.data.decode("utf-8"), "# Markdown")
         self.assertIn('filename="pliego.md"', download_response.headers["Content-Disposition"])
+
+    def test_admin_can_create_user_from_admin_form(self):
+        response = self.client.post(
+            "/admin/users/add",
+            data={
+                "nombre": "Usuario creado",
+                "email": "creado@example.com",
+                "password": "Segura123",
+                "is_admin": "y",
+            },
+            follow_redirects=False,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        created = User.get_by_email("creado@example.com")
+        self.assertIsNotNone(created)
+        self.assertTrue(created.is_admin)
+
+    @patch("app.admin.routes.markdown_executor.submit")
+    def test_admin_markdown_convert_creates_queued_job(self, mock_submit):
+        response = self.client.post("/admin/documents/markdown/convert")
+
+        self.assertEqual(response.status_code, 202)
+        job = db.session.get(MarkdownConversionState, response.get_json()["job_id"])
+        self.assertIsNotNone(job)
+        self.assertEqual(job.status, "queued")
+        self.assertEqual(job.progress, 0)
+        mock_submit.assert_called_once()
+
+    def test_admin_markdown_status_and_cancel_queued_job(self):
+        job = MarkdownConversionState(status="queued", progress=10, message="En cola", cancel_requested=False)
+        db.session.add(job)
+        db.session.commit()
+
+        status = self.client.get(f"/admin/documents/markdown/status/{job.id}")
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["status"], "queued")
+
+        cancelled = self.client.post(f"/admin/documents/markdown/cancel/{job.id}")
+        self.assertEqual(cancelled.status_code, 202)
+        db.session.refresh(job)
+        self.assertTrue(job.cancel_requested)
+        self.assertEqual(job.status, "cancelled")
+
+    def test_admin_vector_status_and_cancel_queued_job(self):
+        job = VectorUpdateState(status="queued", progress=5, current_doc="uno.pdf", cancel_requested=False)
+        db.session.add(job)
+        db.session.commit()
+
+        status = self.client.get(f"/admin/vector-db/status/{job.id}")
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["current_doc"], "uno.pdf")
+
+        cancelled = self.client.post(f"/admin/vector-db/cancel/{job.id}")
+        self.assertEqual(cancelled.status_code, 202)
+        db.session.refresh(job)
+        self.assertTrue(job.cancel_requested)
+        self.assertEqual(job.status, "cancelled")
+
+    @patch("app.admin.routes.executor.submit")
+    def test_admin_web_scraping_creates_queued_job(self, mock_submit):
+        response = self.client.post("/admin/documents/web_scraping")
+
+        self.assertEqual(response.status_code, 202)
+        job = db.session.get(WebScrapingSate, response.get_json()["job_id"])
+        self.assertIsNotNone(job)
+        self.assertEqual(job.status, "queued")
+        mock_submit.assert_called_once()
+
+    def test_admin_web_scraping_status_and_cancel_queued_job(self):
+        job = WebScrapingSate(status="queued", progress=20, message="En cola", cancel_requested=False)
+        db.session.add(job)
+        db.session.commit()
+
+        status = self.client.get(f"/admin/documents/web_scraping/status/{job.id}")
+        self.assertEqual(status.status_code, 200)
+        self.assertEqual(status.get_json()["progress"], 20)
+
+        cancelled = self.client.post(f"/admin/documents/web_scraping/cancel/{job.id}")
+        self.assertEqual(cancelled.status_code, 202)
+        db.session.refresh(job)
+        self.assertTrue(job.cancel_requested)
+        self.assertEqual(job.status, "cancelled")
+
+    def test_admin_delete_document_delegates_to_service(self):
+        fake_service = MagicMock()
+
+        with patch("app.admin.routes.documentos_service", return_value=fake_service):
+            response = self.client.post("/admin/documents/123/delete", follow_redirects=False)
+
+        self.assertEqual(response.status_code, 302)
+        fake_service.delete_document.assert_called_once_with(123)
+
+    def test_admin_can_view_and_download_pdf_from_document_row(self):
+        doc = self.create_document(nombre="pliego-original.pdf")
+
+        view_response = self.client.get(f"/admin/documents/{doc.id}/view")
+        download_response = self.client.get(f"/admin/documents/{doc.id}/download")
+
+        self.assertEqual(view_response.status_code, 200)
+        self.assertEqual(view_response.mimetype, "application/pdf")
+        self.assertEqual(download_response.status_code, 200)
+        self.assertIn("pliego-original.pdf", download_response.headers["Content-Disposition"])
+        view_response.close()
+        download_response.close()
