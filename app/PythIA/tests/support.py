@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con utilidades compartidas para crear la aplicación de pruebas y datos auxiliares.
+"""
+
 import os
 import shutil
 import sqlite3
@@ -67,12 +72,12 @@ def _install_rag_stub() -> None:
 _install_rag_stub()
 
 from app import create_app  # noqa: E402
-from app.chunk import Chunk  # noqa: E402
-from app.consulta import Consulta  # noqa: E402
-from app.consultaChunk import ConsultaChunk  # noqa: E402
-from app.documentos import Documento  # noqa: E402
+from app.entities.chunk import Chunk  # noqa: E402
+from app.entities.consulta import Consulta  # noqa: E402
+from app.entities.consulta_chunk import ConsultaChunk  # noqa: E402
+from app.entities.documento import Documento  # noqa: E402
+from app.entities.user import User  # noqa: E402
 from app.extensions import db  # noqa: E402
-from app.usuario import User  # noqa: E402
 
 
 @event.listens_for(Engine, "connect")

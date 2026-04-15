@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con pruebas de integración de las rutas de la aplicación.
+"""
+
 from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -5,8 +10,8 @@ from unittest.mock import MagicMock, patch
 from tests.support import BaseAppTestCase
 
 from app.extensions import db
-from app.usuario import User
-from app.vector_update_state import VectorUpdateState
+from app.entities.user import User
+from app.entities.vector_update_state import VectorUpdateState
 
 
 class AdminRoutesIntegrationTest(BaseAppTestCase):

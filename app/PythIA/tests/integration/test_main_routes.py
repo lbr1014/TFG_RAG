@@ -1,8 +1,13 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con pruebas de integración de las rutas de la aplicación.
+"""
+
 from unittest.mock import patch
 
 from tests.support import BaseAppTestCase
 
-from app.consulta import Consulta
+from app.entities.consulta import Consulta
 from app.extensions import db
 
 

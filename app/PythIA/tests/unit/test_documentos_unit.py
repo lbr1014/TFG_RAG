@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con pruebas unitarias de la aplicación.
+"""
+
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -6,7 +11,8 @@ from werkzeug.datastructures import FileStorage
 
 from tests.support import BaseAppTestCase
 
-from app.documentos import Documento, DocumentosService, infer_document_metadata_from_filename
+from app.documentos import DocumentosService, infer_document_metadata_from_filename
+from app.entities.documento import Documento
 from app.extensions import db
 
 

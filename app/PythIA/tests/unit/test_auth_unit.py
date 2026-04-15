@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con pruebas unitarias de la aplicación.
+"""
+
 from tests.support import BaseAppTestCase
 
 from app.auth.routes import generate_reset_token, verify_reset_token
