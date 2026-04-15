@@ -1,3 +1,8 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con pruebas unitarias de la aplicación.
+"""
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
