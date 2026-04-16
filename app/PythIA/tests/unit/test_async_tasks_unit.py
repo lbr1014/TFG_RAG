@@ -17,7 +17,7 @@ from app.rag.PrototipoRAG import QueryCancelledError
 from app.rag.routes import run_rag_query_async
 
 
-class AsyncJobsUnitTest(BaseAppTestCase):
+class AsyncTasksUnitTest(BaseAppTestCase):
     def _fresh(self, model, item_id):
         db.session.expire_all()
         return db.session.get(model, item_id)

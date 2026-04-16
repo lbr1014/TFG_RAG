@@ -8,7 +8,7 @@ from tests.support import BaseAppTestCase
 from app.auth.routes import generate_reset_token, verify_reset_token
 
 
-class AuthTokenUnitTest(BaseAppTestCase):
+class AuthRoutesUnitTest(BaseAppTestCase):
     def test_generate_and_verify_reset_token(self):
         with self.app.app_context():
             token = generate_reset_token("user@example.com")
