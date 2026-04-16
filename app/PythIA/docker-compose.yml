@@ -11,7 +11,7 @@ services:
       TZ: Europe/Madrid
       PGTZ: Europe/Madrid
     ports:
-      - "5432:5432"
+      - "${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -27,7 +27,7 @@ services:
     image: qdrant/qdrant:latest
     container_name: flask_qdrant
     expose:
-      - "6333"
+      - "${QDRANT_INTERNAL_PORT}"
     volumes:
       - qdrantdata:/qdrant/storage
     restart: unless-stopped
@@ -37,7 +37,7 @@ services:
     container_name: flask_ollama
     gpus: all
     ports:
-      - "11435:11434"
+      - "${OLLAMA_EXTERNAL_PORT}:${OLLAMA_INTERNAL_PORT}"
     volumes:
       - ollama:/root/.ollama
     environment:
@@ -56,7 +56,7 @@ services:
       ollama:
         condition: service_healthy
     environment:
-      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_HOST: ${OLLAMA_SERVICE_HOST}:${OLLAMA_INTERNAL_PORT}
     volumes:
       - ollama:/root/.ollama
     entrypoint: ["sh", "-lc"]
@@ -72,7 +72,7 @@ services:
       - .env
       - secret.env
     expose:
-      - "5000"
+      - "${WEB_INTERNAL_PORT}"
     depends_on:
       db:
         condition: service_healthy
@@ -81,13 +81,13 @@ services:
       qdrant:
         condition: service_started
     environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - QDRANT_URL=http://qdrant:6333
+      - OLLAMA_BASE_URL=${OLLAMA_SERVICE_HOST}:${OLLAMA_INTERNAL_PORT}
+      - QDRANT_URL=${QDRANT_SERVICE_HOST}:${QDRANT_INTERNAL_PORT}
       - RAG_MODEL_DEVICE=${RAG_MODEL_DEVICE:-cuda}
       - RAG_MAX_WORKERS=${RAG_MAX_WORKERS:-4}
-      - DOCS_DIR=/data/pliegos
+      - DOCS_DIR=${DOCS_DIR}
       - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --capture-output --log-level debug
-      - OLLAMA_NUM_GPU=-1
+      - OLLAMA_NUM_GPU=${OLLAMA_NUM_GPU}
 
 
     restart: unless-stopped
@@ -100,14 +100,19 @@ services:
   nginx:
     image: nginx:1.27-alpine
     container_name: flask_nginx
+    env_file:
+      - .env
     depends_on:
       - web
     ports:
-      - "8080:80"
-      - "443:443"
+      - "${NGINX_HTTP_EXTERNAL_PORT}:${NGINX_HTTP_INTERNAL_PORT}"
+      - "${NGINX_HTTPS_EXTERNAL_PORT}:${NGINX_HTTPS_INTERNAL_PORT}"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
       - ./nginx/certs:/etc/nginx/certs:ro
+    command: >
+      sh -c "envsubst '$$NGINX_HTTP_INTERNAL_PORT $$WEB_INTERNAL_PORT' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf
+      && nginx -g 'daemon off;'"
     restart: unless-stopped
 
   test:
@@ -122,6 +127,8 @@ services:
       - ./:/app
     environment:
       PYTHONPATH: /app
+      OLLAMA_BASE_URL: ${OLLAMA_SERVICE_HOST}:${OLLAMA_INTERNAL_PORT}
+      QDRANT_URL: ${QDRANT_SERVICE_HOST}:${QDRANT_INTERNAL_PORT}
       DATABASE_URL: "sqlite:///:memory:"
 
 

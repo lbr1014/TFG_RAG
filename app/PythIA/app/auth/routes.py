@@ -54,7 +54,8 @@ def verify_reset_token(token: str, max_age_seconds: int = 3600) -> str | None:
     except Exception:
         return None
 
-@auth_bp.route("/login", methods=["GET", "POST"])
+@auth_bp.get("/login")
+@auth_bp.post("/login")
 def login():
     """Muestra y procesa el formulario de inicio de sesión.
 
@@ -94,8 +95,8 @@ def logout():
     logout_user()
     return redirect(url_for("main.inicio"))
 
-@auth_bp.route("/signup", methods=["GET", "POST"])
-@auth_bp.route("/singup", methods=["GET", "POST"])
+@auth_bp.get("/signup")
+@auth_bp.post("/signup")
 def singup():
     """Muestra y procesa el formulario de registro.
 
@@ -125,7 +126,8 @@ def singup():
 
     return render_template("singup.html", form=form)
 
-@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+@auth_bp.get("/forgot-password")
+@auth_bp.post("/forgot-password")
 def forgot_password():
     """Solicita el envío de un enlace de recuperación de contraseña.
 
@@ -156,7 +158,8 @@ def forgot_password():
     return render_template("forgot_password.html", form=form)
 
 
-@auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
+@auth_bp.get("/reset-password/<token>")
+@auth_bp.post("/reset-password/<token>")
 def reset_password(token: str):
     """Restablece la contraseña a partir de un token válido.
 

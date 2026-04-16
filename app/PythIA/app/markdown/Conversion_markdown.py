@@ -55,7 +55,6 @@ Return only valid Markdown, no explanations.
 """
 
 MODEL_NAME = os.getenv("OCR_MODEL_NAME", "blaifa/Nanonets-OCR-s")
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434").rstrip("/")
 OLLAMA_CONNECT_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10"))
 OLLAMA_READ_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_READ_TIMEOUT_SECONDS", "300"))
 _ollama_num_gpu = os.getenv("OLLAMA_NUM_GPU")
@@ -78,6 +77,17 @@ OCR_RETRY_MAX_IMAGE_SIDES = [
 OCR_PAGE_FAILURE_MODE = os.getenv("OCR_PAGE_FAILURE_MODE", "placeholder").strip().lower()
 PDF_INFO_TIMEOUT_SECONDS = int(os.getenv("PDF_INFO_TIMEOUT_SECONDS", "30"))
 PDF_RENDER_TIMEOUT_SECONDS = int(os.getenv("PDF_RENDER_TIMEOUT_SECONDS", "120"))
+
+
+def _service_url_from_env(env_name: str, default_host: str) -> str:
+    value = os.getenv(env_name, default_host).strip().rstrip("/")
+    if "://" not in value:
+        scheme = os.getenv(f"{env_name}_SCHEME", "http").strip() or "http"
+        return f"{scheme}://{value}"
+    return value
+
+
+OLLAMA_BASE_URL = _service_url_from_env("OLLAMA_BASE_URL", "ollama:11434")
 
 
 class OllamaOCRException(RuntimeError):
@@ -375,21 +385,41 @@ def clean_index_dots(markdown: str) -> str:
         str: Contenido Markdown con las líneas de índice limpiadas.
     """
     cleaned_lines = []
-    pattern = re.compile(r"^(.*)(\.{3,})(\s*\d+.*)$")
 
     for line in markdown.splitlines():
         stripped = line.strip()
         if stripped and all(char == "." for char in stripped):
             continue
 
-        match = pattern.match(line)
-        if match:
-            left, _, right = match.groups()
-            cleaned_lines.append(f"{left.strip()} {right.strip()}")
-        else:
-            cleaned_lines.append(line)
+        cleaned_lines.append(_clean_index_dot_leader(line))
 
     return "\n".join(cleaned_lines)
+
+
+def _clean_index_dot_leader(line: str) -> str:
+    run_start = None
+    run_end = None
+    index = 0
+
+    while index < len(line):
+        if line[index] != ".":
+            index += 1
+            continue
+
+        start = index
+        while index < len(line) and line[index] == ".":
+            index += 1
+
+        if index - start >= 3 and line[index:].lstrip()[:1].isdigit():
+            run_start = start
+            run_end = index
+
+    if run_start is None or run_end is None:
+        return line
+
+    left = line[:run_start].strip()
+    right = line[run_end:].strip()
+    return f"{left} {right}".strip()
 
 
 def _should_skip_line(raw: str, stripped: str) -> bool:

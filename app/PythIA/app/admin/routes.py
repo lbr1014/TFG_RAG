@@ -219,7 +219,7 @@ def users():
     return render_template("users.html", users=users)
 
 
-@admin_bp.route("/users/<int:user_id>", methods=["POST"])
+@admin_bp.post("/users/<int:user_id>")
 @login_required
 @admin_required
 def change_type(user_id):
@@ -243,7 +243,7 @@ def change_type(user_id):
     return redirect(url_for(USERS))
 
 
-@admin_bp.route("/users/<int:user_id>/delete", methods=["POST"])
+@admin_bp.post("/users/<int:user_id>/delete")
 @login_required
 @admin_required
 def delete_user(user_id):
@@ -267,7 +267,8 @@ def delete_user(user_id):
     return redirect(url_for(USERS))
 
 
-@admin_bp.route("/users/add", methods=["GET", "POST"])
+@admin_bp.get("/users/add")
+@admin_bp.post("/users/add")
 @login_required
 @admin_required
 def create_user():

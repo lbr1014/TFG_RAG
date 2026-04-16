@@ -50,10 +50,19 @@ class OllamaTimeoutError(RuntimeError):
 QUERY_CANCELLED_MESSAGE = "Consulta cancelada por el usuario."
 
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
+def _service_url_from_env(env_name: str, default_host: str) -> str:
+    value = os.getenv(env_name, default_host).strip().rstrip("/")
+    if "://" not in value:
+        scheme = os.getenv(f"{env_name}_SCHEME", "http").strip() or "http"
+        return f"{scheme}://{value}"
+    return value
+
+
+OLLAMA_BASE_URL = _service_url_from_env("OLLAMA_BASE_URL", "127.0.0.1:11434")
 
 # Qdrant (Docker / remoto)
-QDRANT_URL = os.getenv("QDRANT_URL", "").strip()
+_qdrant_url = os.getenv("QDRANT_URL", "").strip()
+QDRANT_URL = _service_url_from_env("QDRANT_URL", "") if _qdrant_url else ""
 QDRANT_HOST = os.getenv("QDRANT_HOST", "qdrant").strip()
 QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
@@ -131,7 +140,7 @@ class Settings:
     USE_QDRANT_CLOUD: bool = False
     QDRANT_DATABASE_HOST: str = "localhost"
     QDRANT_DATABASE_PORT: int = 6333
-    QDRANT_CLOUD_URL: str = "http://localhost:6333"
+    QDRANT_CLOUD_URL: str = _service_url_from_env("QDRANT_CLOUD_URL", "localhost:6333")
     QDRANT_APIKEY: Optional[str] = None
 
 

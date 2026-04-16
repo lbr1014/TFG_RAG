@@ -2,12 +2,12 @@ events {}
 
 http {
   server {
-    listen 80;
+    listen ${NGINX_HTTP_INTERNAL_PORT};
 
     client_max_body_size 50m;
 
     location / {
-      proxy_pass http://web:5000;
+      proxy_pass http://web:${WEB_INTERNAL_PORT};
       proxy_http_version 1.1;
 
       proxy_set_header Host $host;

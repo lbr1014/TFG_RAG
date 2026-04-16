@@ -104,7 +104,8 @@ def pag_principal():
         total_consultas=total_consultas
     )
 
-@main_bp.route("/edit_user", methods=["GET", "POST"])
+@main_bp.get("/edit_user")
+@main_bp.post("/edit_user")
 @login_required
 def edit_user():
     """

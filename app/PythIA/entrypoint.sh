@@ -29,7 +29,11 @@ else:
 PY
 
 echo "Waiting for Qdrant..."
-QDRANT_URL_DEFAULT="${QDRANT_URL:-http://qdrant:6333}"
+QDRANT_URL_DEFAULT="${QDRANT_URL:-${QDRANT_SERVICE_HOST:-qdrant}:${QDRANT_INTERNAL_PORT:-6333}}"
+case "$QDRANT_URL_DEFAULT" in
+    *://*) ;;
+    *) QDRANT_URL_DEFAULT="${QDRANT_URL_SCHEME:-http}://${QDRANT_URL_DEFAULT}" ;;
+esac
 for i in $(seq 1 60); do
     if curl -fsS "${QDRANT_URL_DEFAULT%/}/readyz" >/dev/null 2>&1; then
         echo "Qdrant OK"
@@ -43,4 +47,4 @@ echo "Running migrations..."
 flask db upgrade
 
 echo "Starting server..."
-exec gunicorn -b 0.0.0.0:5000 -w 2 -k gthread --threads 4 --timeout 120 "run:app"
+exec gunicorn -b "0.0.0.0:${WEB_INTERNAL_PORT:-5000}" -w 2 -k gthread --threads 4 --timeout 120 "run:app"
