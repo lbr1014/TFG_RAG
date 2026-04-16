@@ -7,7 +7,6 @@ import asyncio
 import base64
 import logging
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -132,8 +131,8 @@ def _page_failure_markdown(page_number: int, total_pages: int, error: Exception)
     message = str(error).replace("\n", " ").strip()
     return (
         f"<!-- OCR failed on page {page_number}/{total_pages}: {message} -->\n\n"
-        f"> [OCR no disponible para la pagina {page_number}/{total_pages}. "
-        "La conversion continuo con el resto del documento.]"
+        f"> [OCR no disponible para la página {page_number}/{total_pages}. "
+        "La conversión continuó con el resto del documento.]"
     )
 
 
@@ -220,13 +219,13 @@ async def _post_ollama_chat_async(client: httpx.AsyncClient, payload: dict) -> d
     except httpx.HTTPStatusError as exc:
         details = _response_error_details(response)
         raise OllamaOCRException(
-            f"Ollama devolvio HTTP {response.status_code} para el modelo '{MODEL_NAME}': {details}"
+            f"Ollama devolvió HTTP {response.status_code} para el modelo '{MODEL_NAME}': {details}"
         ) from exc
 
     try:
         return response.json()
     except ValueError as exc:
-        raise OllamaOCRException("Ollama devolvio una respuesta no JSON en /api/chat.") from exc
+        raise OllamaOCRException("Ollama devolvió una respuesta no JSON en /api/chat.") from exc
 
 
 def get_pdf_page_count(pdf_path: Path) -> int:
@@ -246,13 +245,25 @@ def get_pdf_page_count(pdf_path: Path) -> int:
     info = pdfinfo_from_path(str(pdf_path), timeout=PDF_INFO_TIMEOUT_SECONDS)
     pages = int(info.get("Pages", 0))
     if pages <= 0:
-        raise RuntimeError(f"No se pudo determinar el numero de paginas de {pdf_path.name}.")
+        raise RuntimeError(f"No se pudo determinar el número de páginas de {pdf_path.name}.")
     return pages
 
 
 def pdf_page_to_image(pdf_path: Path, page_number: int, output_dir: Path, dpi: int = PDF_RENDER_DPI) -> Path:
     """
-    Convierte una sola página del PDF en PNG para evitar cargar el documento completo en memoria.
+    Convierte una sola página del PDF en una imagen PNG para evitar cargar el documento completo en memoria.
+
+    Args:
+        pdf_path: Ruta al archivo PDF.
+        page_number: Número de la página a convertir (1-indexed).
+        output_dir: Directorio donde guardar la imagen temporal.
+        dpi: Resolución en DPI para la conversión (por defecto PDF_RENDER_DPI).
+
+    Returns:
+        Path: Ruta al archivo PNG generado.
+
+    Raises:
+        RuntimeError: Si no se puede convertir la página.
     """
     images = convert_from_path(
         str(pdf_path),
@@ -264,7 +275,7 @@ def pdf_page_to_image(pdf_path: Path, page_number: int, output_dir: Path, dpi: i
         timeout=PDF_RENDER_TIMEOUT_SECONDS,
     )
     if not images:
-        raise RuntimeError(f"No se pudo convertir la pagina {page_number} de {pdf_path.name}.")
+        raise RuntimeError(f"No se pudo convertir la página {page_number} de {pdf_path.name}.")
 
     img_path = output_dir / f"{pdf_path.stem}_page_{page_number}.png"
     images[0].save(img_path, "PNG")
@@ -365,7 +376,7 @@ async def ocr_page_with_nanonets_async(
                 pass
 
     raise OllamaOCRException(
-        f"Fallo el OCR de la pagina {page_number}/{total_pages} con {image_path.name}: {last_error}"
+        f"Fallo el OCR de la página {page_number}/{total_pages} con {image_path.name}: {last_error}"
     ) from last_error
 
 
@@ -397,6 +408,17 @@ def clean_index_dots(markdown: str) -> str:
 
 
 def _clean_index_dot_leader(line: str) -> str:
+    """
+    Limpia una línea de índice eliminando los puntos separadores entre el título y el número de página.
+
+    Busca secuencias de al menos 3 puntos seguidos de un dígito y los reemplaza por un espacio.
+
+    Args:
+        line: Línea de texto original.
+
+    Returns:
+        str: Línea con los puntos separadores eliminados.
+    """
     run_start = None
     run_end = None
     index = 0
@@ -462,7 +484,61 @@ def _is_mostly_upper(text: str) -> bool:
     return upper / len(letters) >= 0.7
 
 
-def _process_single_level_heading(stripped: str, single_num_re) -> str | None:
+def _split_numeric_heading(stripped: str, expected_parts: int) -> tuple[str, str] | None:
+    """
+    Divide un encabezado numérico en marcador y título.
+
+    Args:
+        stripped: Línea de texto sin espacios extremos.
+        expected_parts: Número esperado de partes numéricas (ej. 1 para "1.", 2 para "1.1.").
+
+    Returns:
+        tuple[str, str] | None: Tupla (marcador, título) si coincide, None en caso contrario.
+    """
+    marker_end = next((idx for idx, char in enumerate(stripped) if char.isspace()), len(stripped))
+    marker = stripped[:marker_end]
+    title = stripped[marker_end:].strip()
+
+    if not marker.endswith(".") or not title:
+        return None
+
+    parts = marker[:-1].split(".")
+    if len(parts) != expected_parts:
+        return None
+
+    if not all(part.isdigit() and 1 <= len(part) <= 2 for part in parts):
+        return None
+
+    return ".".join(parts), title
+
+
+def _split_letter_code_heading(stripped: str) -> tuple[str, str] | None:
+    """
+    Divide un encabezado con código de letra en marcador y título.
+
+    Args:
+        stripped: Línea de texto sin espacios extremos.
+
+    Returns:
+        tuple[str, str] | None: Tupla (código, título) si coincide, None en caso contrario.
+    """
+    marker_end = next((idx for idx, char in enumerate(stripped) if char.isspace()), len(stripped))
+    marker = stripped[:marker_end]
+    title = stripped[marker_end:].strip()
+
+    if len(marker) < 4 or not marker.endswith(".") or not marker[0].isupper():
+        return None
+    if marker[1] != ".":
+        return None
+
+    numeric_parts = marker[2:-1].split(".")
+    if not numeric_parts or not all(part.isdigit() for part in numeric_parts):
+        return None
+
+    return marker, title
+
+
+def _process_single_level_heading(stripped: str) -> str | None:
     """
     Procesa encabezados de nivel único que requieren estar en mayúsculas.
 
@@ -471,21 +547,20 @@ def _process_single_level_heading(stripped: str, single_num_re) -> str | None:
 
     Args:
         stripped: Línea de texto sin espacios en blanco extremos.
-        single_num_re: Expresión regular compilada para detectar números únicos.
 
     Returns:
         str | None: Encabezado Markdown de nivel 1 si coincide y está en mayúsculas,
                    None si no cumple los criterios.
     """
-    match = single_num_re.match(stripped)
-    if match:
-        num, title = match.groups()
+    parsed = _split_numeric_heading(stripped, expected_parts=1)
+    if parsed:
+        num, title = parsed
         if _is_mostly_upper(title):
-            return f"# {num}. {title.strip()}"
+            return f"# {num}. {title}"
     return None
 
 
-def _process_level2_heading(stripped: str, level2_re) -> str | None:
+def _process_level2_heading(stripped: str) -> str | None:
     """
     Procesa encabezados de nivel 2 (subsecciones).
 
@@ -493,34 +568,52 @@ def _process_level2_heading(stripped: str, level2_re) -> str | None:
 
     Args:
         stripped: Línea de texto sin espacios en blanco extremos.
-        level2_re: Expresión regular compilada para detectar números de nivel 2.
 
     Returns:
         str | None: Encabezado Markdown de nivel 2 si coincide, None en caso contrario.
     """
-    match = level2_re.match(stripped)
-    if match:
-        num, title = match.groups()
-        return f"## {num}. {title.strip()}"
+    parsed = _split_numeric_heading(stripped, expected_parts=2)
+    if parsed:
+        num, title = parsed
+        return f"## {num}. {title}"
     return None
 
 
-def _process_level3_heading(stripped: str, level3_re) -> str | None:
-    """Procesa encabezados de nivel 3."""
-    match = level3_re.match(stripped)
-    if match:
-        num, title = match.groups()
-        return f"### {num}. {title.strip()}"
+def _process_level3_heading(stripped: str) -> str | None:
+    """
+    Procesa encabezados de nivel 3 (subsubsecciones).
+
+    Convierte líneas como "1.1.1. Definición" en "### 1.1.1. Definición".
+
+    Args:
+        stripped: Línea de texto sin espacios en blanco extremos.
+
+    Returns:
+        str | None: Encabezado Markdown de nivel 3 si coincide, None en caso contrario.
+    """
+    parsed = _split_numeric_heading(stripped, expected_parts=3)
+    if parsed:
+        num, title = parsed
+        return f"### {num}. {title}"
     return None
 
 
-def _process_letter_code_heading(stripped: str, letter_multi_re) -> str | None:
-    """Procesa códigos de letra con números múltiples."""
-    match = letter_multi_re.match(stripped)
-    if match:
-        letter, nums, title = match.groups()
-        code = f"{letter}.{nums}."
-        return f"### {code} {title.strip()}".rstrip()
+def _process_letter_code_heading(stripped: str) -> str | None:
+    """
+    Procesa códigos de letra con números múltiples como encabezados de nivel 3.
+
+    Convierte líneas como "G.2.2. Texto" en "### G.2.2. Texto".
+
+    Args:
+        stripped: Línea de texto sin espacios en blanco extremos.
+
+    Returns:
+        str | None: Encabezado Markdown de nivel 3 si coincide, None en caso contrario.
+    """
+    parsed = _split_letter_code_heading(stripped)
+    if parsed:
+        code, title = parsed
+        return f"### {code} {title}".rstrip()
     return None
 
 
@@ -541,12 +634,6 @@ def normalize_headings(markdown: str) -> str:
     lines = markdown.splitlines()
     out_lines = []
 
-    # Compilar expresiones regulares
-    single_num_re = re.compile(r"^(\d{1,2})\.\s+(.+)$")
-    level2_re = re.compile(r"^(\d{1,2}\.\d{1,2})\.\s+(.+)$")
-    level3_re = re.compile(r"^(\d{1,2}\.\d{1,2}\.\d{1,2})\.\s+(.+)$")
-    letter_multi_re = re.compile(r"^([A-Z])\.(\d+(?:\.\d+)*)\.\s*(.*)$")
-
     for line in lines:
         raw = line
         stripped = line.strip()
@@ -557,10 +644,10 @@ def normalize_headings(markdown: str) -> str:
 
         # Intentar procesar diferentes tipos de encabezados
         processed_line = (
-            _process_single_level_heading(stripped, single_num_re) or
-            _process_level2_heading(stripped, level2_re) or
-            _process_level3_heading(stripped, level3_re) or
-            _process_letter_code_heading(stripped, letter_multi_re)
+            _process_single_level_heading(stripped) or
+            _process_level2_heading(stripped) or
+            _process_level3_heading(stripped) or
+            _process_letter_code_heading(stripped)
         )
 
         if processed_line:
@@ -572,6 +659,17 @@ def normalize_headings(markdown: str) -> str:
 
 
 async def process_pdf_async(pdf_path: Path, on_page_start=None) -> str:
+    """
+    Procesa un PDF de forma asíncrona convirtiéndolo a Markdown mediante OCR.
+
+    Args:
+        pdf_path: Ruta al archivo PDF a procesar.
+        on_page_start: Función opcional de callback llamada al inicio de cada página,
+                      recibe (page_number, total_pages).
+
+    Returns:
+        str: Contenido completo del PDF convertido a Markdown.
+    """
     logger.info(
         "Procesando %s... OCR model=%s | backend=%s | base_url=%s",
         pdf_path.name,
@@ -595,7 +693,7 @@ async def process_pdf_async(pdf_path: Path, on_page_start=None) -> str:
             for page_number in range(1, total_pages + 1):
                 if on_page_start is not None:
                     on_page_start(page_number, total_pages)
-                logger.info("Pagina %s/%s", page_number, total_pages)
+                logger.info("Página %s/%s", page_number, total_pages)
                 img_path = pdf_page_to_image(pdf_path, page_number, tmp_dir)
                 try:
                     try:
@@ -605,7 +703,7 @@ async def process_pdf_async(pdf_path: Path, on_page_start=None) -> str:
                     except OllamaOCRException as exc:
                         if OCR_PAGE_FAILURE_MODE == "raise":
                             raise
-                        logger.warning("OCR omitido en pagina %s/%s: %s", page_number, total_pages, exc)
+                        logger.warning("OCR omitido en página %s/%s: %s", page_number, total_pages, exc)
                         page_markdowns.append(_page_failure_markdown(page_number, total_pages, exc))
                 finally:
                     try:
@@ -623,10 +721,33 @@ async def process_pdf_async(pdf_path: Path, on_page_start=None) -> str:
 
 
 def process_pdf(pdf_path: Path, on_page_start=None) -> str:
+    """
+    Procesa un PDF convirtiéndolo a Markdown mediante OCR.
+
+    Args:
+        pdf_path: Ruta al archivo PDF a procesar.
+        on_page_start: Función opcional de callback llamada al inicio de cada página,
+                      recibe (page_number, total_pages).
+
+    Returns:
+        str: Contenido completo del PDF convertido a Markdown.
+    """
     return asyncio.run(process_pdf_async(pdf_path, on_page_start=on_page_start))
 
 
 def save_markdown_to_file(pdf_path: Path, output_dir: Path, on_page_start=None) -> Path:
+    """
+    Procesa un PDF y guarda el contenido Markdown en un archivo.
+
+    Args:
+        pdf_path: Ruta al archivo PDF a procesar.
+        output_dir: Directorio donde guardar el archivo Markdown.
+        on_page_start: Función opcional de callback llamada al inicio de cada página,
+                      recibe (page_number, total_pages).
+
+    Returns:
+        Path: Ruta al archivo Markdown generado.
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
     full_md = process_pdf(pdf_path, on_page_start=on_page_start)
     out_path = output_dir / f"{pdf_path.stem}.md"
@@ -636,8 +757,16 @@ def save_markdown_to_file(pdf_path: Path, output_dir: Path, on_page_start=None) 
 
 
 def main():
+    """
+    Función principal para procesar PDFs desde línea de comandos.
+
+    Uso: python Conversion_markdown.py <carpeta_pdfs> <carpeta_salida>
+
+    Procesa todos los archivos PDF en la carpeta de entrada y guarda
+    los archivos Markdown correspondientes en la carpeta de salida.
+    """
     if len(sys.argv) < 3:
-        logger.error("Uso: python pdfs_a_markdown_nanonets.py <carpeta_pdfs> <carpeta_salida>")
+        logger.error("Uso: python Conversion_markdown.py <carpeta_pdfs> <carpeta_salida>")
         sys.exit(1)
 
     in_dir = Path(sys.argv[1])
