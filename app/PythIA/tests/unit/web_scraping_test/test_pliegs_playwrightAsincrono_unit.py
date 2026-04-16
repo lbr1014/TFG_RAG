@@ -42,6 +42,17 @@ _install_optional_dependency_stubs()
 pliegos = importlib.import_module("app.web_scraping.PliegosPlaywrightAsincrono")
 
 
+class AsyncContext:
+    def __init__(self, value=None):
+        self.value = value
+
+    async def __aenter__(self):
+        return self.value
+
+    async def __aexit__(self, *_args):
+        return False
+
+
 class FakeLocator:
     def __init__(self, *, count=1, text="", attrs=None, children=None, nth_items=None, first=None, last=None):
         self._count = count
@@ -78,9 +89,20 @@ class FakePage:
         self.url = url
         self._locators = locators or {}
         self.wait_for_timeout = AsyncMock()
+        self.wait_for_load_state = AsyncMock()
+        self.goto = AsyncMock()
+        self.title = AsyncMock(return_value="Titulo")
+        self.set_default_timeout = MagicMock()
+        self.set_default_navigation_timeout = MagicMock()
 
     def locator(self, selector):
         return self._locators.get(selector, FakeLocator(count=0))
+
+    def get_by_role(self, *_args, **_kwargs):
+        return FakeLocator()
+
+    def expect_navigation(self, **_kwargs):
+        return AsyncContext()
 
 
 class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
@@ -91,6 +113,7 @@ class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
         self.assertEqual(pliegos.pestana_diputacion("ver documentos del pliego"), "Documentos")
         self.assertEqual(pliegos.pestana_diputacion("licitacion abierta"), "Licitaciones")
         self.assertEqual(pliegos.pestana_diputacion("contrato menor"), "Contratos Menores")
+        self.assertEqual(pliegos.pestana_diputacion("encargo a medio propio"), "Encargos a medios propios")
         self.assertEqual(pliegos.pestana_diputacion("consulta preliminar"), "Consultas preliminares")
         self.assertEqual(pliegos.pestana_diputacion("sin coincidencia"), "perfil")
 
@@ -154,6 +177,19 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(pliegos.PWTimeoutError):
                 await pliegos.encontrar_frame(page, "#selector", timeout_ms=500)
 
+    async def test_encontrar_frame_waits_between_failed_attempts(self):
+        frame = MagicMock()
+        frame.wait_for_selector = AsyncMock(side_effect=[pliegos.PWTimeoutError("missing"), None])
+        page = MagicMock(frames=[frame])
+
+        with patch("app.web_scraping.PliegosPlaywrightAsincrono.time.monotonic", side_effect=[0, 0, 1]), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.asyncio.sleep", new=AsyncMock()
+        ) as mock_sleep:
+            result = await pliegos.encontrar_frame(page, "#selector", timeout_ms=2_000)
+
+        self.assertIs(result, frame)
+        mock_sleep.assert_awaited_once_with(0.25)
+
     async def test_eleccion_organo_selects_by_value_and_clicks_add(self):
         option = FakeLocator(attrs={"value": "org-1"})
         select = FakeLocator(
@@ -206,6 +242,26 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
     async def test_ir_pestana_rejects_unknown_tab(self):
         with self.assertRaises(ValueError):
             await pliegos.ir_pestana(FakePage(), "No existe")
+
+    async def test_ir_pestana_wraps_timeout_and_ignores_optional_wait_error(self):
+        failing_locator = FakeLocator()
+        failing_locator.wait_for = AsyncMock(side_effect=pliegos.PWTimeoutError("missing"))
+        page = FakePage()
+        page.locator = MagicMock(return_value=MagicMock(first=failing_locator))
+
+        with self.assertRaises(pliegos.PWTimeoutError):
+            await pliegos.ir_pestana(page, "Documentos")
+
+        locator = FakeLocator()
+        page = FakePage()
+        page.locator = MagicMock(return_value=MagicMock(first=locator))
+        page.wait_for_timeout = AsyncMock(side_effect=[RuntimeError("optional"), None])
+        expected = MagicMock()
+        expected.to_be_enabled = AsyncMock()
+        with patch("app.web_scraping.PliegosPlaywrightAsincrono.expect", return_value=expected):
+            await pliegos.ir_pestana(page, "Documentos")
+
+        self.assertEqual(page.wait_for_timeout.await_count, 2)
 
     async def test_set_if_text_stores_normalized_text_only_when_present(self):
         datos = {}
@@ -286,6 +342,24 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(datos, {"Presupuesto": "1000 EUR", "Procedimiento": "Abierto"})
 
+    async def test_table_parsers_return_or_continue_when_tables_or_labels_are_missing(self):
+        datos = {"previo": "ok"}
+
+        await pliegos.parse_head_table(FakePage(locators={"#head": FakeLocator(count=0)}), datos, "#head")
+        await pliegos.parse_label_value_table(FakePage(locators={"#tabla": FakeLocator(count=0)}), datos, "#tabla")
+        docs = await pliegos.parse_documentos(FakePage(locators={"#myTablaDetalleVISUOE": FakeLocator(count=0)}))
+
+        row_without_label = FakeLocator(
+            children={
+                "span.cl-blue-dark.bold, span[id*=':form1:label_']": FakeLocator(count=0, first=FakeLocator(count=0))
+            }
+        )
+        table = FakeLocator(children={"tbody.tabla-detalle-con-hijos > tr": FakeLocator(count=1, nth_items=[row_without_label])})
+        await pliegos.parse_label_value_table(FakePage(locators={"#tabla2": table}), datos, "#tabla2")
+
+        self.assertEqual(datos, {"previo": "ok"})
+        self.assertIsNone(docs)
+
     async def test_parse_head_table_extracts_main_fields_and_resolves_links(self):
         row_0 = FakeLocator(
             children={
@@ -363,6 +437,78 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datos["Documentos"], [{"Documento": "Pliego"}])
         self.assertEqual(mock_label.await_count, 2)
 
+    async def test_extraer_licitaciones_visits_rows_updates_and_stops_without_next_page(self):
+        enlace = FakeLocator()
+        row = FakeLocator(children={'td.tdExpediente a:not([target="_blank"])': FakeLocator(first=enlace)})
+        rows = FakeLocator(count=1, nth_items=[row])
+        tabla = FakeLocator(children={"tbody tr": rows})
+        boton_siguiente = FakeLocator()
+        boton_siguiente.is_visible = AsyncMock(return_value=False)
+        page = FakePage(
+            url="https://contratacion.test/lista",
+            locators={
+                r"#tableLicitacionesPerfilContratante": tabla,
+                r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:form1\:siguienteLink": boton_siguiente,
+            },
+        )
+
+        with patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.extraer_detalles_licitacion",
+            new=AsyncMock(return_value={"Expediente": "EXP-1"}),
+        ), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()
+        ) as mock_save, patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()
+        ) as mock_tab:
+            resultados = await pliegos.extraer_licitaciones(page, [], {})
+
+        self.assertEqual(resultados, [{"datos": {"Expediente": "EXP-1"}}])
+        enlace.click.assert_awaited_once_with(force=True)
+        mock_save.assert_awaited_once()
+        mock_tab.assert_awaited_once_with(page, "Licitaciones")
+
+    async def test_extraer_licitaciones_updates_duplicate_expediente(self):
+        enlace = FakeLocator()
+        row = FakeLocator(children={'td.tdExpediente a:not([target="_blank"])': FakeLocator(first=enlace)})
+        rows = FakeLocator(count=1, nth_items=[row])
+        tabla = FakeLocator(children={"tbody tr": rows})
+        boton_siguiente = FakeLocator()
+        boton_siguiente.is_visible = AsyncMock(return_value=False)
+        page = FakePage(
+            locators={
+                r"#tableLicitacionesPerfilContratante": tabla,
+                r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:form1\:siguienteLink": boton_siguiente,
+            }
+        )
+        resultados = [{"datos": {"Expediente": "EXP-1", "valor": "old"}}]
+        index = {"EXP-1": 0}
+
+        with patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.extraer_detalles_licitacion",
+            new=AsyncMock(return_value={"Expediente": "EXP-1", "valor": "new"}),
+        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()
+        ):
+            result = await pliegos.extraer_licitaciones(page, resultados, index)
+
+        self.assertEqual(result, [{"datos": {"Expediente": "EXP-1", "valor": "new"}}])
+
+    async def test_extraer_licitaciones_clicks_next_page_when_visible(self):
+        rows = FakeLocator(count=0, nth_items=[])
+        tabla = FakeLocator(children={"tbody tr": rows})
+        boton_siguiente = FakeLocator()
+        boton_siguiente.is_visible = AsyncMock(side_effect=[True, False])
+        page = FakePage(
+            locators={
+                r"#tableLicitacionesPerfilContratante": tabla,
+                r"#viewns_Z7_AVEQAI930GRPE02BR764FO30G0_\:form1\:siguienteLink": boton_siguiente,
+            }
+        )
+
+        await pliegos.extraer_licitaciones(page, [], {})
+
+        boton_siguiente.click.assert_awaited_once_with(force=True)
+
     async def test_guardar_licitacion_json_writes_temp_file_and_replaces_atomically(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             output = Path(tmpdir) / "licitaciones.json"
@@ -371,3 +517,97 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(json.loads(output.read_text(encoding="utf-8")), [{"datos": {"Expediente": "EXP-1"}}])
             self.assertFalse(output.with_suffix(".json.tmp").exists())
+
+    async def test_run_uses_playwright_flow_saves_and_closes_resources(self):
+        page = FakePage()
+        context = MagicMock()
+        context.tracing.start = AsyncMock()
+        context.tracing.stop = AsyncMock()
+        context.new_page = AsyncMock(return_value=page)
+        context.close = AsyncMock()
+        browser = MagicMock()
+        browser.new_context = AsyncMock(return_value=context)
+        browser.close = AsyncMock()
+        playwright = MagicMock()
+        playwright.chromium.launch = AsyncMock(return_value=browser)
+        frame = MagicMock()
+        frame.locator.return_value = FakeLocator()
+
+        with patch("app.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[{"datos": {"Expediente": "OLD"}}]), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
+        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame", new=AsyncMock(return_value=frame)), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.eleccion_organo", new=AsyncMock()
+        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.extraer_licitaciones",
+            new=AsyncMock(return_value=[{"datos": {"Expediente": "OLD"}}, {"datos": {"Expediente": "NEW"}}]),
+        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()) as mock_save:
+            await pliegos.run()
+
+        mock_save.assert_awaited_once()
+        context.tracing.stop.assert_awaited_once()
+        context.close.assert_awaited_once()
+        browser.close.assert_awaited_once()
+
+    async def test_run_handles_timeout_and_still_saves_and_closes(self):
+        context = MagicMock()
+        context.tracing.start = AsyncMock()
+        context.tracing.stop = AsyncMock()
+        context.new_page = AsyncMock(return_value=FakePage())
+        context.close = AsyncMock()
+        browser = MagicMock()
+        browser.new_context = AsyncMock(return_value=context)
+        browser.close = AsyncMock()
+        playwright = MagicMock()
+        playwright.chromium.launch = AsyncMock(return_value=browser)
+
+        with patch("app.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[]), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
+        ), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame",
+            new=AsyncMock(side_effect=pliegos.PWTimeoutError("timeout")),
+        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()) as mock_save:
+            await pliegos.run()
+
+        mock_save.assert_awaited_once_with([])
+        context.close.assert_awaited_once()
+        browser.close.assert_awaited_once()
+
+    async def test_run_ignores_navigation_timeouts_before_searching_frame(self):
+        perfil_link = FakeLocator()
+        perfil_link.click = AsyncMock(side_effect=pliegos.PWTimeoutError("perfil"))
+        seleccionar_link = FakeLocator()
+        seleccionar_link.click = AsyncMock(side_effect=pliegos.PWTimeoutError("seleccionar"))
+        page = FakePage()
+        page.get_by_role = MagicMock(side_effect=[perfil_link, seleccionar_link])
+        context = MagicMock()
+        context.tracing.start = AsyncMock()
+        context.tracing.stop = AsyncMock()
+        context.new_page = AsyncMock(return_value=page)
+        context.close = AsyncMock()
+        browser = MagicMock()
+        browser.new_context = AsyncMock(return_value=context)
+        browser.close = AsyncMock()
+        playwright = MagicMock()
+        playwright.chromium.launch = AsyncMock(return_value=browser)
+
+        with patch("app.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[]), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
+        ), patch(
+            "app.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame",
+            new=AsyncMock(side_effect=pliegos.PWTimeoutError("stop")),
+        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()):
+            await pliegos.run()
+
+        perfil_link.click.assert_awaited_once()
+        seleccionar_link.click.assert_awaited_once()
+
+    async def test_main_guard_runs_async_entrypoint(self):
+        import runpy
+
+        def close_coroutine(coro):
+            coro.close()
+
+        with patch("asyncio.run", side_effect=close_coroutine) as mock_asyncio_run:
+            runpy.run_module("app.web_scraping.PliegosPlaywrightAsincrono", run_name="__main__")
+
+        mock_asyncio_run.assert_called_once()

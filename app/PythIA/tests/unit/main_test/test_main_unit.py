@@ -74,7 +74,7 @@ class MainRoutesUnitTest(BaseAppTestCase):
 
         self.assertEqual(payload["summary"]["total_queries"], 0)
         self.assertEqual(payload["summary"]["avg_response_time"], 0)
-        self.assertEqual(payload["summary"]["first_query_at"], None)
+        self.assertIsNone(payload["summary"]["first_query_at"])
         self.assertEqual(payload["daily_queries"][-1], {"date": "2026-12-31", "count": 0})
 
     def test_best_pid_for_consulta_uses_fragmentos_chunks_or_empty_value(self):
