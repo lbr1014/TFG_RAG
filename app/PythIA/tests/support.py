@@ -61,6 +61,7 @@ def _install_rag_stub() -> None:
     module.QueryCancelledError = QueryCancelledError
     module.OllamaTimeoutError = OllamaTimeoutError
     module.embedding_model = _EmbeddingModel()
+    module.resolve_rag_llm_model = lambda model=None: (model or "fake-model").strip() or "fake-model"
     module.qdrant_get_payloads = lambda point_ids: {}
     module.qdrant_delete_by_filename = lambda filename: None
     module.index_pliegos_dir = lambda path: {}
