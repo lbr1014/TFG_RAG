@@ -217,6 +217,7 @@ TRANSLATIONS_ES = {
     "rag.open_page": "Realizar consulta",
     "rag.title": "Preguntar al modelo (RAG)",
     "rag.subtitle": "Haz preguntas claras sobre los pliegos. Para forzar un expediente concreto, menciona \"expediente <numero>\". Para limitar la búsqueda, indica \"pliego técnico\" o \"pliego administrativo\".",
+    "rag.model_label": "Modelo",
     "rag.question_label": "Pregunta",
     "rag.question_placeholder": "Escribe tu pregunta sobre los pliegos...",
     "rag.ask_button": "Preguntar",

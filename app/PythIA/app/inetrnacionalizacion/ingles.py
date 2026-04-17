@@ -219,6 +219,7 @@ TRANSLATIONS_EN={
     "rag.open_page": "Run query",
     "rag.title": "Ask the model (RAG)",
     "rag.subtitle": "Ask clear questions about the tender documents. To force a specific case file, mention \"expediente <number>\". To limit the search, say \"technical specifications\" or \"administrative tender documents\".",
+    "rag.model_label": "Model",
     "rag.question_label": "Question",
     "rag.question_placeholder": "Write your question about the tender documents...",
     "rag.ask_button": "Ask",

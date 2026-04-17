@@ -4,7 +4,7 @@ Script con los formularios Flask-WTF usados por autenticación, administración,
 """
 
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, HiddenField, MultipleFileField, PasswordField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, HiddenField, MultipleFileField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, ValidationError
 
 from .error_handling import PasswordSecurity
@@ -300,6 +300,7 @@ class RAGQueryForm(LocalizedFlaskForm):
     """
 
     i18n_fields = {
+        "model": "rag.model_label",
         "question": "rag.question_label",
         "submit": "rag.ask_button",
     }
@@ -314,7 +315,7 @@ class RAGQueryForm(LocalizedFlaskForm):
     }
 
     question = TextAreaField("Pregunta", validators=[DataRequired(), Length(max=2000)])
-    model = HiddenField(validators=[Optional(), Length(max=255)])
+    model = SelectField("Modelo", choices=[], validators=[Optional(), Length(max=255)])
     submit = SubmitField("Preguntar")
 
 

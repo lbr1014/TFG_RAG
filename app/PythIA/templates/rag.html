@@ -24,6 +24,11 @@
             {{ form.question(class="form-control rag-textarea", rows="5") }}
           </div>
 
+          <div class="mb-3">
+            {{ form.model.label(class="form-label rag-label") }}
+            {{ form.model(class="form-select") }}
+          </div>
+
           <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
             <button id="ask-button" class="btn btn-modelo luz" type="submit">{{ t("rag.ask_button") }}</button>
             <button id="cancel-button" class="btn btn-outline-light btn-header d-none" type="button">{{ t("rag.cancel_button") }}</button>
@@ -65,6 +70,7 @@
 <script>
   const form = document.getElementById("rag-form");
   const questionEl = form.querySelector("textarea");
+  const modelEl = form.querySelector('select[name="model"]');
   const askButton = document.getElementById("ask-button");
   const cancelButton = document.getElementById("cancel-button");
   const statusEl = document.getElementById("status");
@@ -94,12 +100,14 @@
     statusEl.classList.remove("is-error");
     askButton.disabled = true;
     questionEl.disabled = true;
+    if (modelEl) modelEl.disabled = true;
     cancelButton.classList.remove("d-none");
   }
 
   function setIdleUI() {
     askButton.disabled = false;
     questionEl.disabled = false;
+    if (modelEl) modelEl.disabled = false;
     cancelButton.classList.add("d-none");
   }
 
