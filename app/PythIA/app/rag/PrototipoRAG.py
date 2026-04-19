@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script con la lógica de recuperación, generación, embeddings e indexación en Qdrant para el sistema RAG.
 """
@@ -14,6 +14,7 @@ import re
 import time
 import atexit
 import json
+import asyncio
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
@@ -44,6 +45,10 @@ class QueryCancelledError(RuntimeError):
 
 
 class OllamaTimeoutError(RuntimeError):
+    pass
+
+
+class OllamaModelNotFoundError(RuntimeError):
     pass
 
 
@@ -113,6 +118,10 @@ class Settings:
         "RAG_LLM_MODEL",
         os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct-q4_K_M"),
     )
+    RAG_LLM_MODELS: str = os.getenv(
+        "RAG_LLM_MODELS",
+        f"{DEFAULT_RAG_LLM_MODEL},gemma4:e2b,qwen3.5",
+    )
     _ollama_num_gpu = os.getenv("OLLAMA_NUM_GPU")
     _cuda_available = torch is not None and torch.cuda.is_available()
     if _ollama_num_gpu not in (None, ""):
@@ -138,6 +147,15 @@ class Settings:
     )
     OLLAMA_POOL_TIMEOUT_SECONDS: float = float(
         os.getenv("OLLAMA_POOL_TIMEOUT_SECONDS", "10")
+    )
+    OLLAMA_PULL_TIMEOUT_SECONDS: float = float(
+        os.getenv("OLLAMA_PULL_TIMEOUT_SECONDS", "1800")
+    )
+    OLLAMA_PULL_IDLE_TIMEOUT_SECONDS: float = float(
+        os.getenv("OLLAMA_PULL_IDLE_TIMEOUT_SECONDS", "300")
+    )
+    OLLAMA_PULL_LOG_INTERVAL_SECONDS: float = float(
+        os.getenv("OLLAMA_PULL_LOG_INTERVAL_SECONDS", "20")
     )
 
     # Qdrant
@@ -187,6 +205,185 @@ def resolve_rag_llm_model(model: str | None = None) -> str:
     """
     selected_model = (model or "").strip()
     return selected_model or settings.DEFAULT_RAG_LLM_MODEL
+
+
+def get_available_rag_llm_models() -> list[str]:
+    """
+    Devuelve la lista de modelos LLM disponibles para el selector RAG.
+
+    La lista se configura con RAG_LLM_MODELS separando modelos por comas.
+    El modelo por defecto siempre queda incluido.
+    """
+    configured_models = [
+        item.strip()
+        for item in (settings.RAG_LLM_MODELS or "").split(",")
+        if item.strip()
+    ]
+    models = [settings.DEFAULT_RAG_LLM_MODEL, *configured_models]
+    return list(dict.fromkeys(models))
+
+
+def get_rag_llm_model_choices() -> list[tuple[str, str]]:
+    """
+    Devuelve opciones (valor, etiqueta) para formularios HTML.
+    """
+    return [(model, model) for model in get_available_rag_llm_models()]
+
+
+def _format_bytes(value: Any) -> str:
+    if not isinstance(value, (int, float)) or value < 0:
+        return "-"
+    units = ("B", "KB", "MB", "GB", "TB")
+    amount = float(value)
+    unit = units[0]
+    for unit in units:
+        if amount < 1024 or unit == units[-1]:
+            break
+        amount /= 1024
+    if unit == "B":
+        return f"{int(amount)} {unit}"
+    return f"{amount:.1f} {unit}"
+
+
+def _format_ollama_pull_progress(model_name: str, payload: dict[str, Any]) -> str:
+    status = payload.get("status") or "descargando"
+    digest = (payload.get("digest") or "").strip()
+    completed = payload.get("completed")
+    total = payload.get("total")
+
+    progress = ""
+    if isinstance(completed, (int, float)) and isinstance(total, (int, float)) and total > 0:
+        percent = min(100.0, max(0.0, completed * 100.0 / total))
+        progress = f" {percent:.1f}% ({_format_bytes(completed)} / {_format_bytes(total)})"
+    elif isinstance(completed, (int, float)):
+        progress = f" ({_format_bytes(completed)})"
+
+    digest_suffix = f" {digest[:12]}" if digest else ""
+    return f"{model_name}: {status}{digest_suffix}{progress}".strip()
+
+
+async def ensure_ollama_model_available(
+    client: httpx.AsyncClient,
+    model_name: str,
+    should_cancel=None,
+    on_status=None,
+) -> None:
+    """
+    Comprueba que el modelo exista en Ollama y lo descarga si falta.
+
+    Esto permite que un usuario levante el proyecto en local y use cualquier
+    modelo del desplegable sin ejecutar manualmente `ollama pull`.
+    """
+    if should_cancel and should_cancel():
+        raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+
+    show_response = await client.post("/api/show", json={"model": model_name})
+    if show_response.status_code == 200:
+        logger.info("Modelo %s disponible en Ollama.", model_name)
+        return
+
+    if show_response.status_code != 404:
+        try:
+            show_response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            details = (show_response.text or "").strip()
+            raise RuntimeError(
+                f"Ollama devolvió HTTP {show_response.status_code} comprobando el modelo '{model_name}': {details}"
+            ) from exc
+
+    message = f"Descargando modelo {model_name}. Puede tardar varios minutos..."
+    logger.info("Modelo %s no encontrado en Ollama. Descargando automáticamente...", model_name)
+    if on_status:
+        on_status(message)
+
+    started_at = time.monotonic()
+    last_log_at = 0.0
+    last_progress = ""
+    total_timeout = settings.OLLAMA_PULL_TIMEOUT_SECONDS
+    idle_timeout = settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS
+    log_interval = settings.OLLAMA_PULL_LOG_INTERVAL_SECONDS
+
+    async with client.stream(
+        "POST",
+        "/api/pull",
+        json={"model": model_name, "stream": True},
+    ) as pull_response:
+        try:
+            pull_response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            error_body = await pull_response.aread()
+            error_detail = error_body.decode("utf-8", errors="replace").strip()
+            raise OllamaModelNotFoundError(
+                f"No se pudo descargar el modelo '{model_name}' desde Ollama: {error_detail}"
+            ) from exc
+
+        line_iterator = pull_response.aiter_lines()
+        while True:
+            if should_cancel and should_cancel():
+                raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+
+            elapsed = time.monotonic() - started_at
+            if total_timeout > 0 and elapsed >= total_timeout:
+                raise OllamaTimeoutError(
+                    f"La descarga del modelo '{model_name}' superó {total_timeout:g} s."
+                )
+
+            read_timeout = idle_timeout if idle_timeout > 0 else None
+            if total_timeout > 0:
+                remaining = max(0.1, total_timeout - elapsed)
+                read_timeout = min(read_timeout, remaining) if read_timeout else remaining
+
+            try:
+                line = await asyncio.wait_for(line_iterator.__anext__(), timeout=read_timeout)
+            except StopAsyncIteration:
+                break
+            except asyncio.TimeoutError as exc:
+                raise OllamaTimeoutError(
+                    f"La descarga del modelo '{model_name}' no avanzó durante {read_timeout:g} s."
+                ) from exc
+
+            if not line:
+                continue
+            payload = json.loads(line)
+            if payload.get("error"):
+                raise OllamaModelNotFoundError(
+                    f"No se pudo descargar el modelo '{model_name}': {payload['error']}"
+                )
+            if payload.get("status"):
+                progress = _format_ollama_pull_progress(model_name, payload)
+                now = time.monotonic()
+                is_done = bool(payload.get("done")) or payload.get("status") == "success"
+                should_log = (
+                    progress != last_progress
+                    and (now - last_log_at >= log_interval or is_done)
+                )
+                if should_log:
+                    logger.info("Descarga Ollama %s", progress)
+                    if on_status:
+                        on_status(progress)
+                    last_progress = progress
+                    last_log_at = now
+
+
+async def ensure_ollama_model_ready(
+    model_name: str,
+    should_cancel=None,
+    on_status=None,
+) -> None:
+    """Abre un cliente de Ollama y garantiza que el modelo indicado este listo."""
+    timeout = httpx.Timeout(
+        connect=settings.OLLAMA_CONNECT_TIMEOUT_SECONDS,
+        read=settings.OLLAMA_READ_TIMEOUT_SECONDS,
+        write=settings.OLLAMA_WRITE_TIMEOUT_SECONDS,
+        pool=settings.OLLAMA_POOL_TIMEOUT_SECONDS,
+    )
+    async with httpx.AsyncClient(base_url=OLLAMA_BASE_URL, timeout=timeout) as client:
+        await ensure_ollama_model_available(
+            client,
+            model_name,
+            should_cancel=should_cancel,
+            on_status=on_status,
+        )
 
 
 # =========================
@@ -858,21 +1055,26 @@ async def ask_ollama(
     should_cancel=None,
 ) -> str:
     """
-    Envía un prompt a Ollama usando /api/generate y devuelve el texto de respuesta.
+    Envía un prompt a Ollama usando /api/chat y devuelve el texto de respuesta.
     """
     if should_cancel and should_cancel():
         raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
 
     model_name = resolve_rag_llm_model(model)
-    full_prompt = (
-        "Responde en español de forma breve y precisa.\n\n"
-        f"{prompt}"
-    )
     chunks: list[str] = []
 
     request_payload = {
         "model": model_name,
-        "prompt": full_prompt,
+        "messages": [
+            {
+                "role": "system",
+                "content": "Responde en español de forma breve y precisa.",
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
         "stream": True,
         "options": {
             "num_gpu": settings.OLLAMA_NUM_GPU,
@@ -894,12 +1096,26 @@ async def ask_ollama(
     )
     try:
         async with httpx.AsyncClient(base_url=OLLAMA_BASE_URL, timeout=timeout) as client:
+            await ensure_ollama_model_available(client, model_name, should_cancel=should_cancel)
             async with client.stream(
                 "POST",
-                "/api/generate",
+                "/api/chat",
                 json=request_payload,
             ) as resp:
-                resp.raise_for_status()
+                try:
+                    resp.raise_for_status()
+                except httpx.HTTPStatusError as exc:
+                    error_body = await resp.aread()
+                    error_detail = error_body.decode("utf-8", errors="replace").strip()
+                    if error_detail:
+                        if resp.status_code == 404 and "not found" in error_detail.lower():
+                            raise OllamaModelNotFoundError(
+                                f"El modelo '{model_name}' no está descargado en Ollama."
+                            ) from exc
+                        raise RuntimeError(
+                            f"Ollama devolvió HTTP {resp.status_code} para el modelo '{model_name}': {error_detail}"
+                        ) from exc
+                    raise
 
                 async for line in resp.aiter_lines():
                     if should_cancel and should_cancel():
@@ -908,7 +1124,8 @@ async def ask_ollama(
                         continue
 
                     payload = json.loads(line)
-                    piece = payload.get("response")
+                    message = payload.get("message") or {}
+                    piece = message.get("content") or payload.get("response")
                     if piece:
                         chunks.append(piece)
 
@@ -985,6 +1202,14 @@ async def obtener_mejor_chunk(
     model_name = resolve_rag_llm_model(model)
     if should_cancel and should_cancel():
         raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+
+    if on_status:
+        on_status(f"Preparando modelo {model_name}...")
+    await ensure_ollama_model_ready(
+        model_name,
+        should_cancel=should_cancel,
+        on_status=on_status,
+    )
 
     if on_status:
         on_status("Recuperando fragmentos relevantes...")

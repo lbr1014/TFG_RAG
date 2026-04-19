@@ -15,7 +15,7 @@ from app.entities.rag_query_state import RAGQueryState
 from app.extensions import db
 from app.forms import EmptyForm, RAGQueryForm
 
-from app.rag.PrototipoRAG import QueryCancelledError, resolve_rag_llm_model
+from app.rag.PrototipoRAG import QueryCancelledError, get_rag_llm_model_choices, resolve_rag_llm_model
 from app.rag.service import rag_answer, validate_question
 from app.inetrnacionalizacion.tarduccion import get_locale, localize_runtime_message, t, translate_for
 
@@ -32,7 +32,16 @@ def rag_page():
         Respuesta HTML con el formulario de consulta.
     """
     form = RAGQueryForm()
+    configure_model_choices(form)
     return render_template("rag.html", form=form)
+
+
+def configure_model_choices(form: RAGQueryForm) -> None:
+    """Carga en el formulario los modelos LLM disponibles para Ollama."""
+    form.model.choices = get_rag_llm_model_choices()
+    form.model.default = resolve_rag_llm_model()
+    if not form.model.data:
+        form.model.data = form.model.default
 
 
 def get_user_job_or_404(job_id: int) -> RAGQueryState:
@@ -62,6 +71,7 @@ def rag_ask():
         Respuesta JSON con el identificador del trabajo creado o reutilizado.
     """
     form = RAGQueryForm()
+    configure_model_choices(form)
     if not form.validate_on_submit():
         return jsonify({"error": t("rag.invalid_question")}), 400
 

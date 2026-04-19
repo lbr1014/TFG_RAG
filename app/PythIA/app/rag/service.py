@@ -20,7 +20,7 @@ from app.entities.consulta_chunk import ConsultaChunk
 from app.inetrnacionalizacion.tarduccion import translate_for
 logger = logging.getLogger(__name__)
 
-from .PrototipoRAG import OllamaTimeoutError, QueryCancelledError, obtener_mejor_chunk
+from .PrototipoRAG import OllamaModelNotFoundError, OllamaTimeoutError, QueryCancelledError, obtener_mejor_chunk
 from qdrant_client import models as qmodels
 
 EMPTY_ANSWER: Dict[str, Any] = {
@@ -259,6 +259,9 @@ async def rag_answer(
     except OllamaTimeoutError as e:
         logger.warning("Timeout consultando Ollama: %s", e)
         data = message_error(translate_for(lang, "rag.timeout_error"))
+    except OllamaModelNotFoundError as e:
+        logger.warning("Modelo de Ollama no disponible: %s", e)
+        data = message_error(translate_for(lang, "rag.model_not_found_error"))
     except Exception as e:
         logger.exception("Error en rag_answer: %s", e)
         data = message_error(translate_for(lang, "rag.system_error"))

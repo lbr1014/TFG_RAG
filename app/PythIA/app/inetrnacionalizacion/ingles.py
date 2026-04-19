@@ -244,6 +244,7 @@ TRANSLATIONS_EN={
     "rag.done": "Query finished.",
     "rag.cancelling": "Cancelling query...",
     "rag.system_error": "An error occurred while querying the system. Please try again.",
+    "rag.model_not_found_error": "The selected model could not be downloaded automatically. Check the connection or choose another model.",
     "rag.timeout_error": "The model is taking too long to respond. Try again in a few seconds.",
     "jobs.already_finished": "The process has already finished.",
     "jobs.queued_short": "Queued",

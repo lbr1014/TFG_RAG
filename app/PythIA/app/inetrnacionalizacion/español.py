@@ -242,6 +242,7 @@ TRANSLATIONS_ES = {
     "rag.done": "Consulta finalizada.",
     "rag.cancelling": "Cancelando consulta...",
     "rag.system_error": "Ha ocurrido un error consultando el sistema. Inténtalo de nuevo.",
+    "rag.model_not_found_error": "No se pudo descargar automáticamente el modelo seleccionado. Revisa la conexión o elige otro modelo.",
     "rag.timeout_error": "El modelo está tardando demasiado en responder. Inténtalo de nuevo en unos segundos.",
     "jobs.already_finished": "El proceso ya ha terminado.",
     "jobs.queued_short": "En cola",
