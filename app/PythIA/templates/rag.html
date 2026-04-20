@@ -160,9 +160,23 @@
       headers,
     });
 
-    const data = await response.json();
+    const rawBody = await response.text();
+    let data = {};
+    if (rawBody) {
+      try {
+        data = JSON.parse(rawBody);
+      } catch (error) {
+        const contentType = response.headers.get("content-type") || "";
+        const isHtml = contentType.includes("text/html") || rawBody.trimStart().startsWith("<");
+        const fallback = isHtml
+          ? tr("rag.unexpected_error")
+          : rawBody.slice(0, 160);
+        throw new Error(fallback || tr("rag.unexpected_error"));
+      }
+    }
+
     if (!response.ok) {
-      throw new Error(data.error || tr("rag.unexpected_error"));
+      throw new Error(data.error || `HTTP ${response.status}`);
     }
     return data;
   }
