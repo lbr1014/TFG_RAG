@@ -66,6 +66,11 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(payload["summary"]["total_queries"], 3)
         self.assertEqual(payload["summary"]["avg_response_time"], 2.0)
         self.assertEqual(payload["summary"]["active_days"], 2)
+        self.assertIn({"date": "2026-02-02", "avg_time": 1.0}, payload["daily_avg_time"])
+        self.assertIn({"date": "2026-02-03", "avg_time": 2.5}, payload["daily_avg_time"])
+        feb_3_hours = next(item for item in payload["daily_hourly_queries"] if item["date"] == "2026-02-03")["hours"]
+        self.assertEqual(feb_3_hours[10], {"hour": 10, "count": 1})
+        self.assertEqual(feb_3_hours[11], {"hour": 11, "count": 1})
         self.assertEqual(payload["top_users"][0], {"user": "Ana", "count": 2})
 
     def test_build_usage_stats_payload_handles_december_calendar_end(self):
