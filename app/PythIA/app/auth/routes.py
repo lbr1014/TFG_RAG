@@ -9,6 +9,7 @@ from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 from . import auth_bp
 from .. import _flask_session_config_name
+from ..countries import normalize_country_code
 from ..entities.user import User
 from ..forms import EmptyForm, LoginForm, SignupForm, ForgotPasswordForm, ResetPasswordForm
 from ..extensions import db, mail
@@ -108,13 +109,14 @@ def singup():
     if form.validate_on_submit():
         nombre = form.nombre.data.strip()
         email = form.email.data.lower().strip()
+        country_code = normalize_country_code(form.country_code.data)
         password = form.password.data
 
         if User.get_by_email(email):
             form.email.errors.append(t("auth.email_exists"))
             return render_template("singup.html", form=form)
 
-        user = User(nombre=nombre, email=email)
+        user = User(nombre=nombre, email=email, country_code=country_code)
         user.set_password(password)
         user.update_last_login()
 

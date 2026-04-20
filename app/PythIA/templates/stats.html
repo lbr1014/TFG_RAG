@@ -154,11 +154,26 @@
         {% endif %}
       </div>
     {% endif %}
+
+    {% if stats_payload.user_locations %}
+      <div class="row g-4 mt-1">
+        <div class="col-12">
+          <article class="card border-0 shadow-sm stats-chart-card">
+            <div class="card-body">
+              <h2 class="h5 mb-1">{{ t("stats.chart_user_locations") }}</h2>
+              <p class="text-secondary small mb-3">{{ t("stats.chart_user_locations_help") }}</p>
+              <div id="chart-user-locations" class="stats-chart stats-map-chart"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    {% endif %}
   </section>
 {% endblock %}
 
 {% block scripts %}
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
   <script>
     window.PYTHIA_STATS = {
       locale: {{ current_locale|tojson }},
@@ -180,6 +195,9 @@
         queries: {{ t("stats.total_queries")|tojson }},
         calendar: {{ t("stats.chart_monthly_view_calendar")|tojson }},
         averageTime: {{ t("stats.average_time")|tojson }},
+        users: {{ t("stats.map_users")|tojson }},
+        userNames: {{ t("stats.map_user_names")|tojson }},
+        mapLoadError: {{ t("stats.map_load_error")|tojson }},
         months: {{ t("stats.drill_months")|tojson }},
         week: {{ t("stats.drill_week")|tojson }},
         back: {{ t("stats.drill_back")|tojson }}

@@ -38,6 +38,10 @@
     });
   }
 
+  if (Array.isArray(config.data.user_locations) && config.data.user_locations.length) {
+    drawUserLocationsMap("#chart-user-locations", config.data.user_locations);
+  }
+
   const summaryDate = document.querySelector("[data-stats-last-query]");
   if (summaryDate && summaryDate.dataset.value) {
     summaryDate.textContent = formatDateTime.format(new Date(summaryDate.dataset.value));
@@ -690,6 +694,116 @@
       .text(String(maxValue));
   }
 
+  function drawUserLocationsMap(selector, data) {
+    const container = document.querySelector(selector);
+    if (!container) return;
+    if (typeof topojson === "undefined") return renderEmptyState(container, config.labels.mapLoadError);
+
+    const byCountryId = new Map(data.map((item) => [String(item.country_id).padStart(3, "0"), item]));
+    const maxValue = d3.max(data, (item) => Number(item.count) || 0) || 1;
+    const colorScale = d3
+      .scaleSequential()
+      .domain([0, maxValue])
+      .interpolator(d3.interpolateYlGnBu);
+
+    d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+      .then((world) => {
+        container.innerHTML = "";
+        const countries = topojson.feature(world, world.objects.countries).features;
+        const width = container.clientWidth || 860;
+        const height = Math.max(360, Math.round(width * 0.52));
+        const projection = d3.geoNaturalEarth1().fitSize([width, height], { type: "Sphere" });
+        const path = d3.geoPath(projection);
+
+        const svg = d3
+          .select(container)
+          .append("svg")
+          .attr("viewBox", `0 0 ${width} ${height}`)
+          .attr("role", "img");
+
+        svg
+          .append("path")
+          .datum({ type: "Sphere" })
+          .attr("class", "stats-map-ocean")
+          .attr("d", path);
+
+        svg
+          .append("g")
+          .selectAll("path")
+          .data(countries)
+          .join("path")
+          .attr("class", "stats-map-country")
+          .attr("d", path)
+          .attr("fill", (feature) => {
+            const item = byCountryId.get(String(feature.id).padStart(3, "0"));
+            return item ? colorScale(item.count) : "rgba(148, 163, 184, 0.28)";
+          })
+          .on("mousemove", function (event, feature) {
+            const item = byCountryId.get(String(feature.id).padStart(3, "0"));
+            if (!item) {
+              return;
+            }
+            showTooltip(event, formatCountryTooltip(item));
+            d3.select(this).attr("opacity", 0.82);
+          })
+          .on("mouseleave", function () {
+            hideTooltip();
+            d3.select(this).attr("opacity", 1);
+          });
+
+        drawMapLegend(svg, width, height, colorScale, maxValue);
+      })
+      .catch(() => renderEmptyState(container, config.labels.mapLoadError));
+  }
+
+  function drawMapLegend(svg, width, height, colorScale, maxValue) {
+    const legendWidth = Math.min(220, width - 36);
+    const legendX = 18;
+    const legendY = height - 34;
+    const gradientId = "stats-user-map-gradient";
+    const defs = svg.append("defs");
+    const gradient = defs.append("linearGradient").attr("id", gradientId);
+
+    d3.range(0, 1.01, 0.1).forEach((value) => {
+      gradient
+        .append("stop")
+        .attr("offset", `${value * 100}%`)
+        .attr("stop-color", colorScale(value * maxValue));
+    });
+
+    const legend = svg.append("g").attr("transform", `translate(${legendX}, ${legendY})`);
+    legend
+      .append("rect")
+      .attr("width", legendWidth)
+      .attr("height", 10)
+      .attr("rx", 5)
+      .attr("fill", `url(#${gradientId})`);
+
+    legend
+      .append("text")
+      .attr("class", "stats-map-legend-label")
+      .attr("x", 0)
+      .attr("y", -5)
+      .text("0");
+
+    legend
+      .append("text")
+      .attr("class", "stats-map-legend-label")
+      .attr("x", legendWidth)
+      .attr("y", -5)
+      .attr("text-anchor", "end")
+      .text(String(maxValue));
+  }
+
+  function formatCountryTooltip(item) {
+    const base = `${item.country_name}: ${item.count} ${config.labels.users || "usuarios"}`;
+    if (!Array.isArray(item.users) || item.users.length === 0) {
+      return base;
+    }
+
+    return `${base}\n${config.labels.userNames || "Usuarios"}: ${item.users.join(", ")}`;
+  }
+
   function drawCalendarChart(selector, data, options) {
     const container = document.querySelector(selector);
     if (!container) return;
@@ -898,10 +1012,10 @@
     return Math.round(value * 100) / 100;
   }
 
-  function renderEmptyState(container) {
+  function renderEmptyState(container, message) {
     const empty = document.createElement("div");
     empty.className = "stats-empty";
-    empty.textContent = config.labels.noData;
+    empty.textContent = message || config.labels.noData;
     container.appendChild(empty);
   }
 

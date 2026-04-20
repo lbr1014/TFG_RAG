@@ -30,6 +30,14 @@
         </div>
 
         <div class="mb-3">
+          {{ form.country_code.label(class="form-label") }}
+          {{ form.country_code(class_="form-select form-select-lg") }}
+          {% for err in form.country_code.errors %}
+            <div class="invalid-feedback d-block">{{ err }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
           {{ form.new_password.label(class="form-label") }}
           {{ form.new_password(class_="form-control form-control-lg") }}
           {% for err in form.new_password.errors %}

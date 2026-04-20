@@ -14,6 +14,7 @@ from flask import Response, abort, current_app, flash, jsonify, redirect, render
 from flask_login import current_user, login_required
 
 from . import admin_bp
+from ..countries import normalize_country_code
 from ..decorators import admin_required
 from ..documentos import DocumentosService, JobCancelledError
 from ..entities.documento import Documento
@@ -282,6 +283,7 @@ def create_user():
     if form.validate_on_submit():
         nombre = form.nombre.data.strip()
         email = form.email.data.lower().strip()
+        country_code = normalize_country_code(form.country_code.data)
         password = form.password.data
         is_admin = form.is_admin.data
 
@@ -289,7 +291,7 @@ def create_user():
             form.email.errors.append(t("auth.email_exists"))
             return render_template("admin_create_user.html", form=form)
 
-        user = User(nombre=nombre, email=email)
+        user = User(nombre=nombre, email=email, country_code=country_code)
         user.set_password(password)
         user.is_admin = is_admin
 

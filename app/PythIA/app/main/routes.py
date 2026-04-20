@@ -10,6 +10,7 @@ from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from math import ceil
 from . import main_bp
+from ..countries import country_name_for_code, country_numeric_for_code, normalize_country_code
 from ..entities.consulta import Consulta
 from ..entities.user import User
 from ..extensions import db
@@ -139,6 +140,8 @@ def edit_user():
                     return render_template("edit_user.html", form=form, user=current_user)
 
             current_user.email = new_email
+
+        current_user.country_code = normalize_country_code(form.country_code.data)
         
         # === CONTRASEÑA ===
         if form.new_password.data:
@@ -402,6 +405,42 @@ def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
     return payload
 
 
+def build_user_country_map_payload(users, *, include_user_names: bool = False):
+    """
+    Construye los datos del mapa de usuarios por pais.
+
+    Args:
+        users (list): Usuarios registrados.
+        include_user_names (bool): Incluye nombres solo para administradores.
+
+    Returns:
+        list: Datos agregados por pais para colorear el mapa D3.
+    """
+    countries = {}
+
+    for user in users:
+        code = normalize_country_code(getattr(user, "country_code", None))
+        if code not in countries:
+            countries[code] = {
+                "country_code": code,
+                "country_id": country_numeric_for_code(code),
+                "country_name": country_name_for_code(code),
+                "count": 0,
+            }
+            if include_user_names:
+                countries[code]["users"] = []
+
+        countries[code]["count"] += 1
+        if include_user_names:
+            countries[code]["users"].append(getattr(user, "nombre", ""))
+
+    if include_user_names:
+        for item in countries.values():
+            item["users"] = sorted(name for name in item["users"] if name)
+
+    return sorted(countries.values(), key=lambda item: item["country_name"])
+
+
 @main_bp.get("/stats")
 @login_required
 def stats_page():
@@ -439,6 +478,10 @@ def stats_page():
     stats_payload = build_usage_stats_payload(
         consultas,
         include_top_users=current_user.is_admin and is_global_scope,
+    )
+    stats_payload["user_locations"] = build_user_country_map_payload(
+        User.query.order_by(User.nombre.asc(), User.email.asc()).all(),
+        include_user_names=current_user.is_admin,
     )
 
     scope_title = (

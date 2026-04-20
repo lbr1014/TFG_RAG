@@ -7,6 +7,7 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, HiddenField, MultipleFileField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, ValidationError
 
+from .countries import COUNTRY_CHOICES, DEFAULT_COUNTRY_CODE
 from .error_handling import PasswordSecurity
 from .inetrnacionalizacion.tarduccion import localize_form, t
 
@@ -181,6 +182,7 @@ class SignupForm(LocalizedFlaskForm):
     i18n_fields = {
         "nombre": NAME,
         "email": EMAIL,
+        "country_code": "common.country",
         "password": PASSWORD,
         "confirm_password": "auth.repeat_password",
         "submit": "auth.signup_submit",
@@ -207,6 +209,7 @@ class SignupForm(LocalizedFlaskForm):
 
     nombre = StringField("Nombre", validators=[DataRequired(), Length(min=2, max=50)])
     email = StringField("Email", validators=[DataRequired(), Email()])
+    country_code = SelectField("Pais", choices=COUNTRY_CHOICES, default=DEFAULT_COUNTRY_CODE, validators=[Optional()])
     password = PasswordField(CONTRASEÑA, validators=[DataRequired(), Length(min=8), PasswordSecurity()])
     confirm_password = PasswordField(
         "Repite la contraseña",
@@ -227,6 +230,7 @@ class AdminCreateUserForm(LocalizedFlaskForm):
     i18n_fields = {
         "nombre": NAME,
         "email": EMAIL,
+        "country_code": "common.country",
         "password": PASSWORD,
         "is_admin": "admin.is_admin",
         "submit": "admin.create_user_submit",
@@ -250,6 +254,7 @@ class AdminCreateUserForm(LocalizedFlaskForm):
     nombre = StringField("Nombre", validators=[DataRequired(), Length(min=2, max=50)])
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField(CONTRASEÑA, validators=[DataRequired(), Length(min=8), PasswordSecurity()])
+    country_code = SelectField("Pais", choices=COUNTRY_CHOICES, default=DEFAULT_COUNTRY_CODE, validators=[Optional()])
     is_admin = BooleanField("Administrador")
     submit = SubmitField("Crear usuario")
 
@@ -265,6 +270,7 @@ class EditUserForm(LocalizedFlaskForm):
     i18n_fields = {
         "nombre": NAME,
         "email": EMAIL,
+        "country_code": "common.country",
         "new_password": "auth.new_password",
         "submit": "common.save_changes",
     }
@@ -287,6 +293,7 @@ class EditUserForm(LocalizedFlaskForm):
 
     nombre = StringField("Nombre", validators=[Optional(), Length(min=2, max=50)])
     email = StringField("Email", validators=[Optional(), Email(), Length(max=255)])
+    country_code = SelectField("Pais", choices=COUNTRY_CHOICES, default=DEFAULT_COUNTRY_CODE, validators=[Optional()])
     new_password = PasswordField("Nueva contraseña", validators=[Optional(), Length(min=8), PasswordSecurity()])
     submit = SubmitField("Guardar cambios")
 

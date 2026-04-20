@@ -136,9 +136,11 @@ def create_app():
     @app.context_processor
     def _inject_post_forms():
         """Expone formularios CSRF para acciones POST simples en plantillas."""
+        from .countries import country_name_for_code
         from .forms import EmptyForm, LanguageForm
 
         return {
+            "country_name_for_code": country_name_for_code,
             "post_form": EmptyForm(),
             "logout_form": EmptyForm(),
             "language_form": LanguageForm(),

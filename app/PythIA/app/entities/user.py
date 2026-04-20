@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from app.countries import DEFAULT_COUNTRY_CODE
 from app.extensions import db
 
 
@@ -29,9 +30,16 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    country_code = db.Column(db.String(2), nullable=False, default=DEFAULT_COUNTRY_CODE, server_default=DEFAULT_COUNTRY_CODE, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     last_login = db.Column(db.DateTime(timezone=True), nullable=True)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, **kwargs):
+        """Inicializa el usuario con Espana como pais por defecto."""
+        super().__init__(**kwargs)
+        if not self.country_code:
+            self.country_code = DEFAULT_COUNTRY_CODE
 
     def set_password(self, password_plain: str):
         """Guarda la contraseña cifrada del usuario.
