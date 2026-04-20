@@ -23,6 +23,19 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"<form", response.data)
 
+    def test_rag_json_routes_return_json_when_unauthenticated(self):
+        self.client.post("/logout")
+
+        response = self.client.post(
+            "/rag/ask",
+            data={"question": "Que dice el pliego?"},
+            headers={"Accept": "application/json"},
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.content_type, "application/json")
+        self.assertIn("error", response.get_json())
+
     @patch("app.rag.routes.executor.submit")
     def test_rag_ask_creates_queued_job(self, mock_submit):
         response = self.client.post("/rag/ask", data={"question": "Que dice el pliego?"})
