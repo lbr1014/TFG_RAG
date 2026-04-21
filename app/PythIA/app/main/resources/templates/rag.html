@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% from "components/form_errors.html" import render_form_errors with context %}
+
+{% block title %}{{ t("rag.page_title") }}{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css', v='20260322-theme') }}">
+{% endblock %}
+
+{% block content %}
+<div class="py-4 py-md-5">
+      <section class="rag-card app-surface">
+        <div class="mb-4">
+          <h2 class="rag-title mt-3 mb-2">{{ t("rag.title") }}</h2>
+          <p class="rag-subtitle mb-0">{{ t("rag.subtitle") }}</p>
+        </div>
+
+        <form id="rag-form" method="post" class="rag-form" novalidate>
+          {{ form.csrf_token }}
+          {{ render_form_errors(form) }}
+
+          <div class="mb-3">
+            {{ form.question.label(class="form-label rag-label") }}
+            {{ form.question(class="form-control rag-textarea", rows="5") }}
+          </div>
+
+          <div class="mb-3">
+            {{ form.model.label(class="form-label rag-label") }}
+            {{ form.model(class="form-select") }}
+          </div>
+
+          <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
+            <button id="ask-button" class="btn btn-modelo luz" type="submit">{{ t("rag.ask_button") }}</button>
+            <button id="cancel-button" class="btn btn-outline-light btn-header d-none" type="button">{{ t("rag.cancel_button") }}</button>
+            <span id="status" class="rag-status" aria-live="polite"></span>
+          </div>
+        </form>
+
+        <div class="rag-result mt-4">
+          <h3 class="rag-section-title h5 mb-3">{{ t("rag.answer_title") }}</h3>
+          <pre id="answer" class="rag-answer mb-0"></pre>
+        </div>
+
+        <details class="rag-debug mt-4">
+          <summary>{{ t("rag.fragment_used") }}</summary>
+
+          <div class="rag-debug-body mt-3">
+            <div class="table-card">
+              <div class="p-3 p-md-4">
+                <div class="row g-3 rag-meta small">
+                  <div class="col-12 col-md-4">
+                    <strong>{{ t("history.file") }}</strong> <span id="filename"></span>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <strong>{{ t("history.title_label") }}</strong> <span id="title"></span>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <strong>{{ t("history.segment") }}</strong> <span id="segment_index"></span>
+                  </div>
+                </div>
+
+                <pre id="chunk" class="rag-chunk mb-0 mt-3"></pre>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+</div>
+
+<script>
+  const form = document.getElementById("rag-form");
+  const questionEl = form.querySelector("textarea");
+  const modelEl = form.querySelector('select[name="model"]');
+  const askButton = document.getElementById("ask-button");
+  const cancelButton = document.getElementById("cancel-button");
+  const statusEl = document.getElementById("status");
+  const answerEl = document.getElementById("answer");
+  const filenameEl = document.getElementById("filename");
+  const titleEl = document.getElementById("title");
+  const segmentEl = document.getElementById("segment_index");
+  const chunkEl = document.getElementById("chunk");
+
+  let activeJobId = null;
+  let pollingTimer = null;
+
+  function tr(key, params) {
+    return window.pythiaTranslate ? window.pythiaTranslate(key, params) : key;
+  }
+
+  function clearResult() {
+    answerEl.textContent = "";
+    filenameEl.textContent = "";
+    titleEl.textContent = "";
+    segmentEl.textContent = "";
+    chunkEl.textContent = "";
+  }
+
+  function setRunningUI(message) {
+    statusEl.textContent = message;
+    statusEl.classList.remove("is-error");
+    askButton.disabled = true;
+    questionEl.disabled = true;
+    if (modelEl) modelEl.disabled = true;
+    cancelButton.classList.remove("d-none");
+  }
+
+  function setIdleUI() {
+    askButton.disabled = false;
+    questionEl.disabled = false;
+    if (modelEl) modelEl.disabled = false;
+    cancelButton.classList.add("d-none");
+  }
+
+  function setErrorUI(message) {
+    statusEl.textContent = message;
+    statusEl.classList.add("is-error");
+  }
+
+  function validateQuestion() {
+    const value = questionEl.value.trim();
+
+    if (!value) {
+      setErrorUI(tr("rag.empty_question"));
+      questionEl.focus();
+      return false;
+    }
+
+    if (value.length > 2000) {
+      setErrorUI(tr("rag.question_too_long"));
+      questionEl.focus();
+      return false;
+    }
+
+    statusEl.classList.remove("is-error");
+    statusEl.textContent = "";
+    return true;
+  }
+
+  function applyResult(result) {
+    answerEl.textContent = result?.answer || tr("rag.no_answer");
+    filenameEl.textContent = result?.filename || "-";
+    titleEl.textContent = result?.title || "-";
+    segmentEl.textContent = result?.segment_index ?? "-";
+    chunkEl.textContent = result?.chunk || tr("rag.no_chunk");
+  }
+
+  function csrfHeaders() {
+    const token = form.querySelector('input[name="csrf_token"]')?.value;
+    return token ? { "X-CSRFToken": token } : {};
+  }
+
+  async function fetchJson(url, options = {}) {
+    const headers = {
+      Accept: "application/json",
+      ...(options.headers || {}),
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    const rawBody = await response.text();
+    let data = {};
+    if (rawBody) {
+      try {
+        data = JSON.parse(rawBody);
+      } catch (error) {
+        const contentType = response.headers.get("content-type") || "";
+        const isHtml = contentType.includes("text/html") || rawBody.trimStart().startsWith("<");
+        const fallback = isHtml
+          ? tr("rag.unexpected_error")
+          : rawBody.slice(0, 160);
+        throw new Error(fallback || tr("rag.unexpected_error"));
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+    return data;
+  }
+
+  function stopPolling() {
+    if (pollingTimer) {
+      clearTimeout(pollingTimer);
+      pollingTimer = null;
+    }
+  }
+
+  async function pollJob(jobId) {
+    try {
+      const data = await fetchJson(`{{ url_for('rag.rag_status', job_id=0) }}`.replace("/0", `/${jobId}`));
+      const status = data.status;
+      const message = data.message || "";
+
+      if (status === "queued" || status === "running") {
+        setRunningUI(message || tr("rag.querying"));
+        pollingTimer = window.setTimeout(() => pollJob(jobId), 900);
+        return;
+      }
+
+      activeJobId = null;
+      stopPolling();
+      setIdleUI();
+
+      if (status === "done") {
+        statusEl.textContent = "";
+        applyResult(data.result || {});
+        return;
+      }
+
+      if (status === "cancelled") {
+        statusEl.textContent = tr("rag.cancelled");
+        clearResult();
+        return;
+      }
+
+      statusEl.textContent = data.error || message || tr("rag.failed");
+      statusEl.classList.add("is-error");
+    } catch (error) {
+      activeJobId = null;
+      stopPolling();
+      setIdleUI();
+      statusEl.textContent = error.message || tr("rag.status_error");
+      statusEl.classList.add("is-error");
+    }
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    stopPolling();
+    clearResult();
+
+    if (!validateQuestion()) {
+      return;
+    }
+
+    try {
+      const formData = new FormData(form);
+      setRunningUI(tr("rag.sending"));
+      const data = await fetchJson("{{ url_for('rag.rag_ask') }}", {
+        method: "POST",
+        body: formData,
+      });
+
+      activeJobId = data.job_id;
+      pollJob(activeJobId);
+    } catch (error) {
+      activeJobId = null;
+      stopPolling();
+      setIdleUI();
+      statusEl.textContent = error.message || tr("rag.unexpected_error");
+      statusEl.classList.add("is-error");
+    }
+  });
+
+  cancelButton.addEventListener("click", async () => {
+    if (!activeJobId) return;
+
+    try {
+      const data = await fetchJson(`{{ url_for('rag.rag_cancel', job_id=0) }}`.replace("/0", `/${activeJobId}`), {
+        method: "POST",
+        headers: csrfHeaders(),
+        body: new FormData(form),
+      });
+      setRunningUI(data.message || tr("rag.cancel_button"));
+    } catch (error) {
+      statusEl.textContent = error.message || tr("rag.cancel_error");
+      statusEl.classList.add("is-error");
+    }
+  });
+
+  questionEl.addEventListener("input", () => {
+    if (statusEl.classList.contains("is-error")) {
+      validateQuestion();
+    }
+  });
+</script>
+{% endblock %}
