@@ -3,9 +3,9 @@ from unittest.mock import MagicMock, patch
 
 from wtforms.validators import ValidationError
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.error_handling import (
+from app.main.code.error_handling import (
     PasswordSecurity,
     collect_form_errors,
     register_error_handlers,
@@ -64,8 +64,8 @@ class ErrorResponseUnitTest(BaseAppTestCase):
         with self.app.test_request_context("/x", headers={"Accept": "application/json"}):
             self.assertTrue(wants_json_response())
 
-    @patch("app.error_handling.render_template", return_value="<html>Error</html>")
-    @patch("app.error_handling.t", side_effect=lambda key: key)
+    @patch("app.main.code.error_handling.render_template", return_value="<html>Error</html>")
+    @patch("app.main.code.error_handling.t", side_effect=lambda key: key)
     def test_render_error_response_uses_template_for_html(self, _mock_t, mock_render):
         with self.app.test_request_context("/missing", headers={"Accept": "text/html"}):
             body, status = render_error_response(404, "title.key", "message.key")
@@ -74,7 +74,7 @@ class ErrorResponseUnitTest(BaseAppTestCase):
         self.assertEqual(body, "<html>Error</html>")
         mock_render.assert_called_once()
 
-    @patch("app.error_handling.t", side_effect=lambda key: key)
+    @patch("app.main.code.error_handling.t", side_effect=lambda key: key)
     def test_render_error_response_uses_json_when_requested(self, _mock_t):
         with self.app.test_request_context("/rag/status"):
             response, status = render_error_response(400, "title.key", "message.key")

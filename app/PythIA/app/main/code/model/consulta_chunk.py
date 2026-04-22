@@ -7,11 +7,12 @@ from __future__ import annotations
 
 from sqlalchemy import UniqueConstraint
 
-from app.extensions import db
+from app.main.code.extensions import db
 
 
 class ConsultaChunk(db.Model):
-    """Relación entre una consulta y un fragmento recuperado.
+    """
+    Relación entre una consulta y un fragmento recuperado.
 
     Attributes:
         consulta_id: Identificador de la consulta.

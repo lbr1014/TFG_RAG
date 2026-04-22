@@ -5,13 +5,13 @@ Script con pruebas unitarias de las notificaciones de conversion Markdown.
 
 from unittest.mock import patch
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.markdown_conversion_state import send_markdown_finished_email
+from app.main.code.services.markdown_conversion_state import send_markdown_finished_email
 
 
 class MarkdownConversionStateNotificationUnitTest(BaseAppTestCase):
-    @patch("app.markdown_conversion_state.mail.send")
+    @patch("app.main.code.services.markdown_conversion_state.mail.send")
     def test_send_markdown_finished_email_includes_metrics_and_url(self, mock_send):
         send_markdown_finished_email(
             "user@example.com",

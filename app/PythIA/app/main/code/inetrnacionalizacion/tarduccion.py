@@ -17,7 +17,6 @@ TRANSLATIONS = {
 }
 
 
-
 def normalize_language(lang):
     """Normaliza un código de idioma.
 
@@ -291,7 +290,7 @@ def init_app(app):
 
     @app.post("/language")
     def set_language_route():
-        from app.forms import LanguageForm
+        from app.main.code.forms import LanguageForm
 
         form = LanguageForm()
         if not form.validate_on_submit():

@@ -3,10 +3,9 @@ from unittest.mock import MagicMock, patch
 
 from flask import g, session
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.inetrnacionalizacion import tarduccion
-
+from app.main.code.inetrnacionalizacion import tarduccion
 
 class TraduccionUnitTest(BaseAppTestCase):
     def test_normalize_language_accepts_supported_languages_and_defaults(self):
@@ -33,7 +32,7 @@ class TraduccionUnitTest(BaseAppTestCase):
 
         with self.app.test_request_context("/"):
             session["lang"] = "en"
-            with patch("app.inetrnacionalizacion.tarduccion.translate_for", return_value="translated") as mock_translate:
+            with patch("app.main.code.inetrnacionalizacion.tarduccion.translate_for", return_value="translated") as mock_translate:
                 self.assertEqual(tarduccion.t("common.loading"), "translated")
         mock_translate.assert_called_once_with("en", "common.loading")
 
@@ -45,7 +44,7 @@ class TraduccionUnitTest(BaseAppTestCase):
         self.assertEqual(tarduccion.get_locale(), tarduccion.DEFAULT_LANGUAGE)
 
     def test_localize_runtime_message_translates_known_patterns(self):
-        with patch("app.inetrnacionalizacion.tarduccion.translate_for", side_effect=lambda lang, key, **kwargs: f"{key}:{kwargs}"):
+        with patch("app.main.code.inetrnacionalizacion.tarduccion.translate_for", side_effect=lambda lang, key, **kwargs: f"{key}:{kwargs}"):
             self.assertEqual(tarduccion.localize_runtime_message("", "en"), "")
             self.assertIn(
                 "jobs.queued_short",
@@ -83,7 +82,7 @@ class TraduccionUnitTest(BaseAppTestCase):
             i18n_validator_messages={"nombre": {"SimpleNamespace": "validation.required"}},
         )
 
-        with patch("app.inetrnacionalizacion.tarduccion.t", side_effect=lambda key: f"t:{key}"):
+        with patch("app.main.code.inetrnacionalizacion.tarduccion.t", side_effect=lambda key: f"t:{key}"):
             result = tarduccion.localize_form(form)
 
         self.assertIs(result, form)
@@ -102,7 +101,7 @@ class TraduccionUnitTest(BaseAppTestCase):
         )
 
         self.assertIsNone(tarduccion.localize_form(None))
-        with patch("app.inetrnacionalizacion.tarduccion.t", side_effect=lambda key: f"t:{key}"):
+        with patch("app.main.code.inetrnacionalizacion.tarduccion.t", side_effect=lambda key: f"t:{key}"):
             result = tarduccion.localize_form(form)
 
         self.assertIs(result, form)
@@ -111,7 +110,7 @@ class TraduccionUnitTest(BaseAppTestCase):
         self.assertEqual(validator.message, "old")
 
     def test_get_client_translations_returns_expected_keys(self):
-        with patch("app.inetrnacionalizacion.tarduccion.t", side_effect=lambda key: f"t:{key}"):
+        with patch("app.main.code.inetrnacionalizacion.tarduccion.t", side_effect=lambda key: f"t:{key}"):
             translations = tarduccion.get_client_translations()
 
         self.assertEqual(translations["common.loading"], "t:common.loading")
@@ -137,7 +136,7 @@ class TraduccionUnitTest(BaseAppTestCase):
             self.assertEqual(g.locale, "en")
 
         context = {}
-        with patch("app.inetrnacionalizacion.tarduccion.get_client_translations", return_value={"common.loading": "Loading"}):
+        with patch("app.main.code.inetrnacionalizacion.tarduccion.get_client_translations", return_value={"common.loading": "Loading"}):
             self.app.update_template_context(context)
         self.assertIs(context["t"], tarduccion.t)
         self.assertIn("current_locale", context)

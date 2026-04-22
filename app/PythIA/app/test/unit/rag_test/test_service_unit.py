@@ -9,15 +9,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from flask_login import login_user
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.entities.consulta import Consulta
-from app.entities.consulta_chunk import ConsultaChunk
-from app.entities.rag_query_state import RAGQueryState
-from app.extensions import db
-from app.rag import routes as rag_routes
-from app.rag import service
-from app.rag.PrototipoRAG import OllamaModelNotFoundError, OllamaTimeoutError, QueryCancelledError
+from app.main.code.model.consulta import Consulta
+from app.main.code.model.consulta_chunk import ConsultaChunk
+from app.main.code.model.rag_query_state import RAGQueryState
+from app.main.code.extensions import db
+from app.main.code.controllers.rag import routes as rag_routes
+from app.main.code.services.rag import service
+from app.main.code.services.rag.PrototipoRAG import OllamaModelNotFoundError, OllamaTimeoutError, QueryCancelledError
 
 
 class RAGServiceUnitTest(BaseAppTestCase):
@@ -192,7 +192,7 @@ class RAGServiceUnitTest(BaseAppTestCase):
             }
         )
 
-        with patch("app.rag.service.obtener_mejor_chunk", mock_obtener):
+        with patch("app.main.code.services.rag.service.obtener_mejor_chunk", mock_obtener):
             result = asyncio.run(
                 service.rag_answer(
                     "Consulta el expediente EXP-55 del pliego tecnico",
@@ -210,7 +210,7 @@ class RAGServiceUnitTest(BaseAppTestCase):
     def test_rag_answer_returns_validation_error_without_calling_rag(self):
         mock_obtener = AsyncMock()
 
-        with patch("app.rag.service.obtener_mejor_chunk", mock_obtener):
+        with patch("app.main.code.services.rag.service.obtener_mejor_chunk", mock_obtener):
             result = asyncio.run(service.rag_answer("", user_id=1))
 
         self.assertIn("answer", result)
@@ -220,9 +220,9 @@ class RAGServiceUnitTest(BaseAppTestCase):
         user = self.create_user()
         status_calls = []
 
-        with patch("app.rag.service.obtener_mejor_chunk", AsyncMock(side_effect=OllamaTimeoutError("timeout"))), patch(
-            "app.rag.service.translate_for", side_effect=lambda lang, key, **kwargs: key
-        ), patch("app.rag.service.logger.warning") as mock_warning:
+        with patch("app.main.code.services.rag.service.obtener_mejor_chunk", AsyncMock(side_effect=OllamaTimeoutError("timeout"))), patch(
+            "app.main.code.services.rag.service.translate_for", side_effect=lambda lang, key, **kwargs: key
+        ), patch("app.main.code.services.rag.service.logger.warning") as mock_warning:
             timeout_result = asyncio.run(
                 service.rag_answer("Pregunta timeout", on_status=status_calls.append, user_id=user.id)
             )
@@ -231,9 +231,9 @@ class RAGServiceUnitTest(BaseAppTestCase):
         self.assertEqual(timeout_result["answer"], "rag.timeout_error")
         mock_warning.assert_called_once()
 
-        with patch("app.rag.service.obtener_mejor_chunk", AsyncMock(side_effect=RuntimeError("boom"))), patch(
-            "app.rag.service.translate_for", side_effect=lambda lang, key, **kwargs: key
-        ), patch("app.rag.service.logger.exception") as mock_exception:
+        with patch("app.main.code.services.rag.service.obtener_mejor_chunk", AsyncMock(side_effect=RuntimeError("boom"))), patch(
+            "app.main.code.services.rag.service.translate_for", side_effect=lambda lang, key, **kwargs: key
+        ), patch("app.main.code.services.rag.service.logger.exception") as mock_exception:
             error_result = asyncio.run(service.rag_answer("Pregunta error", user_id=user.id))
 
         self.assertEqual(error_result["answer"], "rag.system_error")
@@ -243,25 +243,25 @@ class RAGServiceUnitTest(BaseAppTestCase):
         user = self.create_user()
 
         with patch(
-            "app.rag.service.obtener_mejor_chunk",
+            "app.main.code.services.rag.service.obtener_mejor_chunk",
             AsyncMock(side_effect=OllamaModelNotFoundError("missing")),
         ), patch(
-            "app.rag.service.translate_for",
+            "app.main.code.services.rag.service.translate_for",
             side_effect=lambda lang, key, **kwargs: key,
-        ), patch("app.rag.service.logger.warning") as mock_warning:
+        ), patch("app.main.code.services.rag.service.logger.warning") as mock_warning:
             result = asyncio.run(service.rag_answer("Pregunta modelo", user_id=user.id))
 
         self.assertEqual(result["answer"], "rag.model_not_found_error")
         mock_warning.assert_called_once()
 
     def test_rag_answer_propagates_query_cancelled_error(self):
-        with patch("app.rag.service.obtener_mejor_chunk", AsyncMock(side_effect=QueryCancelledError("cancelado"))):
+        with patch("app.main.code.services.rag.service.obtener_mejor_chunk", AsyncMock(side_effect=QueryCancelledError("cancelado"))):
             with self.assertRaises(QueryCancelledError):
                 asyncio.run(service.rag_answer("Pregunta cancelada", user_id=1))
 
     def test_try_persist_rolls_back_when_persist_fails(self):
-        with patch("app.rag.service.persist_consulta", side_effect=RuntimeError("boom")), patch(
-            "app.rag.service.logger.exception"
+        with patch("app.main.code.services.rag.service.persist_consulta", side_effect=RuntimeError("boom")), patch(
+            "app.main.code.services.rag.service.logger.exception"
         ):
             service.try_persist("Pregunta", {"answer": "Respuesta"}, 0.1, user_id=1)
 
@@ -330,7 +330,7 @@ class RAGRoutesWorkerUnitTest(BaseAppTestCase):
             kwargs["on_status"]("Procesando")
             return {"answer": "Respuesta"}
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(side_effect=fake_rag_answer)) as mock_rag_answer:
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(side_effect=fake_rag_answer)) as mock_rag_answer:
             rag_routes.run_rag_query_async(self.app, job.id, user.id, lang="es")
 
         db.session.expire_all()
@@ -356,7 +356,7 @@ class RAGRoutesWorkerUnitTest(BaseAppTestCase):
             kwargs["on_status"]("No debe escribirse")
             return {"answer": "Respuesta"}
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(side_effect=fake_rag_answer)):
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(side_effect=fake_rag_answer)):
             rag_routes.run_rag_query_async(self.app, job.id, user.id)
 
         db.session.expire_all()
@@ -376,7 +376,7 @@ class RAGRoutesWorkerUnitTest(BaseAppTestCase):
             db.session.commit()
             return {"answer": "Respuesta"}
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(side_effect=fake_rag_answer)):
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(side_effect=fake_rag_answer)):
             rag_routes.run_rag_query_async(self.app, job.id, user.id)
 
         db.session.expire_all()
@@ -391,7 +391,7 @@ class RAGRoutesWorkerUnitTest(BaseAppTestCase):
         db.session.add(job)
         db.session.commit()
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(side_effect=QueryCancelledError("cancelado"))):
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(side_effect=QueryCancelledError("cancelado"))):
             rag_routes.run_rag_query_async(self.app, job.id, user.id)
 
         db.session.expire_all()
@@ -405,7 +405,7 @@ class RAGRoutesWorkerUnitTest(BaseAppTestCase):
         db.session.add(job)
         db.session.commit()
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(side_effect=RuntimeError("boom"))), patch.object(
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(side_effect=RuntimeError("boom"))), patch.object(
             self.app.logger,
             "exception",
         ) as mock_exception:

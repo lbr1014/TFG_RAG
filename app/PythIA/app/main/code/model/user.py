@@ -9,12 +9,13 @@ from zoneinfo import ZoneInfo
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.countries import DEFAULT_COUNTRY_CODE
-from app.extensions import db
+from app.main.code.countries import DEFAULT_COUNTRY_CODE
+from app.main.code.extensions import db
 
 
 class User(db.Model, UserMixin):
-    """Usuario registrado en la aplicación.
+    """
+    Usuario registrado en la aplicación.
 
     Attributes:
         id: Identificador interno del usuario.
@@ -36,13 +37,18 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
     def __init__(self, **kwargs):
-        """Inicializa el usuario con Espana como pais por defecto."""
+        """
+        Inicializa el usuario con Espana como pais por defecto.
+        Args:
+            **kwargs: Valores iniciales del modelo SQLAlchemy.
+        """
         super().__init__(**kwargs)
         if not self.country_code:
             self.country_code = DEFAULT_COUNTRY_CODE
 
     def set_password(self, password_plain: str):
-        """Guarda la contraseña cifrada del usuario.
+        """
+        Guarda la contraseña cifrada del usuario.
 
         Args:
             password_plain: Contraseña en texto plano introducida por el
@@ -51,7 +57,8 @@ class User(db.Model, UserMixin):
         self.password_hash = generate_password_hash(password_plain)
 
     def check_password(self, password_plain: str) -> bool:
-        """Comprueba si una contraseña coincide con el hash guardado.
+        """
+        Comprueba si una contraseña coincide con el hash guardado.
 
         Args:
             password_plain: Contraseña en texto plano que se quiere comprobar.
@@ -62,12 +69,15 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password_plain)
 
     def update_last_login(self):
-        """Actualiza la fecha del último inicio de sesión."""
+        """
+        Actualiza la fecha del último inicio de sesión.
+        """
         self.last_login = datetime.now(ZoneInfo("Europe/Madrid"))
 
     @staticmethod
     def get_by_id(user_id: int):
-        """Busca un usuario por identificador.
+        """
+        Busca un usuario por identificador.
 
         Args:
             user_id: Identificador del usuario.
@@ -79,7 +89,8 @@ class User(db.Model, UserMixin):
 
     @staticmethod
     def get_by_email(email: str):
-        """Busca un usuario por correo electrónico.
+        """
+        Busca un usuario por correo electrónico.
 
         Args:
             email: Correo electrónico del usuario.
@@ -90,13 +101,19 @@ class User(db.Model, UserMixin):
         return User.query.filter_by(email=email).first()
 
     def make_admin(self):
-        """Concede permisos de administración al usuario."""
+        """
+        Da permisos de administración al usuario.
+        """
         self.is_admin = True
 
     def make_user(self):
-        """Retira permisos de administración al usuario."""
+        """
+        Quita permisos de administración al usuario.
+        """
         self.is_admin = False
 
     def change_is_admin(self):
-        """Alterna el rol de administración del usuario."""
+        """
+        Cambia el rol de administración del usuario.
+        """
         self.is_admin = not self.is_admin

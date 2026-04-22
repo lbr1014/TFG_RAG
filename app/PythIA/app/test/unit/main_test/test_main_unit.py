@@ -9,10 +9,10 @@ from zoneinfo import ZoneInfo
 
 from flask_login import login_user
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.entities.consulta import Consulta
-from app.main.routes import (
+from app.main.code.model.consulta import Consulta
+from app.main.code.controllers.main.routes import (
     best_pid_for_consulta,
     build_meta_by_consulta,
     build_usage_stats_payload,
@@ -80,7 +80,7 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(payload["top_users"][0], {"user": "Ana", "count": 2})
 
     def test_build_usage_stats_payload_handles_december_calendar_end(self):
-        with patch("app.main.routes._month_sequence", return_value=[(2026, 12)]):
+        with patch("app.main.code.controllers.main.routes._month_sequence", return_value=[(2026, 12)]):
             payload = build_usage_stats_payload([])
 
         self.assertEqual(payload["summary"]["total_queries"], 0)
@@ -119,7 +119,7 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(best_pid_for_consulta(empty_consulta), "")
         self.assertEqual(best_pid_for_consulta(linked_consulta), "chunk-pid")
 
-    @patch("app.main.routes.qdrant_get_payloads")
+    @patch("app.main.code.controllers.main.routes.qdrant_get_payloads")
     def test_build_meta_by_consulta_uses_saved_fragmentos_and_legacy_qdrant_payloads(self, mock_qdrant):
         user = self.create_user(email="meta@example.com")
         saved = self.create_consulta(

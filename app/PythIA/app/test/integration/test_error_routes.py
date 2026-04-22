@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script con pruebas de integracion de las rutas de error de la aplicacion.
 """
@@ -6,8 +6,7 @@ Script con pruebas de integracion de las rutas de error de la aplicacion.
 from flask import abort
 from unittest.mock import patch
 
-from tests.support import BaseAppTestCase
-
+from app.test.support import BaseAppTestCase
 
 class ErrorRoutesIntegrationTest(BaseAppTestCase):
     def setUp(self):

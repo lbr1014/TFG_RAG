@@ -3,10 +3,9 @@ Autora: Lydia Blanco Ruiz
 Script con pruebas de integracion de decoradores de autorizacion.
 """
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.decorators import admin_required
-
+from app.main.code.decorators import admin_required
 
 class DecoratorsIntegrationTest(BaseAppTestCase):
     def setUp(self):

@@ -42,7 +42,7 @@ def _install_optional_dependency_stubs():
 
 
 _install_optional_dependency_stubs()
-conversion = importlib.import_module("app.markdown.Conversion_markdown")
+conversion = importlib.import_module("app.main.code.services.markdown.Conversion_markdown")
 
 
 def _fake_torch(cuda_available):
@@ -55,25 +55,25 @@ def _fake_torch(cuda_available):
 def _import_conversion_with_torch(cuda_available):
     original_torch = sys.modules.get("torch")
     sys.modules["torch"] = _fake_torch(cuda_available)
-    sys.modules.pop("app.markdown.Conversion_markdown", None)
+    sys.modules.pop("app.main.code.services.markdown.Conversion_markdown", None)
     try:
         with patch.dict(os.environ, {"OLLAMA_NUM_GPU": ""}):
-            return importlib.import_module("app.markdown.Conversion_markdown")
+            return importlib.import_module("app.main.code.services.markdown.Conversion_markdown")
     finally:
-        sys.modules.pop("app.markdown.Conversion_markdown", None)
+        sys.modules.pop("app.main.code.services.markdown.Conversion_markdown", None)
         if original_torch is None:
             sys.modules.pop("torch", None)
         else:
             sys.modules["torch"] = original_torch
-        sys.modules["app.markdown.Conversion_markdown"] = conversion
+        sys.modules["app.main.code.services.markdown.Conversion_markdown"] = conversion
 
 
 class ConversionMarkdownUnitTest(unittest.TestCase):
     def setUp(self):
-        sys.modules["app.markdown.Conversion_markdown"] = conversion
-        import app.markdown
+        sys.modules["app.main.code.services.markdown.Conversion_markdown"] = conversion
+        import app.main.code.services.markdown as markdown_pkg
 
-        app.markdown.Conversion_markdown = conversion
+        markdown_pkg.Conversion_markdown = conversion
 
     def test_import_paths_cover_torch_missing_env_gpu_and_main_guard(self):
         real_import = __import__
@@ -83,24 +83,24 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
                 raise ImportError("torch missing")
             return real_import(name, *args, **kwargs)
 
-        sys.modules.pop("app.markdown.Conversion_markdown", None)
+        sys.modules.pop("app.main.code.services.markdown.Conversion_markdown", None)
         with patch("builtins.__import__", side_effect=import_without_torch):
-            imported = importlib.import_module("app.markdown.Conversion_markdown")
+            imported = importlib.import_module("app.main.code.services.markdown.Conversion_markdown")
         self.assertIsNone(imported.torch)
 
-        sys.modules.pop("app.markdown.Conversion_markdown", None)
+        sys.modules.pop("app.main.code.services.markdown.Conversion_markdown", None)
         with patch.dict(os.environ, {"OLLAMA_NUM_GPU": "2"}):
-            imported = importlib.import_module("app.markdown.Conversion_markdown")
+            imported = importlib.import_module("app.main.code.services.markdown.Conversion_markdown")
         self.assertEqual(imported.DEFAULT_NUM_GPU, 2)
         self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "env")
 
-        sys.modules["app.markdown.Conversion_markdown"] = conversion
+        sys.modules["app.main.code.services.markdown.Conversion_markdown"] = conversion
 
         import runpy
 
         with patch.object(sys, "argv", ["Conversion_markdown.py"]):
             with self.assertRaises(SystemExit):
-                runpy.run_module("app.markdown.Conversion_markdown", run_name="__main__")
+                runpy.run_module("app.main.code.services.markdown.Conversion_markdown", run_name="__main__")
 
     def test_import_auto_gpu_configuration_uses_cpu_when_cuda_is_unavailable(self):
         imported = _import_conversion_with_torch(cuda_available=False)
@@ -263,21 +263,21 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
 
     def test_pdf_info_page_render_and_resize_helpers(self):
         pdf_path = Path("doc.pdf")
-        with patch("app.markdown.Conversion_markdown.pdfinfo_from_path", return_value={"Pages": "2"}):
+        with patch("app.main.code.services.markdown.Conversion_markdown.pdfinfo_from_path", return_value={"Pages": "2"}):
             self.assertEqual(conversion.get_pdf_page_count(pdf_path), 2)
-        with patch("app.markdown.Conversion_markdown.pdfinfo_from_path", return_value={"Pages": "0"}):
+        with patch("app.main.code.services.markdown.Conversion_markdown.pdfinfo_from_path", return_value={"Pages": "0"}):
             with self.assertRaises(RuntimeError):
                 conversion.get_pdf_page_count(pdf_path)
 
         output_dir = Path(tempfile.mkdtemp())
         image = MagicMock()
-        with patch("app.markdown.Conversion_markdown.convert_from_path", return_value=[image]) as mock_convert:
+        with patch("app.main.code.services.markdown.Conversion_markdown.convert_from_path", return_value=[image]) as mock_convert:
             img_path = conversion.pdf_page_to_image(pdf_path, 3, output_dir, dpi=150)
         self.assertEqual(img_path, output_dir / "doc_page_3.png")
         image.save.assert_called_once_with(img_path, "PNG")
         self.assertEqual(mock_convert.call_args.kwargs["first_page"], 3)
 
-        with patch("app.markdown.Conversion_markdown.convert_from_path", return_value=[]):
+        with patch("app.main.code.services.markdown.Conversion_markdown.convert_from_path", return_value=[]):
             with self.assertRaises(RuntimeError):
                 conversion.pdf_page_to_image(pdf_path, 1, output_dir)
 
@@ -289,7 +289,7 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
             small.__enter__.return_value = small
             small.__exit__.return_value = False
             small.size = (100, 80)
-            with patch("app.markdown.Conversion_markdown.Image.open", return_value=small):
+            with patch("app.main.code.services.markdown.Conversion_markdown.Image.open", return_value=small):
                 self.assertEqual(conversion.resize_image_for_ocr(image_path, 200), image_path)
 
             large = MagicMock()
@@ -298,7 +298,7 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
             large.size = (2000, 1000)
             resized = MagicMock()
             large.resize.return_value = resized
-            with patch("app.markdown.Conversion_markdown.Image.open", return_value=large):
+            with patch("app.main.code.services.markdown.Conversion_markdown.Image.open", return_value=large):
                 resized_path = conversion.resize_image_for_ocr(image_path, 1000)
             self.assertEqual(resized_path.name, "page_max1000.png")
             large.resize.assert_called_once()
@@ -315,8 +315,8 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
             try:
                 conversion.OCR_RETRY_MAX_IMAGE_SIDES = [1000]
                 conversion.DEFAULT_NUM_GPU = -1
-                with patch("app.markdown.Conversion_markdown.resize_image_for_ocr", return_value=resized_path), patch(
-                    "app.markdown.Conversion_markdown._post_ollama_chat_async",
+                with patch("app.main.code.services.markdown.Conversion_markdown.resize_image_for_ocr", return_value=resized_path), patch(
+                    "app.main.code.services.markdown.Conversion_markdown._post_ollama_chat_async",
                     AsyncMock(return_value={"message": {"content": "markdown"}}),
                 ) as mock_post:
                     result = conversion.asyncio.run(conversion.ocr_page_with_nanonets_async(MagicMock(), image_path, 1, 2))
@@ -325,16 +325,16 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
                 self.assertEqual(mock_post.call_args.args[1]["options"]["num_gpu"], -1)
 
                 resized_path.write_bytes(b"small")
-                with patch("app.markdown.Conversion_markdown.resize_image_for_ocr", return_value=image_path), patch(
-                    "app.markdown.Conversion_markdown._post_ollama_chat_async",
+                with patch("app.main.code.services.markdown.Conversion_markdown.resize_image_for_ocr", return_value=image_path), patch(
+                    "app.main.code.services.markdown.Conversion_markdown._post_ollama_chat_async",
                     AsyncMock(side_effect=[KeyError("message"), {"message": {"content": "cpu ok"}}]),
                 ) as mock_post:
                     result = conversion.asyncio.run(conversion.ocr_page_with_nanonets_async(MagicMock(), image_path, 1, 2))
                 self.assertEqual(result, "cpu ok")
                 self.assertEqual(mock_post.call_count, 2)
 
-                with patch("app.markdown.Conversion_markdown.resize_image_for_ocr", return_value=resized_path), patch(
-                    "app.markdown.Conversion_markdown._post_ollama_chat_async",
+                with patch("app.main.code.services.markdown.Conversion_markdown.resize_image_for_ocr", return_value=resized_path), patch(
+                    "app.main.code.services.markdown.Conversion_markdown._post_ollama_chat_async",
                     AsyncMock(side_effect=conversion.OllamaOCRException("nope")),
                 ), patch.object(Path, "unlink", side_effect=OSError):
                     with self.assertRaises(conversion.OllamaOCRException):
@@ -358,13 +358,13 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
         callbacks = []
         image_path = Path(tempfile.mkdtemp()) / "page.png"
         image_path.write_text("img")
-        with patch("app.markdown.Conversion_markdown.get_pdf_page_count", return_value=1), patch(
-            "app.markdown.Conversion_markdown.pdf_page_to_image",
+        with patch("app.main.code.services.markdown.Conversion_markdown.get_pdf_page_count", return_value=1), patch(
+            "app.main.code.services.markdown.Conversion_markdown.pdf_page_to_image",
             return_value=image_path,
         ), patch(
-            "app.markdown.Conversion_markdown.ocr_page_with_nanonets_async",
+            "app.main.code.services.markdown.Conversion_markdown.ocr_page_with_nanonets_async",
             AsyncMock(return_value="1. TITULO............. 3"),
-        ), patch("app.markdown.Conversion_markdown.httpx.AsyncClient", AsyncClientContext):
+        ), patch("app.main.code.services.markdown.Conversion_markdown.httpx.AsyncClient", AsyncClientContext):
             result = conversion.asyncio.run(conversion.process_pdf_async(pdf_path, on_page_start=lambda *args: callbacks.append(args)))
         self.assertIn("# 1. TITULO 3", result)
         self.assertEqual(callbacks, [(1, 1)])
@@ -373,13 +373,13 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
         original_mode = conversion.OCR_PAGE_FAILURE_MODE
         try:
             conversion.OCR_PAGE_FAILURE_MODE = "placeholder"
-            with patch("app.markdown.Conversion_markdown.get_pdf_page_count", return_value=1), patch(
-                "app.markdown.Conversion_markdown.pdf_page_to_image",
+            with patch("app.main.code.services.markdown.Conversion_markdown.get_pdf_page_count", return_value=1), patch(
+                "app.main.code.services.markdown.Conversion_markdown.pdf_page_to_image",
                 return_value=image_path,
             ), patch(
-                "app.markdown.Conversion_markdown.ocr_page_with_nanonets_async",
+                "app.main.code.services.markdown.Conversion_markdown.ocr_page_with_nanonets_async",
                 AsyncMock(side_effect=conversion.OllamaOCRException("fallo")),
-            ), patch("app.markdown.Conversion_markdown.httpx.AsyncClient", AsyncClientContext), patch.object(
+            ), patch("app.main.code.services.markdown.Conversion_markdown.httpx.AsyncClient", AsyncClientContext), patch.object(
                 Path,
                 "unlink",
                 side_effect=OSError,
@@ -388,13 +388,13 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
             self.assertIn("OCR no disponible", result)
 
             conversion.OCR_PAGE_FAILURE_MODE = "raise"
-            with patch("app.markdown.Conversion_markdown.get_pdf_page_count", return_value=1), patch(
-                "app.markdown.Conversion_markdown.pdf_page_to_image",
+            with patch("app.main.code.services.markdown.Conversion_markdown.get_pdf_page_count", return_value=1), patch(
+                "app.main.code.services.markdown.Conversion_markdown.pdf_page_to_image",
                 return_value=image_path,
             ), patch(
-                "app.markdown.Conversion_markdown.ocr_page_with_nanonets_async",
+                "app.main.code.services.markdown.Conversion_markdown.ocr_page_with_nanonets_async",
                 AsyncMock(side_effect=conversion.OllamaOCRException("fallo")),
-            ), patch("app.markdown.Conversion_markdown.httpx.AsyncClient", AsyncClientContext):
+            ), patch("app.main.code.services.markdown.Conversion_markdown.httpx.AsyncClient", AsyncClientContext):
                 with self.assertRaises(conversion.OllamaOCRException):
                     conversion.asyncio.run(conversion.process_pdf_async(pdf_path))
         finally:
@@ -402,12 +402,12 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
 
     def test_process_pdf_save_markdown_and_main_paths(self):
         pdf_path = Path("doc.pdf")
-        with patch("app.markdown.Conversion_markdown.process_pdf_async", AsyncMock(return_value="md")):
+        with patch("app.main.code.services.markdown.Conversion_markdown.process_pdf_async", AsyncMock(return_value="md")):
             self.assertEqual(conversion.process_pdf(pdf_path), "md")
 
         with tempfile.TemporaryDirectory() as tmp:
             output_dir = Path(tmp) / "out"
-            with patch("app.markdown.Conversion_markdown.process_pdf", return_value="# Markdown") as mock_process:
+            with patch("app.main.code.services.markdown.Conversion_markdown.process_pdf", return_value="# Markdown") as mock_process:
                 out_path = conversion.save_markdown_to_file(pdf_path, output_dir)
             self.assertEqual(out_path.read_text(encoding="utf-8"), "# Markdown")
             mock_process.assert_called_once()
@@ -421,7 +421,7 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
             (in_dir / "a.pdf").write_text("pdf")
             (in_dir / "b.pdf").write_text("pdf")
             with patch.object(sys, "argv", ["cmd", str(in_dir), str(output_dir)]), patch(
-                "app.markdown.Conversion_markdown.save_markdown_to_file",
+                "app.main.code.services.markdown.Conversion_markdown.save_markdown_to_file",
             ) as mock_save:
                 conversion.main()
             self.assertEqual(mock_save.call_count, 2)

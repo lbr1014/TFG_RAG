@@ -17,10 +17,10 @@ from sqlalchemy.engine import Engine
 
 
 def _install_rag_stub() -> None:
-    if "app.rag.PrototipoRAG" in sys.modules:
+    if "app.main.code.services.rag.PrototipoRAG" in sys.modules:
         return
 
-    module = types.ModuleType("app.rag.PrototipoRAG")
+    module = types.ModuleType("app.main.code.services.rag.PrototipoRAG")
 
     class QueryCancelledError(RuntimeError):
         pass
@@ -68,26 +68,26 @@ def _install_rag_stub() -> None:
     module.resolve_rag_llm_model = lambda model=None: (model or "fake-model").strip() or "fake-model"
     module.get_rag_llm_model_choices = lambda: [
         ("fake-model", "fake-model"),
-        ("gemma4:e2b", "gemma4:e2b"),
-        ("qwen3.5", "qwen3.5"),
+        ("gemma3:4b", "gemma3:4b"),
+        ("qwen3:4b-instruct", "qwen3:4b-instruct"),
     ]
     module.qdrant_get_payloads = lambda point_ids: {}
     module.qdrant_delete_by_filename = lambda filename: None
     module.index_pliegos_dir = lambda path: {}
     module.index_pdf = lambda *args, **kwargs: []
     module.obtener_mejor_chunk = obtener_mejor_chunk
-    sys.modules["app.rag.PrototipoRAG"] = module
+    sys.modules["app.main.code.services.rag.PrototipoRAG"] = module
 
 
 _install_rag_stub()
 
-from app import create_app  # noqa: E402
-from app.entities.chunk import Chunk  # noqa: E402
-from app.entities.consulta import Consulta  # noqa: E402
-from app.entities.consulta_chunk import ConsultaChunk  # noqa: E402
-from app.entities.documento import Documento  # noqa: E402
-from app.entities.user import User  # noqa: E402
-from app.extensions import db  # noqa: E402
+from app.main.code import create_app  # noqa: E402
+from app.main.code.model.chunk import Chunk  # noqa: E402
+from app.main.code.model.consulta import Consulta  # noqa: E402
+from app.main.code.model.consulta_chunk import ConsultaChunk  # noqa: E402
+from app.main.code.model.documento import Documento  # noqa: E402
+from app.main.code.model.user import User  # noqa: E402
+from app.main.code.extensions import db  # noqa: E402
 
 
 @event.listens_for(Engine, "connect")

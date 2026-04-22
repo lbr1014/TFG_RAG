@@ -8,11 +8,12 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from app.extensions import db
+from app.main.code.extensions import db
 
 
 class Embedding(db.Model):
-    """Metadatos del embedding asociado a un fragmento.
+    """
+    Metadatos del embedding asociado a un fragmento.
 
     Attributes:
         id: Identificador interno del registro.
@@ -35,7 +36,8 @@ class Embedding(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
 
     def __init__(self, **kwargs):
-        """Inicializa el registro con fecha de creación por defecto.
+        """
+        Inicializa el registro con fecha de creación por defecto.
 
         Args:
             **kwargs: Valores iniciales del modelo SQLAlchemy.

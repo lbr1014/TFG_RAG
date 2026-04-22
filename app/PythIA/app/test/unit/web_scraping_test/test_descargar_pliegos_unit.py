@@ -39,7 +39,7 @@ def _install_optional_dependency_stubs():
 
 
 _install_optional_dependency_stubs()
-descargar = importlib.import_module("app.web_scraping.DescargarPliegos")
+descargar = importlib.import_module("app.main.code.services.web_scraping.DescargarPliegos")
 
 
 class AsyncContext:
@@ -84,7 +84,7 @@ class DescargarPliegosUnitTest(unittest.TestCase):
         self.assertEqual(list(descargar.iterar_paginas(items)), [("EXP-1", "Pliego tecnico", "http://pliego")])
 
     def test_get_paginas_builds_coroutines_for_iterated_pages(self):
-        with patch("app.web_scraping.DescargarPliegos.procesar_pagina_pliego", new=MagicMock(return_value="task")) as mock_process:
+        with patch("app.main.code.services.web_scraping.DescargarPliegos.procesar_pagina_pliego", new=MagicMock(return_value="task")) as mock_process:
             tasks = descargar.get_paginas("context", [{"datos": {"Expediente": "EXP", "Documentos": [{"Documento": "Pliego", "Ver documentos (urls)": "url"}]}}], {})
 
         self.assertEqual(tasks, ["task"])
@@ -120,7 +120,7 @@ class DescargarPliegosUnitTest(unittest.TestCase):
         response.body = AsyncMock(return_value=b"%PDF-1.4")
         bad_handle = AsyncMock()
         bad_handle.write.side_effect = RuntimeError("write")
-        with patch("app.web_scraping.DescargarPliegos.aiofiles.open", return_value=AsyncContext(bad_handle)):
+        with patch("app.main.code.services.web_scraping.DescargarPliegos.aiofiles.open", return_value=AsyncContext(bad_handle)):
             result = descargar.asyncio.run(descargar.descargar_pdf_es(context, "http://x", "EXP", "Pliego", 1))
         self.assertFalse(result)
 
@@ -131,7 +131,7 @@ class DescargarPliegosUnitTest(unittest.TestCase):
         context.request.get = AsyncMock(return_value=response)
         file_handle = AsyncMock()
 
-        with patch("app.web_scraping.DescargarPliegos.aiofiles.open", return_value=AsyncContext(file_handle)) as mock_open:
+        with patch("app.main.code.services.web_scraping.DescargarPliegos.aiofiles.open", return_value=AsyncContext(file_handle)) as mock_open:
             result = descargar.asyncio.run(descargar.descargar_pdf_es(context, "http://x", "EXP/1", "Pliego tecnico", 2))
 
         self.assertTrue(result)
@@ -197,14 +197,14 @@ class DescargarPliegosUnitTest(unittest.TestCase):
     def test_procesar_pagina_pliego_extends_dictionary_only_when_urls_exist(self):
         dic_urls = defaultdict(list)
         with patch(
-            "app.web_scraping.DescargarPliegos.extraer_urls_pliegos_desde_pagina",
+            "app.main.code.services.web_scraping.DescargarPliegos.extraer_urls_pliegos_desde_pagina",
             new=AsyncMock(return_value=[("Doc", "url")]),
         ):
             descargar.asyncio.run(descargar.procesar_pagina_pliego("ctx", "url", "EXP", "Pliego", dic_urls))
         self.assertEqual(dic_urls["EXP"], [("Doc", "url")])
 
         with patch(
-            "app.web_scraping.DescargarPliegos.extraer_urls_pliegos_desde_pagina",
+            "app.main.code.services.web_scraping.DescargarPliegos.extraer_urls_pliegos_desde_pagina",
             new=AsyncMock(return_value=[]),
         ):
             descargar.asyncio.run(descargar.procesar_pagina_pliego("ctx", "url", "EXP2", "Pliego", dic_urls))
@@ -216,7 +216,7 @@ class DescargarPliegosUnitTest(unittest.TestCase):
         context_manager.__aenter__ = AsyncMock(return_value=file_handle)
         context_manager.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("app.web_scraping.DescargarPliegos.aiofiles.open", return_value=context_manager) as mock_open:
+        with patch("app.main.code.services.web_scraping.DescargarPliegos.aiofiles.open", return_value=context_manager) as mock_open:
             descargar.asyncio.run(descargar.write_json(Path("out.json"), {"EXP": [("doc", "url")]}))
 
         mock_open.assert_called_once_with(Path("out.json"), "w", encoding="utf-8")
@@ -235,12 +235,12 @@ class DescargarPliegosUnitTest(unittest.TestCase):
         playwright = MagicMock()
         playwright.chromium.launch = AsyncMock(return_value=browser)
 
-        with patch("app.web_scraping.DescargarPliegos.RUTA_JSON") as mock_input, patch(
-            "app.web_scraping.DescargarPliegos.async_playwright", return_value=AsyncContext(playwright)
-        ), patch("app.web_scraping.DescargarPliegos.get_paginas", side_effect=lambda ctx, items, dic: [add_pdf(ctx, items, dic)]), patch(
-            "app.web_scraping.DescargarPliegos.descargar_pdf_es", new=MagicMock(side_effect=lambda **_kwargs: descargar.asyncio.sleep(0))
+        with patch("app.main.code.services.web_scraping.DescargarPliegos.RUTA_JSON") as mock_input, patch(
+            "app.main.code.services.web_scraping.DescargarPliegos.async_playwright", return_value=AsyncContext(playwright)
+        ), patch("app.main.code.services.web_scraping.DescargarPliegos.get_paginas", side_effect=lambda ctx, items, dic: [add_pdf(ctx, items, dic)]), patch(
+            "app.main.code.services.web_scraping.DescargarPliegos.descargar_pdf_es", new=MagicMock(side_effect=lambda **_kwargs: descargar.asyncio.sleep(0))
         ) as mock_download, patch(
-            "app.web_scraping.DescargarPliegos.write_json", new=AsyncMock()
+            "app.main.code.services.web_scraping.DescargarPliegos.write_json", new=AsyncMock()
         ) as mock_write:
             mock_input.read_text.return_value = json.dumps([{"datos": {"Expediente": "EXP"}}])
             descargar.asyncio.run(descargar.run())
@@ -256,8 +256,8 @@ class DescargarPliegosUnitTest(unittest.TestCase):
         def close_coroutine(coro):
             coro.close()
 
-        with patch("app.web_scraping.DescargarPliegos.run", new=AsyncMock()):
+        with patch("app.main.code.services.web_scraping.DescargarPliegos.run", new=AsyncMock()):
             with patch("asyncio.run", side_effect=close_coroutine) as mock_asyncio_run:
-                runpy.run_module("app.web_scraping.DescargarPliegos", run_name="__main__")
+                runpy.run_module("app.main.code.services.web_scraping.DescargarPliegos", run_name="__main__")
 
         mock_asyncio_run.assert_called_once()

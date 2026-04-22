@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script con las claves de traducción.
 """

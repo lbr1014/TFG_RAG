@@ -10,11 +10,12 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy import UniqueConstraint
 
-from app.extensions import db
+from app.main.code.extensions import db
 
 
 class Chunk(db.Model):
-    """Fragmento indexado de un documento.
+    """
+    Fragmento indexado de un documento.
 
     Attributes:
         id: Identificador interno del fragmento.
@@ -50,7 +51,8 @@ class Chunk(db.Model):
     )
 
     def __init__(self, **kwargs):
-        """Inicializa el fragmento con fecha de creación por defecto.
+        """
+        Inicializa el fragmento con fecha de creación por defecto.
 
         Args:
             **kwargs: Valores iniciales del modelo SQLAlchemy.
@@ -58,3 +60,103 @@ class Chunk(db.Model):
         super().__init__(**kwargs)
         if not self.created_at:
             self.created_at = datetime.now(ZoneInfo("Europe/Madrid"))
+            
+    @classmethod
+    def find_from_retrieved_item(cls, item: dict) -> "Chunk | None":
+        """
+        Busca el chunk SQL correspondiente a un resultado recuperado.
+        
+        Args:
+            item (dict): El item recuperado que contiene metadatos de chunk.
+            
+        Returns:
+            Chunk | None: El objeto Chunk SQL correspondiente o None si no se encuentra.
+        """
+        chunk_obj = None
+        qid = (item.get("qdrant_point_id") or "").strip()
+        if qid:
+            chunk_obj = cls.query.filter_by(qdrant_point_id=qid).first()
+
+        if chunk_obj is None:
+            doc_id = item.get("document_id")
+            doc_sha = item.get("doc_sha256")
+            seg_idx = item.get("segment_index")
+            if doc_id is not None and doc_sha and seg_idx is not None:
+                chunk_obj = cls.query.filter_by(
+                    document_id=int(doc_id),
+                    doc_sha256=str(doc_sha),
+                    segment_index=int(seg_idx),
+                ).first()
+        return chunk_obj
+
+    def metadata_for_fragment(self) -> dict:
+        """
+        Construye los metadatos propios del chunk para guardarlos en una consulta.
+        
+        Args:
+            self: El objeto chunk del que extraer los metadatos.
+            
+        Returns:
+            dict: Diccionario con los metadatos del chunk.
+        """
+        metadata = {
+            "chunk_id": int(self.id),
+            "document_id": int(self.document_id),
+            "doc_sha256": self.doc_sha256,
+            "segment_index": self.segment_index,
+            "n_chars": self.n_chars,
+            "n_tokens": self.n_tokens,
+            "qdrant_point_id": self.qdrant_point_id,
+        }
+        if self.created_at is not None:
+            metadata["created_at"] = self.created_at.isoformat()
+
+        document = getattr(self, "document", None)
+        if document is not None:
+            metadata.update(
+                {
+                    "document_name": document.nombre,
+                    "document_path": document.path,
+                    "document_hash": document.hash,
+                }
+            )
+        return metadata
+
+    @staticmethod
+    def build_fragment_from_retrieved_item(item: dict, chunk_obj: "Chunk | None" = None) -> dict:
+        """
+        Construye el fragmento serializable que se guarda en Consulta.fragmentos.
+        
+        Args:
+            item (dict): El item recuperado.
+            chunk_obj (Chunk | None): El objeto chunk SQL correspondiente.
+            
+        Returns:
+            dict: El fragmento serializable.
+        """
+        chunk_metadata = dict(item.get("metadata") or {})
+        chunk = item.get("chunk", "") or ""
+
+        if chunk_obj is not None:
+            for key, value in chunk_obj.metadata_for_fragment().items():
+                chunk_metadata.setdefault(key, value)
+
+        for src_key, dst_key in (
+            ("document_id", "document_id"),
+            ("doc_sha256", "doc_sha256"),
+            ("segment_index", "segment_index"),
+            ("filename", "filename"),
+            ("title", "title"),
+            ("qdrant_point_id", "qdrant_point_id"),
+        ):
+            value = item.get(src_key)
+            if value not in (None, ""):
+                chunk_metadata.setdefault(dst_key, value)
+
+        return {
+            "ranking": int(item.get("ranking", 0)),
+            "similitud": float(item.get("similitud", 0.0)),
+            "qdrant_point_id": str(item.get("qdrant_point_id", "") or ""),
+            "chunk": str(chunk),
+            "metadata": chunk_metadata,
+        }

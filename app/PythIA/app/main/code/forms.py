@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script con los formularios Flask-WTF usados por autenticación, administración, documentos y consultas RAG.
 """

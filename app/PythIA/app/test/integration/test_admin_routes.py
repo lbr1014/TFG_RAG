@@ -8,20 +8,21 @@ import os
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from tests.support import BaseAppTestCase
-
-from app.extensions import db
-from app.entities.markdown_conversion_state import MarkdownConversionState
-from app.entities.user import User
-from app.entities.vector_update_state import VectorUpdateState
-from app.entities.web_scraping_state import WebScrapingSate
+from app.test.support import BaseAppTestCase
+from app.main.code.extensions import db
+from app.main.code.model.markdown_conversion_state import MarkdownConversionState
+from app.main.code.model.user import User
+from app.main.code.model.vector_update_state import VectorUpdateState
+from app.main.code.model.web_scraping_state import WebScrapingSate
 
 
 class AdminRoutesIntegrationTest(BaseAppTestCase):
+
     def setUp(self):
         super().setUp()
         self.admin = self.create_user(email="admin@example.com", is_admin=True)
         self.login(self.admin.email)
+
 
     def test_admin_can_toggle_and_delete_users(self):
         user = self.create_user(email="user@example.com", is_admin=False)
@@ -56,7 +57,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         fake_service.get_markdown_status_map.return_value = {}
         fake_service.count_pending_markdown.return_value = 0
 
-        with patch("app.admin.routes.documentos_service", return_value=fake_service):
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
             response = self.client.get("/admin/documents/list?page=1")
 
         self.assertEqual(response.status_code, 200)
@@ -67,7 +68,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
     def test_admin_upload_documents_delegates_to_service(self):
         fake_service = MagicMock()
 
-        with patch("app.admin.routes.documentos_service", return_value=fake_service):
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
             response = self.client.post(
                 "/admin/documents/upload",
                 data={"files": (BytesIO(b"%PDF-1.4"), "nuevo.pdf")},
@@ -84,7 +85,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
 
         fake_service = MagicMock()
         fake_service.save_uploads.return_value = 0
-        with patch("app.admin.routes.documentos_service", return_value=fake_service):
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
             no_pdf = self.client.post(
                 "/admin/documents/upload",
                 data={"files": (BytesIO(b"texto"), "notas.txt")},
@@ -97,20 +98,23 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         empty_form = MagicMock()
         empty_form.validate_on_submit.return_value = True
         empty_form.files.data = []
-        with patch("app.admin.routes.PdfUploadForm", return_value=empty_form):
+        with patch("app.main.code.controllers.admin.routes.PdfUploadForm", return_value=empty_form):
             no_files = self.client.post("/admin/documents/upload", follow_redirects=False)
         self.assertEqual(no_files.status_code, 302)
 
         zero_form = MagicMock()
         zero_form.validate_on_submit.return_value = True
         zero_form.files.data = [MagicMock(filename="doc.pdf")]
-        with patch("app.admin.routes.PdfUploadForm", return_value=zero_form), patch(
-            "app.admin.routes.documentos_service", return_value=fake_service
+        with patch("app.main.code.controllers.admin.routes.PdfUploadForm", return_value=zero_form), patch(
+            "app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service
         ):
             zero_saved = self.client.post("/admin/documents/upload", follow_redirects=False)
         self.assertEqual(zero_saved.status_code, 302)
 
-    @patch("app.admin.routes.executor.submit")
+
+
+    @patch("app.main.code.controllers.admin.routes.executor.submit")
+
     def test_admin_vector_update_creates_queued_job(self, mock_submit):
         response = self.client.post("/admin/vector-db/update")
 
@@ -169,7 +173,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(duplicate_response.status_code, 200)
         self.assertEqual(User.query.filter_by(email=existing.email).count(), 1)
 
-    @patch("app.admin.routes.markdown_executor.submit")
+    @patch("app.main.code.controllers.admin.routes.markdown_executor.submit")
     def test_admin_markdown_convert_creates_queued_job(self, mock_submit):
         response = self.client.post("/admin/documents/markdown/convert")
 
@@ -183,7 +187,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
     def test_admin_async_post_routes_return_invalid_response_when_validation_fails(self):
         invalid_response = ({"error": "bad"}, 400)
 
-        with patch("app.admin.routes._validate_post_action", return_value=invalid_response):
+        with patch("app.main.code.controllers.admin.routes._validate_post_action", return_value=invalid_response):
             markdown = self.client.post("/admin/documents/markdown/convert")
             vector = self.client.post("/admin/vector-db/update")
             scraping = self.client.post("/admin/documents/web_scraping")
@@ -248,7 +252,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(cancelled.get_json()["status"], "failed")
         self.assertEqual(missing.status_code, 404)
 
-    @patch("app.admin.routes.executor.submit")
+    @patch("app.main.code.controllers.admin.routes.executor.submit")
     def test_admin_web_scraping_creates_queued_job(self, mock_submit):
         response = self.client.post("/admin/documents/web_scraping")
 
@@ -288,7 +292,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
     def test_admin_delete_document_delegates_to_service(self):
         fake_service = MagicMock()
 
-        with patch("app.admin.routes.documentos_service", return_value=fake_service):
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
             response = self.client.post("/admin/documents/123/delete", follow_redirects=False)
 
         self.assertEqual(response.status_code, 302)
@@ -298,7 +302,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         fake_service = MagicMock()
         fake_service.delete_document.side_effect = RuntimeError("boom")
 
-        with patch("app.admin.routes.documentos_service", return_value=fake_service), patch.object(
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service), patch.object(
             self.app.logger, "exception"
         ):
             response = self.client.post(

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script para declarar las extensiones Flask compartidas por la aplicación.
 """

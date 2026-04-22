@@ -9,14 +9,13 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from werkzeug.datastructures import FileStorage
+from app.test.support import BaseAppTestCase
 
-from tests.support import BaseAppTestCase
-
-from app.documentos import STATUS_WITH_MARKDOWN, DocumentosService, JobCancelledError, infer_document_metadata_from_filename, update_sql
-from app.entities.chunk import Chunk
-from app.entities.documento import Documento
-from app.entities.embedding import Embedding
-from app.extensions import db
+from app.main.code.services.documentos import STATUS_WITH_MARKDOWN, DocumentosService, JobCancelledError, infer_document_metadata_from_filename, update_sql
+from app.main.code.model.chunk import Chunk
+from app.main.code.model.documento import Documento
+from app.main.code.model.embedding import Embedding
+from app.main.code.extensions import db
 
 
 class DocumentosServiceUnitTest(BaseAppTestCase):
@@ -114,7 +113,7 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
         doc = self.create_document(nombre="cleanup-errors.pdf")
         service.delete_chunks = MagicMock(side_effect=RuntimeError("remote error"))
 
-        with patch("app.documentos.Path.exists", side_effect=RuntimeError("fs error")):
+        with patch("app.main.code.services.documentos.Path.exists", side_effect=RuntimeError("fs error")):
             service.delete_document(doc.id)
 
         self.assertIsNone(db.session.get(Documento, doc.id))
@@ -483,9 +482,9 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
         self.assertEqual(chunk.tipo_documento, "tecnico")
         self.assertEqual(Embedding.query.filter_by(chunk_id=chunk.id).count(), 1)
 
-    @patch("app.main.routes.qdrant_get_payloads", return_value={"legacy-qid": {"metadata": {"filename": "legacy.pdf"}, "content": "texto"}})
+    @patch("app.main.code.controllers.main.routes.qdrant_get_payloads", return_value={"legacy-qid": {"metadata": {"filename": "legacy.pdf"}, "content": "texto"}})
     def test_build_meta_by_consulta_uses_fragmentos_and_legacy_qdrant(self, mock_qdrant):
-        from app.main.routes import build_meta_by_consulta
+        from app.main.code.controllers.main.routes import build_meta_by_consulta
 
         user = self.create_user()
         consulta_saved = self.create_consulta(

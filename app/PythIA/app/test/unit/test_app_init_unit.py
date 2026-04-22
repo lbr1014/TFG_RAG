@@ -6,10 +6,10 @@ Script con pruebas unitarias de la factoria de aplicacion.
 import os
 from unittest.mock import patch
 
-import app as app_factory
-from app.entities.user import User
-from app.extensions import login_manager
-from tests.support import BaseAppTestCase
+import app.main.code as app_factory
+from app.main.code.model.user import User
+from app.main.code.extensions import login_manager
+from app.test.support import BaseAppTestCase
 
 
 class AppInitHelpersUnitTest(BaseAppTestCase):
@@ -62,7 +62,7 @@ class AppInitHelpersUnitTest(BaseAppTestCase):
 
 class CreateAppUnitTest(BaseAppTestCase):
     def test_create_app_raises_when_database_url_cannot_be_built(self):
-        with patch("app.load_dotenv"), patch.dict(
+        with patch("app.main.code.load_dotenv"), patch.dict(
             os.environ,
             {"FLASK_SESSION_SIGNER": "test-secret"},
             clear=True,
@@ -73,7 +73,7 @@ class CreateAppUnitTest(BaseAppTestCase):
         self.assertIn("DATABASE_URL", str(raised.exception))
 
     def test_create_app_normalizes_legacy_postgres_url(self):
-        with patch("app.load_dotenv"), patch.object(app_factory.db, "init_app"), patch.object(
+        with patch("app.main.code.load_dotenv"), patch.object(app_factory.db, "init_app"), patch.object(
             app_factory.migrate, "init_app"
         ), patch.object(app_factory.mail, "init_app"), patch.object(app_factory.csrf, "init_app"), patch.dict(
             os.environ,

@@ -39,7 +39,7 @@ def _install_optional_dependency_stubs():
 
 
 _install_optional_dependency_stubs()
-pliegos = importlib.import_module("app.web_scraping.PliegosPlaywrightAsincrono")
+pliegos = importlib.import_module("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono")
 
 
 class AsyncContext:
@@ -136,19 +136,19 @@ class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
         self.assertEqual(resultados, [{"datos": {}}])
 
     def test_cargar_resultados_existentes_returns_empty_for_missing_or_invalid_file(self):
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=False):
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=False):
             self.assertEqual(pliegos.cargar_resultados_existentes(), [])
 
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=True), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.Path.open", mock_open(read_data="{")
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=True), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.Path.open", mock_open(read_data="{")
         ):
             self.assertEqual(pliegos.cargar_resultados_existentes(), [])
 
     def test_cargar_resultados_existentes_returns_list_json(self):
         data = [{"datos": {"Expediente": "EXP"}}]
 
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=True), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.Path.open", mock_open(read_data=json.dumps(data))
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=True), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.Path.open", mock_open(read_data=json.dumps(data))
         ):
             self.assertEqual(pliegos.cargar_resultados_existentes(), data)
 
@@ -171,8 +171,8 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         frame.wait_for_selector = AsyncMock(side_effect=pliegos.PWTimeoutError("missing"))
         page = MagicMock(frames=[frame])
 
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.time.monotonic", side_effect=[0, 1]), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.asyncio.sleep", new=AsyncMock()
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.time.monotonic", side_effect=[0, 1]), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.asyncio.sleep", new=AsyncMock()
         ):
             with self.assertRaises(pliegos.PWTimeoutError):
                 await pliegos.encontrar_frame(page, "#selector", timeout_ms=500)
@@ -182,8 +182,8 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         frame.wait_for_selector = AsyncMock(side_effect=[pliegos.PWTimeoutError("missing"), None])
         page = MagicMock(frames=[frame])
 
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.time.monotonic", side_effect=[0, 0, 1]), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.asyncio.sleep", new=AsyncMock()
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.time.monotonic", side_effect=[0, 0, 1]), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.asyncio.sleep", new=AsyncMock()
         ) as mock_sleep:
             result = await pliegos.encontrar_frame(page, "#selector", timeout_ms=2_000)
 
@@ -231,7 +231,7 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
 
         expected = MagicMock()
         expected.to_be_enabled = AsyncMock()
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.expect", return_value=expected):
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.expect", return_value=expected):
             await pliegos.ir_pestana(page, "Documentos")
 
         locator.wait_for.assert_awaited_once_with(state="visible")
@@ -258,7 +258,7 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         page.wait_for_timeout = AsyncMock(side_effect=[RuntimeError("optional"), None])
         expected = MagicMock()
         expected.to_be_enabled = AsyncMock()
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.expect", return_value=expected):
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.expect", return_value=expected):
             await pliegos.ir_pestana(page, "Documentos")
 
         self.assertEqual(page.wait_for_timeout.await_count, 2)
@@ -415,10 +415,10 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_extraer_detalles_licitacion_combines_table_and_document_parsers(self):
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.parse_head_table", new=AsyncMock()) as mock_head, patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.parse_label_value_table", new=AsyncMock()
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.parse_head_table", new=AsyncMock()) as mock_head, patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.parse_label_value_table", new=AsyncMock()
         ) as mock_label, patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.parse_documentos",
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.parse_documentos",
             new=AsyncMock(return_value=[{"Documento": "Pliego"}]),
         ):
 
@@ -453,12 +453,12 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         )
 
         with patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.extraer_detalles_licitacion",
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.extraer_detalles_licitacion",
             new=AsyncMock(return_value={"Expediente": "EXP-1"}),
         ), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()
         ) as mock_save, patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()
         ) as mock_tab:
             resultados = await pliegos.extraer_licitaciones(page, [], {})
 
@@ -484,10 +484,10 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         index = {"EXP-1": 0}
 
         with patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.extraer_detalles_licitacion",
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.extraer_detalles_licitacion",
             new=AsyncMock(return_value={"Expediente": "EXP-1", "valor": "new"}),
-        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()
+        ), patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()
         ):
             result = await pliegos.extraer_licitaciones(page, resultados, index)
 
@@ -512,7 +512,7 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
     async def test_guardar_licitacion_json_writes_temp_file_and_replaces_atomically(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             output = Path(tmpdir) / "licitaciones.json"
-            with patch("app.web_scraping.PliegosPlaywrightAsincrono.OUTPUT_JSON", str(output)):
+            with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.OUTPUT_JSON", str(output)):
                 await pliegos.guardar_licitacion_json([{"datos": {"Expediente": "EXP-1"}}])
 
             self.assertEqual(json.loads(output.read_text(encoding="utf-8")), [{"datos": {"Expediente": "EXP-1"}}])
@@ -533,14 +533,14 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         frame = MagicMock()
         frame.locator.return_value = FakeLocator()
 
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[{"datos": {"Expediente": "OLD"}}]), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
-        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame", new=AsyncMock(return_value=frame)), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.eleccion_organo", new=AsyncMock()
-        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.extraer_licitaciones",
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[{"datos": {"Expediente": "OLD"}}]), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
+        ), patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame", new=AsyncMock(return_value=frame)), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.eleccion_organo", new=AsyncMock()
+        ), patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.ir_pestana", new=AsyncMock()), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.extraer_licitaciones",
             new=AsyncMock(return_value=[{"datos": {"Expediente": "OLD"}}, {"datos": {"Expediente": "NEW"}}]),
-        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()) as mock_save:
+        ), patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()) as mock_save:
             await pliegos.run()
 
         mock_save.assert_awaited_once()
@@ -560,12 +560,12 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         playwright = MagicMock()
         playwright.chromium.launch = AsyncMock(return_value=browser)
 
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[]), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[]), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
         ), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame",
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame",
             new=AsyncMock(side_effect=pliegos.PWTimeoutError("timeout")),
-        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()) as mock_save:
+        ), patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()) as mock_save:
             await pliegos.run()
 
         mock_save.assert_awaited_once_with([])
@@ -589,13 +589,12 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         browser.close = AsyncMock()
         playwright = MagicMock()
         playwright.chromium.launch = AsyncMock(return_value=browser)
-
-        with patch("app.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[]), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.cargar_resultados_existentes", return_value=[]), patch(
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.async_playwright", return_value=AsyncContext(playwright)
         ), patch(
-            "app.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame",
+            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.encontrar_frame",
             new=AsyncMock(side_effect=pliegos.PWTimeoutError("stop")),
-        ), patch("app.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()):
+        ), patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.guardar_licitacion_json", new=AsyncMock()):
             await pliegos.run()
 
         perfil_link.click.assert_awaited_once()
@@ -608,6 +607,6 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
             coro.close()
 
         with patch("asyncio.run", side_effect=close_coroutine) as mock_asyncio_run:
-            runpy.run_module("app.web_scraping.PliegosPlaywrightAsincrono", run_name="__main__")
+            runpy.run_module("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono", run_name="__main__")
 
         mock_asyncio_run.assert_called_once()

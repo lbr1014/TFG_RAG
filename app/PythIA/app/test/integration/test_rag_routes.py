@@ -5,10 +5,10 @@ Script con pruebas de integracion de las rutas RAG.
 
 from unittest.mock import MagicMock, patch
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.entities.rag_query_state import RAGQueryState
-from app.extensions import db
+from app.main.code.model.rag_query_state import RAGQueryState
+from app.main.code.extensions import db
 
 
 class RAGRoutesIntegrationTest(BaseAppTestCase):
@@ -36,7 +36,7 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.content_type, "application/json")
         self.assertIn("error", response.get_json())
 
-    @patch("app.rag.routes.executor.submit")
+    @patch("app.main.code.controllers.rag.routes.executor.submit")
     def test_rag_ask_creates_queued_job(self, mock_submit):
         response = self.client.post("/rag/ask", data={"question": "Que dice el pliego?"})
 
@@ -53,14 +53,14 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("error", response.get_json())
 
-    @patch("app.rag.routes.validate_question", return_value={"answer": "Pregunta no valida"})
+    @patch("app.main.code.controllers.rag.routes.validate_question", return_value={"answer": "Pregunta no valida"})
     def test_rag_ask_rejects_service_validation_error(self, _mock_validate_question):
         response = self.client.post("/rag/ask", data={"question": "Pregunta formalmente valida"})
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json()["error"], "Pregunta no valida")
 
-    @patch("app.rag.routes.executor.submit")
+    @patch("app.main.code.controllers.rag.routes.executor.submit")
     def test_rag_ask_reuses_active_job_for_same_user(self, mock_submit):
         active_job = RAGQueryState(user_id=self.user.id, question="Anterior", status="running")
         db.session.add(active_job)
@@ -106,7 +106,7 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(job.status, "cancelled")
         self.assertIsNotNone(job.finished_at)
 
-    @patch("app.rag.routes.EmptyForm")
+    @patch("app.main.code.controllers.rag.routes.EmptyForm")
     def test_rag_cancel_rejects_invalid_form(self, mock_empty_form):
         form = MagicMock()
         form.validate_on_submit.return_value = False

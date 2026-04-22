@@ -29,6 +29,7 @@ class _FakeTokenizer:
 
 
 class _FakeSentenceTransformer:
+    fail_cuda_oom_once = False
     def __init__(self, model_id, device="cpu", cache_folder=None):
         self.model_id = model_id
         self.device = device
@@ -39,11 +40,17 @@ class _FakeSentenceTransformer:
 
     def eval(self):
         self.eval_called = True
+    def to(self, device):
+        self.device = device
+        return self
 
     def get_sentence_embedding_dimension(self):
         return 3
 
     def encode(self, input_text, **_kwargs):
+        if self.device != "cpu" and self.fail_cuda_oom_once:
+            self.fail_cuda_oom_once = False
+            raise RuntimeError("CUDA error: out of memory")
         if isinstance(input_text, list):
             return [_FakeArray([float(i), float(i + 1), float(i + 2)]) for i, _ in enumerate(input_text)]
         return _FakeArray([1.0, 2.0, 3.0])
@@ -64,6 +71,9 @@ class _FakeCuda:
     def device_count():
         return 2
 
+    @staticmethod
+    def empty_cache():
+        return None
 
 class _FakeQdrantClient:
     fail_init = False
@@ -168,9 +178,9 @@ def _load_module(cuda_available=False, env=None):
         else:
             os.environ[key] = value
     _install_fake_dependencies(cuda_available=cuda_available)
-    sys.modules.pop("app.rag.PrototipoRAG", None)
+    sys.modules.pop("app.main.code.services.rag.PrototipoRAG", None)
     try:
-        return importlib.import_module("app.rag.PrototipoRAG")
+        return importlib.import_module("app.main.code.services.rag.PrototipoRAG")
     finally:
         for key, value in old_env.items():
             if value is None:
@@ -198,10 +208,10 @@ def _load_module_without_torch(env=None):
             os.environ[key] = value
     _install_fake_dependencies()
     sys.modules.pop("torch", None)
-    sys.modules.pop("app.rag.PrototipoRAG", None)
+    sys.modules.pop("app.main.code.services.rag.PrototipoRAG", None)
     try:
         with patch("builtins.__import__", side_effect=import_without_torch):
-            return importlib.import_module("app.rag.PrototipoRAG")
+            return importlib.import_module("app.main.code.services.rag.PrototipoRAG")
     finally:
         for key, value in old_env.items():
             if value is None:
@@ -294,11 +304,11 @@ class PrototipoRAGUnitTest(unittest.TestCase):
         pliegos_dir.mkdir(exist_ok=True)
 
         _install_fake_dependencies()
-        old_module = sys.modules.pop("app.rag.PrototipoRAG", None)
+        old_module = sys.modules.pop("app.main.code.services.rag.PrototipoRAG", None)
         try:
-            runpy.run_module("app.rag.PrototipoRAG", run_name="__main__")
+            runpy.run_module("app.main.code.services.rag.PrototipoRAG", run_name="__main__")
         finally:
-            sys.modules["app.rag.PrototipoRAG"] = old_module or self.m
+            sys.modules["app.main.code.services.rag.PrototipoRAG"] = old_module or self.m
 
     def test_service_urls_and_backend_descriptions(self):
         with patch.dict(os.environ, {"X_SERVICE": "host:123", "X_SERVICE_SCHEME": "https"}):
@@ -391,6 +401,15 @@ class PrototipoRAGUnitTest(unittest.TestCase):
         self.assertEqual(model("texto"), [1.0, 2.0, 3.0])
         self.assertEqual(model(["a", "b"]), [[0.0, 1.0, 2.0], [1.0, 2.0, 3.0]])
         self.assertIsInstance(model("texto", to_list=False), _FakeArray)
+
+    def test_embedding_model_falls_back_to_cpu_when_cuda_runs_out_of_memory(self):
+        self.m.EmbeddingModelSingleton._instance = None
+        model = self.m.EmbeddingModelSingleton(model_id="fake-model", device="cuda")
+        model._model.fail_cuda_oom_once = True
+        self.assertEqual(model("texto"), [1.0, 2.0, 3.0])
+        self.assertEqual(model._device, "cpu")
+        self.assertEqual(model._model.device, "cpu")
+        self.assertEqual(self.m.settings.RAG_MODEL_DEVICE, "cpu")
 
     def test_make_qdrant_client_retries_returns_none_and_raises_on_init_failure(self):
         _FakeQdrantClient.fail_get_collections_times = 2

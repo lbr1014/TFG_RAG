@@ -6,7 +6,7 @@ Script con decoradores de autorización para proteger vistas de administración.
 from functools import wraps
 from flask import abort
 from flask_login import current_user
-from .extensions import login_manager
+from app.main.code.extensions import login_manager
 
 
 def admin_required(view_func):

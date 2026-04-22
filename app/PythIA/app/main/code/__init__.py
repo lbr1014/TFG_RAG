@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script para crear y configurar la aplicación Flask principal, incluyendo extensiones, configuración, blueprints y manejadores globales.
 """
@@ -8,10 +8,10 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, flash, jsonify, redirect, request, url_for
 
-from .documentos import DocumentosService
+from app.main.code.services.documentos import DocumentosService
 from .error_handling import register_error_handlers, wants_json_response
-from .entities import Consulta, Documento, MarkdownConversionState, RAGQueryState, User, VectorUpdateState, WebScrapingSate
-from .extensions import csrf, db, login_manager, mail, migrate
+from app.main.code.model import Consulta, Documento, MarkdownConversionState, RAGQueryState, User, VectorUpdateState, WebScrapingSate
+from app.main.code.extensions import csrf, db, login_manager, mail, migrate
 from .inetrnacionalizacion.tarduccion import init_app as init_i18n, t
 
 
@@ -69,10 +69,11 @@ def create_app():
         manejadores globales.
     """
     load_dotenv("secret.env")
+    main_dir = os.path.dirname(os.path.dirname(__file__))
     app = Flask(
         __name__,
-        template_folder=os.path.join(os.path.dirname(__file__), "..", "templates"),
-        static_folder=os.path.join(os.path.dirname(__file__), "..", "static"),
+        template_folder=os.path.join(main_dir, "resources", "templates"),
+        static_folder=os.path.join(main_dir, "resources", "static"),
     )
 
     app.config[_flask_session_config_name()] = _get_required_env("FLASK_SESSION_SIGNER")
@@ -147,10 +148,10 @@ def create_app():
         }
 
     # register blueprints
-    from .main.routes import main_bp
-    from .auth.routes import auth_bp
-    from .admin.routes import admin_bp
-    from .rag.routes import rag_bp
+    from .controllers.main import main_bp
+    from .controllers.auth import auth_bp
+    from .controllers.admin import admin_bp
+    from .controllers.rag import rag_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)

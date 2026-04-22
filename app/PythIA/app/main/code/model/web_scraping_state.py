@@ -8,11 +8,13 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from app.extensions import db
+from app.main.code.extensions import db
+from app.main.code.model.job_state import JobStateMixin
 
 
-class WebScrapingSate(db.Model):
-    """Estado persistido de un proceso de web scraping.
+class WebScrapingSate(JobStateMixin, db.Model):
+    """
+    Estado persistido de un proceso de web scraping.
 
     Attributes:
         id: Identificador del proceso.
@@ -39,7 +41,8 @@ class WebScrapingSate(db.Model):
     finished_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
 
     def __init__(self, **kwargs):
-        """Inicializa el estado con fecha de creación por defecto.
+        """
+        Inicializa el estado con fecha de creación por defecto.
 
         Args:
             **kwargs: Valores iniciales del modelo SQLAlchemy.

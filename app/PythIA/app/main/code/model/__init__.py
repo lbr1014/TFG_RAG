@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script para exportar las entidades SQLAlchemy de la aplicación desde un único paquete.
 """

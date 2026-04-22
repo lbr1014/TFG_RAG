@@ -1,4 +1,4 @@
-"""
+﻿"""
 Lista local de paises usada por los formularios y el mapa de estadisticas.
 """
 

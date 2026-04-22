@@ -3,10 +3,9 @@ Autora: Lydia Blanco Ruiz
 Script con pruebas unitarias de la aplicación.
 """
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.auth.routes import generate_reset_token, verify_reset_token
-
+from app.main.code.controllers.auth.routes import generate_reset_token, verify_reset_token
 
 class AuthRoutesUnitTest(BaseAppTestCase):
     def test_generate_and_verify_reset_token(self):

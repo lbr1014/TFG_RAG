@@ -5,13 +5,13 @@ Script con pruebas unitarias de las notificaciones de actualizacion vectorial.
 
 from unittest.mock import patch
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.vector_update_state import send_update_finished_email
+from app.main.code.services.vector_update_state import send_update_finished_email
 
 
 class VectorUpdateStateNotificationUnitTest(BaseAppTestCase):
-    @patch("app.vector_update_state.mail.send")
+    @patch("app.main.code.services.vector_update_state.mail.send")
     def test_send_update_finished_email_uses_frontend_base_url_fallback(self, mock_send):
         self.app.config["FRONTEND_BASE_URL"] = "http://frontend.local/"
 
@@ -29,7 +29,7 @@ class VectorUpdateStateNotificationUnitTest(BaseAppTestCase):
         self.assertIn("Sin m", msg.body)
         self.assertIn("http://frontend.local/admin/documents/list", msg.body)
 
-    @patch("app.vector_update_state.mail.send")
+    @patch("app.main.code.services.vector_update_state.mail.send")
     def test_send_update_finished_email_uses_explicit_url_and_metrics(self, mock_send):
         send_update_finished_email(
             "user@example.com",
@@ -50,7 +50,7 @@ class VectorUpdateStateNotificationUnitTest(BaseAppTestCase):
         self.assertIn("Documentos con error: 1", msg.body)
         self.assertIn("http://docs.local/list", msg.body)
 
-    @patch("app.vector_update_state.mail.send")
+    @patch("app.main.code.services.vector_update_state.mail.send")
     def test_send_update_finished_email_uses_relative_fallback_without_frontend_base_url(self, mock_send):
         self.app.config["FRONTEND_BASE_URL"] = ""
 

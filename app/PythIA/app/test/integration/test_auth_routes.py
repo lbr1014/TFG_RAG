@@ -5,12 +5,11 @@ Script con pruebas de integración de las rutas de la aplicación.
 
 from unittest.mock import patch
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.auth.routes import generate_reset_token
-from app.extensions import db
-from app.entities.user import User
-
+from app.main.code.controllers.auth.routes import generate_reset_token
+from app.main.code.extensions import db
+from app.main.code.model.user import User
 
 class AuthRoutesIntegrationTest(BaseAppTestCase):
     def test_signup_creates_user_and_logs_him_in(self):
@@ -81,14 +80,14 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
         user = self.create_user(email="logout-invalid@example.com")
         self.login(user.email)
 
-        with patch("app.auth.routes.EmptyForm") as mock_form:
+        with patch("app.main.code.controllers.auth.routes.EmptyForm") as mock_form:
             mock_form.return_value.validate_on_submit.return_value = False
             response = self.client.post("/logout", follow_redirects=False)
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/pagina_principal", response.headers["Location"])
 
-    @patch("app.auth.routes.mail.send")
+    @patch("app.main.code.controllers.auth.routes.mail.send")
     def test_forgot_password_sends_email_when_user_exists(self, mock_send):
         self.create_user(email="reset@example.com")
 
@@ -102,7 +101,7 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
         self.assertIn("/login", response.headers["Location"])
         mock_send.assert_called_once()
 
-    @patch("app.auth.routes.mail.send")
+    @patch("app.main.code.controllers.auth.routes.mail.send")
     def test_forgot_password_get_and_unknown_email_do_not_send_email(self, mock_send):
         get_response = self.client.get("/forgot-password")
         unknown_response = self.client.post(

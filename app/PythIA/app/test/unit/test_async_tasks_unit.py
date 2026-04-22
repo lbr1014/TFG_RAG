@@ -5,16 +5,16 @@ Script con pruebas unitarias de workers asincronos.
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.admin import routes as admin_routes
-from app.entities.markdown_conversion_state import MarkdownConversionState
-from app.entities.rag_query_state import RAGQueryState
-from app.entities.vector_update_state import VectorUpdateState
-from app.entities.web_scraping_state import WebScrapingSate
-from app.extensions import db
-from app.rag.PrototipoRAG import QueryCancelledError
-from app.rag.routes import run_rag_query_async
+from app.main.code.controllers.admin import routes as admin_routes
+from app.main.code.model.markdown_conversion_state import MarkdownConversionState
+from app.main.code.model.rag_query_state import RAGQueryState
+from app.main.code.model.vector_update_state import VectorUpdateState
+from app.main.code.model.web_scraping_state import WebScrapingSate
+from app.main.code.extensions import db
+from app.main.code.services.rag.PrototipoRAG import QueryCancelledError
+from app.main.code.controllers.rag.routes import run_rag_query_async
 
 
 class AsyncTasksUnitTest(BaseAppTestCase):
@@ -28,7 +28,7 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         db.session.add(job)
         db.session.commit()
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(return_value={"answer": "ok"})):
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(return_value={"answer": "ok"})):
             run_rag_query_async(self.app, job.id, user.id)
 
         refreshed = self._fresh(RAGQueryState, job.id)
@@ -54,7 +54,7 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         db.session.add(job)
         db.session.commit()
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(side_effect=QueryCancelledError("cancelado"))):
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(side_effect=QueryCancelledError("cancelado"))):
             run_rag_query_async(self.app, job.id, user.id)
 
         refreshed = self._fresh(RAGQueryState, job.id)
@@ -66,7 +66,7 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         db.session.add(job)
         db.session.commit()
 
-        with patch("app.rag.routes.rag_answer", AsyncMock(side_effect=RuntimeError("boom"))), patch.object(
+        with patch("app.main.code.controllers.rag.routes.rag_answer", AsyncMock(side_effect=RuntimeError("boom"))), patch.object(
             self.app.logger, "exception"
         ):
             run_rag_query_async(self.app, job.id, user.id)
@@ -75,7 +75,7 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         self.assertEqual(refreshed.status, "failed")
         self.assertEqual(refreshed.error, "boom")
 
-    @patch("app.admin.routes.send_markdown_finished_email")
+    @patch("app.main.code.controllers.admin.routes.send_markdown_finished_email")
     def test_markdown_async_marks_done_and_sends_email(self, mock_send):
         job = MarkdownConversionState(status="queued", progress=0, cancel_requested=False)
         db.session.add(job)
@@ -83,7 +83,7 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         fake_service = MagicMock()
         fake_service.convert_pending_to_markdown.return_value = {"converted": 1, "failed": 0, "skipped": 2, "total": 1}
 
-        with patch("app.admin.routes.documentos_service", return_value=fake_service):
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
             admin_routes.markdown_async(self.app, job.id, "admin@example.com", "http://docs.local")
 
         refreshed = self._fresh(MarkdownConversionState, job.id)
@@ -101,7 +101,7 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         refreshed = self._fresh(MarkdownConversionState, job.id)
         self.assertEqual(refreshed.status, "cancelled")
 
-    @patch("app.admin.routes.send_update_finished_email")
+    @patch("app.main.code.controllers.admin.routes.send_update_finished_email")
     def test_documentos_async_marks_done_and_sends_email(self, mock_send):
         job = VectorUpdateState(status="queued", progress=0, cancel_requested=False)
         db.session.add(job)
@@ -109,7 +109,7 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         fake_service = MagicMock()
         fake_service.update_vector_db.return_value = {"indexed": 2, "failed": 0}
 
-        with patch("app.admin.routes.documentos_service", return_value=fake_service):
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
             admin_routes.documentos_async(self.app, job.id, "admin@example.com", "http://docs.local")
 
         refreshed = self._fresh(VectorUpdateState, job.id)
@@ -124,8 +124,8 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         fake_service = MagicMock()
         fake_service.update_vector_db.side_effect = RuntimeError("vector boom")
 
-        with patch("app.admin.routes.documentos_service", return_value=fake_service), patch(
-            "app.admin.routes.send_update_finished_email"
+        with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service), patch(
+            "app.main.code.controllers.admin.routes.send_update_finished_email"
         ), patch.object(self.app.logger, "exception"):
             admin_routes.documentos_async(self.app, job.id, "admin@example.com", "http://docs.local")
 
@@ -133,14 +133,14 @@ class AsyncTasksUnitTest(BaseAppTestCase):
         self.assertEqual(refreshed.status, "failed")
         self.assertEqual(refreshed.error, "vector boom")
 
-    @patch("app.admin.routes.send_scraping_finished_email")
+    @patch("app.main.code.controllers.admin.routes.send_scraping_finished_email")
     def test_scraping_async_marks_done_after_scripts_and_sync(self, mock_send):
         job = WebScrapingSate(status="queued", progress=0, cancel_requested=False)
         db.session.add(job)
         db.session.commit()
 
-        with patch("app.admin.routes._run_scraping_script") as mock_run_script, patch(
-            "app.admin.routes._sync_scraping_results", return_value=(2, 5)
+        with patch("app.main.code.controllers.admin.routes._run_scraping_script") as mock_run_script, patch(
+            "app.main.code.controllers.admin.routes._sync_scraping_results", return_value=(2, 5)
         ):
             admin_routes.scraping_async(self.app, job.id, "admin@example.com", "http://docs.local")
 

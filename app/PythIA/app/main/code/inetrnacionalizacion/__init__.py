@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script para exportar las utilidades de internacionalización de la aplicación.
 """

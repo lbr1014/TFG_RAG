@@ -5,11 +5,10 @@ Script con pruebas de integración de las rutas de la aplicación.
 
 from unittest.mock import MagicMock, patch
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.entities.consulta import Consulta
-from app.extensions import db
-
+from app.main.code.model.consulta import Consulta
+from app.main.code.extensions import db
 
 class MainRoutesIntegrationTest(BaseAppTestCase):
     def test_inicio_renders_public_home(self):
@@ -18,7 +17,7 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"PythIA", response.data)
 
-    @patch("app.main.routes.qdrant_get_payloads", return_value={})
+    @patch("app.main.code.controllers.main.routes.qdrant_get_payloads", return_value={})
     def test_pagina_principal_renders_authenticated_dashboard(self, _mock_qdrant):
         user = self.create_user(email="dashboard@example.com")
         self.create_consulta(user)
@@ -62,7 +61,7 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
         db.session.refresh(user)
         self.assertEqual(user.email, "edit-duplicate@example.com")
 
-    @patch("app.main.routes.qdrant_get_payloads")
+    @patch("app.main.code.controllers.main.routes.qdrant_get_payloads")
     def test_history_uses_saved_fragmentos_without_calling_qdrant(self, mock_qdrant):
         user = self.create_user(email="history@example.com")
         self.login("history@example.com")
@@ -122,7 +121,7 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(allowed.status_code, 302)
         self.assertIsNone(db.session.get(Consulta, consulta.id))
 
-    @patch("app.main.routes.EmptyForm")
+    @patch("app.main.code.controllers.main.routes.EmptyForm")
     def test_delete_consulta_rejects_invalid_form(self, mock_empty_form):
         form = MagicMock()
         form.validate_on_submit.return_value = False

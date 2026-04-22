@@ -1,4 +1,4 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
 Script para validaciones comunes, recopilación de errores de formularios y gestión global de errores HTTP.
 """

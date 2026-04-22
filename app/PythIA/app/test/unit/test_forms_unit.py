@@ -7,9 +7,9 @@ from types import SimpleNamespace
 
 from wtforms.validators import ValidationError
 
-from tests.support import BaseAppTestCase
+from app.test.support import BaseAppTestCase
 
-from app.forms import (
+from app.main.code.forms import (
     AdminCreateUserForm,
     EditUserForm,
     EmptyForm,
@@ -21,7 +21,7 @@ from app.forms import (
     ResetPasswordForm,
     SignupForm,
 )
-from app.inetrnacionalizacion.tarduccion import t
+from app.main.code.inetrnacionalizacion.tarduccion import t
 
 
 class FormTestMixin:

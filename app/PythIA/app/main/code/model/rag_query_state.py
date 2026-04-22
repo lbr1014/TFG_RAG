@@ -8,11 +8,13 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from app.extensions import db
+from app.main.code.extensions import db
+from app.main.code.model.job_state import JobStateMixin
 
 
-class RAGQueryState(db.Model):
-    """Estado persistido de una consulta RAG asíncrona.
+class RAGQueryState(JobStateMixin, db.Model):
+    """
+    Estado persistido de una consulta RAG asíncrona.
 
     Attributes:
         id: Identificador de la consulta asíncrona.
@@ -45,7 +47,8 @@ class RAGQueryState(db.Model):
     finished_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
 
     def __init__(self, **kwargs):
-        """Inicializa el estado con fecha de creación por defecto.
+        """
+        Inicializa el estado con fecha de creación por defecto.
 
         Args:
             **kwargs: Valores iniciales del modelo SQLAlchemy.
@@ -53,3 +56,24 @@ class RAGQueryState(db.Model):
         super().__init__(**kwargs)
         if not self.created_at:
             self.created_at = datetime.now(ZoneInfo("Europe/Madrid"))
+
+    def mark_cancel_requested(self, message: str | None = None) -> None:
+        """
+        Solicita la cancelación de la consulta asíncrona.
+        
+        Args:
+            message (str | None, optional): El mensaje de cancelación. Defaults to None.
+        """
+        self.cancel_requested = True
+        self.set_message(message)
+
+    def mark_result(self, result_payload, *, message: str | None = None) -> None:
+        """
+        Marca la consulta como finalizada y guarda el resultado.
+
+        Args:
+            result_payload: El resultado de la consulta.
+            message (str | None, optional): El mensaje de finalización. Defaults to None.
+        """
+        self.result_payload = result_payload
+        self.mark_done(message=message)
