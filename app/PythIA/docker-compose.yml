@@ -44,7 +44,7 @@ services:
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
-      RAG_LLM_MODELS: ${RAG_LLM_MODELS:-llama3.1:8b-instruct-q4_K_M,gemma4:e2b,qwen3.5}
+      RAG_LLM_MODELS: ${RAG_LLM_MODELS:-llama3.1:8b-instruct-q4_K_M,gemma3:4b,qwen3:4b-instruct}
       OCR_MODEL_NAME: ${OCR_MODEL_NAME:-blaifa/Nanonets-OCR-s}
     restart: unless-stopped
     healthcheck:
@@ -73,10 +73,10 @@ services:
     environment:
       - OLLAMA_BASE_URL=${OLLAMA_SERVICE_HOST}:${OLLAMA_INTERNAL_PORT}
       - QDRANT_URL=${QDRANT_SERVICE_HOST}:${QDRANT_INTERNAL_PORT}
-      - RAG_MODEL_DEVICE=${RAG_MODEL_DEVICE:-cuda}
+      - RAG_MODEL_DEVICE=${RAG_MODEL_DEVICE:-cpu}
       - RAG_MAX_WORKERS=${RAG_MAX_WORKERS:-4}
       - RAG_LLM_MODEL=${RAG_LLM_MODEL:-llama3.1:8b-instruct-q4_K_M}
-      - RAG_LLM_MODELS=${RAG_LLM_MODELS:-llama3.1:8b-instruct-q4_K_M,gemma4:e2b,qwen3.5}
+      - RAG_LLM_MODELS=${RAG_LLM_MODELS:-llama3.1:8b-instruct-q4_K_M,gemma3:4b,qwen3:4b-instruct}
       - OCR_MODEL_NAME=${OCR_MODEL_NAME:-blaifa/Nanonets-OCR-s}
       - OLLAMA_PULL_TIMEOUT_SECONDS=${OLLAMA_PULL_TIMEOUT_SECONDS:-1800}
       - OLLAMA_PULL_IDLE_TIMEOUT_SECONDS=${OLLAMA_PULL_IDLE_TIMEOUT_SECONDS:-300}
@@ -104,8 +104,8 @@ services:
       - "${NGINX_HTTP_EXTERNAL_PORT}:${NGINX_HTTP_INTERNAL_PORT}"
       - "${NGINX_HTTPS_EXTERNAL_PORT}:${NGINX_HTTPS_INTERNAL_PORT}"
     volumes:
-      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./docker/nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
     command: >
       sh -c "envsubst '$$NGINX_HTTP_INTERNAL_PORT $$WEB_INTERNAL_PORT' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf
       && nginx -g 'daemon off;'"
@@ -115,7 +115,7 @@ services:
     build: .
     container_name: flask_tests
     working_dir: /app
-    command: sh /app/tests/run_tests.sh
+    command: sh /app/app/test/run_tests.sh
     env_file:
       - .env
       - secret.env
@@ -126,7 +126,7 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_SERVICE_HOST}:${OLLAMA_INTERNAL_PORT}
       QDRANT_URL: ${QDRANT_SERVICE_HOST}:${QDRANT_INTERNAL_PORT}
       RAG_LLM_MODEL: ${RAG_LLM_MODEL:-llama3.1:8b-instruct-q4_K_M}
-      RAG_LLM_MODELS: ${RAG_LLM_MODELS:-llama3.1:8b-instruct-q4_K_M,gemma4:e2b,qwen3.5}
+      RAG_LLM_MODELS: ${RAG_LLM_MODELS:-llama3.1:8b-instruct-q4_K_M,gemma3:4b,qwen3:4b-instruct}
       OCR_MODEL_NAME: ${OCR_MODEL_NAME:-blaifa/Nanonets-OCR-s}
       OLLAMA_PULL_TIMEOUT_SECONDS: ${OLLAMA_PULL_TIMEOUT_SECONDS:-1800}
       OLLAMA_PULL_IDLE_TIMEOUT_SECONDS: ${OLLAMA_PULL_IDLE_TIMEOUT_SECONDS:-300}
