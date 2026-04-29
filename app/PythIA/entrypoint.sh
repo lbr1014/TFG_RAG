@@ -207,7 +207,7 @@ print("Ollama models ready.")
 PY
 
 echo "Running migrations..."
-flask db upgrade
+flask --app app.main.code.run:app db -d migrations upgrade
 
 echo "Starting server..."
-exec gunicorn -b "0.0.0.0:${WEB_INTERNAL_PORT:-5000}" -w 2 -k gthread --threads 4 --timeout 120 "run:app"
+exec gunicorn -b "0.0.0.0:${WEB_INTERNAL_PORT:-5000}" -w 2 -k gthread --threads 4 --timeout 120 "app.main.code.run:app"

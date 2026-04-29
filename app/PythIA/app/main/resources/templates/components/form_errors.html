@@ -1,0 +1,13 @@
+{% macro render_form_errors(form, summary_class="mb-3") %}
+  {% set errors = collect_form_errors(form) %}
+  {% if errors %}
+    <div class="alert app-form-error-summary {{ summary_class }}" role="alert">
+      <strong>{{ t("validation.summary_title") }}</strong>
+      <ul class="mb-0 mt-2">
+        {% for item in errors %}
+          <li><span class="app-form-error-field">{{ item.field }}:</span> {{ item.message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endmacro %}

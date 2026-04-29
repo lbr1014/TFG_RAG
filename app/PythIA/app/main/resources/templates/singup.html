@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "components/form_errors.html" import render_form_errors with context %}
+{% set header_guest_title = "PythIA" %}
+{% set header_guest_subtitle = "" %}
+{% set header_force_guest = true %}
+
+{% block title %}{{ t("auth.signup_title") }}{% endblock %}
+{% block body_class %}auth-screen{% endblock %}
+
+{% block content %}
+  <div class="auth-page">
+    <div class="auth-container">
+      <h1>{{ t("auth.signup_title") }}</h1>
+
+      <form method="POST" action="{{ url_for('auth.singup') }}" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_form_errors(form) }}
+
+        <div class="mb-3">
+          {{ form.nombre.label(class="form-label") }}
+          {{ form.nombre(class="form-control form-control-lg") }}
+          {% for error in form.nombre.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control form-control-lg", placeholder="email@example.com") }}
+          {% for error in form.email.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.country_code.label(class="form-label") }}
+          {{ form.country_code(class="form-select form-select-lg") }}
+          {% for error in form.country_code.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control form-control-lg") }}
+          {% for error in form.password.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.confirm_password.label(class="form-label") }}
+          {{ form.confirm_password(class="form-control form-control-lg") }}
+          {% for error in form.confirm_password.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-primary btn-lg") }}
+      </form>
+
+      <div class="links">
+        <a href="{{ url_for('auth.login') }}">{{ t("auth.already_account") }}</a>
+        <a href="{{ url_for('main.inicio') }}">{{ t("auth.back_home") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
