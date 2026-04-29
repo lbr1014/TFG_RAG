@@ -53,6 +53,9 @@ class AdminRoutesUnitTest(BaseAppTestCase):
     def test_mark_job_helpers_update_common_state(self):
         job = SimpleNamespace(status="queued", progress=0, error="old", message=None, finished_at=None)
 
+        admin_routes._set_job_progress(job, 1, 0)
+        self.assertEqual(job.progress, 100)
+
         admin_routes._mark_job_running(job, progress=25, message="Procesando")
         self.assertEqual(job.status, "running")
         self.assertEqual(job.progress, 25)
@@ -70,6 +73,14 @@ class AdminRoutesUnitTest(BaseAppTestCase):
         admin_routes._mark_job_cancelled(job, message="Cancelado")
         self.assertEqual(job.status, "cancelled")
         self.assertIsNone(job.error)
+
+    def test_job_should_cancel_falls_back_to_cancel_requested_flag(self):
+        job = SimpleNamespace(cancel_requested=True)
+
+        with patch.object(admin_routes.db.session, "refresh") as mock_refresh:
+            self.assertTrue(admin_routes._job_should_cancel(job))
+
+        mock_refresh.assert_called_once_with(job)
 
     def test_markdown_done_message_chooses_expected_translation_key(self):
         with patch("app.main.code.controllers.admin.routes.translate_for", side_effect=lambda lang, key, **kwargs: key):

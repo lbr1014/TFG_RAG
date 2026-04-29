@@ -298,6 +298,49 @@ class PrototipoRAGUnitTest(unittest.TestCase):
         self.m.EmbeddingModelSingleton._instance = None
         self.m.embedding_model = self.m.EmbeddingModelSingleton()
 
+    def test_embedding_error_helpers_cover_cpu_and_debug_paths(self):
+        model = self.m.EmbeddingModelSingleton(model_id="fake-model", device="cpu")
+        model._move_to_cpu()
+        self.assertEqual(model._device, "cpu")
+
+        bad_cuda = SimpleNamespace(empty_cache=MagicMock(side_effect=RuntimeError("cache")))
+        original_torch = self.m.torch
+        try:
+            self.m.torch = SimpleNamespace(cuda=bad_cuda)
+            with patch.object(self.m.logger, "debug") as mock_debug:
+                model._clear_cuda_cache()
+        finally:
+            self.m.torch = original_torch
+
+        mock_debug.assert_called_once()
+
+    def test_embedding_call_reraises_non_cuda_errors(self):
+        model = self.m.EmbeddingModelSingleton(model_id="fake-model", device="cuda")
+        model._model.encode = MagicMock(side_effect=RuntimeError("fallo generico"))
+
+        with self.assertRaises(RuntimeError):
+            model("texto")
+
+    def test_lazy_embedding_and_qdrant_helpers(self):
+        lazy_embedding = self.m.LazyEmbeddingModel()
+        fake_embedding = MagicMock(return_value=[1.0])
+
+        with patch.object(lazy_embedding, "_get_instance", return_value=fake_embedding):
+            self.assertEqual(lazy_embedding("texto"), [1.0])
+
+        lazy_qdrant = self.m.LazyQdrantClient()
+        with patch.object(self.m, "_make_qdrant_client", return_value=None):
+            with self.assertRaises(RuntimeError):
+                lazy_qdrant._get_client()
+
+        closeable = MagicMock()
+        closeable.ping.return_value = "pong"
+        lazy_qdrant._client = closeable
+        self.assertEqual(lazy_qdrant.ping(), "pong")
+        lazy_qdrant.close()
+        closeable.close.assert_called_once_with()
+        self.assertIsNone(lazy_qdrant._client)
+
     def test_main_block_runs_with_empty_pliegos_directory(self):
         pliegos_dir = Path(self.m.__file__).parent / "pliegos"
         pliegos_dir.mkdir(exist_ok=True)

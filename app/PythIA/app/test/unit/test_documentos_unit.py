@@ -11,7 +11,14 @@ from unittest.mock import MagicMock, patch
 from werkzeug.datastructures import FileStorage
 from app.test.support import BaseAppTestCase
 
-from app.main.code.services.documentos import STATUS_WITH_MARKDOWN, DocumentosService, JobCancelledError, infer_document_metadata_from_filename, update_sql
+from app.main.code.services.documentos import (
+    STATUS_WITH_MARKDOWN,
+    DocumentosService,
+    JobCancelledError,
+    _normalize_text,
+    infer_document_metadata_from_filename,
+    update_sql,
+)
 from app.main.code.model.chunk import Chunk
 from app.main.code.model.documento import Documento
 from app.main.code.model.embedding import Embedding
@@ -38,6 +45,7 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
 
         self.assertEqual(infer_document_metadata_from_filename("sin_metadatos.pdf"), (None, None))
         self.assertEqual(infer_document_metadata_from_filename("EXP-123__Anexo_general.pdf"), ("EXP-123", None))
+        self.assertEqual(_normalize_text("  Ágil   Técnico  "), "agil   tecnico")
 
     def test_resolve_pdf_path_rejects_empty_or_non_pdf_names(self):
         service = self._service()
@@ -105,6 +113,15 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
         self.assertIsNone(db.session.get(Documento, doc.id))
         self.assertFalse(Path(doc.path).exists())
         service.delete_chunks.assert_called_once_with("borrar.pdf")
+
+    def test_clear_markdown_content_delegates_to_document(self):
+        service = self._service()
+        doc = self.create_document(nombre="markdown-clear.pdf", status="markdown_generado")
+        doc.markdown_content = "# contenido"
+
+        service.clear_markdown_content(doc)
+
+        self.assertIsNone(doc.markdown_content)
 
     def test_delete_document_handles_missing_doc_and_cleanup_errors(self):
         service = self._service()

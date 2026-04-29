@@ -21,4 +21,7 @@ class VectorUpdateStateUnitTest(BaseAppTestCase):
         self.assertEqual(state.current_doc, "doc.pdf")
         self.assertEqual(state.error, "boom")
 
+        state.set_current_doc("otro.pdf")
+        self.assertEqual(state.current_doc, "otro.pdf")
+
 
