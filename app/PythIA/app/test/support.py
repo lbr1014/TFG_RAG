@@ -62,20 +62,6 @@ def _install_rag_stub() -> None:
             },
         }
 
-<<<<<<< HEAD:app/PythIA/tests/support.py
-<<<<<<< Updated upstream:app/PythIA/tests/support.py
-    module.QueryCancelledError = QueryCancelledError
-    module.OllamaTimeoutError = OllamaTimeoutError
-    module.OllamaModelNotFoundError = OllamaModelNotFoundError
-    module.embedding_model = _EmbeddingModel()
-    module.resolve_rag_llm_model = lambda model=None: (model or "fake-model").strip() or "fake-model"
-    module.get_rag_llm_model_choices = lambda: [
-        ("fake-model", "fake-model"),
-        ("gemma4:e2b", "gemma4:e2b"),
-        ("qwen3.5", "qwen3.5"),
-    ]
-    module.qdrant_get_payloads = lambda point_ids: {}
-=======
     module.QueryCancelledError = QueryCancelledError
     module.OllamaTimeoutError = OllamaTimeoutError
     module.OllamaModelNotFoundError = OllamaModelNotFoundError
@@ -83,23 +69,11 @@ def _install_rag_stub() -> None:
     module.resolve_rag_llm_model = lambda model=None: (model or "fake-model").strip() or "fake-model"
     module.get_ollama_execution_device = lambda: "CPU"
     module.get_rag_llm_model_choices = lambda: [
-=======
-    module.QueryCancelledError = QueryCancelledError
-    module.OllamaTimeoutError = OllamaTimeoutError
-    module.OllamaModelNotFoundError = OllamaModelNotFoundError
-    module.embedding_model = _EmbeddingModel()
-    module.resolve_rag_llm_model = lambda model=None: (model or "fake-model").strip() or "fake-model"
-    module.get_rag_llm_model_choices = lambda: [
->>>>>>> app:app/PythIA/app/test/support.py
         ("fake-model", "fake-model"),
         ("gemma3:4b", "gemma3:4b"),
         ("qwen3:4b-instruct", "qwen3:4b-instruct"),
     ]
     module.qdrant_get_payloads = lambda point_ids: {}
-<<<<<<< HEAD:app/PythIA/tests/support.py
->>>>>>> Stashed changes:app/PythIA/app/test/support.py
-=======
->>>>>>> app:app/PythIA/app/test/support.py
     module.qdrant_delete_by_filename = lambda filename: None
     module.index_pliegos_dir = lambda path: {}
     module.index_pdf = lambda *args, **kwargs: []
