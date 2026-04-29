@@ -1,4 +1,4 @@
-﻿"""
+"""
 Autora: Lydia Blanco Ruiz
 Script con las traducciones al inglés.
 """
@@ -193,7 +193,7 @@ TRANSLATIONS_EN={
     "stats.chart_monthly_view_bars": "Bars",
     "stats.chart_monthly_view_calendar": "Calendar",
     "stats.chart_avg_time": "Average response time by month",
-    "stats.chart_avg_time_help": "Helps detect whether model response time is rising or falling.",
+    "stats.chart_avg_time_help": "Click a month to see its weeks and a week to see its days.",
     "stats.chart_weekdays": "Queries by weekday",
     "stats.chart_weekdays_help": "Summarizes which days concentrate the most activity.",
     "stats.chart_hours": "Queries by hour",
@@ -203,6 +203,16 @@ TRANSLATIONS_EN={
     "stats.chart_hours_view_heatmap": "Heatmap",
     "stats.chart_top_users": "Users with most queries",
     "stats.chart_top_users_help": "Available in the global admin view.",
+    "stats.chart_user_comparison": "Compare users",
+    "stats.chart_user_comparison_help": "Compare global model usage per user and show mean, median, and variance.",
+    "stats.comparison_mean": "Mean",
+    "stats.comparison_median": "Median",
+    "stats.comparison_variance": "Variance",
+    "stats.comparison_current_user": "Your user: {name}",
+    "stats.comparison_global": "Global",
+    "stats.comparison_filter_label": "Users to compare",
+    "stats.comparison_filter_apply": "Apply",
+    "stats.comparison_filter_help": "Compare from 1 user up to all registered users by holding Ctrl.",
     "stats.chart_user_locations": "Users by country",
     "stats.chart_user_locations_help": "Countries are colored by the number of registered users.",
     "stats.map_users": "users",

@@ -5,7 +5,7 @@ Script para las rutas principales, historial de consultas, perfil de usuario y e
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from statistics import mean, multimode, variance
+from statistics import mean, median, variance
 
 from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
@@ -407,37 +407,52 @@ def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
     return payload
 
 
-def build_user_comparison_payload(user_counter):
+def build_user_comparison_payload(user_counter)-> dict:
     """
     Construye la payload de comparación de usuarios con estadísticas de uso.
+    Calcula la media, mediana y varianza del número de consultas por usuario
+    y ordena a los usuarios por número de consultas para mostrar en la comparación.
+    
+    Args:
+        user_counter (dict): Diccionario con el número de consultas por usuario.
+    
+    Returns:
+        dict: Payload con la comparación de usuarios y estadísticas agregadas.
     """
     counts = [count for count in user_counter.values() if count is not None]
     if not counts:
-        return {"data": [], "stats": {"mean": 0, "mode": 0, "mode_values": [], "variance": 0}}
+        return {"data": [], "stats": {"mean": 0, "median": 0, "variance": 0}}
 
     avg_value = round(mean(counts), 2)
-    mode_values = sorted(set(multimode(counts)))
+    median_value = round(median(counts), 2)
     variance_value = round(variance(counts), 2) if len(counts) > 1 else 0
 
     comparison_data = [
         {"user": name, "count": count}
-        for name, count in sorted(user_counter.items(), key=lambda item: (-item[1], item[0]))[:12]
+        for name, count in sorted(user_counter.items(), key=lambda item: (-item[1], item[0]))
     ]
 
     return {
         "data": comparison_data,
         "stats": {
             "mean": avg_value,
-            "mode": ", ".join(str(value) for value in mode_values),
-            "mode_values": mode_values,
+            "median": median_value,
             "variance": variance_value,
         },
     }
 
 
-def build_selected_user_comparison_payload(consultas, users, selected_user_ids=None, limit: int = 12):
+def build_selected_user_comparison_payload(consultas, users, selected_user_ids=None) -> dict:
     """
     Construye la comparacion de usuarios que el administrador quiere ver.
+    
+    Args:
+        consultas (list): Lista de consultas a analizar.
+        users (list): Lista de usuarios registrados.
+        selected_user_ids (list, optional): Lista de IDs de usuarios seleccionados para comparación. Si no se proporciona, se ordenan por número de consultas y se seleccionan todos.
+    
+    Returns:
+        dict: Payload con comparación de usuarios seleccionados y sus estadísticas de uso.
     """
     users_by_id = {int(user.id): user for user in users}
     counts_by_user_id = defaultdict(int)
@@ -455,12 +470,11 @@ def build_selected_user_comparison_payload(consultas, users, selected_user_ids=N
     if not selected_ids:
         selected_ids = [
             user_id
-            for user_id, _count in sorted(
-                counts_by_user_id.items(),
-                key=lambda item: (-item[1], users_by_id.get(item[0]).nombre if item[0] in users_by_id else ""),
+            for user_id, _user in sorted(
+                users_by_id.items(),
+                key=lambda item: (-counts_by_user_id.get(item[0], 0), item[1].nombre, item[1].email),
             )
-            if user_id in users_by_id
-        ][:limit]
+        ]
 
     comparison_counter = {
         f"{users_by_id[user_id].nombre} ({users_by_id[user_id].email})": counts_by_user_id.get(user_id, 0)
@@ -552,6 +566,13 @@ def stats_page():
             consultas,
             users,
             selected_comparison_user_ids,
+        )
+    elif not current_user.is_admin:
+        stats_payload["user_comparison"] = build_user_comparison_payload(
+            {
+                f"{t('stats.comparison_current_user', name=current_user.nombre)} ({current_user.email})": len(consultas),
+                t("stats.comparison_global"): Consulta.query.count(),
+            }
         )
 
     stats_payload["user_locations"] = build_user_country_map_payload(

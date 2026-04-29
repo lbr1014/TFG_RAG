@@ -1,4 +1,4 @@
-﻿"""
+"""
 Autora: Lydia Blanco Ruiz
 Script con las traducciones a español.
 """
@@ -191,7 +191,7 @@ TRANSLATIONS_ES = {
     "stats.chart_monthly_view_bars": "Barras",
     "stats.chart_monthly_view_calendar": "Calendario",
     "stats.chart_avg_time": "Tiempo medio de respuesta por mes",
-    "stats.chart_avg_time_help": "Permite detectar si el tiempo de respuesta del modelo está subiendo o bajando.",
+    "stats.chart_avg_time_help": "Pulsa un mes para ver sus semanas y una semana para ver sus dias.",
     "stats.chart_weekdays": "Consultas por día de la semana",
     "stats.chart_weekdays_help": "Resume qué días concentran más actividad.",
     "stats.chart_hours": "Consultas por franja horaria",
@@ -201,6 +201,16 @@ TRANSLATIONS_ES = {
     "stats.chart_hours_view_heatmap": "Mapa de calor",
     "stats.chart_top_users": "Usuarios con más consultas",
     "stats.chart_top_users_help": "Disponible en la vista global para administradores.",
+    "stats.chart_user_comparison": "Comparar usuarios",
+    "stats.chart_user_comparison_help": "Compara el consumo global del modelo por usuario y muestra media, mediana y varianza.",
+    "stats.comparison_mean": "Media",
+    "stats.comparison_median": "Mediana",
+    "stats.comparison_variance": "Varianza",
+    "stats.comparison_current_user": "Tu usuario: {name}",
+    "stats.comparison_global": "Global",
+    "stats.comparison_filter_label": "Usuarios a comparar",
+    "stats.comparison_filter_apply": "Aplicar",
+    "stats.comparison_filter_help": "Puedes comparar desde 1 usuario hasta todos los usuarios registrados manteniendo Ctrl pulsado.",
     "stats.chart_user_locations": "Usuarios por pais",
     "stats.chart_user_locations_help": "Mapa de paises coloreados segun el numero de usuarios registrados.",
     "stats.map_users": "usuarios",

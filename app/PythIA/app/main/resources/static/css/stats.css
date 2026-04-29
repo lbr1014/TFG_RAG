@@ -78,6 +78,7 @@ body[data-theme="light"] .stats-filter-card .form-text {
 .stats-chart {
     width: 100%;
     min-height: 320px;
+    overflow: visible;
 }
 
 .stats-chart-compact {
@@ -150,6 +151,73 @@ body[data-theme="light"] .stats-filter-card .form-text {
 .stats-view-button.is-active {
     background: rgba(93, 173, 226, 0.18);
     color: var(--bs-body-color);
+}
+
+.stats-comparison-metrics {
+    align-items: center;
+    max-width: 100%;
+}
+
+.stats-comparison-item {
+    min-width: min(10rem, 100%);
+    flex: 1 1 10rem;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.stats-comparison-item strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1.1rem;
+    color: var(--bs-body-color);
+}
+
+.stats-comparison-selector {
+    padding: 0.85rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.stats-comparison-selector .form-select {
+    min-width: min(100%, 26rem);
+    background-color: rgba(14, 24, 38, 0.96);
+    color: #f8fafc;
+    border-color: rgba(147, 197, 253, 0.42);
+}
+
+.stats-comparison-selector .form-select option {
+    background-color: #132238;
+    color: #f8fafc;
+}
+
+.stats-comparison-selector .form-text {
+    color: rgba(226, 232, 240, 0.82);
+}
+
+.stats-comparison-apply {
+    white-space: nowrap;
+}
+
+body[data-theme="light"] .stats-comparison-selector {
+    background: rgba(148, 163, 184, 0.08);
+}
+
+body[data-theme="light"] .stats-comparison-selector .form-select {
+    background-color: #ffffff;
+    color: #212529;
+    border-color: rgba(148, 163, 184, 0.5);
+}
+
+body[data-theme="light"] .stats-comparison-selector .form-select option {
+    background-color: #ffffff;
+    color: #212529;
+}
+
+body[data-theme="light"] .stats-comparison-selector .form-text {
+    color: var(--bs-secondary-color);
 }
 
 .stats-heatmap-cell {
@@ -254,6 +322,31 @@ body[data-theme="light"] .stats-tooltip {
 }
 
 @media (max-width: 575.98px) {
+    .stats-filter-card {
+        width: 100%;
+    }
+
+    .stats-chart-card .card-body {
+        padding-inline: 0.9rem;
+    }
+
+    .stats-chart {
+        min-height: 300px;
+    }
+
+    .stats-chart-compact {
+        min-height: 260px;
+    }
+
+    .stats-map-chart {
+        min-height: 300px;
+    }
+
+    .stats-drill-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
     .stats-view-toggle {
         width: 100%;
         justify-content: stretch;
@@ -262,5 +355,25 @@ body[data-theme="light"] .stats-tooltip {
     .stats-view-button {
         flex: 1 1 0;
         text-align: center;
+    }
+
+    .stats-comparison-metrics {
+        width: 100%;
+        gap: 0.5rem !important;
+    }
+
+    .stats-comparison-item {
+        flex-basis: calc(50% - 0.5rem);
+        padding: 0.65rem 0.75rem;
+    }
+
+    .stats-comparison-apply {
+        width: 100%;
+    }
+}
+
+@media (max-width: 399.98px) {
+    .stats-comparison-item {
+        flex-basis: 100%;
     }
 }

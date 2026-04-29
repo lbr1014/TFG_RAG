@@ -85,12 +85,18 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
 
     def test_stats_renders_regular_user_scope(self):
         user = self.create_user(email="stats-regular@example.com")
+        other = self.create_user(email="stats-other-regular@example.com")
         self.create_consulta(user)
+        self.create_consulta(other)
         self.login(user.email)
 
         response = self.client.get("/stats")
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn(b"chart-user-comparison", response.data)
+        self.assertIn(user.email.encode(), response.data)
+        self.assertIn(b"Global", response.data)
+        self.assertNotIn(b"comparison_user_ids", response.data)
 
     def test_stats_admin_global_selected_user_and_missing_user(self):
         admin = self.create_user(email="stats-admin@example.com", is_admin=True)
@@ -101,11 +107,26 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
 
         global_response = self.client.get("/stats")
         selected_response = self.client.get(f"/stats?user_id={selected.id}")
+        comparison_response = self.client.get(f"/stats?comparison_user_ids={admin.id}&comparison_user_ids={selected.id}")
         missing_response = self.client.get("/stats?user_id=999999")
 
         self.assertEqual(global_response.status_code, 200)
         self.assertEqual(selected_response.status_code, 200)
+        self.assertEqual(comparison_response.status_code, 200)
+        self.assertIn(b"stats-admin@example.com", comparison_response.data)
+        self.assertIn(b"stats-selected@example.com", comparison_response.data)
         self.assertEqual(missing_response.status_code, 404)
+
+    def test_stats_admin_global_shows_user_comparison_without_queries(self):
+        admin = self.create_user(email="stats-empty-admin@example.com", is_admin=True)
+        user = self.create_user(nombre="Sin consultas", email="stats-empty-user@example.com")
+        self.login(admin.email)
+
+        response = self.client.get("/stats")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"chart-user-comparison", response.data)
+        self.assertIn(user.email.encode(), response.data)
 
     def test_delete_consulta_only_allows_owner(self):
         owner = self.create_user(email="owner@example.com")

@@ -14,6 +14,7 @@ from app.test.support import BaseAppTestCase
 from app.main.code.model.consulta import Consulta
 from app.main.code.controllers.main.routes import (
     best_pid_for_consulta,
+    build_selected_user_comparison_payload,
     build_meta_by_consulta,
     build_usage_stats_payload,
     build_user_country_map_payload,
@@ -78,6 +79,9 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(feb_3_hours[10], {"hour": 10, "count": 1})
         self.assertEqual(feb_3_hours[11], {"hour": 11, "count": 1})
         self.assertEqual(payload["top_users"][0], {"user": "Ana", "count": 2})
+        self.assertEqual(payload["user_comparison"]["stats"]["mean"], 1.5)
+        self.assertEqual(payload["user_comparison"]["stats"]["median"], 1.5)
+        self.assertEqual(payload["user_comparison"]["stats"]["variance"], 0.5)
 
     def test_build_usage_stats_payload_handles_december_calendar_end(self):
         with patch("app.main.code.controllers.main.routes._month_sequence", return_value=[(2026, 12)]):
@@ -87,6 +91,49 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(payload["summary"]["avg_response_time"], 0)
         self.assertIsNone(payload["summary"]["first_query_at"])
         self.assertEqual(payload["daily_queries"][-1], {"date": "2026-12-31", "count": 0})
+
+    def test_build_selected_user_comparison_payload_respects_admin_selection(self):
+        user_1 = self.create_user(nombre="Ana", email="ana-selected@example.com")
+        user_2 = self.create_user(nombre="Luis", email="luis-selected@example.com")
+        user_3 = self.create_user(nombre="Eva", email="eva-selected@example.com")
+        self.create_consulta(user_1)
+        self.create_consulta(user_1)
+        self.create_consulta(user_2)
+
+        payload = build_selected_user_comparison_payload(
+            Consulta.query.order_by(Consulta.id.asc()).all(),
+            [user_1, user_2, user_3],
+            [user_2.id, user_3.id],
+        )
+
+        self.assertEqual(payload["selected_user_ids"], [user_2.id, user_3.id])
+        self.assertEqual(
+            payload["data"],
+            [
+                {"user": "Luis (luis-selected@example.com)", "count": 1},
+                {"user": "Eva (eva-selected@example.com)", "count": 0},
+            ],
+        )
+        self.assertEqual(payload["stats"]["mean"], 0.5)
+        self.assertEqual(payload["stats"]["median"], 0.5)
+
+    def test_build_selected_user_comparison_payload_defaults_to_all_users(self):
+        user_1 = self.create_user(nombre="Ana", email="ana-all@example.com")
+        user_2 = self.create_user(nombre="Luis", email="luis-all@example.com")
+        user_3 = self.create_user(nombre="Eva", email="eva-all@example.com")
+        self.create_consulta(user_1)
+        self.create_consulta(user_1)
+        self.create_consulta(user_2)
+
+        payload = build_selected_user_comparison_payload(
+            Consulta.query.order_by(Consulta.id.asc()).all(),
+            [user_1, user_2, user_3],
+        )
+
+        self.assertEqual(payload["selected_user_ids"], [user_1.id, user_2.id, user_3.id])
+        self.assertEqual([item["count"] for item in payload["data"]], [2, 1, 0])
+        self.assertEqual(payload["stats"]["mean"], 1)
+        self.assertEqual(payload["stats"]["median"], 1)
 
     def test_build_user_country_map_payload_hides_names_unless_requested(self):
         user_1 = self.create_user(nombre="Ana", email="ana-map@example.com", country_code="ES")

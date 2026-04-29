@@ -152,6 +152,59 @@
             </article>
           </div>
         {% endif %}
+
+      </div>
+    {% endif %}
+
+    {% if stats_payload.get("user_comparison", {}).get("data") %}
+      <div class="row g-4 mt-1">
+        <div class="col-12">
+          <article class="card border-0 shadow-sm stats-chart-card h-100">
+            <div class="card-body">
+              <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-3 mb-3">
+                <div>
+                  <h2 class="h5 mb-1">{{ t("stats.chart_user_comparison") }}</h2>
+                  <p class="text-secondary small mb-0">{{ t("stats.chart_user_comparison_help") }}</p>
+                </div>
+                <div class="stats-comparison-metrics d-flex flex-wrap gap-3">
+                  <div class="stats-comparison-item">
+                    <span class="text-secondary small">{{ t("stats.comparison_mean") }}</span>
+                    <strong>{{ stats_payload.user_comparison.stats.mean }}</strong>
+                  </div>
+                  <div class="stats-comparison-item">
+                    <span class="text-secondary small">{{ t("stats.comparison_median") }}</span>
+                    <strong>{{ stats_payload.user_comparison.stats.median }}</strong>
+                  </div>
+                  <div class="stats-comparison-item">
+                    <span class="text-secondary small">{{ t("stats.comparison_variance") }}</span>
+                    <strong>{{ stats_payload.user_comparison.stats.variance }}</strong>
+                  </div>
+                </div>
+              </div>
+              {% if current_user.is_admin and is_global_scope %}
+                <form method="get" class="stats-comparison-selector mb-3">
+                  <label for="comparison_user_ids" class="form-label fw-semibold mb-2">
+                    {{ t("stats.comparison_filter_label") }}
+                  </label>
+                  <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-start">
+                    <select id="comparison_user_ids" name="comparison_user_ids" class="form-select" multiple size="5">
+                      {% for user in users %}
+                        <option value="{{ user.id }}"{% if user.id in selected_comparison_user_ids %} selected{% endif %}>
+                          {{ user.nombre }} - {{ user.email }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary stats-comparison-apply">
+                      {{ t("stats.comparison_filter_apply") }}
+                    </button>
+                  </div>
+                  <div class="form-text">{{ t("stats.comparison_filter_help") }}</div>
+                </form>
+              {% endif %}
+              <div id="chart-user-comparison" class="stats-chart"></div>
+            </div>
+          </article>
+        </div>
       </div>
     {% endif %}
 
@@ -197,6 +250,9 @@
         averageTime: {{ t("stats.average_time")|tojson }},
         users: {{ t("stats.map_users")|tojson }},
         userNames: {{ t("stats.map_user_names")|tojson }},
+        comparisonMean: {{ t("stats.comparison_mean")|tojson }},
+        comparisonMedian: {{ t("stats.comparison_median")|tojson }},
+        comparisonVariance: {{ t("stats.comparison_variance")|tojson }},
         mapLoadError: {{ t("stats.map_load_error")|tojson }},
         months: {{ t("stats.drill_months")|tojson }},
         week: {{ t("stats.drill_week")|tojson }},
