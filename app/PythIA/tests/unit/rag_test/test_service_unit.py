@@ -136,6 +136,7 @@ class RAGServiceUnitTest(BaseAppTestCase):
             "Pregunta",
             {
                 "answer": "Respuesta",
+                "execution_device": "GPU",
                 "retrieved": [
                     {
                         "ranking": 1,
@@ -151,6 +152,7 @@ class RAGServiceUnitTest(BaseAppTestCase):
 
         consulta = Consulta.query.one()
         self.assertEqual(consulta.user_id, user.id)
+        self.assertEqual(consulta.execution_device, "GPU")
         self.assertEqual(consulta.fragmentos[0]["qdrant_point_id"], "qid-rag")
         self.assertEqual(ConsultaChunk.query.one().chunk_id, chunk.id)
 
@@ -181,6 +183,7 @@ class RAGServiceUnitTest(BaseAppTestCase):
         mock_obtener = AsyncMock(
             return_value={
                 "answer": "Respuesta final",
+                "execution_device": "CPU",
                 "retrieved": [
                     {
                         "ranking": 1,
@@ -201,6 +204,7 @@ class RAGServiceUnitTest(BaseAppTestCase):
             )
 
         self.assertEqual(result["answer"], "Respuesta final")
+        self.assertEqual(result["execution_device"], "CPU")
         self.assertEqual(result["qdrant_point_id"], "qid-best")
         self.assertEqual(Consulta.query.count(), 1)
         _, kwargs = mock_obtener.call_args

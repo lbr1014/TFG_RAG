@@ -320,6 +320,7 @@ class PrototipoRAGUnitTest(unittest.TestCase):
         self.m.settings.OLLAMA_NUM_GPU = -1
         self.m.settings.OLLAMA_NUM_GPU_SOURCE = "auto"
         self.assertIn("all layers", self.m._ollama_execution_backend())
+<<<<<<< Updated upstream:app/PythIA/tests/unit/rag_test/test_prototipo_RAG.py
         self.m.settings.OLLAMA_NUM_GPU = 2
         self.assertIn("num_gpu=2", self.m._ollama_execution_backend())
         self.m.settings.OLLAMA_NUM_GPU = 0
@@ -358,6 +359,48 @@ class PrototipoRAGUnitTest(unittest.TestCase):
             self.m._format_ollama_pull_progress("gemma", {"completed": 1024}),
             "gemma: descargando (1.0 KB)",
         )
+=======
+        self.m.settings.OLLAMA_NUM_GPU = 2
+        self.assertIn("num_gpu=2", self.m._ollama_execution_backend())
+        self.assertEqual(self.m.get_ollama_execution_device(), "GPU")
+        self.m.settings.OLLAMA_NUM_GPU = 0
+        self.assertIn("CPU", self.m._ollama_execution_backend())
+        self.assertEqual(self.m.get_ollama_execution_device(), "CPU")
+
+    def test_rag_model_choices_and_pull_progress_formatting(self):
+        original_default = self.m.settings.DEFAULT_RAG_LLM_MODEL
+        original_models = self.m.settings.RAG_LLM_MODELS
+        try:
+            self.m.settings.DEFAULT_RAG_LLM_MODEL = "llama"
+            self.m.settings.RAG_LLM_MODELS = " llama, gemma , qwen, gemma "
+
+            self.assertEqual(self.m.resolve_rag_llm_model(" gemma "), "gemma")
+            self.assertEqual(self.m.resolve_rag_llm_model(" "), "llama")
+            self.assertEqual(self.m.get_available_rag_llm_models(), ["llama", "gemma", "qwen"])
+            self.assertEqual(
+                self.m.get_rag_llm_model_choices(),
+                [("llama", "llama"), ("gemma", "gemma"), ("qwen", "qwen")],
+            )
+        finally:
+            self.m.settings.DEFAULT_RAG_LLM_MODEL = original_default
+            self.m.settings.RAG_LLM_MODELS = original_models
+
+        self.assertEqual(self.m._format_bytes(None), "-")
+        self.assertEqual(self.m._format_bytes(-1), "-")
+        self.assertEqual(self.m._format_bytes(12), "12 B")
+        self.assertEqual(self.m._format_bytes(2048), "2.0 KB")
+        self.assertIn(
+            "50.0% (1.0 KB / 2.0 KB)",
+            self.m._format_ollama_pull_progress(
+                "gemma",
+                {"status": "pulling", "digest": "abcdef1234567890", "completed": 1024, "total": 2048},
+            ),
+        )
+        self.assertEqual(
+            self.m._format_ollama_pull_progress("gemma", {"completed": 1024}),
+            "gemma: descargando (1.0 KB)",
+        )
+>>>>>>> Stashed changes:app/PythIA/app/test/unit/rag_test/test_prototipo_RAG.py
 
     def test_import_without_torch_and_auto_ollama_gpu_branches(self):
         auto_env = {"OLLAMA_NUM_GPU": "", "RAG_MODEL_DEVICE": None}
