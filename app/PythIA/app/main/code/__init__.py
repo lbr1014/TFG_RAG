@@ -15,6 +15,9 @@ from app.main.code.extensions import csrf, db, login_manager, mail, migrate
 from .inetrnacionalizacion.tarduccion import init_app as init_i18n, t
 
 
+AUTH_LOGIN_REQUIRED = "auth.login_required"
+
+
 def _get_required_env(var_name: str) -> str:
     """Devuelve una variable de entorno obligatoria.
 
@@ -107,7 +110,7 @@ def create_app():
 
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
-    login_manager.login_message = t("auth.login_required")
+    login_manager.login_message = t(AUTH_LOGIN_REQUIRED)
 
     @login_manager.unauthorized_handler
     def _unauthorized():
@@ -117,9 +120,9 @@ def create_app():
             La respuesta de redireccion a la página de login.
         """
         if wants_json_response():
-            return jsonify({"error": t("auth.login_required"), "status": 401}), 401
+            return jsonify({"error": t(AUTH_LOGIN_REQUIRED), "status": 401}), 401
 
-        flash(t("auth.login_required"), "warning")
+        flash(t(AUTH_LOGIN_REQUIRED), "warning")
         return redirect(url_for("auth.login", next=request.path))
 
     @login_manager.user_loader
