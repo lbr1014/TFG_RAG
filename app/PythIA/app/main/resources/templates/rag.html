@@ -4,7 +4,7 @@
 {% block title %}{{ t("rag.page_title") }}{% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css', v='20260322-theme') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -52,7 +52,7 @@
 
         <div class="rag-result mt-4">
           <h3 class="rag-section-title h5 mb-3">{{ t("rag.answer_title") }}</h3>
-          <pre id="answer" class="rag-answer mb-0"></pre>
+          <div id="answer" class="rag-answer mb-0" aria-live="polite"></div>
         </div>
 
         <details class="rag-debug mt-4">
@@ -81,6 +81,7 @@
       </section>
 </div>
 
+<script src="{{ url_for('static', filename='js/answer_renderer.js') }}"></script>
 <script>
   const form = document.getElementById("rag-form");
   const questionEl = form.querySelector("textarea");
@@ -102,7 +103,7 @@
   }
 
   function clearResult() {
-    answerEl.textContent = "";
+    answerEl.innerHTML = "";
     filenameEl.textContent = "";
     titleEl.textContent = "";
     segmentEl.textContent = "";
@@ -151,7 +152,7 @@
   }
 
   function applyResult(result) {
-    answerEl.textContent = result?.answer || tr("rag.no_answer");
+    window.pythiaRenderMarkdown(answerEl, result?.answer || tr("rag.no_answer"));
     filenameEl.textContent = result?.filename || "-";
     titleEl.textContent = result?.title || "-";
     segmentEl.textContent = result?.segment_index ?? "-";
