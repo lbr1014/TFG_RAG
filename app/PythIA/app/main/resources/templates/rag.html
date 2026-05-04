@@ -16,9 +16,14 @@
               <h2 class="rag-title mt-3 mb-2">{{ t("rag.title") }}</h2>
               <p class="rag-subtitle mb-0">{{ t("rag.subtitle") }}</p>
             </div>
-            <a class="btn btn-outline-light btn-header rag-model-stats-link" href="{{ url_for('rag.model_comparison_page') }}">
-              {{ t("rag.model_comparison") }}
-            </a>
+            <div class="d-flex gap-2 flex-wrap">
+              <a class="btn btn-outline-light btn-header rag-model-stats-link" href="{{ url_for('rag.default_query_page') }}">
+                {{ t("rag_default.open_page") }}
+              </a>
+              <a class="btn btn-outline-light btn-header rag-model-stats-link" href="{{ url_for('rag.model_comparison_page') }}">
+                {{ t("rag.model_comparison") }}
+              </a>
+            </div>
           </div>
         </div>
 
