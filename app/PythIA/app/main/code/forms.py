@@ -326,6 +326,36 @@ class RAGQueryForm(LocalizedFlaskForm):
     submit = SubmitField("Preguntar")
 
 
+class RAGDefaultQueryForm(LocalizedFlaskForm):
+    """
+    Formulario guiado para construir consultas frecuentes al sistema RAG.
+    """
+
+    i18n_fields = {
+        "expediente": "rag_default.expediente_label",
+        "summary": "rag_default.summary_label",
+        "doc_type": "rag_default.doc_type_label",
+        "question_kind": "rag_default.question_kind_label",
+        "model": "rag.model_label",
+        "question": "rag.question_label",
+        "submit": "rag.ask_button",
+    }
+    i18n_validator_messages = {
+        "question": {
+            "DataRequired": VALIDATION_REQUIRED,
+            "Length": "validation.max_length_2000",
+        },
+    }
+
+    expediente = SelectField("Expediente", choices=[], validators=[Optional(), Length(max=255)])
+    summary = BooleanField("Resumen del documento")
+    doc_type = SelectField("Tipo de documento", choices=[], validators=[Optional(), Length(max=30)])
+    question_kind = SelectField("Pregunta tipo", choices=[], validators=[Optional(), Length(max=60)])
+    question = HiddenField("Pregunta", validators=[DataRequired(), Length(max=2000)])
+    model = SelectField("Modelo", choices=[], validators=[Optional(), Length(max=255)])
+    submit = SubmitField("Preguntar")
+
+
 class ForgotPasswordForm(LocalizedFlaskForm):
     """
     Formulario para solicitar un enlace de recuperación de contraseña.
