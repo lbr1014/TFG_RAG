@@ -36,6 +36,8 @@ except ImportError:
 
 from hashlib import sha256
 
+from app.main.code.services.rag.default_prompts import OLLAMA_SYSTEM_PROMPT, PROMPT_TEMPLATES
+
 # Logger
 logger = logging.getLogger(__name__)   
 
@@ -62,6 +64,9 @@ class OllamaModelNotFoundError(RuntimeError):
 
 
 QUERY_CANCELLED_MESSAGE = "Consulta cancelada por el usuario."
+DEFAULT_RAG_MIN_SIMILARITY = 0.5
+DEFAULT_RAG_MIN_CHUNKS = 5
+DEFAULT_RAG_MAX_CHUNKS = 20
 
 
 def _service_url_from_env(env_name: str, default_host: str) -> str:
@@ -166,6 +171,12 @@ class Settings:
     )
     OLLAMA_POOL_TIMEOUT_SECONDS: float = float(
         os.getenv("OLLAMA_POOL_TIMEOUT_SECONDS", "10")
+    )
+    _ollama_generation_timeout = os.getenv("OLLAMA_GENERATION_TIMEOUT_SECONDS", "600")
+    OLLAMA_GENERATION_TIMEOUT_SECONDS: Optional[float] = (
+        float(_ollama_generation_timeout)
+        if _ollama_generation_timeout not in (None, "", "0")
+        else None
     )
     OLLAMA_PULL_TIMEOUT_SECONDS: float = float(
         os.getenv("OLLAMA_PULL_TIMEOUT_SECONDS", "1800")
@@ -821,71 +832,66 @@ def pdf_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def _qdrant_filter_by_filename(filename: str) -> qmodels.Filter:
-    """Construye un filtro de Qdrant por nombre de archivo.
-
-    Args:
-        filename: Nombre del archivo PDF.
-
-    Returns:
-        Filtro listo para usar en búsquedas o borrados.
+def build_qdrant_metadata_filter(**metadata: Any) -> qmodels.Filter | None:
     """
-    return qmodels.Filter(
-        must=[
-            qmodels.FieldCondition(
-                key="metadata.filename",
-                match=qmodels.MatchValue(value=filename),
-            )
-        ]
-    )
-
-
-def _qdrant_filter_by_filename_and_hash(filename: str, doc_hash: str) -> qmodels.Filter:
-    """
-    Construye un filtro de Qdrant para comprobar si un PDF concreto ya está indexado y 
-    coincide con una versión concreta del documento, es decir, si coinciden los hash.
-    Este filtro se usa para decidir si un PDF puede omitirse durante el indexado incremental.
-
-    Argumentos:
-        filename: Nombre del archivo PDF.
-        doc_hash: Hash SHA-256 del contenido del PDF.
-
-    Returns:
-        Filtro combinando nombre de archivo y hash.
-    """
-    return qmodels.Filter(
-        must=[
-            qmodels.FieldCondition(
-                key="metadata.filename",
-                match=qmodels.MatchValue(value=filename),
-            ),
-            qmodels.FieldCondition(
-                key="metadata.sha256",
-                match=qmodels.MatchValue(value=doc_hash),
-            ),
-        ]
-    )
-
-
-def qdrant_has_filename(filename: str) -> bool:
-    """
-    Comprueba si existen chunks indexados en Qdrant para un PDF concreto,
-    independientemente de su versión. Se usa para distinguir entre un PDF nuevo y un PDF ya indexado.
+    Construye un filtro Qdrant con condiciones exactas sobre metadatos.
     
-    Argumentos:
-        filename: Nombre del archivo PDF.
-
+    Args:
+        **metadata: Claves y valores de metadatos a incluir en el filtro. Solo se incluyen aquellos pares donde el valor no es None ni una cadena vacía.
+        
     Returns:
-        True si existe al menos un chunk asociado al archivo.
+        qmodels.Filter con las condiciones de metadatos, o None si no se proporcionaron metadatos válidos.
     """
+    must = [
+        qmodels.FieldCondition(
+            key=f"metadata.{key}",
+            match=qmodels.MatchValue(value=value),
+        )
+        for key, value in metadata.items()
+        if value is not None and value != ""
+    ]
+    if not must:
+        return None
+    return qmodels.Filter(
+        must=must
+    )
+
+
+def qdrant_exists_by_metadata(**metadata: Any) -> bool:
+    """
+    Comprueba si existe al menos un punto que cumpla los metadatos dados.
+    
+     Args:
+        **metadata: Claves y valores de metadatos a buscar. Solo se incluyen aquellos pares donde el valor no es None ni una cadena vacía.
+        
+    Returns:
+        bool: True si existe al menos un punto que cumpla los metadatos dados, False en caso contrario.
+    """
+    metadata_filter = build_qdrant_metadata_filter(**metadata)
+    if metadata_filter is None:
+        return False
     records, _ = qdrant.scroll(
         collection_name=VectorBaseDocument.get_collection_name(),
         limit=1,
         with_payload=False,
         with_vectors=False,
-        scroll_filter=_qdrant_filter_by_filename(filename),
+        scroll_filter=metadata_filter,
     )
     return len(records) > 0
+
+
+def qdrant_has_filename(filename: str) -> bool:
+    """
+    Comprueba si existen chunks indexados en Qdrant para un PDF concreto,
+    independientemente de su versión.
+    
+    Args:    
+        filename: Nombre del archivo PDF a buscar en los metadatos de Qdrant.
+    
+    Returns:
+        True si existe al menos un chunk asociado a ese nombre de archivo; Fase si no existe ningún chunk con ese nombre de archivo en los metadatos.
+    """
+    return qdrant_exists_by_metadata(filename=filename)
 
 
 def qdrant_has_same_hash(filename: str, doc_hash: str) -> bool:
@@ -900,14 +906,7 @@ def qdrant_has_same_hash(filename: str, doc_hash: str) -> bool:
     Returns:
         True si el documento ya está indexado y no ha cambiado; Fase si el documento no esta inlcuido o ha cambiado.
     """
-    records, _ = qdrant.scroll(
-        collection_name=VectorBaseDocument.get_collection_name(),
-        limit=1,
-        with_payload=False,
-        with_vectors=False,
-        scroll_filter=_qdrant_filter_by_filename_and_hash(filename, doc_hash),
-    )
-    return len(records) > 0
+    return qdrant_exists_by_metadata(filename=filename, sha256=doc_hash)
 
 
 def qdrant_delete_by_filename(filename: str) -> None:
@@ -923,7 +922,7 @@ def qdrant_delete_by_filename(filename: str) -> None:
     qdrant.delete(
         collection_name=VectorBaseDocument.get_collection_name(),
         points_selector=qmodels.FilterSelector(
-            filter=_qdrant_filter_by_filename(filename)
+            filter=build_qdrant_metadata_filter(filename=filename)
         ),
     )
     
@@ -1281,6 +1280,7 @@ def iter_clean_lines(text: str) -> Iterable[str]:
 def build_metadata_filter(
     numero_expediente: str | None = None,
     tipo_documento: str | None = None,
+    document_id: int | None = None,
 ) -> qmodels.Filter | None:
     """ 
     Construye un filtro de Qdrant a partir de los metadatos de número de expediente y tipo de documento, si se proporcionan. Si no se proporcionan filtros, devuelve None.
@@ -1288,32 +1288,16 @@ def build_metadata_filter(
     Args:
         numero_expediente: Número de expediente para filtrar los documentos (opcional).
         tipo_documento: Tipo de documento para filtrar los documentos (opcional).
+        document_id: ID del documento para filtrar los documentos (opcional).
         
     Returns:
         Un objeto qmodels.Filter que combina las condiciones de filtrado para número de expediente y tipo de documento, o None si no se proporcionan filtros.
     """
-    must: list[qmodels.FieldCondition] = []
-
-    if numero_expediente:
-        must.append(
-            qmodels.FieldCondition(
-                key="metadata.numero_expediente",
-                match=qmodels.MatchValue(value=numero_expediente),
-            )
-        )
-
-    if tipo_documento:
-        must.append(
-            qmodels.FieldCondition(
-                key="metadata.tipo_documento",
-                match=qmodels.MatchValue(value=tipo_documento),
-            )
-        )
-
-    if not must:
-        return None
-
-    return qmodels.Filter(must=must)
+    return build_qdrant_metadata_filter(
+        numero_expediente=numero_expediente,
+        tipo_documento=tipo_documento,
+        document_id=int(document_id) if document_id is not None else None,
+    )
 
 def recuperacion_chunk(
     user_query: str,
@@ -1334,31 +1318,31 @@ def recuperacion_chunk(
         Lista de instancias de VectorBaseDocument que representan los chunks más similares encontrados en Qdrant, ordenados por similitud. 
         Cada instancia incluye el contenido del chunk, su embedding y metadatos asociados.
     """
-    logger.info(
-        "Recuperando chunks para consulta RAG con embeddings en %s",
-        _embedding_execution_backend(),
-    )
-    # Embedding de la pregunta
-    query_vector = embedding_model(user_query, to_list=True)
-
-    # Búsqueda vectorial en Qdrant
-    query_filter = build_metadata_filter(
+    points = recuperacion_chunk_con_scores(
+        user_query=user_query,
+        k=k,
         numero_expediente=numero_expediente,
         tipo_documento=tipo_documento,
+        min_similarity=None,
     )
-    docs = VectorBaseDocument.search(
-        query_vector=query_vector,
-        limit=k,
-        query_filter=query_filter,
-    )
+    return [VectorBaseDocument.from_record(point) for point in points]
 
-    return docs
+def normalize_retrieval_k(k: int | None = None) -> int:
+    """
+    Normaliza el numero de chunks solicitados.
+
+    El maximo lo decide la capa de servicio segun el tipo de pregunta; aqui
+    solo se garantiza un minimo razonable y un valor por defecto.
+    """
+    return max(DEFAULT_RAG_MIN_CHUNKS, int(k or DEFAULT_RAG_MAX_CHUNKS))
+
 
 def recuperacion_chunk_con_scores(
     user_query: str,
-    k: int = 10,
+    k: int = DEFAULT_RAG_MAX_CHUNKS,
     numero_expediente: str | None = None,
     tipo_documento: str | None = None,
+    min_similarity: float | None = DEFAULT_RAG_MIN_SIMILARITY,
 ) -> list[qmodels.ScoredPoint]:
     """
     Recupera los k chunks más similares desde Qdrant, incluyendo score e id del punto.
@@ -1368,6 +1352,7 @@ def recuperacion_chunk_con_scores(
         k: El número máximo de chunks a recuperar.
         numero_expediente: (Opcional) Número de expediente para filtrar los chunks por sus metadatos.
         tipo_documento: (Opcional) Tipo de documento para filtrar los chunks por sus metadatos.
+        min_similarity: Umbral mínimo de similitud. Solo se devolverán chunks con un score superior a este valor.
         
     Returns:
         Lista de objetos qmodels.ScoredPoint que representan los chunks más similares encontrados en Qdrant, ordenados por similitud. 
@@ -1377,7 +1362,7 @@ def recuperacion_chunk_con_scores(
         "Recuperando chunks para consulta RAG con embeddings en %s",
         _embedding_execution_backend(),
     )
-    # Embedding de la pregunta
+    k = normalize_retrieval_k(k)
     query_vector = embedding_model(user_query, to_list=True)
     query_filter = build_metadata_filter(
         numero_expediente=numero_expediente,
@@ -1386,7 +1371,6 @@ def recuperacion_chunk_con_scores(
     try:
         VectorBaseDocument._ensure_collection()
 
-        # Query con scores
         res = qdrant.query_points(
             collection_name=VectorBaseDocument.get_collection_name(),
             query=query_vector,
@@ -1395,10 +1379,39 @@ def recuperacion_chunk_con_scores(
             with_payload=True,
             with_vectors=False,
         )
-        return getattr(res, "points", res)
+        points = getattr(res, "points", res)
+        if min_similarity is None:
+            return points
+        return [p for p in points if float(getattr(p, "score", 0.0)) > min_similarity]
     except Exception as e:
         logger.warning("Qdrant no disponible para recuperar chunks: %s", e)
         return []
+
+
+def build_rag_prompt(
+    user_query: str,
+    context_blocks: list[str],
+    query_profile: str = "general",
+) -> str:
+    """
+    Construye un prompt especializado según el tipo de pregunta guiada.
+    
+    Args:
+        user_query: La pregunta del usuario que se quiere responder.
+        context_blocks: Lista de fragmentos de texto recuperados que se pueden usar para responder.
+        query_profile: El perfil de pregunta que indica el tipo de respuesta esperada (e.g., "summary", "amounts", "deadlines"). Si no se especifica o no se encuentra, se usa el perfil "general".
+    
+    Returns:
+        Un string que representa el prompt completo para enviar al modelo de lenguaje, incluyendo instrucciones específicas basadas en el perfil de pregunta, 
+        el formato de respuesta esperado, la pregunta del usuario y los fragmentos de contexto disponibles. El prompt enfatiza que solo se deben usar los fragmentos proporcionados y que no se debe inventar información.
+    """
+    chunk_range = f"CHUNK #1 a CHUNK #{len(context_blocks)}"
+    template = PROMPT_TEMPLATES.get(query_profile) or PROMPT_TEMPLATES["general"]
+    return template.format(
+        chunk_range=chunk_range,
+        user_query=user_query,
+        context=chr(10).join(context_blocks),
+    )
 
 
 # =========================
@@ -1437,7 +1450,7 @@ async def ask_ollama(
         "messages": [
             {
                 "role": "system",
-                "content": "Responde en español de forma breve y precisa.",
+                "content": OLLAMA_SYSTEM_PROMPT,
             },
             {
                 "role": "user",
@@ -1511,6 +1524,44 @@ async def ask_ollama(
         ) from exc
     return "".join(chunks)
 
+async def ask_rag_llm(
+    user_query: str,
+    context_blocks: list[str],
+    query_profile: str = "general",
+    model: str | None = None,
+    should_cancel=None,
+) -> str:
+    """
+    Construye el prompt RAG correspondiente y lo envía al LLM.
+    Todos los tipo de pregunta usan esta misma función; solo cambia la plantilla del prompt.
+    
+    Args:
+        user_query: La pregunta del usuario que se quiere responder.
+        context_blocks: Lista de fragmentos de texto recuperados que se pueden usar para responder.
+        query_profile: El perfil de pregunta que indica el tipo de respuesta esperada (e.g., "summary", "amounts", "deadlines"). 
+            Si no se especifica o no se encuentra, se usa el perfil "general".
+        model: El modelo de Ollama a usar para generar la respuesta. Si es None, se usará el modelo por defecto configurado en settings.
+        should_cancel: Función opcional que devuelve True si se ha solicitado cancelar la consulta.
+    
+    Returns:
+        La respuesta generada por el modelo de lenguaje como un string.
+    """
+    prompt = build_rag_prompt(
+        user_query=user_query,
+        context_blocks=context_blocks,
+        query_profile=query_profile,
+    )
+    generation = ask_ollama(prompt, model=model, should_cancel=should_cancel)
+    timeout_seconds = settings.OLLAMA_GENERATION_TIMEOUT_SECONDS
+    if timeout_seconds is None:
+        return await generation
+    try:
+        return await asyncio.wait_for(generation, timeout=timeout_seconds)
+    except asyncio.TimeoutError as exc:
+        raise OllamaTimeoutError(
+            f"Ollama ha superado el tiempo máximo de generación ({timeout_seconds:g} s)."
+        ) from exc
+
 
 def obtener_chunk_de_query(
     user_query: str,
@@ -1556,6 +1607,9 @@ async def obtener_mejor_chunk(
     on_status=None,
     numero_expediente: str | None = None,
     tipo_documento: str | None = None,
+    query_profile: str = "general",
+    retrieval_k: int = DEFAULT_RAG_MAX_CHUNKS,
+    min_similarity: float | None = DEFAULT_RAG_MIN_SIMILARITY,
     ) -> dict:
     """
     Dada una pregunta del usuario, recupera los chunks más relevantes de Qdrant y usa Ollama para generar una respuesta basada en esos chunks.
@@ -1569,7 +1623,11 @@ async def obtener_mejor_chunk(
                     (preparando modelo, recuperando fragmentos, generando respuesta, etc.).
         numero_expediente: (Opcional) Número de expediente para filtrar los chunks por sus metadatos durante la recuperación.
         tipo_documento: (Opcional) Tipo de documento para filtrar los chunks por sus metadatos durante la recuperación.
-    
+        query_profile: El perfil de pregunta que indica el tipo de respuesta esperada (e.g., "summary", "amounts", "deadlines"). 
+            Si no se especifica o no se encuentra, se usa el perfil "general".
+        retrieval_k: Número máximo de chunks a recuperar. La capa de servicio decide este valor segun el tipo de pregunta.
+        min_similarity: Umbral mínimo de similitud para filtrar los chunks recuperados. Por defecto se exige score > 0.5.
+            
     Returns:
         Un diccionario con la respuesta generada por Ollama, detalles del chunk más relevante (título del documento, nombre del archivo, índice de segmento, texto del chunk), 
         la lista de chunks recuperados con sus scores y metadatos, el modelo usado, y los filtros aplicados. Si no se encuentra ningún chunk relevante, 
@@ -1591,11 +1649,13 @@ async def obtener_mejor_chunk(
     if on_status:
         on_status("Recuperando fragmentos relevantes...")
 
+    retrieval_k = normalize_retrieval_k(retrieval_k)
     points = recuperacion_chunk_con_scores(
         user_query,
-        k=10,
+        k=retrieval_k,
         numero_expediente=numero_expediente,
         tipo_documento=tipo_documento,
+        min_similarity=min_similarity,
     )
     if not points:
         return {
@@ -1607,6 +1667,9 @@ async def obtener_mejor_chunk(
             "retrieved": [],
             "model": model_name,
             "execution_device": get_ollama_execution_device(),
+            "query_profile": query_profile,
+            "retrieval_k": retrieval_k,
+            "min_similarity": min_similarity,
             "applied_filters": {
                 "numero_expediente": numero_expediente,
                 "tipo_documento": tipo_documento,
@@ -1645,24 +1708,16 @@ async def obtener_mejor_chunk(
         
     best = retrieved[0]
         
-    # Prompt para que Ollama conteste usando los 10 chunk en ranking
-    prompt = f"""
-    Usa EXCLUSIVAMENTE los fragmentos proporcionados (CHUNK #1 a CHUNK #10) para responder.
-    Si la respuesta no puede deducirse de esos fragmentos, di explícitamente que no hay información suficiente.
-
-    Pregunta del usuario:
-    {user_query}
-    
-    Fragmentos (ordenados por relevancia):
-    {chr(10).join(context_blocks)}
-
-    Responde de forma breve y precisa en español.
-    """
-
     if on_status:
         on_status("Generando respuesta del modelo...")
 
-    answer = await ask_ollama(prompt, model=model_name, should_cancel=should_cancel)
+    answer = await ask_rag_llm(
+        user_query=user_query,
+        context_blocks=context_blocks,
+        query_profile=query_profile,
+        model=model_name,
+        should_cancel=should_cancel,
+    )
 
     return {
         "answer": answer,
@@ -1673,6 +1728,9 @@ async def obtener_mejor_chunk(
         "chunk": best.get("chunk", ""),
         "retrieved": retrieved,
         "execution_device": get_ollama_execution_device(),
+        "query_profile": query_profile,
+        "retrieval_k": retrieval_k,
+        "min_similarity": min_similarity,
         "applied_filters": {
             "numero_expediente": numero_expediente,
             "tipo_documento": tipo_documento,
@@ -1848,6 +1906,3 @@ if __name__ == "__main__":
 
     summary = index_pliegos_dir(pliegos_dir)
     logger.info("Resumen indexado: %s", summary)
-
-
-

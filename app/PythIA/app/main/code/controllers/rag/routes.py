@@ -14,7 +14,8 @@ from . import rag_bp
 from app.main.code.services.async_tasks import executor
 from app.main.code.model.rag_query_state import RAGQueryState
 from app.main.code.extensions import db
-from app.main.code.forms import EmptyForm, RAGQueryForm
+from app.main.code.forms import EmptyForm, RAGDefaultQueryForm, RAGQueryForm
+from app.main.code.model.documento import Documento
 from app.main.code.services.rag.PrototipoRAG import QueryCancelledError, get_rag_llm_model_choices, resolve_rag_llm_model
 from app.main.code.services.rag.service import rag_answer, validate_question
 from app.main.code.inetrnacionalizacion.tarduccion import get_locale, localize_runtime_message, t, translate_for
@@ -31,6 +32,20 @@ def rag_page():
     form = RAGQueryForm()
     configure_model_choices(form)
     return render_template("rag.html", form=form)
+
+
+@rag_bp.get("/consultas-guiadas")
+@login_required
+def default_query_page():
+    """
+    Muestra un formulario guiado para construir consultas frecuentes sobre pliegos.
+
+    Returns:
+        Respuesta HTML con el formulario de consultas predefinidas.
+    """
+    form = RAGDefaultQueryForm()
+    configure_default_query_form(form)
+    return render_template("rag_default_query.html", form=form)
 
 
 @rag_bp.get("/modelos")
@@ -186,6 +201,108 @@ def configure_model_choices(form: RAGQueryForm) -> None:
     if not form.model.data:
         form.model.data = form.model.default
 
+
+def configure_default_query_form(form: RAGDefaultQueryForm) -> None:
+    """
+    Carga opciones de expedientes, tipos documentales, preguntas frecuentes y modelos.
+    
+    Args:
+        form (RAGDefaultQueryForm): El formulario a configurar.
+    """
+    configure_model_choices(form)
+    form.expediente.choices = get_expediente_choices()
+    form.doc_type.choices = [
+        ("", t("rag_default.doc_type_any")),
+        ("administrativo", t("rag_default.doc_type_admin")),
+        ("tecnico", t("rag_default.doc_type_technical")),
+    ]
+    form.question_kind.choices = [
+        ("general", t("rag_default.question_general")),
+        ("amounts", t("rag_default.question_amounts")),
+        ("deadlines", t("rag_default.question_deadlines")),
+        ("solvency", t("rag_default.question_solvency")),
+        ("criteria", t("rag_default.question_criteria")),
+        ("guarantees", t("rag_default.question_guarantees")),
+        ("budget", t("rag_default.question_budget")),
+        ("duration", t("rag_default.question_duration")),
+        ("penalties", t("rag_default.question_penalties")),
+        ("submission", t("rag_default.question_submission")),
+    ]
+
+
+GUIDED_QUESTION_TEXTS = {
+    "general": "Indica la informacion principal y las clausulas mas relevantes.",
+    "amounts": "Extrae todas las cantidades economicas, importes, presupuestos, garantias y umbrales relevantes.",
+    "deadlines": "Resume los plazos importantes: presentacion de ofertas, ejecucion, adjudicacion, garantias y cualquier fecha limite.",
+    "solvency": "Identifica los requisitos de solvencia economica, financiera, tecnica y profesional.",
+    "criteria": "Resume los criterios de adjudicacion, su ponderacion y como se valoran.",
+    "guarantees": "Indica las garantias provisionales o definitivas exigidas y sus importes o porcentajes.",
+    "budget": "Explica el presupuesto base, el valor estimado, impuestos incluidos o excluidos y partidas relevantes.",
+    "duration": "Indica la duracion del contrato, posibles prorrogas y condiciones de ejecucion temporal.",
+    "penalties": "Resume penalizaciones, incumplimientos, causas de resolucion y obligaciones criticas.",
+    "submission": "Explica como y donde presentar la oferta, documentacion requerida y sobres o archivos necesarios.",
+}
+
+
+def is_guided_query_request() -> bool:
+    """
+    Detecta si la petición procede del formulario de consultas guiadas.
+    
+    Returns:
+        bool: True si la petición contiene campos específicos del formulario guiado, False en caso contrario.
+    """
+    return any(field in request.form for field in ("expediente", "doc_type", "question_kind", "summary"))
+
+
+def build_guided_question(form: RAGDefaultQueryForm) -> str:
+    """
+    Construye en servidor la pregunta del formulario guiado para evita depender exclusivamente del JavaScript del template.
+    
+    Args:
+        form (RAGDefaultQueryForm): El formulario con los datos enviados por el usuario.
+        
+    Returns:
+        str: La pregunta construida para la consulta RAG basada en las opciones seleccionadas.
+    """
+    expediente = (form.expediente.data or "").strip()
+    doc_type = (form.doc_type.data or "").strip()
+    question_kind = (form.question_kind.data or "general").strip() or "general"
+    summary_mode = bool(form.summary.data)
+
+    scope = f"Para el expediente {expediente}" if expediente else "Para los pliegos disponibles de forma general"
+    doc_scope = ""
+    if not summary_mode and doc_type:
+        doc_type_text = "tecnico" if doc_type == "tecnico" else "administrativo"
+        doc_scope = f" en el pliego {doc_type_text}"
+
+    task = (
+        "elabora un resumen general y detallado del documento completo."
+        if summary_mode
+        else GUIDED_QUESTION_TEXTS.get(question_kind, GUIDED_QUESTION_TEXTS["general"])
+    )
+    return f"{scope}{doc_scope}, {task}".strip()
+
+
+def get_expediente_choices() -> list[tuple[str, str]]:
+    """
+    Obtiene los expedientes disponibles desde los documentos cargados.
+    
+    Returns:
+        list[tuple[str, str]]: Lista de tuplas con número de expediente y su traducción para el formulario, incluyendo una opción para "cualquiera".
+    """
+    rows = (
+        db.session.query(Documento.numero_expediente)
+        .filter(Documento.numero_expediente.isnot(None))
+        .filter(Documento.numero_expediente != "")
+        .distinct()
+        .order_by(Documento.numero_expediente.asc())
+        .all()
+    )
+    choices = [("", t("rag_default.expediente_any"))]
+    choices.extend((value, value) for (value,) in rows if value)
+    return choices
+
+
 def get_user_job_or_404(job_id: int) -> RAGQueryState:
     """
     Obtiene una consulta asíncrona del usuario actual o aborta.
@@ -213,8 +330,13 @@ def rag_ask():
     Returns:
         Respuesta JSON con el identificador del trabajo creado o reutilizado.
     """
-    form = RAGQueryForm()
-    configure_model_choices(form)
+    guided_request = is_guided_query_request()
+    form = RAGDefaultQueryForm() if guided_request else RAGQueryForm()
+    if guided_request:
+        configure_default_query_form(form)
+        form.question.data = build_guided_question(form)
+    else:
+        configure_model_choices(form)
     if not form.validate_on_submit():
         return jsonify({"error": t("rag.invalid_question")}), 400
 
