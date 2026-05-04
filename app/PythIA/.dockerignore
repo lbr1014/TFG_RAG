@@ -15,8 +15,12 @@ __pycache__/
 *.pyo
 *.pyd
 .pytest_cache/
+pytest-cache-files-*/
+**/pytest-cache-files-*/
 .coverage
 .coveragerc
+coverage/
+coverage.xml
 
 # ======================
 # Virtual environments
