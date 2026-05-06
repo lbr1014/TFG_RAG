@@ -30,6 +30,9 @@ CONTRASEÑA = "Contraseña"
 """str: Clave de traducción para el campo nombre."""
 NAME = "common.name"
 
+"""str: Clave de traducción para el campo país."""
+COUNTRY = "common.country"
+
 """str: Clave de traducción para validación de longitud mínima de nombre."""
 MIN_LENGTH_NAME = "validation.min_length_2"
 
@@ -182,7 +185,7 @@ class SignupForm(LocalizedFlaskForm):
     i18n_fields = {
         "nombre": NAME,
         "email": EMAIL,
-        "country_code": "common.country",
+        "country_code": COUNTRY,
         "password": PASSWORD,
         "confirm_password": "auth.repeat_password",
         "submit": "auth.signup_submit",
@@ -230,7 +233,7 @@ class AdminCreateUserForm(LocalizedFlaskForm):
     i18n_fields = {
         "nombre": NAME,
         "email": EMAIL,
-        "country_code": "common.country",
+        "country_code": COUNTRY,
         "password": PASSWORD,
         "is_admin": "admin.is_admin",
         "submit": "admin.create_user_submit",
@@ -270,7 +273,7 @@ class EditUserForm(LocalizedFlaskForm):
     i18n_fields = {
         "nombre": NAME,
         "email": EMAIL,
-        "country_code": "common.country",
+        "country_code": COUNTRY,
         "new_password": "auth.new_password",
         "submit": "common.save_changes",
     }

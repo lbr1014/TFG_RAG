@@ -278,7 +278,6 @@ def _format_bytes(value: Any) -> str:
         return "-"
     units = ("B", "KB", "MB", "GB", "TB")
     amount = float(value)
-    unit = units[0]
     for unit in units:
         if amount < 1024 or unit == units[-1]:
             break
@@ -313,6 +312,205 @@ def _format_ollama_pull_progress(model_name: str, payload: dict[str, Any]) -> st
     return f"{model_name}: {status}{digest_suffix}{progress}".strip()
 
 
+def _raise_if_query_cancelled(should_cancel=None) -> None:
+    """
+    Lanza un error de consulta cancelada si la función should_cancel indica que se ha solicitado cancelar.
+    
+    Args:
+        should_cancel: Función que devuelve True si la consulta debe ser cancelada.
+    """
+    if should_cancel and should_cancel():
+        raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+
+
+def _raise_for_ollama_show_status(response: httpx.Response, model_name: str) -> None:
+    """
+    Lanza un error si la respuesta de Ollama a la comprobación de disponibilidad del modelo no es exitosa.
+    
+    Args:
+        response: Objeto httpx.Response recibido de la petición a Ollama.
+        model_name: Nombre del modelo que se estaba comprobando.
+        
+    Raises:
+        OllamaModelNotFoundError: Si el modelo no se encuentra en Ollama.
+        RuntimeError: Si Ollama devuelve un error diferente al de modelo no encontrado, incluyendo detalles del error.  
+    """
+    if response.status_code in (200, 404):
+        return
+
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        details = (response.text or "").strip()
+        raise RuntimeError(
+            f"Ollama devolvió HTTP {response.status_code} comprobando el modelo '{model_name}': {details}"
+        ) from exc
+
+
+def _ollama_pull_read_timeout(total_timeout: float, idle_timeout: float, elapsed: float) -> float | None:
+    """
+    Calcula el timeout de lectura para la operación de pull de Ollama, teniendo en cuenta el tiempo
+    total permitido, el tiempo de inactividad permitido y el tiempo ya transcurrido.
+    
+    Args:        
+        total_timeout: Tiempo máximo total permitido para la operación de pull (en segundos). Si es 0 o negativo, no hay límite total. 
+        idle_timeout: Tiempo máximo permitido sin recibir datos antes de considerar que la operación está inactiva (en segundos). 
+            Si es 0 o negativo, no hay límite de inactividad.
+        elapsed: Tiempo ya transcurrido desde el inicio de la operación (en segundos).
+        
+    Returns:        
+        El timeout de lectura recomendado para la siguiente lectura de datos, o None si no hay límite de lectura.
+    """
+    read_timeout = idle_timeout if idle_timeout > 0 else None
+    if total_timeout <= 0:
+        return read_timeout
+
+    remaining = max(0.1, total_timeout - elapsed)
+    return min(read_timeout, remaining) if read_timeout else remaining
+
+
+async def _read_ollama_pull_line(line_iterator, read_timeout: float | None, model_name: str) -> str | None:
+    """
+    Lee la siguiente línea de respuesta del pull de Ollama, aplicando un timeout de lectura para detectar inactividad.
+
+    Args:
+        line_iterator (AsyncIterator): Iterador asíncrono que produce las líneas de respuesta del pull de Ollama.
+        read_timeout (float | None): Tiempo máximo permitido para esperar una línea de respuesta antes de considerar 
+            que la operación está inactiva (en segundos). Si es None, no hay límite de tiempo.
+        model_name (str): Nombre del modelo de Ollama.
+
+    Raises:
+        OllamaTimeoutError: Si no se recibe ninguna línea de respuesta dentro del tiempo de espera configurado.
+
+    Returns:
+        str | None: La línea de respuesta leída o None si la iteración se ha completado.
+    """
+    try:
+        return await asyncio.wait_for(line_iterator.__anext__(), timeout=read_timeout)
+    except StopAsyncIteration:
+        return None
+    except asyncio.TimeoutError as exc:
+        raise OllamaTimeoutError(
+            f"La descarga del modelo '{model_name}' no avanzó durante {read_timeout:g} s."
+        ) from exc
+
+
+def _emit_ollama_pull_progress(
+    model_name: str,
+    payload: dict[str, Any],
+    last_progress: str,
+    last_log_at: float,
+    log_interval: float,
+    on_status=None,
+) -> tuple[str, float]:
+    """"
+    Emite un mensaje de progreso de la descarga de un modelo en Ollama si ha habido un cambio significativo desde el último mensaje emitido.
+    
+    Args:
+        model_name: Nombre del modelo que se está descargando.
+        payload: Diccionario con la información de progreso enviada por Ollama.
+        last_progress: Último mensaje de progreso emitido.
+        last_log_at: Timestamp (en segundos) de la última vez que se emitió un mensaje de progreso.
+        log_interval: Intervalo mínimo (en segundos) entre mensajes de progreso emitidos.
+        on_status: Función opcional para recibir el mensaje de progreso formateado.
+        
+    Returns:
+        tuple[str, float]: El mensaje de progreso emitido y el timestamp de cuando se emitió.
+    """
+    if not payload.get("status"):
+        return last_progress, last_log_at
+
+    progress = _format_ollama_pull_progress(model_name, payload)
+    now = time.monotonic()
+    is_done = bool(payload.get("done")) or payload.get("status") == "success"
+    should_log = progress != last_progress and (now - last_log_at >= log_interval or is_done)
+    if not should_log:
+        return last_progress, last_log_at
+
+    logger.info("Descarga Ollama %s", progress)
+    if on_status:
+        on_status(progress)
+    return progress, now
+
+
+def _process_ollama_pull_payload(
+    model_name: str,
+    line: str,
+    last_progress: str,
+    last_log_at: float,
+    log_interval: float,
+    on_status=None,
+) -> tuple[str, float]:
+    """
+    Procesa una línea de respuesta del pull de Ollama, actualizando el progreso mostrado si es necesario
+    
+    Args:
+        model_name: Nombre del modelo que se está descargando.
+        line: Línea de respuesta del pull de Ollama.
+        last_progress: Último mensaje de progreso emitido.
+        last_log_at: Timestamp (en segundos) de la última vez que se emitió un mensaje de progreso.
+        log_interval: Intervalo mínimo (en segundos) entre mensajes de progreso emitidos.
+        on_status: Función opcional para recibir el mensaje de progreso formateado.
+
+    Returns:
+        tuple[str, float]: El mensaje de progreso emitido y el timestamp de cuando se emitió.
+    """
+    payload = json.loads(line)
+    if payload.get("error"):
+        raise OllamaModelNotFoundError(
+            f"No se pudo descargar el modelo '{model_name}': {payload['error']}"
+        )
+    return _emit_ollama_pull_progress(
+        model_name,
+        payload,
+        last_progress,
+        last_log_at,
+        log_interval,
+        on_status=on_status,
+    )
+
+
+async def _raise_for_ollama_chat_status(resp: httpx.Response, model_name: str) -> None:
+    """
+    Lanza un error si la respuesta de Ollama a la solicitud de chat no es exitosa.
+
+    Args:
+        resp (httpx.Response): La respuesta de la solicitud de chat.
+        model_name (str): El nombre del modelo con el que se realizó la solicitud.
+
+    Raises:
+        OllamaModelNotFoundError: Si el modelo no se encuentra en Ollama.
+        RuntimeError: Si Ollama devuelve un error diferente al de modelo no encontrado, incluyendo detalles del error. 
+    """
+    try:
+        resp.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        error_body = await resp.aread()
+        error_detail = error_body.decode("utf-8", errors="replace").strip()
+        if not error_detail:
+            raise
+        if resp.status_code == 404 and "not found" in error_detail.lower():
+            raise OllamaModelNotFoundError(
+                f"El modelo '{model_name}' no está descargado en Ollama."
+            ) from exc
+        raise RuntimeError(
+            f"Ollama devolvió HTTP {resp.status_code} para el modelo '{model_name}': {error_detail}"
+        ) from exc
+
+
+def _extract_ollama_chat_piece(line: str) -> tuple[str | None, bool]:
+    """Extrae el mensaje de respuesta de una línea de respuesta del chat de Ollama, y si la respuesta está completa (done=True) o es un fragmento intermedio (done=False).
+    Args:
+        line: Línea de respuesta del chat de Ollama.
+    Returns:
+        tuple[str | None, bool]: El mensaje de respuesta extraído (o None si no se encuentra) y un booleano que indica si la respuesta está completa (True) o es un fragmento intermedio (False).
+    """
+    payload = json.loads(line)
+    message = payload.get("message") or {}
+    piece = message.get("content") or payload.get("response")
+    return piece, bool(payload.get("done"))
+
+
 async def ensure_ollama_model_available(
     client: httpx.AsyncClient,
     model_name: str,
@@ -330,22 +528,14 @@ async def ensure_ollama_model_available(
         should_cancel: Función opcional que indica si se ha solicitado cancelar la operación.
         on_status: Función opcional para recibir actualizaciones de estado (cadena).
     """
-    if should_cancel and should_cancel():
-        raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+    _raise_if_query_cancelled(should_cancel)
 
     show_response = await client.post("/api/show", json={"model": model_name})
     if show_response.status_code == 200:
         logger.info("Modelo %s disponible en Ollama.", model_name)
         return
 
-    if show_response.status_code != 404:
-        try:
-            show_response.raise_for_status()
-        except httpx.HTTPStatusError as exc:
-            details = (show_response.text or "").strip()
-            raise RuntimeError(
-                f"Ollama devolvió HTTP {show_response.status_code} comprobando el modelo '{model_name}': {details}"
-            ) from exc
+    _raise_for_ollama_show_status(show_response, model_name)
 
     message = f"Descargando modelo {model_name}. Puede tardar varios minutos..."
     logger.info("Modelo %s no encontrado en Ollama. Descargando automáticamente...", model_name)
@@ -375,8 +565,7 @@ async def ensure_ollama_model_available(
 
         line_iterator = pull_response.aiter_lines()
         while True:
-            if should_cancel and should_cancel():
-                raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+            _raise_if_query_cancelled(should_cancel)
 
             elapsed = time.monotonic() - started_at
             if total_timeout > 0 and elapsed >= total_timeout:
@@ -384,41 +573,21 @@ async def ensure_ollama_model_available(
                     f"La descarga del modelo '{model_name}' superó {total_timeout:g} s."
                 )
 
-            read_timeout = idle_timeout if idle_timeout > 0 else None
-            if total_timeout > 0:
-                remaining = max(0.1, total_timeout - elapsed)
-                read_timeout = min(read_timeout, remaining) if read_timeout else remaining
-
-            try:
-                line = await asyncio.wait_for(line_iterator.__anext__(), timeout=read_timeout)
-            except StopAsyncIteration:
+            read_timeout = _ollama_pull_read_timeout(total_timeout, idle_timeout, elapsed)
+            line = await _read_ollama_pull_line(line_iterator, read_timeout, model_name)
+            if line is None:
                 break
-            except asyncio.TimeoutError as exc:
-                raise OllamaTimeoutError(
-                    f"La descarga del modelo '{model_name}' no avanzó durante {read_timeout:g} s."
-                ) from exc
 
             if not line:
                 continue
-            payload = json.loads(line)
-            if payload.get("error"):
-                raise OllamaModelNotFoundError(
-                    f"No se pudo descargar el modelo '{model_name}': {payload['error']}"
-                )
-            if payload.get("status"):
-                progress = _format_ollama_pull_progress(model_name, payload)
-                now = time.monotonic()
-                is_done = bool(payload.get("done")) or payload.get("status") == "success"
-                should_log = (
-                    progress != last_progress
-                    and (now - last_log_at >= log_interval or is_done)
-                )
-                if should_log:
-                    logger.info("Descarga Ollama %s", progress)
-                    if on_status:
-                        on_status(progress)
-                    last_progress = progress
-                    last_log_at = now
+            last_progress, last_log_at = _process_ollama_pull_payload(
+                model_name,
+                line,
+                last_progress,
+                last_log_at,
+                log_interval,
+                on_status=on_status,
+            )
 
 
 async def ensure_ollama_model_ready(
@@ -1484,34 +1653,17 @@ async def ask_ollama(
                 "/api/chat",
                 json=request_payload,
             ) as resp:
-                try:
-                    resp.raise_for_status()
-                except httpx.HTTPStatusError as exc:
-                    error_body = await resp.aread()
-                    error_detail = error_body.decode("utf-8", errors="replace").strip()
-                    if error_detail:
-                        if resp.status_code == 404 and "not found" in error_detail.lower():
-                            raise OllamaModelNotFoundError(
-                                f"El modelo '{model_name}' no está descargado en Ollama."
-                            ) from exc
-                        raise RuntimeError(
-                            f"Ollama devolvió HTTP {resp.status_code} para el modelo '{model_name}': {error_detail}"
-                        ) from exc
-                    raise
+                await _raise_for_ollama_chat_status(resp, model_name)
 
                 async for line in resp.aiter_lines():
-                    if should_cancel and should_cancel():
-                        raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+                    _raise_if_query_cancelled(should_cancel)
                     if not line:
                         continue
 
-                    payload = json.loads(line)
-                    message = payload.get("message") or {}
-                    piece = message.get("content") or payload.get("response")
+                    piece, is_done = _extract_ollama_chat_piece(line)
                     if piece:
                         chunks.append(piece)
-
-                    if payload.get("done"):
+                    if is_done:
                         break
     except httpx.TimeoutException as exc:
         timeout_label = (

@@ -34,7 +34,7 @@ jobs:
           DATABASE_URL: "sqlite:///:memory:"
           QDRANT_URL: http://localhost:6333
         run: |
-          python -m coverage run --source=app -m unittest discover -s tests -t .
+          python -m coverage run --source=app/main -m unittest discover -s app/test -t .
           python -m coverage xml -o coverage.xml
           python -m coverage report -m
 

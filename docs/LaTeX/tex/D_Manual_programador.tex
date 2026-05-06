@@ -4,6 +4,88 @@
 
 \section{Estructura de directorios}
 
+
+{\footnotesize
+\dirtree{%
+	.1 /.
+	.2 .github/. 
+	.3 workflows/.
+	.4 build.yml $\rightarrow$ flujo de integración continua del proyecto, ejecuta las comprobaciones automáticas definidas para GitHub Actions, incluyendo el análisis de calidad con SonarCloud.
+	.2 app/.
+	.3 PythIA/ $\rightarrow$ versión final de la aplicación web desarrollada con Flask.
+	.2 docs/.
+	.3 LaTeX/ $\rightarrow$ documentación técnica y memoria del proyecto en formato LaTeX, junto con los documentos PDF generados.
+	.2 prototipos/ $\rightarrow$ carpeta con archivos de prueba desarrollados durante el proyecto y versiones antiguas de la aplicación.
+	.2 .gitignore $\rightarrow$ archivo que indica qué ficheros o carpetas deben ser ignorados por Git y no subirse al repositorio.
+	.2 sonar-project.properties $\rightarrow$ archivo de configuración para el análisis de calidad del código mediante SonarCloud.
+	.2 README.md $\rightarrow$ archivo principal de documentación del proyecto, explica qué es PythIA y cómo desplegar la aplicación en local.
+}}
+
+La carpeta \file{app/PythIA} contiene la versión final de la aplicación. En ella se encuentra la aplicacuión Flask organizada siguiendo una separación entre controladores, modelos, servicios, recursos estáticos y plantillas \file{HTML}. También incluye la configuración necesaria para ejecutar la aplicación en contenedores Docker, usando Gunicorn como servidor de aplicación y Nginx como \eng{proxy} inverso.
+
+Además, esta carpeta contiene los \eng{tests} unitarios y de integración, que permiten comprobar el correcto funcionamiento de las rutas, modelos, servicios y funcionalidades principales. Las migraciones permiten mantener actualizada la estructura de la base de datos en los distintos entornos.
+
+{\footnotesize
+\dirtree{%
+	.1 app/PythIA/.
+	.2 app/.
+	.3 main/.
+	.4 code/ $\rightarrow$ código Python principal de la aplicación Flask.
+	.5 controllers/ $\rightarrow$ rutas y controladores organizados por blueprints.
+	.5 model/ $\rightarrow$ modelos de datos de la aplicación.
+	.5 services/ $\rightarrow$ lógica de negocio de la aplicación.
+	.5 internacionalizacion/ $\rightarrow$ textos y funciones para la traducción de la interfaz.
+	.5 forms.py $\rightarrow$ formularios utilizados por la aplicación.
+ 	.5 decorators.py $\rightarrow$ decoradores para controlar permisos y acceso a rutas.
+	.5 extensions.py $\rightarrow$ inicialización de extensiones de Flask.
+ 	.5 error\_handling.py $\rightarrow$ gestión de errores de la aplicación.
+	.5 run.py $\rightarrow$ punto de entrada de la aplicación Flask.
+	.4 resources/.
+	.5 static/ $\rightarrow$ archivos estáticos CSS, JavaScript e imágenes.
+	.5 templates/ $\rightarrow$ plantillas HTML renderizadas por Flask mediante Jinja2.
+	.3 test/.
+	.4 integration/ $\rightarrow$ pruebas de integración de las rutas y funcionalidades principales.
+	.4 unit/ $\rightarrow$ pruebas unitarias de modelos, servicios, formularios, controladores y funciones auxiliares.
+	.4 support.py $\rightarrow$ utilidades comunes para los tests.
+	.4 run\_tests.sh $\rightarrow$ script para ejecutar las pruebas.
+	.2 docker/.
+	.3 nginx/.
+	.3 nginx.conf.template $\rightarrow$ plantilla de configuración de Nginx como proxy inverso.
+	.2 migrations/ $\rightarrow$ migraciones de la base de datos gestionadas con Flask-Migrate/Alembic.
+	.2 .dockerignore $\rightarrow$ archivos excluidos al construir la imagen Docker.
+	.2 .env $\rightarrow$ variables de entorno de la aplicación.
+	.2 .gitattributes $\rightarrow$ configuración de atributos de Git.
+	.2 .gitignore $\rightarrow$ archivos ignorados por Git dentro de la carpeta de la aplicación.
+	.2 Dockerfile $\rightarrow$ define la imagen Docker de la aplicación.
+	.2 README.md $\rightarrow$ documentación específica de la aplicación final.
+	.2 docker-compose.yml $\rightarrow$ define los servicios necesarios para ejecutar la aplicación.
+	.2 entrypoint.sh $\rightarrow$ script de arranque del contenedor.
+	.2 requirements\_docker.txt $\rightarrow$ dependencias Python necesarias para ejecutar la aplicación en Docker.
+}}
+
+La carpeta prototipos recoge las pruebas y versiones iniciales desarrolladas antes de llegar a la aplicación final. En ella se encuentran los primeros experimentos con RAG, la creación de la base de datos vectorial, la consulta mediante terminal, la descarga automática de pliegos, la conversión de documentos PDF a Markdown y las primeras versiones de la aplicación web.
+
+{\footnotesize
+\dirtree{%
+	.1 prototipos/.
+	.2 BaseDatos.py $\rightarrow$ script para crear la base de datos vectorial en Qdrant a partir de los documentos PDF.
+	.2 PrototipoRAG.py $\rightarrow$ primer prototipo completo del sistema RAG, con carga de documentos, generación de embeddings, búsqueda semántica y generación de respuestas con Ollama.
+	.2 Prompt.py $\rightarrow$ interfaz por terminal para realizar preguntas al prototipo RAG.
+	.2 PruebaBaseDatos.py $\rightarrow$ script para comprobar qué documentos y fragmentos han sido almacenados en la base de datos vectorial.
+	.2 Flask/ $\rightarrow$ primer prototipo de la aplicación web Flask, con rutas, login, administración y uso de SQLite.
+	.2 Flask\_docker/ $\rightarrow$ versión posterior del prototipo Flask preparada para ejecutarse con Docker, Gunicorn, Nginx, PostgreSQL y Qdrant.
+	.2 Markdown/ $\rightarrow$ pruebas de conversión de documentos PDF a Markdown mediante distintas técnicas, incluyendo OCR y modelos locales.
+	.2 Web Scraping/ $\rightarrow$ scripts para recopilar licitaciones y descargar pliegos desde la Plataforma de Contratación del Sector Público.
+	.2 tokenizers/ $\rightarrow$ pruebas de tokenización, división de documentos largos y generación de resúmenes.
+	.2 pliegos/ $\rightarrow$ documentos PDF utilizados como datos de prueba.
+	.2 qdrant\_data/ $\rightarrow$ datos generados por la base de datos vectorial Qdrant.
+	.2 requirements.txt $\rightarrow$ dependencias generales de los prototipos.
+	.2 pyproject.toml $\rightarrow$ configuración del proyecto para Poetry.
+	.2 poetry.lock $\rightarrow$ bloqueo de versiones de dependencias.
+	.2 poetry.toml $\rightarrow$ configuración local de Poetry.
+	.2 .gitignore $\rightarrow$ archivos ignorados dentro de la carpeta de prototipos.
+}}
+
 \section{Manual del programador}
 
 \section{Compilación, instalación y ejecución del proyecto}
