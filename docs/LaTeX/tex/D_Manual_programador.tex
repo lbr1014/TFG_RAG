@@ -4,6 +4,7 @@
 
 \section{Estructura de directorios}
 
+El proyecto se organiza en tres bloques principales, la aplicación final (PythIA), los prototipos desarrollados durante la fase experimental y la documentación del Trabajo de Fin de Grado.
 
 {\footnotesize
 \dirtree{%
@@ -21,7 +22,7 @@
 	.2 README.md $\rightarrow$ archivo principal de documentación del proyecto, explica qué es PythIA y cómo desplegar la aplicación en local.
 }}
 
-La carpeta \file{app/PythIA} contiene la versión final de la aplicación. En ella se encuentra la aplicacuión Flask organizada siguiendo una separación entre controladores, modelos, servicios, recursos estáticos y plantillas \file{HTML}. También incluye la configuración necesaria para ejecutar la aplicación en contenedores Docker, usando Gunicorn como servidor de aplicación y Nginx como \eng{proxy} inverso.
+El directorio \file{app/PythIA} contiene la versión final de la aplicación. En ella se encuentra la aplicación Flask organizada siguiendo una separación entre controladores, modelos, servicios, recursos estáticos y plantillas \file{HTML}. También incluye la configuración necesaria para ejecutar la aplicación en contenedores Docker, usando Gunicorn como servidor de aplicación y Nginx como \eng{proxy} inverso.
 
 Además, esta carpeta contiene los \eng{tests} unitarios y de integración, que permiten comprobar el correcto funcionamiento de las rutas, modelos, servicios y funcionalidades principales. Las migraciones permiten mantener actualizada la estructura de la base de datos en los distintos entornos.
 
@@ -49,19 +50,109 @@ Además, esta carpeta contiene los \eng{tests} unitarios y de integración, que 
 	.4 support.py $\rightarrow$ utilidades comunes para los tests.
 	.4 run\_tests.sh $\rightarrow$ script para ejecutar las pruebas.
 	.2 docker/.
+	.3 entrypoint.sh $\rightarrow$ script de arranque del contenedor.
+	.3 requirements\_docker.txt $\rightarrow$ dependencias Python necesarias para ejecutar la aplicación en Docker.
+	.3 Dockerfile $\rightarrow$ define la imagen Docker de la aplicación.
+	.3 Dockerfile.dockerignore $\rightarrow$ archivos excluidos al construir la imagen Docker.
 	.3 nginx/.
-	.3 nginx.conf.template $\rightarrow$ plantilla de configuración de Nginx como proxy inverso.
+	.4 nginx.conf.template $\rightarrow$ plantilla de configuración de Nginx como proxy inverso.
 	.2 migrations/ $\rightarrow$ migraciones de la base de datos gestionadas con Flask-Migrate/Alembic.
-	.2 .dockerignore $\rightarrow$ archivos excluidos al construir la imagen Docker.
 	.2 .env $\rightarrow$ variables de entorno de la aplicación.
 	.2 .gitattributes $\rightarrow$ configuración de atributos de Git.
 	.2 .gitignore $\rightarrow$ archivos ignorados por Git dentro de la carpeta de la aplicación.
-	.2 Dockerfile $\rightarrow$ define la imagen Docker de la aplicación.
 	.2 README.md $\rightarrow$ documentación específica de la aplicación final.
 	.2 docker-compose.yml $\rightarrow$ define los servicios necesarios para ejecutar la aplicación.
-	.2 entrypoint.sh $\rightarrow$ script de arranque del contenedor.
-	.2 requirements\_docker.txt $\rightarrow$ dependencias Python necesarias para ejecutar la aplicación en Docker.
 }}
+
+El directorio \file{controllers} contiene las rutas de Flask, organizadas mediante \eng{Blueprints}. Esta organización permite dividir la aplicación en módulos funcionales independientes, manteniendo alta cohesión dentro de cada módulo y reduciendo el acoplamiento entre funcionalidades.
+
+{\footnotesize
+\dirtree{%
+	.1 controllers/.
+	.2 admin/ .
+	.3 routes.py $\rightarrow$ registro, inicio de sesión, cierre de sesión y recuperación de contraseña.
+	.2 auth/ .
+	.3 routes.py $\rightarrow$ gestión de usuarios y documentos.
+	.2 main/ .
+	.3 routes.py $\rightarrow$ rutas generales de navegación, la página principal y el historial.
+	.2 rag/ .
+	.3 routes.py $\rightarrow$ interfaz de consulta al RAG y la gestión de respuestas.
+}}
+
+El directorio \file{model} contiene las entidades persistentes de la aplicación. Estas clases representan los datos almacenados en PostgreSQL. Permiten gestionar usuarios, documentos, conslutas, \eng{chunks}, \eng{embeddings} y estados de procesos asíncronos.
+
+{\footnotesize
+\dirtree{%
+	.1 model/.
+	.2 user.py $\rightarrow$ define la entidad de usuarios del sistema (autenticación, roles y gestión de cuentas).
+	.2 documento.py $\rightarrow$ representa los documentos de licitaciones almacenados, incluyendo metadatos y estado de procesamiento.
+	.2 consulta.py $\rightarrow$ modela las consultas realizadas por los usuarios al sistema RAG y sus resultados.
+	.2 chunk.py $\rightarrow$ define los fragmentos de texto generados a partir de los documentos para su procesamiento.
+	.2 embedding.py $\rightarrow$ representa los vectores generados a partir de los chunks para su almacenamiento en la base de datos vectorial.
+	.2 consulta\_chunk.py $\rightarrow$ modela la relación entre consultas y los chunks utilizados para generar la respuesta.
+	.2 job\_state.py $\rightarrow$ clase base para gestionar el estado de tareas largas o procesos en segundo plano.
+	.2 rag\_query\_state.py $\rightarrow$ controla el estado de ejecución de las consultas al sistema RAG.
+	.2 web\_scraping\_state.py $\rightarrow$ gestiona el estado de los procesos de web scraping.
+	.2 vector\_update\_state.py $\rightarrow$ controla el estado de actualización de la base de datos vectorial.
+	.2 markdown\_conversion\_state.py $\rightarrow$ gestiona el estado de los procesos de conversión de documentos a formato Markdown.
+}}
+
+El directorio \file{services} agrupa la lógica de negocio de la aplicación. A diferencia de los controladores, que reciben las peticiones HTTP, los servicios ejecutan las operaciones internas. 
+
+{\footnotesize
+\dirtree{%
+	.1 services/.
+	.2 async\_tasks.py $\rightarrow$ ejecución de procesos largos en segundo plano.
+	.2 documentos.py $\rightarrow$ gestión de documentos cargados en el sistema.
+	.2 markdown/.
+	.3 Conversion\_markdown.py $\rightarrow$ implementa la conversión de documentos PDF a formato Markdown, incluyendo limpieza y estructuración del texto.
+	.2 rag/.
+	.3 PrototipoRAGpy $\rightarrow$ implementación del pipeline RAG (recuperación de chunks relevantes y generación de respuestas con el LLM).
+	.3 default\_prompts.py $\rightarrow$ define los prompts por defecto utilizados para interactuar con los modelos de lenguaje.
+	.3 service.py $\rightarrow$ orquesta el funcionamiento del sistema RAG integrando recuperación, generación y gestión de respuestas.
+	.2 web\_scraping/.
+	.3 DescargarPliegos.py $\rightarrow$ script encargado de descargar los documentos PDF de licitaciones.
+	.3 PliegosPlaywrightAsincrono.py $\rightarrow$ implementa el web scraping asíncrono mediante Playwright para obtener datos de licitaciones.
+	.3 pliegos\_pdfs.json $\rightarrow$ almacena los enlaces y metadatos de los documentos PDF obtenidos.
+	.3 resultados\_playwright\_asincrono\_servidor.json $\rightarrow$ contiene los resultados del scraping (enlaces, información extraída, etc.).
+	.2 markdown\_conversion\_state.py $\rightarrow$ control de estado de las tareas de conversión a Markdown.
+	.2 vector\_update\_state.py $\rightarrow$ control de estado de las tareas de actualización de la base de datos vectorial.
+	.2 web\_scraping\_state.py $\rightarrow$ control de estado de las tareas del web scraping.
+}}
+
+En el directorio \file{resources} se encuentran los elementos de la capa de presentación de la aplicación. Incluye tanto las plantillas HTML renderizadas dinámicamente como los recursos estáticos utilizados por la interfaz web.
+
+Dentro de él se encuentra el directorio \file{tempaltes} y el \file{static}. En el directorio \file{tempaltes} se encuentran las plantillas HTML renderizadas por Flask mediante el motor de plantillas Jinja2, las cuales forman la capa de vista de la aplicación. En el directorio \file{static} se encuentran los recursos estáticos que utiliza la aplicación web. Estos archivos no son procesados por el servidor y se envían directamente al navegador.
+
+{\footnotesize
+\dirtree{%
+	.1 resources/.
+	.2 templates/.
+	.3 base.html $\rightarrow$ plantilla base que define la estructura común (cabecera, navegación, estilos), reutilizada por el resto mediante herencia de Jinja2.
+	.3 index.html $\rightarrow$ página de inicio pública de la aplicación.
+	.3 login.html $\rightarrow$ interfaz de registro de usuarios.
+	.3 singup.html $\rightarrow$ interfaz de registro de usuarios.
+	.3 forgot\_password.html $\rightarrow$ interfaz para solicitar que se envié un correo cuando se ha olvidado la contraseña.
+	.3 reset\_password.html $\rightarrow$ interfaz para cambiar la contraseña cuando se olvida.
+	.3 pag\_principal.html $\rightarrow$ página principal tras autentificación.
+	.3 rag.html $\rightarrow$ interfaz principal de consulta al sistema RAG.
+	.3 rag\_default\_query.html $\rightarrow$ vista con consultas predefinidas.
+	.3 history.html $\rightarrow$ interfaz para ver el historial de consulta.
+	.3 tabla\_historial.html $\rightarrow$ plantilla con la tabla del historial para que la puedan reutilizar distintas interfaces.
+	.3 admin\_documents.html $\rightarrow$ gestión de documentos por parte del administrador.
+	.3 users.html $\rightarrow$ interfaz para que el administrador pueda ver y gestionar los usuarios del sistema.
+	.3 admin\_create\_user.html $\rightarrow$ página para que el administrador pueda registrar usuarios.
+	.3 edit\_user.html $\rightarrow$ platilla para que el usuario pueda editar su perfil.
+	.3 stats.html $\rightarrow$ visualización de estadísticas del uso de los usuarios.
+	.3 model\_comparison.html $\rightarrow$ comparativa de modelos LLM cargados en el sistema
+	.3 error.html $\rightarrow$ página de errores.
+	.2 static/.
+	.3 css/ $\rightarrow$ hojas de estilo utilizadas para definir el diseño visual de la aplicación.
+	.3 js/ $\rightarrow$ scripts JavaScript que aportan interactividad a la interfaz (gestión de eventos, peticiones asíncronas, validaciones, gráficas, etc.)..
+	.3 img/$\rightarrow$ imágenes utilizadas en la interfaz.
+}}
+
+Esta separación de la aplicación permite tener tres módulos separados claramente para facilitar el mantenimiento de la interfaz y permitir cambios en el diseño sin afectar a la lógica del sistema.. El primero contiene la lógica de negocio (\eng{backend}) definida en \file{controllers} y \file{services}, el segundo los datos (modelo) definida en \file{model} y el tercero la interfaz (vista) definida en \file{templates} y \file{static}.
 
 La carpeta prototipos recoge las pruebas y versiones iniciales desarrolladas antes de llegar a la aplicación final. En ella se encuentran los primeros experimentos con RAG, la creación de la base de datos vectorial, la consulta mediante terminal, la descarga automática de pliegos, la conversión de documentos PDF a Markdown y las primeras versiones de la aplicación web.
 
