@@ -84,6 +84,7 @@ services:
       - OLLAMA_PULL_IDLE_TIMEOUT_SECONDS=${OLLAMA_PULL_IDLE_TIMEOUT_SECONDS:-300}
       - OLLAMA_PULL_LOG_INTERVAL_SECONDS=${OLLAMA_PULL_LOG_INTERVAL_SECONDS:-20}
       - DOCS_DIR=${DOCS_DIR}
+      - HF_HOME=/home/appuser/.cache/huggingface
       - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --capture-output --log-level debug
       - OLLAMA_NUM_GPU=${OLLAMA_NUM_GPU}
 
@@ -93,7 +94,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
       - ./data:/data
-      - hf_cache:/root/.cache/huggingface
+      - hf_cache:/home/appuser/.cache/huggingface
 
   nginx:
     image: nginx:1.27-alpine
