@@ -115,6 +115,8 @@ services:
     restart: unless-stopped
 
   test:
+    profiles:
+      - test
     build:
       context: .
       dockerfile: docker/Dockerfile

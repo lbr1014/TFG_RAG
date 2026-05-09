@@ -95,6 +95,10 @@ Si se desea desplegar en local se puede levantar usando los siguienets comandos.
     ```bash
     docker compose up 
     ```
+  - Para ejecuatr los _test_
+    ```bash
+    docker compose --profile test up test
+    ````
 
 Para parar los contenedores se pueden usar dos comando.
   - El priemro permite detener los contenedores manteniendo los volúmenes y datos:
