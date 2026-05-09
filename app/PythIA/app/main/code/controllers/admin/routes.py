@@ -43,7 +43,8 @@ MADRID_TZ = ZoneInfo("Europe/Madrid")
 
 
 def _fit_job_message(message: str | None, max_length: int = MARKDOWN_JOB_MESSAGE_MAX_LENGTH) -> str | None:
-    """Ajusta un mensaje de job a la longitud maxima permitida.
+    """
+    Ajusta un mensaje de job a la longitud maxima permitida.
 
     Args:
         message: Mensaje original asociado al job.
@@ -56,7 +57,8 @@ def _fit_job_message(message: str | None, max_length: int = MARKDOWN_JOB_MESSAGE
 
 
 def _now_madrid() -> datetime:
-    """Obtiene la fecha y hora actual en la zona horaria de Madrid.
+    """
+    Obtiene la fecha y hora actual en la zona horaria de Madrid.
 
     Returns:
         La fecha y hora actual con zona horaria de Madrid.
@@ -65,7 +67,8 @@ def _now_madrid() -> datetime:
 
 
 def _set_job_message(job, message: str | None) -> None:
-    """Guarda el mensaje de un job aplicando el ajuste de longitud.
+    """
+    Guarda el mensaje de un job aplicando el ajuste de longitud.
 
     Args:
         job: Instancia del job que se va a actualizar.
@@ -81,7 +84,8 @@ def _set_job_message(job, message: str | None) -> None:
 
 
 def _set_job_progress(job, current: int | float, total: int) -> None:
-    """Calcula y guarda el progreso porcentual de un job.
+    """
+    Calcula y guarda el progreso porcentual de un job.
 
     Args:
         job: Instancia del job que se va a actualizar.
@@ -98,7 +102,8 @@ def _set_job_progress(job, current: int | float, total: int) -> None:
 
 
 def _job_should_cancel(job) -> bool:
-    """Indica si un job ha solicitado cancelacion.
+    """
+    Indica si un job ha solicitado cancelacion.
 
     Args:
         job: Instancia del job que se quiere consultar.
@@ -113,7 +118,8 @@ def _job_should_cancel(job) -> bool:
 
 
 def _mark_job_running(job, *, progress: int = 0, message: str | None = None) -> None:
-    """Marca un job como en ejecucion.
+    """
+    Marca un job como en ejecucion.
 
     Args:
         job: Instancia del job que se actualiza.
@@ -134,7 +140,8 @@ def _mark_job_running(job, *, progress: int = 0, message: str | None = None) -> 
 
 
 def _mark_job_cancelled(job, *, message: str | None = None, clear_error: bool = True) -> None:
-    """Marca un job como cancelado.
+    """
+    Marca un job como cancelado.
 
     Args:
         job: Instancia del job que se actualiza.
@@ -155,7 +162,8 @@ def _mark_job_cancelled(job, *, message: str | None = None, clear_error: bool = 
 
 
 def _mark_job_done(job, *, progress: int = 100, message: str | None = None) -> None:
-    """Marca un job como finalizado correctamente.
+    """
+    Marca un job como finalizado correctamente.
 
     Args:
         job: Instancia del job que se actualiza.
@@ -175,7 +183,8 @@ def _mark_job_done(job, *, progress: int = 100, message: str | None = None) -> N
 
 
 def _mark_job_failed(job, error: Exception | str, *, message: str | None = None) -> None:
-    """Marca un job como fallido y registra el error.
+    """
+    Marca un job como fallido y registra el error.
 
     Args:
         job: Instancia del job que se actualiza.
@@ -195,7 +204,8 @@ def _mark_job_failed(job, error: Exception | str, *, message: str | None = None)
 
 
 def _send_email_safe(send_fn, log_message: str, **kwargs) -> None:
-    """Ejecuta un envio de correo registrando cualquier excepcion.
+    """
+    Ejecuta un envio de correo registrando cualquier excepcion.
 
     Args:
         send_fn: Funcion encargada de enviar el correo.
@@ -212,13 +222,23 @@ def _send_email_safe(send_fn, log_message: str, **kwargs) -> None:
 
 
 def _validate_post_action(*, json_response: bool = False):
-    """Valida el CSRF de acciones POST sin campos propios."""
+    """
+    Valida el CSRF de acciones POST sin campos propios.
+    """
     form = EmptyForm()
     if form.validate_on_submit():
         return None
     if json_response:
         return jsonify({"error": t("errors.bad_request_message")}), 400
     abort(400)
+
+
+def _render_users_page(form=None):
+    """
+    Renderiza la gestion de usuarios con formulario de alta y listado.
+    """
+    users = User.query.order_by(User.id.asc()).all()
+    return render_template("users.html", users=users, form=form or AdminCreateUserForm())
 
 
 @admin_bp.route("/users")
@@ -230,8 +250,7 @@ def users():
     Returns:
         La pagina HTML con todos los usuarios ordenados por identificador.
     """
-    users = User.query.order_by(User.id.asc()).all()
-    return render_template("users.html", users=users)
+    return _render_users_page()
 
 
 @admin_bp.post("/users/<int:user_id>")
@@ -262,7 +281,8 @@ def change_type(user_id):
 @login_required
 @admin_required
 def delete_user(user_id):
-    """Elimina un usuario distinto del administrador actual.
+    """
+    Elimina un usuario distinto del administrador actual.
 
     Args:
         user_id: Identificador del usuario que se va a eliminar.
@@ -287,7 +307,8 @@ def delete_user(user_id):
 @login_required
 @admin_required
 def create_user():
-    """Crea un usuario nuevo desde el formulario de administracion.
+    """
+    Crea un usuario nuevo desde el formulario de administracion.
 
     Returns:
         La plantilla del formulario o una redireccion al listado de usuarios.
@@ -303,7 +324,7 @@ def create_user():
 
         if User.get_by_email(email):
             form.email.errors.append(t("auth.email_exists"))
-            return render_template("admin_create_user.html", form=form)
+            return _render_users_page(form=form)
 
         user = User(nombre=nombre, email=email, country_code=country_code)
         user.set_password(password)
@@ -313,11 +334,12 @@ def create_user():
         db.session.commit()
         return redirect(url_for(USERS))
 
-    return render_template("admin_create_user.html", form=form)
+    return _render_users_page(form=form)
 
 
 def pliegos_dir() -> Path:
-    """Obtiene y garantiza la existencia del directorio de pliegos.
+    """
+    Obtiene y garantiza la existencia del directorio de pliegos.
 
     Returns:
         La ruta absoluta al directorio configurado para pliegos.
@@ -328,7 +350,8 @@ def pliegos_dir() -> Path:
 
 
 def documentos_service() -> DocumentosService:
-    """Construye el servicio de gestion documental para administracion.
+    """
+    Construye el servicio de gestion documental para administracion.
 
     Returns:
         Una instancia configurada de ``DocumentosService``.
@@ -342,7 +365,8 @@ def documentos_service() -> DocumentosService:
 
 
 def documents_page_url() -> str:
-    """Construye la URL absoluta de la pagina de documentos.
+    """
+    Construye la URL absoluta de la pagina de documentos.
 
     Returns:
         La URL completa a la pagina de administracion de documentos.
@@ -351,7 +375,8 @@ def documents_page_url() -> str:
 
 
 def convert_pdf_to_markdown(pdf_path: Path, on_page_start=None) -> str:
-    """Convierte un PDF a Markdown mediante el procesador configurado.
+    """
+    Convierte un PDF a Markdown mediante el procesador configurado.
 
     Args:
         pdf_path: Ruta del PDF origen.
@@ -368,7 +393,8 @@ def convert_pdf_to_markdown(pdf_path: Path, on_page_start=None) -> str:
 @admin_bp.post("/documents/upload")
 @admin_required
 def upload_documents():
-    """Guarda los documentos subidos desde la interfaz de administracion.
+    """
+    Guarda los documentos subidos desde la interfaz de administracion.
 
     Returns:
         Una redireccion a la pagina de documentos.
@@ -392,7 +418,8 @@ def upload_documents():
 @login_required
 @admin_required
 def convert_documents_to_markdown():
-    """Crea un job para convertir documentos pendientes a Markdown.
+    """
+    Crea un job para convertir documentos pendientes a Markdown.
 
     Returns:
         Una respuesta JSON con el identificador del job creado.
@@ -422,7 +449,8 @@ def convert_documents_to_markdown():
 @login_required
 @admin_required
 def cancel_markdown_conversion(job_id: int):
-    """Solicita la cancelacion de un job de conversion a Markdown.
+    """
+    Solicita la cancelacion de un job de conversion a Markdown.
 
     Args:
         job_id: Identificador del job de conversion.
@@ -453,7 +481,8 @@ def cancel_markdown_conversion(job_id: int):
 @login_required
 @admin_required
 def markdown_conversion_status(job_id: int):
-    """Devuelve el estado actual de un job de conversion a Markdown.
+    """
+    Devuelve el estado actual de un job de conversion a Markdown.
 
     Args:
         job_id: Identificador del job de conversion.
@@ -477,7 +506,8 @@ def markdown_conversion_status(job_id: int):
 
 
 def _markdown_cancel_message(lang: str) -> str:
-    """Obtiene el mensaje traducido de cancelacion para Markdown.
+    """
+    Obtiene el mensaje traducido de cancelacion para Markdown.
 
     Args:
         lang: Codigo de idioma activo.
@@ -489,7 +519,8 @@ def _markdown_cancel_message(lang: str) -> str:
 
 
 def _cancel_markdown_job(job, lang: str) -> None:
-    """Marca un job de Markdown como cancelado y persiste el cambio.
+    """
+    Marca un job de Markdown como cancelado y persiste el cambio.
 
     Args:
         job: Instancia del job de conversion.
@@ -503,7 +534,8 @@ def _cancel_markdown_job(job, lang: str) -> None:
 
 
 def _markdown_page_base_message(job, lang: str) -> str:
-    """Extrae la parte base del mensaje de progreso de Markdown.
+    """
+    Extrae la parte base del mensaje de progreso de Markdown.
 
     Args:
         job: Instancia del job de conversion.
@@ -517,7 +549,8 @@ def _markdown_page_base_message(job, lang: str) -> str:
 
 
 def _build_markdown_callbacks(job, lang: str):
-    """Construye los callbacks usados durante la conversion a Markdown.
+    """
+    Construye los callbacks usados durante la conversion a Markdown.
 
     Args:
         job: Instancia del job de conversion.
@@ -529,7 +562,8 @@ def _build_markdown_callbacks(job, lang: str):
     current_doc_name = {"value": None}
 
     def should_cancel() -> bool:
-        """Comprueba si el job de Markdown debe cancelarse.
+        """
+        Comprueba si el job de Markdown debe cancelarse.
 
         Returns:
             ``True`` si se ha solicitado cancelacion.
@@ -537,7 +571,8 @@ def _build_markdown_callbacks(job, lang: str):
         return _job_should_cancel(job)
 
     def raise_if_cancelled() -> None:
-        """Interrumpe la ejecucion si el job de Markdown fue cancelado.
+        """
+        Interrumpe la ejecucion si el job de Markdown fue cancelado.
 
         Returns:
             None.
@@ -546,7 +581,8 @@ def _build_markdown_callbacks(job, lang: str):
             raise JobCancelledError(_markdown_cancel_message(lang))
 
     def on_progress(i: int, total: int) -> None:
-        """Actualiza el progreso del job de Markdown.
+        """
+        Actualiza el progreso del job de Markdown.
 
         Args:
             i: Numero de unidades completadas.
@@ -560,7 +596,8 @@ def _build_markdown_callbacks(job, lang: str):
         db.session.commit()
 
     def on_current_doc(nombre: str) -> None:
-        """Actualiza el documento actual en conversion a Markdown.
+        """
+        Actualiza el documento actual en conversion a Markdown.
 
         Args:
             nombre: Nombre del documento que se esta procesando.
@@ -574,7 +611,8 @@ def _build_markdown_callbacks(job, lang: str):
         db.session.commit()
 
     def on_page_start(doc_index: int, total_docs: int, page: int, total_pages: int) -> None:
-        """Actualiza el progreso al comenzar una pagina de conversion.
+        """
+        Actualiza el progreso al comenzar una pagina de conversion.
 
         Args:
             doc_index: Posicion del documento actual en el lote.
@@ -607,7 +645,8 @@ def _build_markdown_callbacks(job, lang: str):
 
 
 def _markdown_done_message(stats: dict[str, int], lang: str) -> str:
-    """Genera el mensaje final de un job de conversion a Markdown.
+    """
+    Genera el mensaje final de un job de conversion a Markdown.
 
     Args:
         stats: Estadisticas finales devueltas por la conversion.
@@ -629,7 +668,8 @@ def _markdown_done_message(stats: dict[str, int], lang: str) -> str:
 
 
 def _finish_markdown_job(job, stats: dict[str, int], user_email: str, docs_url: str, lang: str) -> None:
-    """Marca el job de Markdown como completado y envia la notificacion.
+    """
+    Marca el job de Markdown como completado y envia la notificacion.
 
     Args:
         job: Instancia del job de conversion.
@@ -657,7 +697,8 @@ def _finish_markdown_job(job, stats: dict[str, int], user_email: str, docs_url: 
 
 
 def _handle_markdown_exception(app, job_id: int, user_email: str, docs_url: str, lang: str, exc: Exception) -> None:
-    """Gestiona un error inesperado en un job de Markdown.
+    """
+    Gestiona un error inesperado en un job de Markdown.
 
     Args:
         app: Aplicacion Flask activa.
@@ -691,7 +732,8 @@ def _handle_markdown_exception(app, job_id: int, user_email: str, docs_url: str,
 
 
 def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str = "es") -> None:
-    """Ejecuta en segundo plano la conversion de documentos a Markdown.
+    """
+    Ejecuta en segundo plano la conversion de documentos a Markdown.
 
     Args:
         app: Aplicacion Flask activa.
@@ -745,7 +787,8 @@ def markdown_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
 @login_required
 @admin_required
 def update_vector_db():
-    """Crea un job para actualizar la base de datos vectorial.
+    """
+    Crea un job para actualizar la base de datos vectorial.
 
     Returns:
         Una respuesta JSON con el identificador del job creado.
@@ -775,7 +818,8 @@ def update_vector_db():
 @login_required
 @admin_required
 def cancel_vector_db(job_id: int):
-    """Solicita la cancelacion de un job de indexacion vectorial.
+    """
+    Solicita la cancelacion de un job de indexacion vectorial.
 
     Args:
         job_id: Identificador del job vectorial.
@@ -802,7 +846,8 @@ def cancel_vector_db(job_id: int):
 
 
 def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str = "es") -> None:
-    """Ejecuta en segundo plano la indexacion vectorial de documentos.
+    """
+    Ejecuta en segundo plano la indexacion vectorial de documentos.
 
     Args:
         app: Aplicacion Flask activa.
@@ -829,7 +874,8 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
             db.session.commit()
 
             def should_cancel() -> bool:
-                """Comprueba si el job vectorial debe cancelarse.
+                """
+                Comprueba si el job vectorial debe cancelarse.
 
                 Returns:
                     ``True`` si se ha solicitado cancelacion.
@@ -837,7 +883,8 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
                 return _job_should_cancel(job)
 
             def on_current_doc(nombre: str):
-                """Actualiza el documento actual del job vectorial.
+                """
+                Actualiza el documento actual del job vectorial.
 
                 Args:
                     nombre: Nombre del documento que se esta indexando.
@@ -851,7 +898,8 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
                 db.session.commit()
 
             def on_progress(i: int, total: int):
-                """Actualiza el progreso del job vectorial.
+                """
+                Actualiza el progreso del job vectorial.
 
                 Args:
                     i: Numero de unidades completadas.
@@ -925,7 +973,8 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
 @admin_bp.get("/vector-db/status/<int:job_id>")
 @admin_required
 def vector_db_status(job_id: int):
-    """Devuelve el estado actual de un job de indexacion vectorial.
+    """
+    Devuelve el estado actual de un job de indexacion vectorial.
 
     Args:
         job_id: Identificador del job vectorial.
@@ -952,7 +1001,8 @@ def vector_db_status(job_id: int):
 @login_required
 @admin_required
 def documents_list_page():
-    """Muestra la pagina de administracion de documentos.
+    """
+    Muestra la pagina de administracion de documentos.
 
     Returns:
         La plantilla HTML con la lista paginada y el estado de Markdown.
@@ -985,7 +1035,8 @@ def documents_list_page():
 @login_required
 @admin_required
 def delete_document(doc_id: int):
-    """Elimina un documento y sus datos asociados.
+    """
+    Elimina un documento y sus datos asociados.
 
     Args:
         doc_id: Identificador del documento que se va a eliminar.
@@ -1007,7 +1058,8 @@ def delete_document(doc_id: int):
 @login_required
 @admin_required
 def download_document(doc_id: int):
-    """Descarga un documento PDF o su version Markdown.
+    """
+    Descarga un documento PDF o su version Markdown.
 
     Args:
         doc_id: Identificador del documento solicitado.
@@ -1036,7 +1088,8 @@ def download_document(doc_id: int):
 @login_required
 @admin_required
 def view_document(doc_id: int):
-    """Muestra en navegador un documento PDF o Markdown.
+    """
+    Muestra en navegador un documento PDF o Markdown.
 
     Args:
         doc_id: Identificador del documento solicitado.
@@ -1063,7 +1116,8 @@ def view_document(doc_id: int):
 @login_required
 @admin_required
 def web_scraping_documents():
-    """Crea un job para lanzar el proceso de web scraping.
+    """
+    Crea un job para lanzar el proceso de web scraping.
 
     Returns:
         Una respuesta JSON con el identificador del job creado.
@@ -1093,7 +1147,8 @@ def web_scraping_documents():
 @login_required
 @admin_required
 def cancel_web_scraping(job_id: int):
-    """Solicita la cancelacion de un job de web scraping.
+    """
+    Solicita la cancelacion de un job de web scraping.
 
     Args:
         job_id: Identificador del job de scraping.
@@ -1123,7 +1178,8 @@ def cancel_web_scraping(job_id: int):
 @admin_bp.get("/documents/web_scraping/status/<int:job_id>")
 @admin_required
 def web_scraping_status(job_id: int):
-    """Devuelve el estado actual de un job de web scraping.
+    """
+    Devuelve el estado actual de un job de web scraping.
 
     Args:
         job_id: Identificador del job de scraping.
@@ -1147,7 +1203,8 @@ def web_scraping_status(job_id: int):
 
 
 def _scraping_cancel_message(lang: str) -> str:
-    """Obtiene el mensaje traducido de cancelacion para scraping.
+    """
+    Obtiene el mensaje traducido de cancelacion para scraping.
 
     Args:
         lang: Codigo de idioma activo.
@@ -1159,7 +1216,8 @@ def _scraping_cancel_message(lang: str) -> str:
 
 
 def _build_scraping_context() -> tuple[Path, Path, Path, Path, Path, dict[str, str]]:
-    """Construye el contexto necesario para ejecutar el scraping.
+    """
+    Construye el contexto necesario para ejecutar el scraping.
 
     Returns:
         Una tupla con directorios, scripts y variables de entorno para scraping.
@@ -1177,7 +1235,8 @@ def _build_scraping_context() -> tuple[Path, Path, Path, Path, Path, dict[str, s
 
 
 def _execute_subprocess_with_cancellation(script_path: Path, cwd: Path, env: dict[str, str], should_cancel, lang: str) -> None:
-    """Ejecuta un subprocess con soporte de cancelacion.
+    """
+    Ejecuta un subprocess con soporte de cancelacion.
 
     Args:
         script_path: Ruta del script que se va a ejecutar.
@@ -1213,7 +1272,8 @@ def _execute_subprocess_with_cancellation(script_path: Path, cwd: Path, env: dic
 
 
 def _run_scraping_script(job, script_path: Path, cwd: Path, env: dict[str, str], should_cancel, lang: str, *, progress: int | None = None, message: str | None = None) -> None:
-    """Ejecuta un script de scraping con soporte de cancelacion.
+    """
+    Ejecuta un script de scraping con soporte de cancelacion.
 
     Args:
         job: Instancia del job de scraping.
@@ -1241,7 +1301,8 @@ def _run_scraping_script(job, script_path: Path, cwd: Path, env: dict[str, str],
 
 
 def _sync_scraping_results(job, base_pliegos: Path, lang: str, should_cancel) -> tuple[int, int]:
-    """Sincroniza los documentos descargados tras el scraping.
+    """
+    Sincroniza los documentos descargados tras el scraping.
 
     Args:
         job: Instancia del job de scraping.
@@ -1269,7 +1330,8 @@ def _sync_scraping_results(job, base_pliegos: Path, lang: str, should_cancel) ->
 
 
 def _finish_scraping_job(job, user_email: str, docs_url: str, lang: str, extracted_docs: int, synced_total_docs: int) -> None:
-    """Marca el job de scraping como completado y envia la notificacion.
+    """
+    Marca el job de scraping como completado y envia la notificacion.
 
     Args:
         job: Instancia del job de scraping.
@@ -1298,7 +1360,8 @@ def _finish_scraping_job(job, user_email: str, docs_url: str, lang: str, extract
 
 
 def _handle_scraping_exception(app, job_id: int, user_email: str, docs_url: str, lang: str, exc: Exception) -> None:
-    """Gestiona un error inesperado en un job de scraping.
+    """
+    Gestiona un error inesperado en un job de scraping.
 
     Args:
         app: Aplicacion Flask activa.
@@ -1334,7 +1397,8 @@ def _handle_scraping_exception(app, job_id: int, user_email: str, docs_url: str,
 
 
 def scraping_async(app, job_id: int, user_email: str, docs_url: str, lang: str = "es") -> None:
-    """Ejecuta en segundo plano el proceso completo de web scraping.
+    """
+    Ejecuta en segundo plano el proceso completo de web scraping.
 
     Args:
         app: Aplicacion Flask activa.

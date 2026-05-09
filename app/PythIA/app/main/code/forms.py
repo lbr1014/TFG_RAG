@@ -7,9 +7,9 @@ from flask_wtf import FlaskForm
 from wtforms import BooleanField, HiddenField, MultipleFileField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, ValidationError
 
-from .countries import COUNTRY_CHOICES, DEFAULT_COUNTRY_CODE
+from .countries import COUNTRY_CHOICES, DEFAULT_COUNTRY_CODE, country_choices
 from .error_handling import PasswordSecurity
-from .inetrnacionalizacion.tarduccion import localize_form, t
+from .inetrnacionalizacion.tarduccion import get_locale, localize_form, t
 
 # Constantes para claves de traducción de campos comunes
 """str: Clave de traducción para el campo email."""
@@ -74,6 +74,8 @@ class LocalizedFlaskForm(FlaskForm):
         """
         super().__init__(*args, **kwargs)
         localize_form(self)
+        if hasattr(self, "country_code"):
+            self.country_code.choices = country_choices(get_locale())
 
 
 class EmptyForm(FlaskForm):

@@ -3,6 +3,7 @@ Autora: Lydia Blanco Ruiz
 Script para las rutas principales, historial de consultas, perfil de usuario y estadísticas de uso.
 """
 
+import calendar
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from statistics import mean, median, variance
@@ -10,14 +11,16 @@ from statistics import mean, median, variance
 from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from math import ceil
+from sqlalchemy import func
 from . import main_bp
 from app.main.code.countries import country_name_for_code, country_numeric_for_code, normalize_country_code
 from ...model.consulta import Consulta
+from ...model.rag_query_state import RAGQueryState
 from ...model.user import User
 from app.main.code.extensions import db
 from app.main.code.forms import EditUserForm, EmptyForm
 from app.main.code.services.rag.PrototipoRAG import qdrant_get_payloads
-from app.main.code.inetrnacionalizacion.tarduccion import t
+from app.main.code.inetrnacionalizacion.tarduccion import get_locale, t
 
 def paginate_consultas(base_query, per_page=10):
     """
@@ -88,23 +91,247 @@ def pag_principal():
     Returns:
         str: HTML renderizado de la página principal con consultas y metadata.
     """
-    q = Consulta.query.order_by(Consulta.created_at.desc())
-        
-    consultas, page, total_pages, total_consultas = paginate_consultas(
-        q, per_page=10
+    consultas_usuario = (
+        Consulta.query
+        .filter(Consulta.user_id == int(current_user.id))
+        .order_by(Consulta.created_at.asc())
+        .all()
     )
-    
-    meta_by_consulta = build_meta_by_consulta(consultas)
+    dashboard_metrics = build_home_dashboard_metrics(current_user, consultas_usuario)
 
     return render_template(
         "pag_principal.html", 
         user=current_user,  
-        consultas=consultas, 
-        meta_by_consulta=meta_by_consulta,
-        page=page, 
-        total_pages=total_pages, 
-        total_consultas=total_consultas
+        dashboard_metrics=dashboard_metrics,
     )
+
+
+def build_activity_streak(user, consultas) -> int:
+    """
+    Calcula la racha de días consecutivos con actividad reciente.
+    Usa días con consultas y el último inicio de sesión del usuario. Si el usuario
+    se ha conectado hoy, la racha puede continuar aunque todavía no haya consultado.
+    
+    Args:
+        user (User): Usuario para el que se calcula la racha.
+        consultas (list): Lista de consultas del usuario, ordenadas por fecha ascendente.
+        
+    Returns:
+        int: Número de días consecutivos con actividad, contando desde hoy hacia atrás.
+    """
+    active_days = {_safe_created_at(consulta).date() for consulta in consultas}
+
+    if getattr(user, "last_login", None):
+        last_login = user.last_login.replace(tzinfo=None) if user.last_login.tzinfo else user.last_login
+        active_days.add(last_login.date())
+
+    if not active_days:
+        return 0
+
+    today = datetime.now().date()
+    current_day = today if today in active_days else max(active_days)
+    streak = 0
+
+    while current_day in active_days:
+        streak += 1
+        current_day -= timedelta(days=1)
+
+    return streak
+
+
+def build_home_dashboard_metrics(user, consultas) -> dict:
+    """
+    Construye las métricas resumidas que se muestran en la página principal.
+    
+    Args:
+        user (User): Usuario para el que se construyen las métricas.
+        consultas (list): Lista de consultas del usuario.
+        
+    Returns:        
+        dict: Diccionario con métricas como racha de actividad, total de consultas,
+            modelos usados, días activos, tiempo promedio de respuesta, fecha de última consulta,
+            datos para el gráfico de anillo de consultas y calendario mensual.
+    """
+    distinct_models = {
+        (job.model_name or "").strip()
+        for job in RAGQueryState.query.filter(RAGQueryState.user_id == int(user.id)).all()
+        if (job.model_name or "").strip()
+    }
+    response_times = [float(consulta.tiempo_respuestas or 0) for consulta in consultas]
+    active_days = {_safe_created_at(consulta).date() for consulta in consultas}
+    last_query = max((_safe_created_at(consulta) for consulta in consultas), default=None)
+    query_donut = build_home_query_donut(user, len(consultas))
+    month_calendar = build_home_month_calendar(consultas)
+
+    avg_response_time = round(sum(response_times) / len(response_times), 2) if response_times else 0
+
+    return {
+        "activity_streak": build_activity_streak(user, consultas),
+        "total_queries": len(consultas),
+        "models_used": len(distinct_models),
+        "active_days": len(active_days),
+        "avg_response_time": avg_response_time,
+        "last_query": last_query.strftime("%d/%m/%Y") if last_query else "-",
+        "query_donut_total": query_donut["total"],
+        "query_donut_center_total": query_donut["center_total"],
+        "query_donut_title": query_donut["title"],
+        "query_donut_segments": query_donut["segments"],
+        "month_calendar": month_calendar,
+    }
+
+
+def build_home_month_calendar(consultas) -> dict:
+    """
+    Construye el calendario del mes actual para la tarjeta principal.
+    
+    Args:
+        consultas (list): Lista de consultas del usuario, ordenadas por fecha ascendente.
+    
+    Returns:
+        dict: Diccionario con la estructura del calendario mensual, incluyendo el label del mes, los días de la semana y 
+            las semanas con sus días y conteos de consultas.
+    """
+    today = datetime.now().date()
+    month_start = today.replace(day=1)
+    _, days_in_month = calendar.monthrange(today.year, today.month)
+    month_days = [
+        month_start + timedelta(days=day_offset)
+        for day_offset in range(days_in_month)
+    ]
+    counts_by_day = defaultdict(int)
+
+    for consulta in consultas:
+        created_day = _safe_created_at(consulta).date()
+        if created_day.year == today.year and created_day.month == today.month:
+            counts_by_day[created_day] += 1
+
+    leading_empty_days = month_start.weekday()
+    trailing_empty_days = (7 - ((leading_empty_days + days_in_month) % 7)) % 7
+    cells = [{"empty": True} for _ in range(leading_empty_days)]
+    max_count = max((counts_by_day[day] for day in month_days), default=0)
+
+    for day in month_days:
+        count = counts_by_day[day]
+        cells.append(
+            {
+                "empty": False,
+                "day": day.day,
+                "date": day.isoformat(),
+                "count": count,
+                "is_today": day == today,
+                "intensity": round(count / max_count, 2) if max_count else 0,
+            }
+        )
+
+    cells.extend({"empty": True} for _ in range(trailing_empty_days))
+    weeks = [cells[index:index + 7] for index in range(0, len(cells), 7)]
+
+    month_names = {
+        "es": [
+            "enero", "febrero", "marzo", "abril", "mayo", "junio",
+            "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+        ],
+        "en": [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December",
+        ],
+    }
+    month_name = month_names.get(get_locale(), month_names["es"])[today.month - 1]
+
+    return {
+        "label": f"{month_name.capitalize()} {today.year}",
+        "weekdays": [
+            t("stats.day_0")[:1],
+            t("stats.day_1")[:1],
+            t("stats.day_2")[:1],
+            t("stats.day_3")[:1],
+            t("stats.day_4")[:1],
+            t("stats.day_5")[:1],
+            t("stats.day_6")[:1],
+        ],
+        "weeks": weeks,
+    }
+
+
+def build_home_query_donut(user, user_total_queries: int) -> dict:
+    """
+    Construye el reparto del anillo de consultas de la página principal.
+    
+    Args:
+        user (User): Usuario para el que se construye el anillo.
+        user_total_queries (int): Número total de consultas del usuario.
+        
+    Returns:
+        dict: Diccionario con el título del anillo, el total de consultas, el total central (consultas del usuario) y los segmentos para el gráfico.
+    """
+    colors = ["#58d68d", "#5dade2", "#f4d03f", "#ec7063", "#af7ac5", "#48c9b0", "#eb984e", "#7fb3d5"]
+
+    if getattr(user, "is_admin", False):
+        counts_by_user = {
+            user_id: count
+            for user_id, count in db.session.query(Consulta.user_id, func.count(Consulta.id))
+            .group_by(Consulta.user_id)
+            .all()
+        }
+        users = User.query.order_by(User.nombre.asc(), User.email.asc()).all()
+        segments = [
+            {
+                "label": display_name_for_donut(user_item),
+                "count": counts_by_user.get(int(user_item.id), 0),
+                "color": colors[index % len(colors)],
+            }
+            for index, user_item in enumerate(users)
+            if counts_by_user.get(int(user_item.id), 0)
+        ]
+
+        return {
+            "title": t("home.donut_admin_title"),
+            "total": sum(segment["count"] for segment in segments),
+            "center_total": sum(segment["count"] for segment in segments),
+            "segments": segments,
+        }
+
+    global_total_queries = Consulta.query.count()
+    rest_total_queries = max(global_total_queries - user_total_queries, 0)
+    segments = []
+
+    if user_total_queries:
+        segments.append(
+            {
+                "label": t("home.donut_user_segment"),
+                "count": user_total_queries,
+                "color": colors[0],
+            }
+        )
+
+    if rest_total_queries:
+        segments.append(
+            {
+                "label": t("home.donut_global_segment"),
+                "count": rest_total_queries,
+                "color": colors[1],
+            }
+        )
+
+    return {
+        "title": t("home.donut_user_title"),
+        "total": global_total_queries,
+        "center_total": user_total_queries,
+        "segments": segments,
+    }
+
+
+def display_name_for_donut(user) -> str:
+    """
+    Devuelve una etiqueta breve para la leyenda del anillo.
+    
+    Args:
+        user (User): Usuario para el que se genera la etiqueta.
+        
+    Returns:
+        str: Nombre para mostrar en el anillo, preferentemente el nombre del usuario, luego su email, o un fallback con su ID.
+    """
+    return getattr(user, "nombre", None) or getattr(user, "email", None) or f"Usuario {user.id}"
 
 @main_bp.get("/edit_user")
 @main_bp.post("/edit_user")
@@ -504,7 +731,7 @@ def build_user_country_map_payload(users, *, include_user_names: bool = False):
             countries[code] = {
                 "country_code": code,
                 "country_id": country_numeric_for_code(code),
-                "country_name": country_name_for_code(code),
+                "country_name": country_name_for_code(code, get_locale()),
                 "count": 0,
             }
             if include_user_names:

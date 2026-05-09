@@ -142,9 +142,10 @@ def create_app():
         """Expone formularios CSRF para acciones POST simples en plantillas."""
         from .countries import country_name_for_code
         from .forms import EmptyForm, LanguageForm
+        from .inetrnacionalizacion.tarduccion import get_locale
 
         return {
-            "country_name_for_code": country_name_for_code,
+            "country_name_for_code": lambda code: country_name_for_code(code, get_locale()),
             "post_form": EmptyForm(),
             "logout_form": EmptyForm(),
             "language_form": LanguageForm(),
