@@ -104,6 +104,18 @@ class LoginFormUnitTest(FormTestMixin, BaseAppTestCase):
 
 
 class SignupFormUnitTest(FormTestMixin, BaseAppTestCase):
+    def test_country_choices_follow_active_language(self):
+        with self.app.test_request_context("/", method="GET"):
+            form = SignupForm()
+            self.assertIn(("ES", "España"), form.country_code.choices)
+
+        with self.app.test_request_context("/", method="GET"):
+            from flask import session
+
+            session["lang"] = "en"
+            form = SignupForm()
+            self.assertIn(("ES", "Spain"), form.country_code.choices)
+
     def test_signup_form_validates_secure_matching_passwords(self):
         form = self.assertFormValid(
             SignupForm,

@@ -143,7 +143,7 @@ class MainRoutesUnitTest(BaseAppTestCase):
         public_payload = build_user_country_map_payload([user_1, user_2, user_3])
         admin_payload = build_user_country_map_payload([user_1, user_2, user_3], include_user_names=True)
 
-        self.assertIn({"country_code": "ES", "country_id": "724", "country_name": "Espana", "count": 2}, public_payload)
+        self.assertIn({"country_code": "ES", "country_id": "724", "country_name": "España", "count": 2}, public_payload)
         self.assertNotIn("users", public_payload[0])
         spain = next(item for item in admin_payload if item["country_code"] == "ES")
         self.assertEqual(spain["users"], ["Ana", "Luis"])
