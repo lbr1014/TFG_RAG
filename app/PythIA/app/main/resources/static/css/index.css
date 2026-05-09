@@ -19,6 +19,14 @@
   padding: 3.75rem 1.25rem 1.25rem;
 }
 
+.hero-logo {
+  display: block;
+  width: clamp(120px, 18vw, 210px);
+  height: auto;
+  margin: 0 auto 1.1rem;
+  filter: drop-shadow(0 18px 32px rgba(2, 6, 23, 0.28));
+}
+
 .hero-badge {
   display: inline-block;
   padding: 0.55rem 1rem;
@@ -52,5 +60,10 @@
 @media (max-width: 768px) {
   .hero-block {
     padding-top: 2.25rem;
+  }
+
+  .hero-logo {
+    width: clamp(96px, 32vw, 150px);
+    margin-bottom: 0.85rem;
   }
 }

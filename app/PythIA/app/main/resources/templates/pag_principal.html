@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% from "tabla_historial.html" import consultas_historial with context %}
 
 {% block title %}{{ t("nav.home") }}{% endblock %}
 
@@ -8,24 +7,24 @@
 {% endblock %}
 
 {% block content %}
-  <div class="py-4 py-md-5">
+  <div class="py-4 py-md-5 home-dashboard">
     <div class="d-flex justify-content-center mb-4">
-      <a href="{{ url_for('rag.rag_page') }}" class="card border-0 text-decoration-none app-query-card luz">
+      <a href="{{ url_for('rag.rag_page') }}" class="card border-0 text-decoration-none app-query-card app-query-card-hero luz">
         <div class="card-body p-0">
           <div class="app-query-card-layout">
             <div class="app-query-card-visual-col">
               <div class="app-query-card-media p-4">
-                <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="Logo PythIA" class="app-query-card-logo">
+                <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="{{ t('home.rag_logo_alt') }}" class="app-query-card-logo">
               </div>
             </div>
             <div class="app-query-card-copy-col">
-              <div class="app-query-card-copy text-start px-4 py-4">
-                <span class="app-query-card-kicker">{{ t("rag.page_title") }}</span>
-                <h2 class="card-title h4 mb-2">{{ t("rag.title") }}</h2>
-                <p class="card-text mb-0">{{ t("rag.subtitle") }}</p>
-              </div>
-              <div class="app-query-card-actions px-4 pb-4 pt-1">
-                <span class="btn btn-light btn-sm stretched-link app-query-card-cta">{{ t("rag.open_page") }}</span>
+              <div class="app-query-card-copy app-query-card-banner-copy px-4 py-4">
+                <h2 class="card-title app-query-card-banner-title mb-3">{{ t("home.rag_banner_title") }}</h2>
+                <div class="app-query-card-banner-subtitle">
+                  <span></span>
+                  <p class="card-text mb-0">{{ t("home.rag_banner_subtitle_1") }}<br>{{ t("home.rag_banner_subtitle_2") }}</p>
+                  <span></span>
+                </div>
               </div>
             </div>
           </div>
@@ -33,34 +32,93 @@
       </a>
     </div>
 
-    {% if not consultas %}
-      <div class="alert alert-info">{{ t("history.empty_home") }}</div>
-    {% else %}
-      {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
+    <section class="home-dashboard-grid" aria-label="{{ t('home.usage_summary_aria') }}">
+      <div class="home-dashboard-stack">
+        <article class="home-calendar-card" aria-label="{{ t('home.month_calendar_aria') }}">
+          <header class="home-calendar-header">
+            <span class="home-calendar-month">{{ dashboard_metrics.month_calendar.label }}</span>
+          </header>
+          <div id="homeCalendarChart" class="home-calendar-chart" aria-label="{{ dashboard_metrics.month_calendar.label }}"></div>
+        </article>
 
-      {% if total_pages > 1 %}
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
-          <p class="page-info mb-0">{{ t("common.page", page=page, total_pages=total_pages, total_items=total_consultas, items_label=t("history.title")|lower) }}</p>
+        <div class="home-metric-carousel">
+          <div id="homeMetricsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4200">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <article class="home-metric-slide">
+                  <span class="home-metric-eyebrow">{{ t("home.metric_streak_title") }}</span>
+                  <strong class="home-metric-value">{{ dashboard_metrics.activity_streak }}</strong>
+                  <span class="home-metric-label">{{ t("home.metric_streak_label") }}</span>
+                </article>
+              </div>
+              <div class="carousel-item">
+                <article class="home-metric-slide">
+                  <span class="home-metric-eyebrow">{{ t("home.metric_queries_title") }}</span>
+                  <strong class="home-metric-value">{{ dashboard_metrics.total_queries }}</strong>
+                  <span class="home-metric-label">{{ t("home.metric_queries_label") }}</span>
+                </article>
+              </div>
+              <div class="carousel-item">
+                <article class="home-metric-slide">
+                  <span class="home-metric-eyebrow">{{ t("home.metric_models_title") }}</span>
+                  <strong class="home-metric-value">{{ dashboard_metrics.models_used }}</strong>
+                  <span class="home-metric-label">{{ t("home.metric_models_label") }}</span>
+                </article>
+              </div>
+              <div class="carousel-item">
+                <article class="home-metric-slide">
+                  <span class="home-metric-eyebrow">{{ t("home.metric_activity_title") }}</span>
+                  <strong class="home-metric-value">{{ dashboard_metrics.active_days }}</strong>
+                  <span class="home-metric-label">{{ t("home.metric_activity_label") }}</span>
+                </article>
+              </div>
+              <div class="carousel-item">
+                <article class="home-metric-slide">
+                  <span class="home-metric-eyebrow">{{ t("home.metric_avg_time_title") }}</span>
+                  <strong class="home-metric-value">{{ dashboard_metrics.avg_response_time }}{{ t("stats.metric_seconds") }}</strong>
+                  <span class="home-metric-label">{{ t("home.metric_avg_time_label") }}</span>
+                </article>
+              </div>
+            </div>
 
-          <nav aria-label="Paginacion historial">
-            <ul class="pagination pagination-sm justify-content-center mb-0">
-              <li class="page-item{% if page <= 1 %} disabled{% endif %}">
-                <a class="page-link" href="{% if page > 1 %}{{ url_for('main.pag_principal', page=page-1) }}{% else %}#{% endif %}"{% if page <= 1 %} tabindex="-1" aria-disabled="true"{% endif %}>
-                  {{ t("common.previous") }}
-                </a>
-              </li>
-              <li class="page-item disabled">
-                <span class="page-link">{{ page }}/{{ total_pages }}</span>
-              </li>
-              <li class="page-item{% if page >= total_pages %} disabled{% endif %}">
-                <a class="page-link" href="{% if page < total_pages %}{{ url_for('main.pag_principal', page=page+1) }}{% else %}#{% endif %}"{% if page >= total_pages %} tabindex="-1" aria-disabled="true"{% endif %}>
-                  {{ t("common.next") }}
-                </a>
-              </li>
-            </ul>
-          </nav>
+            <div class="carousel-indicators home-metric-indicators position-static mt-3">
+              <button type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="{{ t('home.metric_streak_title') }}"></button>
+              <button type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide-to="1" aria-label="{{ t('home.carousel_queries_aria') }}"></button>
+              <button type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide-to="2" aria-label="{{ t('home.carousel_models_aria') }}"></button>
+              <button type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide-to="3" aria-label="{{ t('home.carousel_active_days_aria') }}"></button>
+              <button type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide-to="4" aria-label="{{ t('home.metric_avg_time_title') }}"></button>
+            </div>
+          </div>
         </div>
-      {% endif %}
-    {% endif %}
+      </div>
+
+      <div class="home-summary-card">
+        <h2>{{ dashboard_metrics.query_donut_title }}</h2>
+        <div id="homeQueryDonutChart" class="home-query-donut-chart" aria-label="{{ t('home.queries_count_aria', count=dashboard_metrics.query_donut_total) }}"></div>
+        <div id="homeQueryDonutLegend" class="home-query-donut-legend" aria-label="{{ t('home.query_distribution_aria') }}"></div>
+        <p>{{ t("home.last_query") }}: {{ dashboard_metrics.last_query }}</p>
+        <a href="{{ url_for('main.historial') }}" class="btn btn-outline-light btn-header">{{ t("home.full_history") }}</a>
+      </div>
+    </section>
   </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    window.PYTHIA_HOME_DASHBOARD = {
+      calendar: {{ dashboard_metrics.month_calendar|tojson }},
+      donut: {
+        total: {{ dashboard_metrics.query_donut_total|tojson }},
+        centerTotal: {{ dashboard_metrics.query_donut_center_total|tojson }},
+        segments: {{ dashboard_metrics.query_donut_segments|tojson }}
+      },
+      labels: {
+        noData: {{ t("stats.metric_no_data")|tojson }},
+        queries: {{ t("stats.total_queries")|tojson }},
+        queryUnit: {{ t("home.query_unit")|tojson }}
+      }
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/home_dashboard.js') }}"></script>
 {% endblock %}

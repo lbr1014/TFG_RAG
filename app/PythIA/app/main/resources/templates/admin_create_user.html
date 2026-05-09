@@ -24,7 +24,7 @@
 
         <div class="mb-3">
           {{ form.email.label(class="form-label") }}
-          {{ form.email(class="form-control form-control-lg", placeholder="email@example.com") }}
+          {{ form.email(class="form-control form-control-lg", placeholder=t("admin.create_user_email_placeholder")) }}
           {% for error in form.email.errors %}
             <div class="invalid-feedback d-block">{{ error }}</div>
           {% endfor %}
