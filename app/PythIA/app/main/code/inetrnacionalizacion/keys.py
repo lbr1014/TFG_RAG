@@ -2,6 +2,7 @@
 Autora: Lydia Blanco Ruiz
 Script con las claves de traducción.
 """
+
 LANGUAGE_ES = 'es'
 LANGUAGE_EN = 'en'
 DEFAULT_LANGUAGE = LANGUAGE_ES
@@ -22,6 +23,10 @@ SECRET_FIELD_TEXT_EN = "Password"
 SECRET_FIELD_TEXT_ES = "Contraseña"
 MARKDOWN_LABEL = "Markdown"
 
+QUERIES = "Your queries"
+AVERAGE_TIME = "Average time"
+CONSULTAS = "Tus consultas"
+TIEMPO = "Tiempo medio"
 
 JOBS_QUEUED_SHORT = "jobs.queued_short"
 RAG_QUEUED = "rag.queued"

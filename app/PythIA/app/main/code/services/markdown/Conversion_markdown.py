@@ -13,8 +13,9 @@ import tempfile
 from pathlib import Path
 
 import httpx
-from PIL import Image
 from pdf2image import convert_from_path, pdfinfo_from_path
+from PIL import Image
+
 try:
     import torch
 except ImportError:  # entorno sin torch fuera de Docker
@@ -497,9 +498,7 @@ def _should_skip_line(raw: str, stripped: str) -> bool:
     if not stripped or stripped.startswith("#"):
         return True
     # No tocar listas, tablas, citas ni HTML directamente
-    if raw.startswith((" ", "\t", "-", "*", ">", "|", "<")):
-        return True
-    return False
+    return bool(raw.startswith((" ", "\t", "-", "*", ">", "|", "<")))
 
 
 def _is_mostly_upper(text: str) -> bool:

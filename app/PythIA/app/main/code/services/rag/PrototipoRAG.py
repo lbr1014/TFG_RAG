@@ -8,18 +8,19 @@ Script con la lógica de recuperación, generación, embeddings e indexación en
 # =========================
 from __future__ import annotations
 
+import asyncio
+import atexit
+import json
 import logging
 import os
 import re
 import time
-import atexit
-import json
-import asyncio
+from collections.abc import Iterable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Generic, Iterable, Optional, Type, TypeVar, Dict
+from typing import Any, Generic, TypeVar
 from uuid import UUID, uuid4
 
 import httpx
@@ -29,6 +30,24 @@ from pypdf.errors import PdfReadError, PdfStreamError
 from qdrant_client import QdrantClient
 from qdrant_client import models as qmodels
 from sentence_transformers import SentenceTransformer
+from typing_extensions import Self
+
+try:
+    from qdrant_client.http.exceptions import (
+        ResponseHandlingException,
+        UnexpectedResponse,
+    )
+except ImportError:
+    class ResponseHandlingException(RuntimeError):
+        """
+        Fallback para entornos de test donde qdrant_client se sustituye por un mock.
+        """
+
+    class UnexpectedResponse(RuntimeError):
+        """
+        Fallback para entornos de test donde qdrant_client se sustituye por un mock.
+        """
+
 try:
     import torch
 except ImportError:
@@ -36,7 +55,10 @@ except ImportError:
 
 from hashlib import sha256
 
-from app.main.code.services.rag.default_prompts import OLLAMA_SYSTEM_PROMPT, PROMPT_TEMPLATES
+from app.main.code.services.rag.default_prompts import (
+    OLLAMA_SYSTEM_PROMPT,
+    PROMPT_TEMPLATES,
+)
 
 # Logger
 logger = logging.getLogger(__name__)   
@@ -46,27 +68,34 @@ class QueryCancelledError(RuntimeError):
     """
     Error que se lanza cuando el usuario cancela una consulta RAG en curso.
     """
-    pass
 
 
 class OllamaTimeoutError(RuntimeError):
     """
     Error que se lanza cuando una operación con Ollama supera el tiempo de espera configurado.
     """
-    pass
 
 
 class OllamaModelNotFoundError(RuntimeError):
     """
     Error que se lanza cuando un modelo de Ollama no se encuentra.
     """
-    pass
-
+    
 
 QUERY_CANCELLED_MESSAGE = "Consulta cancelada por el usuario."
 DEFAULT_RAG_MIN_SIMILARITY = 0.5
 DEFAULT_RAG_MIN_CHUNKS = 5
 DEFAULT_RAG_MAX_CHUNKS = 20
+QDRANT_RECOVERABLE_ERRORS = (
+    ResponseHandlingException,
+    UnexpectedResponse,
+    httpx.HTTPError,
+    RuntimeError,
+)
+QDRANT_INIT_ERRORS = (
+    *QDRANT_RECOVERABLE_ERRORS,
+    ValueError,
+)
 
 
 def _service_url_from_env(env_name: str, default_host: str) -> str:
@@ -100,7 +129,7 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
 # Función para medir los tiempos de ejecución
 # =========================
 @contextmanager
-def timed_block(name: str):
+def timed_block(name: str) -> Iterable[None]:
     """
     Método para medir el tiempo de un bloque de código.
     Escribe el resultado en el logger.
@@ -161,7 +190,7 @@ class Settings:
         os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10")
     )
     _ollama_read_timeout = os.getenv("OLLAMA_READ_TIMEOUT_SECONDS")
-    OLLAMA_READ_TIMEOUT_SECONDS: Optional[float] = (
+    OLLAMA_READ_TIMEOUT_SECONDS: float | None = (
         float(_ollama_read_timeout)
         if _ollama_read_timeout not in (None, "")
         else None
@@ -173,7 +202,7 @@ class Settings:
         os.getenv("OLLAMA_POOL_TIMEOUT_SECONDS", "10")
     )
     _ollama_generation_timeout = os.getenv("OLLAMA_GENERATION_TIMEOUT_SECONDS", "600")
-    OLLAMA_GENERATION_TIMEOUT_SECONDS: Optional[float] = (
+    OLLAMA_GENERATION_TIMEOUT_SECONDS: float | None = (
         float(_ollama_generation_timeout)
         if _ollama_generation_timeout not in (None, "", "0")
         else None
@@ -193,13 +222,19 @@ class Settings:
     QDRANT_DATABASE_HOST: str = "localhost"
     QDRANT_DATABASE_PORT: int = 6333
     QDRANT_CLOUD_URL: str = _service_url_from_env("QDRANT_CLOUD_URL", "localhost:6333")
-    QDRANT_APIKEY: Optional[str] = None
+    QDRANT_APIKEY: str | None = None
 
 
 settings = Settings()
 
 
 def _embedding_execution_backend() -> str:
+    """
+    Determina el backend de ejecución para los embeddings.
+
+    Returns:
+        str: Descripción del backend de ejecución, incluyendo información sobre el dispositivo y el modelo de embeddings.
+    """
     device = settings.RAG_MODEL_DEVICE
     if device.startswith("cuda"):
         if torch is None:
@@ -213,6 +248,12 @@ def _embedding_execution_backend() -> str:
 
 
 def _ollama_execution_backend() -> str:
+    """
+    Determina el backend de ejecución para Ollama.
+
+    Returns:
+        str: Descripción del backend de ejecución, incluyendo información sobre el número de GPUs y la fuente.
+    """
     num_gpu = settings.OLLAMA_NUM_GPU
     if num_gpu == -1:
         return f"GPU (num_gpu=-1, all layers when possible, source={settings.OLLAMA_NUM_GPU_SOURCE})"
@@ -222,6 +263,12 @@ def _ollama_execution_backend() -> str:
 
 
 def get_ollama_execution_device() -> str:
+    """
+    Determina el dispositivo de ejecución para Ollama.
+
+    Returns:
+        str: "GPU" si se está utilizando GPU, "CPU" en caso contrario.
+    """
     return "GPU" if settings.OLLAMA_NUM_GPU != 0 else "CPU"
 
 
@@ -290,9 +337,11 @@ def _format_bytes(value: Any) -> str:
 def _format_ollama_pull_progress(model_name: str, payload: dict[str, Any]) -> str:
     """
     Formatea el progreso de la descarga de un modelo en Ollama a partir de la información recibida en el payload.
+    
     Args:
         model_name: Nombre del modelo que se está descargando.
         payload: Diccionario con la información de progreso enviada por Ollama.
+    
     Returns:
         Cadena formateada con el estado actual de la descarga, incluyendo porcentaje y tamaño si están disponibles.
     """
@@ -500,8 +549,10 @@ async def _raise_for_ollama_chat_status(resp: httpx.Response, model_name: str) -
 
 def _extract_ollama_chat_piece(line: str) -> tuple[str | None, bool]:
     """Extrae el mensaje de respuesta de una línea de respuesta del chat de Ollama, y si la respuesta está completa (done=True) o es un fragmento intermedio (done=False).
+    
     Args:
         line: Línea de respuesta del chat de Ollama.
+    
     Returns:
         tuple[str | None, bool]: El mensaje de respuesta extraído (o None si no se encuentra) y un booleano que indica si la respuesta está completa (True) o es un fragmento intermedio (False).
     """
@@ -638,9 +689,9 @@ class EmbeddingModelSingleton:
         max_input_length: nº máximo de tokens (para controlar el tamaño de los chunks).
     - Permite llamar a la instancia como una función para obtener embeddings.
     """
-    _instance: "EmbeddingModelSingleton|None" = None
+    _instance: EmbeddingModelSingleton|None = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs) -> Self:
         """
         Garantiza que solo exista una instancia del modelo en todo el proceso.
         Si ya se ha creado una instancia, devuelve esa en lugar de crear una nueva.
@@ -660,7 +711,7 @@ class EmbeddingModelSingleton:
         self,
         model_id: str = settings.TEXT_EMBEDDING_MODEL_ID,
         device: str = settings.RAG_MODEL_DEVICE,
-        cache_dir: Optional[Path] = None,
+        cache_dir: Path | None = None,
     ):
         """
         Inicializa el modelo de embeddings si no se ha inicializado ya.
@@ -708,7 +759,7 @@ class EmbeddingModelSingleton:
         if torch is not None and hasattr(torch, "cuda") and hasattr(torch.cuda, "empty_cache"):
             try:
                 torch.cuda.empty_cache()
-            except Exception:
+            except RuntimeError:
                 logger.debug("No se pudo limpiar la cache CUDA tras fallo de embeddings.", exc_info=True)
 
     def _move_to_cpu(self) -> None:
@@ -761,7 +812,7 @@ class EmbeddingModelSingleton:
         return int(getattr(self._model, "max_seq_length", 512))
 
     @property
-    def tokenizer(self):
+    def tokenizer(self) -> Any:
         """
         Devuelve el tokenizer asociado al modelo de embeddings.
         Este tokenizer es el que se usa para contar tokens y trocear el texto
@@ -772,7 +823,7 @@ class EmbeddingModelSingleton:
         """
         return self._model.tokenizer
 
-    def __call__(self, input_text, to_list: bool = True):
+    def __call__(self, input_text, to_list: bool = True) -> list[float] | list[list[float]]:
         """
         Calcula los embeddings de un texto o lista de textos.
         
@@ -818,9 +869,10 @@ class EmbeddingModelSingleton:
 class LazyEmbeddingModel:
     """
     Carga el modelo de embeddings solo cuando alguna operación RAG lo necesita.
-    Esto permite que la aplicación Flask se inicie rápidamente sin cargar modelos ni usar memoria hasta que sea necesario."""
+    Esto permite que la aplicación Flask se inicie rápidamente sin cargar modelos ni usar memoria hasta que sea necesario.
+    """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Inicializa la instancia sin cargar el modelo.
         """
@@ -847,7 +899,7 @@ class LazyEmbeddingModel:
             )
         return self._instance
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name: str) -> Any:
         """
         Redirige el acceso a atributos al modelo de embeddings, cargándolo si es necesario.
         
@@ -859,7 +911,7 @@ class LazyEmbeddingModel:
         """
         return getattr(self._get_instance(), name)
 
-    def __call__(self, input_text, to_list: bool = True):
+    def __call__(self, input_text, to_list: bool = True) -> list[float] | list[list[float]]:
         """ 
         Permite llamar a la instancia como una función para obtener embeddings, redirigiendo la llamada al modelo de embeddings.        
 
@@ -903,12 +955,12 @@ def _make_qdrant_client() -> QdrantClient:
             try:
                 client.get_collections()
                 return client
-            except Exception:
+            except QDRANT_RECOVERABLE_ERRORS:
                 time.sleep(0.5)
 
         logger.warning("Qdrant no responde tras varios intentos.")
         return None
-    except Exception as e:
+    except QDRANT_INIT_ERRORS as e:
         logger.warning("No se pudo inicializar Qdrant remoto (%s:%s / url=%s): %s",
                        QDRANT_HOST, QDRANT_PORT, QDRANT_URL or "-", e)
         raise RuntimeError("No se pudo conectar a Qdrant")
@@ -944,7 +996,7 @@ class LazyQdrantClient:
             raise RuntimeError("Qdrant no está disponible")
         return self._client
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name: str) -> Any:
         """ 
         Redirige el acceso a los métodos al cliente de Qdrant, creándolo si es necesario.
         
@@ -969,7 +1021,7 @@ class LazyQdrantClient:
 qdrant = LazyQdrantClient()
 
 @atexit.register
-def _close_qdrant():
+def _close_qdrant() -> None:
     """ 
     Cierra la conexión de Qdrant al salir del proceso para liberar recursos.
     """
@@ -977,7 +1029,7 @@ def _close_qdrant():
     try:
         if qdrant is not None:
             qdrant.close()
-    except Exception as e:
+    except QDRANT_RECOVERABLE_ERRORS as e:
         logger.debug("Error cerrando Qdrant al salir: %s", e)
     finally:
         qdrant = None
@@ -1118,7 +1170,7 @@ def qdrant_get_payloads(point_ids: list[str]) -> dict[str, dict]:
     except ValueError as e:
         logger.warning("Qdrant sin colección (%s). Devolviendo payloads vacíos.", e)
         return {}
-    except Exception as e:
+    except QDRANT_RECOVERABLE_ERRORS as e:
         logger.warning("Error leyendo payloads de Qdrant: %s. Devolviendo payloads vacíos.", e)
         return {}
     
@@ -1185,7 +1237,7 @@ class VectorBaseDocument(BaseModel, Generic[T]):
         dim = embedding_model.embedding_size
         try:
             qdrant.get_collection(collection)
-        except Exception:
+        except QDRANT_INIT_ERRORS:
             qdrant.recreate_collection(
                 collection_name=collection,
                 vectors_config=qmodels.VectorParams(
@@ -1219,7 +1271,7 @@ class VectorBaseDocument(BaseModel, Generic[T]):
         )
 
     @classmethod
-    def from_record(cls: Type[T], record: qmodels.ScoredPoint | qmodels.Record) -> T:
+    def from_record(cls, record: qmodels.ScoredPoint | qmodels.Record) -> Self:
         """
         Crea una instancia de la clase a partir de un registro de Qdrant.
         """
@@ -1242,7 +1294,7 @@ class VectorBaseDocument(BaseModel, Generic[T]):
         qdrant.upsert(collection_name=type(self).get_collection_name(), points=[point])
 
     @classmethod
-    def save_many(cls: Type[T], docs: list[T]) -> None:
+    def save_many(cls, docs: list[Self]) -> None:
         """
         Guarda una lista de documentos de golpe en Qdrant.
         Eficiente para cargar muchos chunks producidos en el pipeline.
@@ -1257,10 +1309,10 @@ class VectorBaseDocument(BaseModel, Generic[T]):
 
     @classmethod
     def bulk_find(
-        cls: Type[T], 
+        cls, 
         limit: int = 10, 
         offset: UUID | None = None,
-    ) -> tuple[list[T], UUID | None]:
+    ) -> tuple[list[Self], UUID | None]:
         """
         Recupera documentos de la colección usando scroll (paginación).
         
@@ -1287,11 +1339,11 @@ class VectorBaseDocument(BaseModel, Generic[T]):
     # ---- búsqueda vectorial
     @classmethod
     def search(
-        cls: Type[T],
+        cls,
         query_vector: list[float],
         limit: int = 10,
         **kwargs,
-    ) -> list[T]:
+    ) -> list[Self]:
         """
         Realiza una búsqueda vectorial en Qdrant usando el vector de consulta.
         
@@ -1387,7 +1439,7 @@ def token_len(tokenizer, text: str) -> int | None:
     """
     try:
         return len(tokenizer.tokenize(text))
-    except Exception as e:
+    except (AttributeError, RuntimeError, TypeError, ValueError) as e:
         logger.warning("No se puede tokenizar una línea: %s", e)
         return None
 
@@ -1552,7 +1604,7 @@ def recuperacion_chunk_con_scores(
         if min_similarity is None:
             return points
         return [p for p in points if float(getattr(p, "score", 0.0)) > min_similarity]
-    except Exception as e:
+    except QDRANT_RECOVERABLE_ERRORS as e:
         logger.warning("Qdrant no disponible para recuperar chunks: %s", e)
         return []
 
@@ -1922,9 +1974,9 @@ def index_pdf(
                 doc_hash = pdf_sha256(pdf_path)
                 parts: list[str] = []
                 for page in reader.pages:
-                    parts.append((page.extract_text() or ""))
+                    parts.append(page.extract_text() or "")
                 full_text = "\n".join(parts)
-        except (PdfReadError, PdfStreamError, Exception) as e:
+        except (OSError, PdfReadError, PdfStreamError, RuntimeError, TypeError, ValueError) as e:
             logger.error("Error leyendo %s: %s", pdf_path.name, e)
             return []
 
@@ -1936,7 +1988,7 @@ def index_pdf(
         try:
             with timed_block(f"chunking {pdf_path.name}"):
                 chunks = chunk_text(full_text)
-        except Exception as e:
+        except (RuntimeError, TypeError, ValueError) as e:
             logger.error("Error haciendo chunks en %s: %s", pdf_path.name, e)
             return []
 

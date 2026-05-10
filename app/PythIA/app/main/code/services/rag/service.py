@@ -9,13 +9,15 @@ import logging
 import re
 import time
 import unicodedata
-from typing import Any, Dict, Optional
+from typing import Any
 
 from flask_login import current_user
+
 from app.main.code.extensions import db
+from app.main.code.inetrnacionalizacion.tarduccion import translate_for
 from app.main.code.model.chunk import Chunk
 from app.main.code.model.consulta import Consulta
-from app.main.code.inetrnacionalizacion.tarduccion import translate_for
+
 logger = logging.getLogger(__name__)
 
 from .PrototipoRAG import (
@@ -26,8 +28,7 @@ from .PrototipoRAG import (
     obtener_mejor_chunk,
 )
 
-
-EMPTY_ANSWER: Dict[str, Any] = {
+EMPTY_ANSWER: dict[str, Any] = {
     "answer": "",
     "title": "",
     "filename": "",
@@ -299,7 +300,7 @@ async def rag_answer(
     on_status=None,
     user_id: int | None = None,
     lang: str = "es",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Procesa una pregunta usando el sistema RAG y guarda la consulta en BD.
     Valida la pregunta, extrae metadatos (expediente, tipo documento),
@@ -334,7 +335,7 @@ async def rag_answer(
         return invalid
 
     start = time.perf_counter()
-    data: Dict[str, Any]
+    data: dict[str, Any]
     numero_expediente = resolve_numero_expediente(question)
     tipo_documento = detect_tipo_documento(question)
     query_profile, retrieval_k = detect_guided_query_profile(question)
@@ -363,8 +364,8 @@ async def rag_answer(
     except OllamaModelNotFoundError as e:
         logger.warning("Modelo de Ollama no disponible: %s", e)
         data = message_error(translate_for(lang, "rag.model_not_found_error"))
-    except Exception as e:
-        logger.exception("Error en rag_answer: %s", e)
+    except Exception:
+        logger.exception("Error en rag_answer")
         data = message_error(translate_for(lang, "rag.system_error"))
 
     elapsed = time.perf_counter() - start
@@ -384,7 +385,7 @@ async def rag_answer(
     return data
 
 
-def message_error(msg: str) -> Dict[str, Any]:
+def message_error(msg: str) -> dict[str, Any]:
     """
     Crea un diccionario de respuesta de error para el sistema RAG.
 
@@ -400,7 +401,7 @@ def message_error(msg: str) -> Dict[str, Any]:
     out["answer"] = msg
     return out
 
-def validate_question(question: str, lang: str = "es") -> Optional[Dict[str, Any]]:
+def validate_question(question: str, lang: str = "es") -> dict[str, Any] | None:
     """
     Valida una pregunta antes de procesarla en el sistema RAG.
     Verifica que la pregunta no esté vacía y no exceda la longitud máxima permitida.
@@ -422,7 +423,7 @@ def validate_question(question: str, lang: str = "es") -> Optional[Dict[str, Any
 
     return None
 
-def try_persist(question: str, data: Dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
+def try_persist(question: str, data: dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
     """
     Intenta guardar una consulta en la base de datos con manejo de errores.
     Envuelve la función persist_consulta en un try-catch para evitar que
@@ -446,7 +447,7 @@ def try_persist(question: str, data: Dict[str, Any], elapsed: float, user_id: in
         db.session.rollback()
         
 
-def persist_consulta(question: str, data: Dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
+def persist_consulta(question: str, data: dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
     """
     Guarda una consulta completa en la base de datos con todos sus metadatos.
     Crea una entidad Consulta con la pregunta, respuesta, tiempo de procesamiento,

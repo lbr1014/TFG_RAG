@@ -8,21 +8,33 @@ import re
 from collections import defaultdict
 
 from flask import abort, current_app, jsonify, render_template, request
+from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
-from . import rag_bp
-from app.main.code.services.async_tasks import executor
-from app.main.code.model.rag_query_state import RAGQueryState
 from app.main.code.extensions import db
 from app.main.code.forms import EmptyForm, RAGDefaultQueryForm, RAGQueryForm
+from app.main.code.inetrnacionalizacion.tarduccion import (
+    get_locale,
+    localize_runtime_message,
+    t,
+    translate_for,
+)
 from app.main.code.model.documento import Documento
-from app.main.code.services.rag.PrototipoRAG import QueryCancelledError, get_rag_llm_model_choices, resolve_rag_llm_model
+from app.main.code.model.rag_query_state import RAGQueryState
+from app.main.code.services.async_tasks import executor
+from app.main.code.services.rag.PrototipoRAG import (
+    QueryCancelledError,
+    get_rag_llm_model_choices,
+    resolve_rag_llm_model,
+)
 from app.main.code.services.rag.service import rag_answer, validate_question
-from app.main.code.inetrnacionalizacion.tarduccion import get_locale, localize_runtime_message, t, translate_for
+
+from . import rag_bp
+
 
 @rag_bp.get("/")
 @login_required
-def rag_page():
+def rag_page() -> str:
     """
     Muestra la página de consulta RAG.
 
@@ -36,7 +48,7 @@ def rag_page():
 
 @rag_bp.get("/consultas-guiadas")
 @login_required
-def default_query_page():
+def default_query_page() -> str:
     """
     Muestra un formulario guiado para construir consultas frecuentes sobre pliegos.
 
@@ -50,7 +62,7 @@ def default_query_page():
 
 @rag_bp.get("/modelos")
 @login_required
-def model_comparison_page():
+def model_comparison_page() -> str:
     """
     Muestra comparativas de uso y rendimiento por modelo RAG.
     Los administradores ven el uso global y los usuarios normales ven sus propias
@@ -190,7 +202,7 @@ def extract_token_count(job: RAGQueryState, result: dict) -> int:
 
     text = f"{job.question or ''} {result.get('answer') or ''}"
     words = re.findall(r"\w+|[^\w\s]", text, flags=re.UNICODE)
-    return int(round(len(words) * 1.33)) if words else 0
+    return round(len(words) * 1.33) if words else 0
 
 def configure_model_choices(form: RAGQueryForm) -> None:
     """
@@ -323,7 +335,7 @@ def get_user_job_or_404(job_id: int) -> RAGQueryState:
 
 @rag_bp.post("/ask")
 @login_required
-def rag_ask():
+def rag_ask() -> ResponseReturnValue:
     """
     Crea o reutiliza una consulta RAG asíncrona.
 
@@ -381,7 +393,7 @@ def rag_ask():
 
 @rag_bp.get("/status/<int:job_id>")
 @login_required
-def rag_status(job_id: int):
+def rag_status(job_id: int) -> ResponseReturnValue:
     """
     Devuelve el estado de una consulta RAG.
 
@@ -404,7 +416,7 @@ def rag_status(job_id: int):
 
 @rag_bp.post("/cancel/<int:job_id>")
 @login_required
-def rag_cancel(job_id: int):
+def rag_cancel(job_id: int) -> ResponseReturnValue:
     """
     Solicita la cancelación de una consulta RAG.
 

@@ -57,7 +57,7 @@ class Consulta(db.Model):
             self.created_at = datetime.now(ZoneInfo("Europe/Madrid"))
 
     @classmethod
-    def from_rag_result(cls, *, user_id: int, question: str, data: dict, elapsed: float) -> "Consulta":
+    def from_rag_result(cls, *, user_id: int, question: str, data: dict, elapsed: float) -> Consulta:
         """
         Crea una consulta y sus enlaces a chunks a partir de una respuesta RAG.
         

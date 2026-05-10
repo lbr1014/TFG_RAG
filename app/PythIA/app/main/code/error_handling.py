@@ -24,7 +24,7 @@ class PasswordSecurity:
         message: Mensaje de error personalizado.
     """
 
-    def __init__(self, *, require_upper: bool = True, require_lower: bool = True, require_digit: bool = True, message: str | None = None):
+    def __init__(self, *, require_upper: bool = True, require_lower: bool = True, require_digit: bool = True, message: str | None = None) -> None:
         """
         Configura las reglas de seguridad de la contraseña.
 
@@ -39,7 +39,7 @@ class PasswordSecurity:
         self.require_digit = require_digit
         self.message = message
 
-    def __call__(self, form, field):
+    def __call__(self, form, field) -> None:
         """
         Valida el valor del campo de contraseña.
 
@@ -108,7 +108,7 @@ def wants_json_response() -> bool:
     return request.accept_mimetypes.best == "application/json"
 
 
-def render_error_response(status_code: int, title_key: str, message_key: str):
+def render_error_response(status_code: int, title_key: str, message_key: str) -> tuple:
     """
     Construye una respuesta de error HTML o JSON.
 

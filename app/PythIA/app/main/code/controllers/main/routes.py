@@ -5,24 +5,31 @@ Script para las rutas principales, historial de consultas, perfil de usuario y e
 
 import calendar
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
+from math import ceil
 from statistics import mean, median, variance
 
-from flask import render_template, request, redirect, url_for, abort
-from flask_login import login_required, current_user
-from math import ceil
+from flask import Response, abort, redirect, render_template, request, url_for
+from flask_login import current_user, login_required
 from sqlalchemy import func
-from . import main_bp
-from app.main.code.countries import country_name_for_code, country_numeric_for_code, normalize_country_code
+
+from app.main.code.countries import (
+    country_name_for_code,
+    country_numeric_for_code,
+    normalize_country_code,
+)
+from app.main.code.extensions import db
+from app.main.code.forms import EditUserForm, EmptyForm
+from app.main.code.inetrnacionalizacion.tarduccion import get_locale, t
+from app.main.code.services.rag.PrototipoRAG import qdrant_get_payloads
+
 from ...model.consulta import Consulta
 from ...model.rag_query_state import RAGQueryState
 from ...model.user import User
-from app.main.code.extensions import db
-from app.main.code.forms import EditUserForm, EmptyForm
-from app.main.code.services.rag.PrototipoRAG import qdrant_get_payloads
-from app.main.code.inetrnacionalizacion.tarduccion import get_locale, t
+from . import main_bp
 
-def paginate_consultas(base_query, per_page=10):
+
+def paginate_consultas(base_query, per_page=10) -> tuple:
     """
     Aplica paginación estándar a una query de consultas.
 
@@ -38,8 +45,7 @@ def paginate_consultas(base_query, per_page=10):
         tuple: Tupla con (items, page, total_pages, total_consultas).
     """
     page = request.args.get("page", 1, type=int)
-    if page < 1:
-        page = 1
+    page = max(page, 1)
 
     # Si no es admin, filtrar por usuario
     if not getattr(current_user, "is_admin", False):
@@ -50,8 +56,7 @@ def paginate_consultas(base_query, per_page=10):
     total_consultas = base_query.count()
     total_pages = max(1, ceil(total_consultas / per_page))
 
-    if page > total_pages:
-        page = total_pages
+    page = min(page, total_pages)
 
     items = (
         base_query
@@ -63,7 +68,7 @@ def paginate_consultas(base_query, per_page=10):
     return items, page, total_pages, total_consultas
 
 @main_bp.route("/")
-def inicio():
+def inicio() -> str:
     """
     Renderiza la página de inicio de la aplicación PythIA.
 
@@ -81,7 +86,7 @@ def inicio():
 
 @main_bp.route("/pagina_principal")
 @login_required
-def pag_principal():
+def pag_principal() -> str:
     """
     Renderiza la página principal del usuario autenticado.
 
@@ -128,7 +133,7 @@ def build_activity_streak(user, consultas) -> int:
     if not active_days:
         return 0
 
-    today = datetime.now().date()
+    today = datetime.now(timezone.utc).date()
     current_day = today if today in active_days else max(active_days)
     streak = 0
 
@@ -191,7 +196,7 @@ def build_home_month_calendar(consultas) -> dict:
         dict: Diccionario con la estructura del calendario mensual, incluyendo el label del mes, los días de la semana y 
             las semanas con sus días y conteos de consultas.
     """
-    today = datetime.now().date()
+    today = datetime.now(timezone.utc).date()
     month_start = today.replace(day=1)
     _, days_in_month = calendar.monthrange(today.year, today.month)
     month_days = [
@@ -267,12 +272,9 @@ def build_home_query_donut(user, user_total_queries: int) -> dict:
     colors = ["#58d68d", "#5dade2", "#f4d03f", "#ec7063", "#af7ac5", "#48c9b0", "#eb984e", "#7fb3d5"]
 
     if getattr(user, "is_admin", False):
-        counts_by_user = {
-            user_id: count
-            for user_id, count in db.session.query(Consulta.user_id, func.count(Consulta.id))
+        counts_by_user = dict(db.session.query(Consulta.user_id, func.count(Consulta.id))
             .group_by(Consulta.user_id)
-            .all()
-        }
+            .all())
         users = User.query.order_by(User.nombre.asc(), User.email.asc()).all()
         segments = [
             {
@@ -336,7 +338,7 @@ def display_name_for_donut(user) -> str:
 @main_bp.get("/edit_user")
 @main_bp.post("/edit_user")
 @login_required
-def edit_user():
+def edit_user() -> str:
     """
     Gestiona la edición del perfil de usuario.
 
@@ -381,7 +383,7 @@ def edit_user():
 
 @main_bp.get("/history")
 @login_required
-def historial():
+def historial() -> str:
     """
     Renderiza el historial de consultas del usuario.
 
@@ -409,7 +411,7 @@ def historial():
     )
 
 
-def _month_sequence(total_months: int = 12):
+def _month_sequence(total_months: int = 12) -> list:
     """
     Genera una secuencia de tuplas (año, mes) hacia el pasado.
 
@@ -422,7 +424,7 @@ def _month_sequence(total_months: int = 12):
     Returns:
         list: Lista de tuplas (año, mes) ordenadas ascendentemente.
     """
-    today = datetime.now().date().replace(day=1)
+    today = datetime.now(timezone.utc).date().replace(day=1)
     months = []
     year = today.year
     month = today.month
@@ -451,7 +453,7 @@ def _safe_created_at(consulta: Consulta) -> datetime:
     Returns:
         datetime: Fecha y hora sin información de zona horaria.
     """
-    created_at = consulta.created_at or datetime.now()
+    created_at = consulta.created_at or datetime.now(timezone.utc)
     return created_at.replace(tzinfo=None) if created_at.tzinfo else created_at
 
 
@@ -465,7 +467,7 @@ def _process_consulta_stats(
     weekday_counts,
     hourly_counts,
     user_counter,
-):
+) -> None:
     """
     Procesa y actualiza las estadísticas de una consulta individual.
 
@@ -504,7 +506,7 @@ def _process_consulta_stats(
         user_counter[user_name] += 1
 
 
-def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
+def build_usage_stats_payload(consultas, *, include_top_users: bool = False) -> dict:
     """
     Construye un payload completo de estadísticas de uso de consultas.
 
@@ -602,7 +604,7 @@ def build_usage_stats_payload(consultas, *, include_top_users: bool = False):
                 if daily_times[iso_date]
                 else 0,
             }
-            for iso_date in daily_counts.keys()
+            for iso_date in daily_counts
         ],
         "daily_hourly_queries": [
             {
@@ -712,7 +714,7 @@ def build_selected_user_comparison_payload(consultas, users, selected_user_ids=N
     return payload
 
 
-def build_user_country_map_payload(users, *, include_user_names: bool = False):
+def build_user_country_map_payload(users, *, include_user_names: bool = False) -> list:
     """
     Construye los datos del mapa de usuarios por pais.
 
@@ -750,7 +752,7 @@ def build_user_country_map_payload(users, *, include_user_names: bool = False):
 
 @main_bp.get("/stats")
 @login_required
-def stats_page():
+def stats_page() -> str:
     """
     Renderiza la página de estadísticas de uso.
 
@@ -851,7 +853,7 @@ def best_pid_for_consulta(consulta) -> str:
     chunk = getattr(best_cc, "chunk", None)
     return getattr(chunk, "qdrant_point_id", "") or ""
     
-def build_meta_by_consulta(consultas):
+def build_meta_by_consulta(consultas) -> dict:
     """
     Construye un diccionario de metadatos indexado por ID de consulta.
 
@@ -896,7 +898,7 @@ def build_meta_by_consulta(consultas):
 
 @main_bp.post("/consulta/<int:consulta_id>/delete")
 @login_required
-def delete_consulta(consulta_id: int):
+def delete_consulta(consulta_id: int) -> Response:
     """
     Elimina una consulta específica del usuario.
 

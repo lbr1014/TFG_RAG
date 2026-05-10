@@ -3,6 +3,8 @@ Autora: Lydia Blanco Ruiz
 Script con la entidad SQLAlchemy que representa usuarios registrados y sus permisos.
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -36,7 +38,7 @@ class User(db.Model, UserMixin):
     last_login = db.Column(db.DateTime(timezone=True), nullable=True)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Inicializa el usuario con Espana como pais por defecto.
         Args:
@@ -46,7 +48,7 @@ class User(db.Model, UserMixin):
         if not self.country_code:
             self.country_code = DEFAULT_COUNTRY_CODE
 
-    def set_password(self, password_plain: str):
+    def set_password(self, password_plain: str) -> None:
         """
         Guarda la contraseña cifrada del usuario.
 
@@ -68,14 +70,14 @@ class User(db.Model, UserMixin):
         """
         return check_password_hash(self.password_hash, password_plain)
 
-    def update_last_login(self):
+    def update_last_login(self) -> None:
         """
         Actualiza la fecha del último inicio de sesión.
         """
         self.last_login = datetime.now(ZoneInfo("Europe/Madrid"))
 
     @staticmethod
-    def get_by_id(user_id: int):
+    def get_by_id(user_id: int) -> User | None:
         """
         Busca un usuario por identificador.
 
@@ -88,7 +90,7 @@ class User(db.Model, UserMixin):
         return db.session.get(User, user_id)
 
     @staticmethod
-    def get_by_email(email: str):
+    def get_by_email(email: str) -> User | None:
         """
         Busca un usuario por correo electrónico.
 
@@ -100,19 +102,19 @@ class User(db.Model, UserMixin):
         """
         return User.query.filter_by(email=email).first()
 
-    def make_admin(self):
+    def make_admin(self) -> None:
         """
         Da permisos de administración al usuario.
         """
         self.is_admin = True
 
-    def make_user(self):
+    def make_user(self) -> None:
         """
         Quita permisos de administración al usuario.
         """
         self.is_admin = False
 
-    def change_is_admin(self):
+    def change_is_admin(self) -> None:
         """
         Cambia el rol de administración del usuario.
         """

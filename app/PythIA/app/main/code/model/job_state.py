@@ -8,7 +8,6 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-
 MADRID_TZ = ZoneInfo("Europe/Madrid")
 JOB_MESSAGE_MAX_LENGTH = 255
 
@@ -55,7 +54,7 @@ class JobStateMixin:
         if hasattr(self, "message"):
             self.message = self.fit_message(message)
 
-    def set_progress(self, current: int | float, total: int) -> None:
+    def set_progress(self, current: float, total: int) -> None:
         """
         Establece el progreso del estado como un porcentaje calculado a partir de los valores actuales y totales.
         

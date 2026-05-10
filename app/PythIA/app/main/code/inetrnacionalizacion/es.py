@@ -2,7 +2,15 @@
 Autora: Lydia Blanco Ruiz
 Script con las traducciones a español.
 """
-from .keys import COMMON_USER_LABEL_ES, MARKDOWN_LABEL, SECRET_FIELD_TOKEN, SECRET_FIELD_TEXT_ES
+from .keys import (
+    COMMON_USER_LABEL_ES,
+    CONSULTAS,
+    MARKDOWN_LABEL,
+    SECRET_FIELD_TEXT_ES,
+    SECRET_FIELD_TOKEN,
+    TIEMPO,
+)
+
 TRANSLATIONS_ES = {
     "app.default_title": "Mi web",
     "app.welcome": "Bienvenido",
@@ -182,13 +190,13 @@ TRANSLATIONS_ES = {
     "home.month_calendar_aria": "Calendario del mes",
     "home.metric_streak_title": "Racha actual",
     "home.metric_streak_label": "días conectándote a la aplicación",
-    "home.metric_queries_title": "Tus consultas",
+    "home.metric_queries_title": CONSULTAS,
     "home.metric_queries_label": "consultas realizadas",
     "home.metric_models_title": "Modelos",
     "home.metric_models_label": "modelos distintos usados",
     "home.metric_activity_title": "Actividad",
     "home.metric_activity_label": "días con consultas registradas",
-    "home.metric_avg_time_title": "Tiempo medio",
+    "home.metric_avg_time_title": TIEMPO,
     "home.metric_avg_time_label": "por respuesta generada",
     "home.carousel_queries_aria": "Consultas realizadas",
     "home.carousel_models_aria": "Modelos usados",
@@ -199,8 +207,8 @@ TRANSLATIONS_ES = {
     "home.full_history": "Ver historial completo",
     "home.query_unit": "consultas",
     "home.donut_admin_title": "Consultas",
-    "home.donut_user_title": "Tus consultas",
-    "home.donut_user_segment": "Tus consultas",
+    "home.donut_user_title": CONSULTAS,
+    "home.donut_user_segment": CONSULTAS,
     "home.donut_global_segment": "Resto global",
     "stats.page_title": "Estadísticas",
     "stats.subtitle": "Consulta gráficas para ver el uso del modelo.",
@@ -210,7 +218,7 @@ TRANSLATIONS_ES = {
     "stats.filter_all_users": "Todos los usuarios",
     "stats.filter_help": "Selecciona un usuario concreto o el uso global",
     "stats.total_queries": "Consultas totales",
-    "stats.average_time": "Tiempo medio",
+    "stats.average_time": TIEMPO,
     "stats.active_days": "Días con actividad",
     "stats.last_query": "Última consulta",
     "stats.no_queries": "Todavía no hay consultas para mostrar estadísticas.",
@@ -326,7 +334,7 @@ TRANSLATIONS_ES = {
     "model_stats.models": "Modelos",
     "model_stats.total_uses": "Usos",
     "model_stats.total_tokens": "Tokens",
-    "model_stats.avg_time": "Tiempo medio",
+    "model_stats.avg_time": TIEMPO,
     "model_stats.users": "Usuarios",
     "model_stats.unknown_device": "Sin dato",
     "model_stats.chart_uses": "Veces que se ha usado cada modelo",

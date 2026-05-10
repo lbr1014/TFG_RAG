@@ -4,6 +4,7 @@ Script para configurar los ejecutores de tareas en segundo plano de la aplicaci√
 """
 
 from __future__ import annotations
+
 import os
 from concurrent.futures import ThreadPoolExecutor
 

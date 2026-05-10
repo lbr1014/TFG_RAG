@@ -6,10 +6,16 @@ Script con helpers de internacionalización, incluyendo la función de traducci�
 import re
 
 from flask import g, has_request_context, redirect, request, session, url_for
-from .español import TRANSLATIONS_ES
-from .ingles import TRANSLATIONS_EN
-from .keys import LANGUAGE_ES, LANGUAGE_EN, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, DIRECT_RUNTIME_MESSAGE_MAP
 
+from .en import TRANSLATIONS_EN
+from .es import TRANSLATIONS_ES
+from .keys import (
+    DEFAULT_LANGUAGE,
+    DIRECT_RUNTIME_MESSAGE_MAP,
+    LANGUAGE_EN,
+    LANGUAGE_ES,
+    SUPPORTED_LANGUAGES,
+)
 
 TRANSLATIONS = {
     LANGUAGE_ES: TRANSLATIONS_ES,
@@ -17,8 +23,9 @@ TRANSLATIONS = {
 }
 
 
-def normalize_language(lang):
-    """Normaliza un código de idioma.
+def normalize_language(lang) -> str:
+    """
+    Normaliza un código de idioma.
 
     Args:
         lang: Código de idioma recibido desde sesión, formulario o cliente.
@@ -30,8 +37,9 @@ def normalize_language(lang):
     return lang if lang in SUPPORTED_LANGUAGES else DEFAULT_LANGUAGE
 
 
-def get_locale():
-    """Obtiene el idioma activo de la petición actual.
+def get_locale() -> str:
+    """
+    Obtiene el idioma activo de la petición actual.
 
     Returns:
         Código de idioma activo o idioma por defecto si no hay petición.
@@ -41,8 +49,9 @@ def get_locale():
     return DEFAULT_LANGUAGE
 
 
-def translate_for(lang, key, **kwargs):
-    """Traduce una clave concreta para un idioma.
+def translate_for(lang, key, **kwargs) -> str:
+    """
+    Traduce una clave concreta para un idioma.
 
     Args:
         lang: Código de idioma solicitado.
@@ -61,13 +70,14 @@ def translate_for(lang, key, **kwargs):
     if kwargs:
         try:
             return text.format(**kwargs)
-        except Exception:
+        except (KeyError, IndexError, ValueError):
             return text
     return text
 
 
-def t(key, **kwargs):
-    """Traduce una clave usando el idioma activo.
+def t(key, **kwargs) -> str:
+    """
+    Traduce una clave usando el idioma activo.
 
     Args:
         key: Clave de traducción.
@@ -79,8 +89,9 @@ def t(key, **kwargs):
     return translate_for(get_locale(), key, **kwargs)
 
 
-def localize_runtime_message(message, lang=None):
-    """Traduce mensajes persistidos o generados en tiempo de ejecución.
+def localize_runtime_message(message, lang=None) -> str:
+    """
+    Traduce mensajes persistidos o generados en tiempo de ejecución.
 
     Args:
         message: Mensaje original guardado en base de datos o generado por un
@@ -130,8 +141,9 @@ def localize_runtime_message(message, lang=None):
     return message
 
 
-def _get_form_field(form, field_name):
-    """Obtiene un campo del formulario si existe.
+def _get_form_field(form, field_name) -> object | None:
+    """
+    Obtiene un campo del formulario si existe.
 
     Args:
         form: Formulario Flask-WTF que contiene los campos.
@@ -143,8 +155,9 @@ def _get_form_field(form, field_name):
     return getattr(form, field_name, None)
 
 
-def _localize_field_labels(form):
-    """Traduce las etiquetas configuradas en el formulario.
+def _localize_field_labels(form) -> None:
+    """
+    Traduce las etiquetas configuradas en el formulario.
 
     Args:
         form: Formulario Flask-WTF con el mapa ``i18n_fields``.
@@ -155,8 +168,9 @@ def _localize_field_labels(form):
             field.label.text = t(key)
 
 
-def _localize_field_placeholders(form):
-    """Traduce los placeholders configurados en el formulario.
+def _localize_field_placeholders(form) -> None:
+    """
+    Traduce los placeholders configurados en el formulario.
 
     Args:
         form: Formulario Flask-WTF con el mapa ``i18n_placeholders``.
@@ -169,8 +183,9 @@ def _localize_field_placeholders(form):
             field.render_kw = render_kw
 
 
-def _localize_validator_messages(form):
-    """Traduce los mensajes de los validadores configurados.
+def _localize_validator_messages(form) -> None:
+    """
+    Traduce los mensajes de los validadores configurados.
 
     Args:
         form: Formulario Flask-WTF con el mapa ``i18n_validator_messages``.
@@ -185,8 +200,9 @@ def _localize_validator_messages(form):
                 validator.message = t(key)
 
 
-def localize_form(form):
-    """Aplica traducciones a etiquetas, placeholders y validadores.
+def localize_form(form) -> object:
+    """
+    Aplica traducciones a etiquetas, placeholders y validadores.
 
     Args:
         form: Formulario Flask-WTF con mapas de internacionalización.
@@ -204,8 +220,9 @@ def localize_form(form):
     return form
 
 
-def get_client_translations():
-    """Obtiene las traducciones que necesita el JavaScript del cliente.
+def get_client_translations() -> dict[str, str]:
+    """
+    Obtiene las traducciones que necesita el JavaScript del cliente.
 
     Returns:
         Diccionario con claves de traducción y textos localizados.
@@ -267,8 +284,9 @@ def get_client_translations():
     return {key: t(key) for key in keys}
 
 
-def init_app(app):
-    """Registra helpers de internacionalización en la aplicación Flask.
+def init_app(app) -> None:
+    """
+    Registra helpers de internacionalización en la aplicación Flask.
 
     Args:
         app: Aplicación Flask donde se registran hooks, context processors y
@@ -276,11 +294,21 @@ def init_app(app):
     """
 
     @app.before_request
-    def _set_language():
+    def _set_language() -> None:
+        """
+        Establece el idioma activo en el objeto global de Flask.
+        """
         g.locale = get_locale()
 
     @app.context_processor
-    def _inject_i18n():
+    def _inject_i18n() -> dict[str, object]:
+        """
+            Inyecta funciones y variables de internacionalización en el contexto de las plantillas.
+
+        Returns:
+            dict[str, object]: Diccionario con la función de traducción 't', el idioma actual, los idiomas soportados
+                y las traducciones para el cliente.
+        """
         return {
             "t": t,
             "current_locale": get_locale(),
@@ -289,7 +317,13 @@ def init_app(app):
         }
 
     @app.post("/language")
-    def set_language_route():
+    def set_language_route() -> object:
+        """
+        Maneja la solicitud para cambiar el idioma de la aplicación.
+
+        Returns:
+            Redirige a la página anterior o a la página de inicio después de actualizar el idioma en la sesión. 
+        """
         from app.main.code.forms import LanguageForm
 
         form = LanguageForm()

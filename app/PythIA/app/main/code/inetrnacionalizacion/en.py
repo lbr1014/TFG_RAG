@@ -3,7 +3,15 @@ Autora: Lydia Blanco Ruiz
 Script con las traducciones al inglés.
 """
 
-from .keys import COMMON_USER_LABEL_EN, LOG_IN_LABEL_EN, MARKDOWN_LABEL, SECRET_FIELD_TOKEN, SECRET_FIELD_TEXT_EN
+from .keys import (
+    AVERAGE_TIME,
+    COMMON_USER_LABEL_EN,
+    LOG_IN_LABEL_EN,
+    MARKDOWN_LABEL,
+    QUERIES,
+    SECRET_FIELD_TEXT_EN,
+    SECRET_FIELD_TOKEN,
+)
 
 TRANSLATIONS_EN={
     "app.default_title": "My site",
@@ -184,13 +192,13 @@ TRANSLATIONS_EN={
     "home.month_calendar_aria": "Monthly calendar",
     "home.metric_streak_title": "Current streak",
     "home.metric_streak_label": "days connecting to the application",
-    "home.metric_queries_title": "Your queries",
+    "home.metric_queries_title": QUERIES,
     "home.metric_queries_label": "queries made",
     "home.metric_models_title": "Models",
     "home.metric_models_label": "different models used",
     "home.metric_activity_title": "Activity",
     "home.metric_activity_label": "days with registered queries",
-    "home.metric_avg_time_title": "Average time",
+    "home.metric_avg_time_title": AVERAGE_TIME,
     "home.metric_avg_time_label": "per generated answer",
     "home.carousel_queries_aria": "Queries made",
     "home.carousel_models_aria": "Models used",
@@ -201,8 +209,8 @@ TRANSLATIONS_EN={
     "home.full_history": "View full history",
     "home.query_unit": "queries",
     "home.donut_admin_title": "Queries",
-    "home.donut_user_title": "Your queries",
-    "home.donut_user_segment": "Your queries",
+    "home.donut_user_title": QUERIES,
+    "home.donut_user_segment": QUERIES,
     "home.donut_global_segment": "Global rest",
     "stats.page_title": "Statistics",
     "stats.subtitle": "Check the charts to see model usage.",
@@ -212,7 +220,7 @@ TRANSLATIONS_EN={
     "stats.filter_all_users": "All users",
     "stats.filter_help": "Select a specific user or global usage",
     "stats.total_queries": "Total queries",
-    "stats.average_time": "Average time",
+    "stats.average_time": AVERAGE_TIME,
     "stats.active_days": "Active days",
     "stats.last_query": "Last query",
     "stats.no_queries": "There are no queries yet to display statistics.",
@@ -328,7 +336,7 @@ TRANSLATIONS_EN={
     "model_stats.models": "Models",
     "model_stats.total_uses": "Uses",
     "model_stats.total_tokens": "Tokens",
-    "model_stats.avg_time": "Average time",
+    "model_stats.avg_time": AVERAGE_TIME,
     "model_stats.users": "Users",
     "model_stats.unknown_device": "No data",
     "model_stats.chart_uses": "Times each model has been used",

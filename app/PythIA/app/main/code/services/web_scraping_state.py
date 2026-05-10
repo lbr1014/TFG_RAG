@@ -3,9 +3,12 @@ Autora: Lydia Blanco Ruiz
 Script para enviar notificaciones por correo al finalizar procesos de web scraping.
 """
 from __future__ import annotations
+
 from flask import current_app
 from flask_mail import Message
+
 from app.main.code.extensions import mail
+
 
 def send_scraping_finished_email(
     to_email: str,
@@ -15,7 +18,7 @@ def send_scraping_finished_email(
     docs_url: str | None = None,
     extracted_docs: int | None = None,
     synced_total_docs: int | None = None,
-):
+) -> None:
     """
     Envía el correo de fin de web scraping.
 

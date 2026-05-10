@@ -7,11 +7,15 @@ import asyncio
 import json
 import logging
 import os
-from typing import Any, Awaitable, Iterable, List, Tuple
-import aiofiles
 from collections import defaultdict
+from collections.abc import Awaitable, Iterable
 from pathlib import Path
+from typing import Any
 
+List = list
+Tuple = tuple
+
+import aiofiles
 from playwright.async_api import async_playwright
 
 RUTA_JSON = Path(os.environ.get("PLIEGOS_INPUT_JSON", "resultados_playwright_asincrono_servidor.json"))
@@ -97,7 +101,7 @@ async def descargar_pdf_es(context, url: str, expediente: str, nombre_doc: str, 
         return False
 
 
-async def extraer_urls_pliegos_desde_pagina(context, url: str, expediente: str, nombre_doc: str):
+async def extraer_urls_pliegos_desde_pagina(context, url: str, expediente: str, nombre_doc: str) -> List[Tuple[str, str]]:
     """
     Extrae URLs de PDFs desde una página HTML de pliegos.
 
@@ -150,7 +154,7 @@ async def extraer_urls_pliegos_desde_pagina(context, url: str, expediente: str, 
     return encontrados
 
 
-async def procesar_pagina_pliego(context, url: str, expediente: str, nombre_doc: str, dic_urls: dict):
+async def procesar_pagina_pliego(context, url: str, expediente: str, nombre_doc: str, dic_urls: dict) -> None:
     """
     Procesa una página de pliegos y acumula sus URLs de PDF.
 
@@ -168,7 +172,7 @@ async def procesar_pagina_pliego(context, url: str, expediente: str, nombre_doc:
     dic_urls[expediente].extend(urls_encontradas)
 
 
-async def run():
+async def run() -> None:
     """
     Ejecuta el flujo completo de extracción y descarga de pliegos de licitaciones.
 

@@ -3,9 +3,12 @@ Autora: Lydia Blanco Ruiz
 Script para enviar notificaciones por correo al finalizar procesos de actualización vectorial.
 """
 from __future__ import annotations
+
 from flask import current_app
 from flask_mail import Message
+
 from app.main.code.extensions import mail
+
 
 def send_update_finished_email(
     to_email: str,
@@ -15,7 +18,7 @@ def send_update_finished_email(
     docs_url: str | None = None,
     indexed_docs: int | None = None,
     failed_docs: int | None = None,
-):
+) -> None:
     """
     Envía el correo de fin de actualización vectorial.
 

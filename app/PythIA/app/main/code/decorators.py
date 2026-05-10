@@ -11,7 +11,7 @@ from flask_login import current_user
 from app.main.code.extensions import login_manager
 
 
-def admin_required(view_func):
+def admin_required(view_func) -> callable:
     """
     Exige que el usuario autenticado sea administrador.
 
@@ -23,7 +23,7 @@ def admin_required(view_func):
     """
 
     @wraps(view_func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> callable:
         """
         Comprueba autenticación y permisos antes de ejecutar la vista.
 

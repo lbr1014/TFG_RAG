@@ -6,14 +6,14 @@ Script para extraer licitaciones desde la Plataforma de Contratación mediante P
 import asyncio
 import json
 import logging
+import os
 import re
 import time
-import os
 from pathlib import Path
-from typing import Any, List, Optional
 from urllib.parse import urljoin
 
-from playwright.async_api import Frame, Page, async_playwright, expect, Locator
+from playwright.async_api import Error as PlaywrightError
+from playwright.async_api import Frame, Locator, Page, async_playwright, expect
 from playwright.async_api import TimeoutError as PWTimeoutError
 
 # ======== Constantes ========
@@ -79,7 +79,7 @@ async def eleccion_organo(frame_arbol: Frame, texto_objetivo: str) -> None:
 
     # Busca la option por texto
     opcion = sel.locator(
-        "option", has_text=re.compile(re.escape(texto_objetivo), re.I)
+        "option", has_text=re.compile(re.escape(texto_objetivo), re.IGNORECASE)
     ).first
     await opcion.wait_for(state="attached")
 
@@ -93,7 +93,7 @@ async def eleccion_organo(frame_arbol: Frame, texto_objetivo: str) -> None:
     logger.info("Seleccion por indices")
 
     # Pulsa el botón Añadir
-    btn_anadir = frame_arbol.get_by_role("button", name=re.compile(r"^Añadir$", re.I))
+    btn_anadir = frame_arbol.get_by_role("button", name=re.compile(r"^Añadir$", re.IGNORECASE))
     await btn_anadir.wait_for(state="visible")
     await btn_anadir.click()
 
@@ -189,8 +189,8 @@ async def ir_pestana(page: Page, clave: str) -> None:
 
     try:
         await page.wait_for_timeout(5_000)
-    except Exception:
-        pass
+    except (PlaywrightError, RuntimeError):
+        logger.exception("No se pudo esperar tras abrir la pestaña %s", clave)
     await page.wait_for_timeout(400)
 
 
@@ -422,7 +422,7 @@ async def parse_label_value_table(page: Page, datos: dict[str, object], tabla_se
         value = _norm(value)
         datos[label] = value
         
-async def parse_documentos(page: Page) -> Optional[list[dict[str, str]]]:
+async def parse_documentos(page: Page) -> list[dict[str, str]] | None:
     """
     Extrae la lista de documentos asociados a una licitación.
 
@@ -558,7 +558,7 @@ async def set_if_text(datos: dict[str, str], key: str, value: Locator) -> None:
         datos[key] = txt
     
     
-async def guardar_licitacion_json(resultados: List[dict]) -> None:
+async def guardar_licitacion_json(resultados: list[dict]) -> None:
     """
     Guarda las licitaciones en OUTPUT_JSON como una lista de objetos {datos, documentos} de manera incremental.
 
@@ -590,8 +590,9 @@ def cargar_resultados_existentes() -> list[dict]:
         with path.open("r", encoding="utf-8") as f:
             data = json.load(f)
         return data if isinstance(data, list) else []
-    except Exception:
+    except (OSError, json.JSONDecodeError):
         # Si el archivo quedó a medio escribir o corrupto, no tiramos la ejecución
+        logger.exception("No se pudieron cargar resultados existentes desde %s", path)
         return []
 
 def actualizar_por_expediente(
