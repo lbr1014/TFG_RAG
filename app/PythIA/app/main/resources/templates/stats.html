@@ -85,14 +85,15 @@
                   <h2 class="h5 mb-1">{{ t("stats.chart_monthly_queries") }}</h2>
                   <p class="text-secondary small mb-0">{{ t("stats.chart_monthly_queries_help") }}</p>
                 </div>
-                <div class="stats-view-toggle" role="group" aria-label="{{ t('stats.chart_monthly_toggle_label') }}">
+                <fieldset class="stats-view-toggle">
+                  <legend class="visually-hidden">{{ t('stats.chart_monthly_toggle_label') }}</legend>
                   <button type="button" class="stats-view-button is-active" data-monthly-view="bars">
                     {{ t("stats.chart_monthly_view_bars") }}
                   </button>
                   <button type="button" class="stats-view-button" data-monthly-view="calendar">
                     {{ t("stats.chart_monthly_view_calendar") }}
                   </button>
-                </div>
+                </fieldset>
               </div>
               <div id="chart-monthly-queries" class="stats-chart"></div>
             </div>
@@ -127,14 +128,15 @@
                   <h2 class="h5 mb-1">{{ t("stats.chart_hours") }}</h2>
                   <p class="text-secondary small mb-0">{{ t("stats.chart_hours_help") }}</p>
                 </div>
-                <div class="stats-view-toggle" role="group" aria-label="{{ t('stats.chart_hours_toggle_label') }}">
+                <fieldset class="stats-view-toggle">
+                  <legend class="visually-hidden">{{ t('stats.chart_hours_toggle_label') }}</legend>
                   <button type="button" class="stats-view-button is-active" data-hours-view="bars">
                     {{ t("stats.chart_hours_view_bars") }}
                   </button>
                   <button type="button" class="stats-view-button" data-hours-view="heatmap">
                     {{ t("stats.chart_hours_view_heatmap") }}
                   </button>
-                </div>
+                </fieldset>
               </div>
               <div id="chart-hours" class="stats-chart stats-chart-compact"></div>
             </div>
@@ -225,7 +227,7 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
   <script>
     window.PYTHIA_STATS = {

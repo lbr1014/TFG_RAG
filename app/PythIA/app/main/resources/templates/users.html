@@ -9,14 +9,10 @@
 
 {% block content %}
   <div class="py-4 py-md-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-      <h1 class="mb-0">{{ t("users.title") }}</h1>
-    </div>
-
     <div class="admin-users-layout">
       <aside class="admin-user-form-card app-surface">
         <h2 class="h4 mb-2">{{ t("admin.create_user_title") }}</h2>
-        <p class="text-secondary mb-4">{{ t("users.add") }}</p>
+        <hr class="admin-user-form-divider">
 
         <form method="POST" action="{{ url_for('admin.create_user') }}" novalidate>
           {{ form.hidden_tag() }}
@@ -64,25 +60,95 @@
       </aside>
 
       <section class="admin-users-table-panel">
+        <form method="GET" action="{{ url_for('admin.users') }}" class="admin-users-filter app-surface">
+          <div>
+            <label for="user-name-filter" class="form-label">{{ t("common.name") }}</label>
+            <input id="user-name-filter"
+                   type="search"
+                   name="name"
+                   value="{{ filters.name }}"
+                   class="form-control"
+                   placeholder="{{ t('users.filter_name_placeholder') }}">
+          </div>
+
+          <div>
+            <label for="user-country-filter" class="form-label">{{ t("common.country") }}</label>
+            <select id="user-country-filter" name="country" class="form-select">
+              <option value="">{{ t("common.all") }}</option>
+              {% for code, name in country_options %}
+                <option value="{{ code }}"{% if filters.country == code %} selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="user-role-filter" class="form-label">{{ t("users.role_filter") }}</label>
+            <select id="user-role-filter" name="role" class="form-select">
+              <option value="">{{ t("common.all") }}</option>
+              <option value="admin"{% if filters.role == "admin" %} selected{% endif %}>{{ t("nav.admin") }}</option>
+              <option value="user"{% if filters.role == "user" %} selected{% endif %}>{{ t("nav.user") }}</option>
+            </select>
+          </div>
+
+          <div class="admin-users-filter-actions">
+            <button type="submit" class="btn btn-primary">{{ t("common.filter") }}</button>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-light">{{ t("common.clear") }}</a>
+          </div>
+        </form>
+
+        <form id="bulk-users-form" method="POST" action="{{ url_for('admin.bulk_users') }}">
+          {{ post_form.hidden_tag() }}
+          <input type="hidden" name="filter_name" value="{{ filters.name }}">
+          <input type="hidden" name="filter_country" value="{{ filters.country }}">
+          <input type="hidden" name="filter_role" value="{{ filters.role }}">
+
+          <div class="admin-users-bulk-actions">
+            <button type="submit" name="bulk_action" value="toggle" class="btn btn-outline-light btn-sm admin-users-bulk-button" disabled>
+              {{ t("users.bulk_change_type") }}
+            </button>
+            <button type="button"
+                    class="btn btn-danger btn-sm admin-users-bulk-button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteConfirmModal"
+                    data-item-name="{{ t('users.selected_users') }}"
+                    data-form-id="bulk-users-form"
+                    data-submit-name="bulk_action"
+                    data-submit-value="delete"
+                    disabled>
+              {{ t("common.delete") }}
+            </button>
+          </div>
+
         <div class="table-card mt-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0 app-table">
               <thead>
               <tr>
-                <th class="d-none d-md-table-cell">{{ t("users.id") }}</th>
+                <th class="admin-users-select-cell">
+                  <input class="form-check-input" type="checkbox" id="select-all-users" aria-label="{{ t('users.select_all') }}">
+                </th>
                 <th>{{ t("common.name") }}</th>
                 <th class="d-none d-lg-table-cell">{{ t("common.email") }}</th>
                 <th class="d-none d-lg-table-cell">{{ t("common.country") }}</th>
                 <th class="d-none d-lg-table-cell">{{ t("users.admin_col") }}</th>
                 <th class="d-none d-lg-table-cell">{{ t("users.last_login_col") }}</th>
-                <th class="text-center" style="width: 172px;">{{ t("common.actions") }}</th>
               </tr>
               </thead>
 
               <tbody>
               {% for u in users %}
                 <tr>
-                  <td class="d-none d-md-table-cell">{{ u.id }}</td>
+                  <td class="admin-users-select-cell">
+                    {% if u.id == current_user.id %}
+                      <input class="form-check-input" type="checkbox" disabled aria-label="{{ t('users.you') }}">
+                    {% else %}
+                      <input class="form-check-input user-row-checkbox"
+                             type="checkbox"
+                             name="selected_user_ids"
+                             value="{{ u.id }}"
+                             aria-label="{{ t('users.select_user', name=u.nombre) }}">
+                    {% endif %}
+                  </td>
                   <td>
                     <div class="fw-semibold">{{ u.nombre }}</div>
                     <div class="doc-meta-inline d-lg-none mt-1">
@@ -115,47 +181,17 @@
                     {% endif %}
                   </td>
 
-                  <td class="text-center">
-                    {% if u.id == current_user.id %}
-                      <em>{{ t("users.you") }}</em>
-                    {% else %}
-                      <div class="table-actions">
-                        <form method="POST"
-                              action="{{ url_for('admin.change_type', user_id=u.id) }}"
-                              class="d-inline">
-                          {{ post_form.hidden_tag() }}
-                          <button type="submit" class="btn btn-outline-light btn-sm">
-                            {% if u.is_admin %}
-                              {{ t("users.remove_admin") }}
-                            {% else %}
-                              {{ t("users.make_admin") }}
-                            {% endif %}
-                          </button>
-                        </form>
-
-                        <form id="delete-user-form-{{ u.id }}"
-                              method="POST"
-                              action="{{ url_for('admin.delete_user', user_id=u.id) }}"
-                              class="d-inline">
-                          {{ post_form.hidden_tag() }}
-                          <button type="button"
-                                  class="btn btn-danger btn-sm"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#deleteConfirmModal"
-                                  data-item-name="{{ t('users.delete_item', name=u.nombre) }}"
-                                  data-form-id="delete-user-form-{{ u.id }}">
-                            {{ t("common.delete") }}
-                          </button>
-                        </form>
-                      </div>
-                    {% endif %}
-                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted-app">{{ t("users.empty_filtered") }}</td>
                 </tr>
               {% endfor %}
               </tbody>
             </table>
           </div>
         </div>
+        </form>
       </section>
     </div>
   </div>

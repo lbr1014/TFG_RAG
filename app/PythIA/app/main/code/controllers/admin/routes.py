@@ -9,6 +9,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from flask import (
@@ -27,7 +28,11 @@ from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.main.code.countries import normalize_country_code
+from app.main.code.countries import (
+    COUNTRY_BY_CODE,
+    country_choices,
+    normalize_country_code,
+)
 from app.main.code.decorators import admin_required
 from app.main.code.extensions import db
 from app.main.code.forms import AdminCreateUserForm, EmptyForm, PdfUploadForm
@@ -269,6 +274,47 @@ def _validate_post_action(*, json_response: bool = False) -> ResponseReturnValue
     abort(400)
 
 
+def _users_query_from_filters(filters: dict[str, str]) -> Any:
+    """
+    Construye la consulta de usuarios aplicando los filtros de la pagina.
+    
+    Args:
+        filters: Diccionario con los filtros activos (nombre, pais, rol).
+        
+    Returns:
+        La consulta SQLAlchemy con los filtros aplicados.
+    """
+    query = User.query
+    name = filters.get("name", "").strip()
+    country = filters.get("country", "").strip().upper()
+    role = filters.get("role", "").strip()
+
+    if name:
+        query = query.filter(User.nombre.ilike(f"%{name}%"))
+    if country in COUNTRY_BY_CODE:
+        query = query.filter(User.country_code == country)
+    if role == "admin":
+        query = query.filter(User.is_admin.is_(True))
+    elif role == "user":
+        query = query.filter(User.is_admin.is_(False))
+
+    return query.order_by(User.nombre.asc(), User.id.asc())
+
+
+def _current_user_filters() -> dict[str, str]:
+    """
+    Lee y normaliza los filtros activos de la lista de usuarios.
+    
+    Returns:
+        Un diccionario con los valores de los filtros de nombre, pais y rol.
+    """
+    return {
+        "name": (request.args.get("name") or "").strip(),
+        "country": (request.args.get("country") or "").strip().upper(),
+        "role": (request.args.get("role") or "").strip(),
+    }
+
+
 def _render_users_page(form=None) -> ResponseReturnValue:
     """
     Renderiza la gestion de usuarios con formulario de alta y listado.
@@ -279,8 +325,15 @@ def _render_users_page(form=None) -> ResponseReturnValue:
     Returns:
         La pagina HTML con el listado de usuarios y el formulario.
     """
-    users = User.query.order_by(User.id.asc()).all()
-    return render_template("users.html", users=users, form=form or AdminCreateUserForm())
+    filters = _current_user_filters()
+    users = _users_query_from_filters(filters).all()
+    return render_template(
+        "users.html",
+        users=users,
+        form=form or AdminCreateUserForm(),
+        filters=filters,
+        country_options=country_choices(get_locale()),
+    )
 
 
 @admin_bp.route("/users")
@@ -344,6 +397,46 @@ def delete_user(user_id) -> ResponseReturnValue:
     db.session.delete(user)
     db.session.commit()
     return redirect(url_for(USERS))
+
+
+@admin_bp.post("/users/bulk")
+@login_required
+@admin_required
+def bulk_users() -> ResponseReturnValue:
+    """
+    Ejecuta acciones sobre varios usuarios seleccionados.
+
+    Returns:
+        Una redireccion al listado de usuarios conservando los filtros activos.
+    """
+    _validate_post_action()
+    action = (request.form.get("bulk_action") or "").strip()
+    selected_ids = request.form.getlist("selected_user_ids", type=int)
+    redirect_args = {
+        "name": (request.form.get("filter_name") or "").strip(),
+        "country": (request.form.get("filter_country") or "").strip(),
+        "role": (request.form.get("filter_role") or "").strip(),
+    }
+    redirect_args = {key: value for key, value in redirect_args.items() if value}
+
+    if not selected_ids or action not in {"delete", "toggle"}:
+        return redirect(url_for(USERS, **redirect_args))
+    if current_user.id in selected_ids:
+        abort(400)
+
+    selected_users = User.query.filter(User.id.in_(selected_ids)).all()
+    if len(selected_users) != len(set(selected_ids)):
+        abort(404)
+
+    if action == "delete":
+        for user in selected_users:
+            db.session.delete(user)
+    else:
+        for user in selected_users:
+            user.change_is_admin()
+
+    db.session.commit()
+    return redirect(url_for(USERS, **redirect_args))
 
 
 @admin_bp.get("/users/add")

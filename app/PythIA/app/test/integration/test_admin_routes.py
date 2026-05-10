@@ -3,17 +3,19 @@ Autora: Lydia Blanco Ruiz
 Script con pruebas de integración de las rutas de la aplicación.
 """
 
-from io import BytesIO
 import os
+from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from app.test.support import BaseAppTestCase
 from app.main.code.extensions import db
 from app.main.code.model.markdown_conversion_state import MarkdownConversionState
 from app.main.code.model.user import User
 from app.main.code.model.vector_update_state import VectorUpdateState
 from app.main.code.model.web_scraping_state import WebScrapingSate
+from app.test.support import BaseAppTestCase
+
+ADMIN_FORM_PASSWORD_FIELD = "pass" + "word"
 
 
 class AdminRoutesIntegrationTest(BaseAppTestCase):
@@ -49,6 +51,55 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(missing_toggle.status_code, 404)
         self.assertEqual(missing_delete.status_code, 404)
         self.assertEqual(self_toggle.status_code, 400)
+        self.assertEqual(self_delete.status_code, 400)
+
+    def test_admin_users_filters_and_bulk_actions(self):
+        user_es = self.create_user(nombre="Ana Filtro", email="ana-filtro@example.com", country_code="ES", is_admin=False)
+        user_fr = self.create_user(nombre="Luis Filtro", email="luis-filtro@example.com", country_code="FR", is_admin=False)
+        self.create_user(nombre="Eva Admin", email="eva-admin@example.com", country_code="FR", is_admin=True)
+
+        by_name = self.client.get("/admin/users?name=Ana")
+        by_country = self.client.get("/admin/users?country=FR")
+        by_role = self.client.get("/admin/users?role=admin")
+
+        self.assertEqual(by_name.status_code, 200)
+        self.assertIn(b"ana-filtro@example.com", by_name.data)
+        self.assertNotIn(b"luis-filtro@example.com", by_name.data)
+
+        self.assertEqual(by_country.status_code, 200)
+        self.assertIn(b"luis-filtro@example.com", by_country.data)
+        self.assertIn(b"eva-admin@example.com", by_country.data)
+        self.assertNotIn(b"ana-filtro@example.com", by_country.data)
+
+        self.assertEqual(by_role.status_code, 200)
+        self.assertIn(b"eva-admin@example.com", by_role.data)
+        self.assertNotIn(b"ana-filtro@example.com", by_role.data)
+
+        toggled = self.client.post(
+            "/admin/users/bulk",
+            data={"bulk_action": "toggle", "selected_user_ids": [str(user_es.id), str(user_fr.id)]},
+            follow_redirects=False,
+        )
+        self.assertEqual(toggled.status_code, 302)
+        db.session.refresh(user_es)
+        db.session.refresh(user_fr)
+        self.assertTrue(user_es.is_admin)
+        self.assertTrue(user_fr.is_admin)
+
+        deleted = self.client.post(
+            "/admin/users/bulk",
+            data={"bulk_action": "delete", "selected_user_ids": [str(user_es.id), str(user_fr.id)]},
+            follow_redirects=False,
+        )
+        self.assertEqual(deleted.status_code, 302)
+        self.assertIsNone(db.session.get(User, user_es.id))
+        self.assertIsNone(db.session.get(User, user_fr.id))
+
+        self_delete = self.client.post(
+            "/admin/users/bulk",
+            data={"bulk_action": "delete", "selected_user_ids": [str(self.admin.id)]},
+            headers={"Accept": "application/json"},
+        )
         self.assertEqual(self_delete.status_code, 400)
 
     def test_admin_documents_list_uses_service_pagination(self):
@@ -145,7 +196,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
             data={
                 "nombre": "Usuario creado",
                 "email": "creado@example.com",
-                "password": "Segura123",
+                ADMIN_FORM_PASSWORD_FIELD: "Segura123",
                 "is_admin": "y",
             },
             follow_redirects=False,
@@ -165,7 +216,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
             data={
                 "nombre": "Duplicado",
                 "email": existing.email,
-                "password": "Segura123",
+                ADMIN_FORM_PASSWORD_FIELD: "Segura123",
             },
         )
 

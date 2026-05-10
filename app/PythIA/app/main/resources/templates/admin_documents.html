@@ -87,9 +87,7 @@
         </form>
 
         <div id="scraping-progress" data-finished="false" class="mt-4 d-none">
-          <div class="progress upload-progress" role="progressbar" aria-label="{{ t('docs.progress_aria') }}">
-            <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
-          </div>
+          <progress class="progress upload-progress progress-bar progress-bar-striped progress-bar-animated w-100" value="0" max="100" aria-label="{{ t('docs.progress_aria') }}"></progress>
           <div class="progress-text small text-muted-app mt-2 text-center" aria-live="polite">
             {{ t("docs.running_default") }}
           </div>

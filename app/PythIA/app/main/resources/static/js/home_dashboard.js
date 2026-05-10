@@ -15,6 +15,10 @@
   } else {
     window.addEventListener("resize", resizeHandler);
   }
+  if (document.body && "MutationObserver" in window) {
+    const themeObserver = new MutationObserver(debounce(renderCharts, 60));
+    themeObserver.observe(document.body, { attributes: true, attributeFilter: ["data-theme"] });
+  }
 
   function renderCharts() {
     drawCalendar();
@@ -39,10 +43,15 @@
       week.map((day, dayIndex) => ({ ...day, weekIndex, dayIndex }))
     );
     const maxCount = d3.max(days, (day) => Number(day.count) || 0) || 0;
+    const isLightTheme = document.body?.getAttribute("data-theme") === "light";
     const colorScale = d3
       .scaleLinear()
       .domain([0, Math.max(1, maxCount / 2), Math.max(1, maxCount)])
-      .range(["rgba(255,255,255,0.12)", "#85c1e9", "#21618c"]);
+      .range(
+        isLightTheme
+          ? ["#eef3fa", "#c9d6e8", "#53658f"]
+          : ["rgba(255,255,255,0.12)", "#85c1e9", "#21618c"]
+      );
 
     const svg = d3
       .select(container)
@@ -154,7 +163,7 @@
     chart
       .append("circle")
       .attr("r", innerRadius)
-      .attr("fill", "rgba(15, 23, 42, 0.84)");
+      .attr("fill", "transparent");
 
     chart
       .append("text")

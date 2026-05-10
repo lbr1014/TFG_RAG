@@ -86,6 +86,8 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
   if (!deleteModal || !deleteName || !confirmBtn) return
 
   let currentFormId = null
+  let submitName = null
+  let submitValue = null
 
   deleteModal.addEventListener("show.bs.modal", function (event) {
 
@@ -93,6 +95,8 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
 
       const itemName = button.getAttribute("data-item-name")
       const formId = button.getAttribute("data-form-id")
+      submitName = button.getAttribute("data-submit-name")
+      submitValue = button.getAttribute("data-submit-value")
 
       deleteName.textContent = itemName
       if (deleteQuestion) {
@@ -105,9 +109,46 @@ function initDeleteModal(modalId = "deleteConfirmModal") {
 
   confirmBtn.addEventListener("click", function () {
       if (currentFormId) {
-          document.getElementById(currentFormId).submit()
+          const form = document.getElementById(currentFormId)
+          if (form && submitName && submitValue) {
+              const input = document.createElement("input")
+              input.type = "hidden"
+              input.name = submitName
+              input.value = submitValue
+              form.appendChild(input)
+          }
+          form?.submit()
       }
   })
+}
+
+function initAdminUserSelection() {
+  const selectAll = document.getElementById("select-all-users")
+  const checkboxes = document.querySelectorAll(".user-row-checkbox")
+  const bulkButtons = document.querySelectorAll(".admin-users-bulk-button")
+  if (!selectAll || !checkboxes.length) return
+
+  function updateBulkState() {
+    const checkedCount = document.querySelectorAll(".user-row-checkbox:checked").length
+    selectAll.checked = checkedCount === checkboxes.length
+    selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length
+    bulkButtons.forEach((button) => {
+      button.disabled = checkedCount === 0
+    })
+  }
+
+  selectAll.addEventListener("change", function () {
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = selectAll.checked
+    })
+    updateBulkState()
+  })
+
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", updateBulkState)
+  })
+
+  updateBulkState()
 }
 
 function initThemeSelector() {
@@ -158,5 +199,7 @@ initLightEffect();
 initChunksModal();
 
 initDeleteModal();
+
+initAdminUserSelection();
 
 initThemeSelector();

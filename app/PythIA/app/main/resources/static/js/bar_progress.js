@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (bar) {
       bar.style.animation = "none";
       bar.style.width = "0%";
+      bar.value = 0;
     }
     toggleButtons(true);
   }
@@ -85,8 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function setUIProgress(percent, message) {
     if (!progressBox || !bar) return;
     showProgressBox();
+    const boundedPercent = Math.max(0, Math.min(100, percent));
     bar.style.animation = "none";
-    bar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+    bar.style.width = `${boundedPercent}%`;
+    bar.value = boundedPercent;
     if (text) text.textContent = message;
   }
 
@@ -107,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (bar) {
       bar.style.animation = "none";
       bar.style.width = "100%";
+      bar.value = 100;
     }
     if (text) text.textContent = message;
     setActiveJob(null, null);

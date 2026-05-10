@@ -5,12 +5,12 @@
   --app-primary-hover: #3b82f6;
   --app-primary-soft: rgba(96, 165, 250, 0.18);
   --app-primary-soft-strong: rgba(96, 165, 250, 0.28);
-  --app-bg-top: #0f172a;
-  --app-bg-mid: #13213b;
-  --app-bg-bottom: #0b1220;
-  --app-bg-accent: #172554;
-  --app-bg-glow: rgba(59, 130, 246, 0.22);
-  --app-bg-glow-soft: rgba(59, 130, 246, 0.04);
+  --app-bg-top: #17213a;
+  --app-bg-mid: #1b2d50;
+  --app-bg-bottom: #121b31;
+  --app-bg-accent: #20345f;
+  --app-bg-glow: rgba(83, 101, 143, 0.28);
+  --app-bg-glow-soft: rgba(83, 101, 143, 0.08);
   --app-bg-glow-stop-1: 24%;
   --app-bg-glow-stop-2: 52%;
   --app-text: #e5eefc;
@@ -90,85 +90,85 @@
 
 body[data-theme="light"] {
   color-scheme: light;
-  --app-primary: #2563eb;
-  --app-primary-rgb: 37, 99, 235;
-  --app-primary-hover: #1d4ed8;
-  --app-primary-soft: rgba(37, 99, 235, 0.12);
-  --app-primary-soft-strong: rgba(59, 130, 246, 0.18);
-  --app-bg-top: #ffffff;
-  --app-bg-mid: #eff6ff;
-  --app-bg-bottom: #dbeafe;
-  --app-bg-accent: #eff6ff;
-  --app-bg-glow: rgba(37, 99, 235, 0.12);
-  --app-bg-glow-soft: rgba(37, 99, 235, 0.03);
+  --app-primary: #53658f;
+  --app-primary-rgb: 83, 101, 143;
+  --app-primary-hover: #3f4e70;
+  --app-primary-soft: rgba(83, 101, 143, 0.11);
+  --app-primary-soft-strong: rgba(83, 101, 143, 0.19);
+  --app-bg-top: #fbfcff;
+  --app-bg-mid: #eef2f7;
+  --app-bg-bottom: #dbe2ec;
+  --app-bg-accent: #e6ebf3;
+  --app-bg-glow: rgba(83, 101, 143, 0.12);
+  --app-bg-glow-soft: rgba(83, 101, 143, 0.03);
   --app-bg-glow-stop-1: 18%;
   --app-bg-glow-stop-2: 42%;
-  --app-text: #0f172a;
-  --app-text-soft: rgba(15, 23, 42, 0.78);
-  --app-text-muted: rgba(15, 23, 42, 0.58);
-  --app-heading: #0f172a;
-  --app-surface-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(239, 246, 255, 0.96) 100%);
-  --app-surface-border: 1px solid rgba(37, 99, 235, 0.1);
-  --app-surface-shadow: 0 20px 52px rgba(37, 99, 235, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  --app-inset-bg: rgba(219, 234, 254, 0.7);
-  --app-inset-border: 1px solid rgba(59, 130, 246, 0.14);
-  --app-header-bg: rgba(219, 234, 254, 0.92);
-  --app-header-glow: linear-gradient(to bottom, rgba(96, 165, 250, 0.18), rgba(191, 219, 254, 0.08) 54%, transparent 100%);
-  --app-header-line: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
-  --app-dropdown-bg: #eff6ff;
-  --app-dropdown-text: #0f172a;
-  --app-dropdown-hover: rgba(37, 99, 235, 0.1);
-  --app-header-btn-light-bg: #2563eb;
-  --app-header-btn-light-text: #ffffff;
-  --app-header-btn-light-border: #2563eb;
-  --app-header-btn-light-hover-bg: #1d4ed8;
-  --app-header-btn-light-hover-text: #ffffff;
+  --app-text: #1a2233;
+  --app-text-soft: rgba(26, 34, 51, 0.78);
+  --app-text-muted: rgba(26, 34, 51, 0.58);
+  --app-heading: #111827;
+  --app-surface-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 247, 251, 0.96) 100%);
+  --app-surface-border: 1px solid rgba(83, 101, 143, 0.16);
+  --app-surface-shadow: 0 20px 52px rgba(83, 101, 143, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --app-inset-bg: rgba(229, 235, 244, 0.76);
+  --app-inset-border: 1px solid rgba(83, 101, 143, 0.16);
+  --app-header-bg: rgba(83, 101, 143, 0.96);
+  --app-header-glow: linear-gradient(to bottom, rgba(255, 255, 255, 0.12), rgba(83, 101, 143, 0.08) 54%, transparent 100%);
+  --app-header-line: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  --app-dropdown-bg: #f7f9fc;
+  --app-dropdown-text: #1a2233;
+  --app-dropdown-hover: rgba(83, 101, 143, 0.11);
+  --app-header-btn-light-bg: #ffffff;
+  --app-header-btn-light-text: #53658f;
+  --app-header-btn-light-border: rgba(255, 255, 255, 0.9);
+  --app-header-btn-light-hover-bg: #f0f3f8;
+  --app-header-btn-light-hover-text: #3f4e70;
   --app-header-btn-outline-bg: transparent;
-  --app-header-btn-outline-text: #2563eb;
-  --app-header-btn-outline-border: rgba(37, 99, 235, 0.28);
-  --app-header-btn-outline-hover-bg: #dbeafe;
-  --app-header-btn-outline-hover-text: #1d4ed8;
-  --app-header-btn-outline-hover-border: rgba(37, 99, 235, 0.4);
+  --app-header-btn-outline-text: #ffffff;
+  --app-header-btn-outline-border: rgba(255, 255, 255, 0.45);
+  --app-header-btn-outline-hover-bg: rgba(255, 255, 255, 0.12);
+  --app-header-btn-outline-hover-text: #ffffff;
+  --app-header-btn-outline-hover-border: rgba(255, 255, 255, 0.72);
   --app-input-bg: #ffffff;
-  --app-input-text: #0f172a;
-  --app-input-border: rgba(37, 99, 235, 0.16);
+  --app-input-text: #1a2233;
+  --app-input-border: rgba(83, 101, 143, 0.24);
   --app-input-hover-bg: #ffffff;
-  --app-input-focus-border: #3b82f6;
-  --app-input-focus-ring: 0 0 0 0.25rem rgba(59, 130, 246, 0.18);
-  --app-label-text: #0f172a;
-  --app-link: #2563eb;
-  --app-btn-primary-bg: #2563eb;
-  --app-btn-primary-border: #2563eb;
-  --app-btn-primary-hover-bg: #1d4ed8;
-  --app-btn-primary-hover-border: #1d4ed8;
-  --app-btn-primary-hover-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.18);
-  --app-btn-hero-primary-bg: #2563eb;
+  --app-input-focus-border: #53658f;
+  --app-input-focus-ring: 0 0 0 0.25rem rgba(83, 101, 143, 0.2);
+  --app-label-text: #1a2233;
+  --app-link: #53658f;
+  --app-btn-primary-bg: #53658f;
+  --app-btn-primary-border: #53658f;
+  --app-btn-primary-hover-bg: #3f4e70;
+  --app-btn-primary-hover-border: #3f4e70;
+  --app-btn-primary-hover-shadow: 0 0 0 0.25rem rgba(83, 101, 143, 0.18);
+  --app-btn-hero-primary-bg: #53658f;
   --app-btn-hero-primary-text: #ffffff;
-  --app-btn-hero-primary-hover-bg: #1d4ed8;
+  --app-btn-hero-primary-hover-bg: #3f4e70;
   --app-btn-hero-primary-hover-text: #ffffff;
   --app-btn-hero-secondary-bg: #ffffff;
-  --app-btn-hero-secondary-text: #2563eb;
-  --app-btn-hero-secondary-border: rgba(37, 99, 235, 0.2);
-  --app-btn-hero-secondary-hover-bg: #eff6ff;
+  --app-btn-hero-secondary-text: #53658f;
+  --app-btn-hero-secondary-border: rgba(83, 101, 143, 0.2);
+  --app-btn-hero-secondary-hover-bg: #f0f3f8;
   --app-btn-modelo-text: #ffffff;
-  --app-btn-modelo-bg: linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%);
-  --app-btn-modelo-border: rgba(37, 99, 235, 0.18);
-  --app-btn-modelo-shadow: 0 18px 34px rgba(37, 99, 235, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  --app-btn-modelo-shadow-active: 0 10px 18px rgba(29, 78, 216, 0.2), inset 0 2px 6px rgba(15, 23, 42, 0.14);
+  --app-btn-modelo-bg: linear-gradient(135deg, #3f4e70 0%, #53658f 55%, #7280a4 100%);
+  --app-btn-modelo-border: rgba(83, 101, 143, 0.22);
+  --app-btn-modelo-shadow: 0 18px 34px rgba(83, 101, 143, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  --app-btn-modelo-shadow-active: 0 10px 18px rgba(83, 101, 143, 0.2), inset 0 2px 6px rgba(15, 23, 42, 0.14);
   --app-btn-modelo-highlight: linear-gradient(to bottom, rgba(255, 255, 255, 0.18), transparent 44%);
-  --app-modal-panel-text: #0f172a;
-  --app-modal-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(239, 246, 255, 0.98) 100%);
-  --app-modal-panel-shadow: 0 24px 60px rgba(37, 99, 235, 0.16);
-  --app-modal-panel-glow: linear-gradient(to bottom, rgba(37, 99, 235, 0.08), transparent 74%);
-  --app-modal-title: #0f172a;
-  --app-modal-sub: rgba(15, 23, 42, 0.66);
-  --app-modal-question: rgba(15, 23, 42, 0.88);
-  --app-modal-file: #0f172a;
+  --app-modal-panel-text: #1a2233;
+  --app-modal-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(244, 247, 251, 0.98) 100%);
+  --app-modal-panel-shadow: 0 24px 60px rgba(83, 101, 143, 0.18);
+  --app-modal-panel-glow: linear-gradient(to bottom, rgba(83, 101, 143, 0.08), transparent 74%);
+  --app-modal-title: #111827;
+  --app-modal-sub: rgba(26, 34, 51, 0.66);
+  --app-modal-question: rgba(26, 34, 51, 0.88);
+  --app-modal-file: #111827;
   --app-modal-outline-bg: #ffffff;
-  --app-modal-outline-border: rgba(37, 99, 235, 0.18);
-  --app-modal-outline-hover-bg: #eff6ff;
-  --app-modal-outline-hover-border: rgba(37, 99, 235, 0.3);
-  --app-modal-outline-text: #0f172a;
+  --app-modal-outline-border: rgba(83, 101, 143, 0.22);
+  --app-modal-outline-hover-bg: #f0f3f8;
+  --app-modal-outline-hover-border: rgba(83, 101, 143, 0.34);
+  --app-modal-outline-text: #1a2233;
 }
 
 html,
@@ -444,7 +444,27 @@ body[data-theme="light"] .app-navbar-offcanvas .btn-close {
 }
 
 body[data-theme="light"] .app-navbar .navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(15, 23, 42, 0.92)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(248, 251, 255, 0.95)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+body[data-theme="light"] .main-header {
+  color: #ffffff;
+}
+
+body[data-theme="light"] .main-header .app-nav-link,
+body[data-theme="light"] .main-header .welcome {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+body[data-theme="light"] .main-header .app-nav-link:hover,
+body[data-theme="light"] .main-header .app-nav-link:focus,
+body[data-theme="light"] .main-header .app-nav-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+body[data-theme="light"] .main-header .last-login {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .offcanvas-section-label {
@@ -526,6 +546,22 @@ body[data-theme="light"] .app-navbar .navbar-toggler-icon {
   --bs-btn-disabled-color: var(--app-header-btn-outline-text);
   --bs-btn-disabled-border-color: var(--app-header-btn-outline-border);
   background: var(--app-header-btn-outline-bg);
+}
+
+body[data-theme="light"] .app-main-shell .btn-outline-light {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: #53658f;
+  --bs-btn-border-color: #53658f;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: #3f4e70;
+  --bs-btn-hover-border-color: #3f4e70;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: #3f4e70;
+  --bs-btn-active-border-color: #3f4e70;
+  --bs-btn-disabled-color: #ffffff;
+  --bs-btn-disabled-bg: #53658f;
+  --bs-btn-disabled-border-color: #53658f;
+  background: var(--bs-btn-bg);
 }
 
 .main-header .btn-light {
