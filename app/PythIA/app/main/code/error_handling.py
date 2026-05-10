@@ -14,7 +14,8 @@ from .inetrnacionalizacion.tarduccion import t
 
 
 class PasswordSecurity:
-    """Validador de contraseñas con reglas mínimas de seguridad.
+    """
+    Validador de contraseñas con reglas mínimas de seguridad.
 
     Attributes:
         require_upper: Indica si se exige al menos una mayúscula.
@@ -24,7 +25,8 @@ class PasswordSecurity:
     """
 
     def __init__(self, *, require_upper: bool = True, require_lower: bool = True, require_digit: bool = True, message: str | None = None):
-        """Configura las reglas de seguridad de la contraseña.
+        """
+        Configura las reglas de seguridad de la contraseña.
 
         Args:
             require_upper: Exige al menos una letra mayúscula.
@@ -38,7 +40,8 @@ class PasswordSecurity:
         self.message = message
 
     def __call__(self, form, field):
-        """Valida el valor del campo de contraseña.
+        """
+        Valida el valor del campo de contraseña.
 
         Args:
             form: Formulario WTForms al que pertenece el campo.
@@ -65,7 +68,8 @@ class PasswordSecurity:
 
 
 def collect_form_errors(form) -> list[dict[str, str]]:
-    """Recopila errores de formulario en una estructura uniforme.
+    """
+    Recopila errores de formulario en una estructura uniforme.
 
     Args:
         form: Formulario Flask-WTF o WTForms.
@@ -91,7 +95,8 @@ def collect_form_errors(form) -> list[dict[str, str]]:
 
 
 def wants_json_response() -> bool:
-    """Determina si la respuesta de error debe serializarse como JSON.
+    """
+    Determina si la respuesta de error debe serializarse como JSON.
 
     Returns:
         ``True`` si la petición espera una respuesta JSON.
@@ -104,7 +109,8 @@ def wants_json_response() -> bool:
 
 
 def render_error_response(status_code: int, title_key: str, message_key: str):
-    """Construye una respuesta de error HTML o JSON.
+    """
+    Construye una respuesta de error HTML o JSON.
 
     Args:
         status_code: Código HTTP que se debe devolver.
@@ -135,7 +141,8 @@ def render_error_response(status_code: int, title_key: str, message_key: str):
 
 
 def register_error_handlers(app) -> None:
-    """Registra manejadores de error y helpers de formularios en Flask.
+    """
+    Registra manejadores de error y helpers de formularios en Flask.
 
     Args:
         app: Aplicación Flask donde se registran los manejadores.

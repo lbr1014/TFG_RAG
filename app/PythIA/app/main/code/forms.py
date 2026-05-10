@@ -3,9 +3,27 @@ Autora: Lydia Blanco Ruiz
 Script con los formularios Flask-WTF usados por autenticación, administración, documentos y consultas RAG.
 """
 
+from typing import ClassVar
+
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, HiddenField, MultipleFileField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, ValidationError
+from wtforms import (
+    BooleanField,
+    HiddenField,
+    MultipleFileField,
+    PasswordField,
+    SelectField,
+    StringField,
+    SubmitField,
+    TextAreaField,
+)
+from wtforms.validators import (
+    DataRequired,
+    Email,
+    EqualTo,
+    Length,
+    Optional,
+    ValidationError,
+)
 
 from .countries import COUNTRY_CHOICES, DEFAULT_COUNTRY_CODE, country_choices
 from .error_handling import PasswordSecurity
@@ -57,9 +75,9 @@ class LocalizedFlaskForm(FlaskForm):
         i18n_validator_messages (dict): Mapa de mensajes de validadores por campo.
     """
 
-    i18n_fields = {}
-    i18n_placeholders = {}
-    i18n_validator_messages = {}
+    i18n_fields: ClassVar[dict[str, str]] = {}
+    i18n_placeholders: ClassVar[dict[str, str]] = {}
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {}
 
     def __init__(self, *args, **kwargs):
         """
@@ -117,7 +135,7 @@ class PdfUploadForm(LocalizedFlaskForm):
         submit (SubmitField): Botón de envío del formulario.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "files": "docs.upload_label",
         "submit": "docs.upload_button",
     }
@@ -155,12 +173,12 @@ class LoginForm(LocalizedFlaskForm):
     Incluye validaciones de formato de email y longitud mínima de contraseña.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "email": EMAIL,
         "password": PASSWORD,
         "submit": "auth.login_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "email": {
             "DataRequired": VALIDATION_REQUIRED,
             "Email": VALIDATION_EMAIL,
@@ -184,7 +202,7 @@ class SignupForm(LocalizedFlaskForm):
     de contraseña, confirmación de contraseña y unicidad de email.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "nombre": NAME,
         "email": EMAIL,
         "country_code": COUNTRY,
@@ -192,7 +210,7 @@ class SignupForm(LocalizedFlaskForm):
         "confirm_password": "auth.repeat_password",
         "submit": "auth.signup_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "nombre": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": MIN_LENGTH_NAME,
@@ -232,7 +250,7 @@ class AdminCreateUserForm(LocalizedFlaskForm):
     de seguridad aplicables.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "nombre": NAME,
         "email": EMAIL,
         "country_code": COUNTRY,
@@ -240,7 +258,7 @@ class AdminCreateUserForm(LocalizedFlaskForm):
         "is_admin": "admin.is_admin",
         "submit": "admin.create_user_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "nombre": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": MIN_LENGTH_NAME,
@@ -272,17 +290,17 @@ class EditUserForm(LocalizedFlaskForm):
     Los campos son opcionales para permitir actualizaciones parciales.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "nombre": NAME,
         "email": EMAIL,
         "country_code": COUNTRY,
         "new_password": "auth.new_password",
         "submit": "common.save_changes",
     }
-    i18n_placeholders = {
+    i18n_placeholders: ClassVar[dict[str, str]] = {
         "new_password": "user.leave_empty_password",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "nombre": {
             "Length": MIN_LENGTH_NAME,
         },
@@ -311,15 +329,15 @@ class RAGQueryForm(LocalizedFlaskForm):
     Generation, con límite de longitud para optimizar el procesamiento.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "model": "rag.model_label",
         "question": "rag.question_label",
         "submit": "rag.ask_button",
     }
-    i18n_placeholders = {
+    i18n_placeholders: ClassVar[dict[str, str]] = {
         "question": "rag.question_placeholder",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "question": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": "validation.max_length_2000",
@@ -336,7 +354,7 @@ class RAGDefaultQueryForm(LocalizedFlaskForm):
     Formulario guiado para construir consultas frecuentes al sistema RAG.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "expediente": "rag_default.expediente_label",
         "summary": "rag_default.summary_label",
         "doc_type": "rag_default.doc_type_label",
@@ -345,7 +363,7 @@ class RAGDefaultQueryForm(LocalizedFlaskForm):
         "question": "rag.question_label",
         "submit": "rag.ask_button",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "question": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": "validation.max_length_2000",
@@ -369,11 +387,11 @@ class ForgotPasswordForm(LocalizedFlaskForm):
     con un token de restablecimiento al usuario.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "email": EMAIL,
         "submit": "auth.forgot_password_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "email": {
             "DataRequired": VALIDATION_REQUIRED,
             "Email": VALIDATION_EMAIL,
@@ -392,12 +410,12 @@ class ResetPasswordForm(LocalizedFlaskForm):
     establecer una nueva contraseña segura tras verificar el token enviado por email.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "password": "auth.new_password",
         "confirm_password": "auth.repeat_password",
         "submit": "auth.reset_password_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "password": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": MIN_LENGTH_PASSWRD,

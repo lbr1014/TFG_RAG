@@ -36,27 +36,69 @@ COUNTRY_CHOICES = [(country["code"], country["name_es"]) for country in COUNTRIE
 
 
 def _country_name(country: dict, lang: str | None = None) -> str:
-    """Devuelve el nombre del pais segun el idioma activo."""
+    """
+    Devuelve el nombre del pais segun el idioma activo.
+    
+    Args:
+        country: El diccionario con la informacion del pais.
+        lang: El idioma para el nombre del pais (ej. "es", "en").
+        
+    Returns:
+        El nombre del pais en el idioma solicitado, o en español si no se encuentra.
+    """
     language = (lang or "es").lower()
     return country.get(f"name_{language}") or country["name_es"]
 
 
 def country_choices(lang: str | None = None) -> list[tuple[str, str]]:
-    """Devuelve las opciones de pais localizadas para formularios."""
+    """
+    Devuelve las opciones de pais localizadas para formularios.
+    
+    Args:
+        lang: El idioma para los nombres de los paises.
+        
+    Returns:        
+        Una lista de tuplas (codigo_pais, nombre_pais) con los nombres localizados.
+    """
     return [(country["code"], _country_name(country, lang)) for country in COUNTRIES]
 
 
 def normalize_country_code(code: str | None) -> str:
-    """Devuelve un codigo de pais valido o el pais por defecto."""
+    """
+    Devuelve un codigo de pais valido o el pais por defecto.
+    
+    Args:
+        code: El codigo de pais a normalizar.
+        
+    Returns:
+        El codigo de pais normalizado o el pais por defecto.
+    """
     code = (code or DEFAULT_COUNTRY_CODE).strip().upper()
     return code if code in COUNTRY_BY_CODE else DEFAULT_COUNTRY_CODE
 
 
 def country_name_for_code(code: str | None, lang: str | None = None) -> str:
-    """Devuelve el nombre visible del pais."""
+    """
+    Devuelve el nombre visible del pais.
+    
+    Args:
+        code: El codigo de pais.
+        lang: El idioma para el nombre del pais.
+        
+    Returns:
+        El nombre del pais en el idioma solicitado, o en español si no se encuentra.
+    """
     return _country_name(COUNTRY_BY_CODE[normalize_country_code(code)], lang)
 
 
 def country_numeric_for_code(code: str | None) -> str:
-    """Devuelve el identificador numerico ISO usado por world-atlas."""
+    """
+    Devuelve el identificador numerico ISO usado por world-atlas.
+    
+    Args:
+        code: El codigo de pais.
+        
+    Returns:
+        El identificador numerico ISO del pais.
+    """
     return COUNTRY_BY_CODE[normalize_country_code(code)]["numeric"]

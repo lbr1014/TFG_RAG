@@ -8,18 +8,40 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, flash, jsonify, redirect, request, url_for
 
-from app.main.code.services.documentos import DocumentosService
-from .error_handling import register_error_handlers, wants_json_response
-from app.main.code.model import Consulta, Documento, MarkdownConversionState, RAGQueryState, User, VectorUpdateState, WebScrapingSate
 from app.main.code.extensions import csrf, db, login_manager, mail, migrate
-from .inetrnacionalizacion.tarduccion import init_app as init_i18n, t
+from app.main.code.model import (
+    Consulta as Consulta,
+)
+from app.main.code.model import (
+    Documento as Documento,
+)
+from app.main.code.model import (
+    MarkdownConversionState as MarkdownConversionState,
+)
+from app.main.code.model import (
+    RAGQueryState as RAGQueryState,
+)
+from app.main.code.model import (
+    User,
+)
+from app.main.code.model import (
+    VectorUpdateState as VectorUpdateState,
+)
+from app.main.code.model import (
+    WebScrapingSate as WebScrapingSate,
+)
+from app.main.code.services.documentos import DocumentosService as DocumentosService
 
+from .error_handling import register_error_handlers, wants_json_response
+from .inetrnacionalizacion.tarduccion import init_app as init_i18n
+from .inetrnacionalizacion.tarduccion import t
 
 AUTH_LOGIN_REQUIRED = "auth.login_required"
 
 
 def _get_required_env(var_name: str) -> str:
-    """Devuelve una variable de entorno obligatoria.
+    """
+    Devuelve una variable de entorno obligatoria.
 
     Args:
         var_name: Nombre de la variable de entorno que debe existir.
@@ -34,13 +56,18 @@ def _get_required_env(var_name: str) -> str:
 
 
 def _flask_session_config_name() -> str:
-    """Devuelve el nombre de configuración que Flask usa para firmar sesiones."""
-    return "_".join(("SECRET", "KEY"))
+    """
+    Devuelve el nombre de configuración que Flask usa para firmar sesiones.
+    
+    Returns:
+        El nombre de la clave de configuración para la firma de sesiones en Flask.
+    """
+    return "SECRET_KEY"
 
 
 def _build_database_url_from_env() -> str | None:
-    """Obtiene la URL de base de datos desde el entorno.
-
+    """
+    Obtiene la URL de base de datos desde el entorno.
     Primero intenta usar ``DATABASE_URL``. Si no existe, construye la URL a
     partir de las variables ``POSTGRES_*``.
 
@@ -65,7 +92,8 @@ def _build_database_url_from_env() -> str | None:
 
 
 def create_app():
-    """Crea y configura la instancia principal de Flask.
+    """
+    Crea y configura la instancia principal de Flask.
 
     Returns:
         La aplicacion Flask ya configurada con extensiones, blueprints y
@@ -114,7 +142,8 @@ def create_app():
 
     @login_manager.unauthorized_handler
     def _unauthorized():
-        """Redirige al login cuando una vista requiere autenticación.
+        """
+        Redirige al login cuando una vista requiere autenticación.
 
         Returns:
             La respuesta de redireccion a la página de login.
@@ -138,8 +167,15 @@ def create_app():
         return User.get_by_id(int(user_id))
 
     @app.context_processor
-    def _inject_post_forms():
-        """Expone formularios CSRF para acciones POST simples en plantillas."""
+    def _inject_post_forms() -> dict:
+        """
+        Expone formularios CSRF para acciones POST simples en plantillas.
+        También expone una función para obtener el nombre de un país a partir de su código,
+        utilizando la configuración de localización actual.
+        
+        Returns:
+            Un diccionario con formularios y funciones para usar en las plantillas.
+        """
         from .countries import country_name_for_code
         from .forms import EmptyForm, LanguageForm
         from .inetrnacionalizacion.tarduccion import get_locale
@@ -152,9 +188,9 @@ def create_app():
         }
 
     # register blueprints
-    from .controllers.main import main_bp
-    from .controllers.auth import auth_bp
     from .controllers.admin import admin_bp
+    from .controllers.auth import auth_bp
+    from .controllers.main import main_bp
     from .controllers.rag import rag_bp
 
     app.register_blueprint(main_bp)
