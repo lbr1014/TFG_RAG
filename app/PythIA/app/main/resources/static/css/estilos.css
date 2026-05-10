@@ -271,7 +271,7 @@ a:focus {
 }
 
 .app-navbar {
-  min-height: 78px;
+  min-height: 92px;
   position: relative;
   justify-content: space-between;
   gap: 1rem;
@@ -398,11 +398,6 @@ body[data-theme="light"] .app-navbar-offcanvas .btn-close {
 
 .landing-header .app-brand {
   flex: 0 0 auto;
-}
-
-.landing-header .logo-header-letters {
-  width: clamp(170px, 24vw, 250px);
-  max-height: 76px;
 }
 
 .landing-header .guest-header-actions {
