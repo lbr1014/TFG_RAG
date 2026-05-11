@@ -23,6 +23,8 @@ class User(db.Model, UserMixin):
         id: Identificador interno del usuario.
         nombre: Nombre visible del usuario.
         email: Correo electrónico único usado para iniciar sesión.
+        country_code: Código ISO del país del usuario, usado para mostrar la bandera.
+        profile_image: Ruta relativa a la imagen de perfil del usuario, si existe.
         password_hash: Contraseña cifrada.
         last_login: Fecha y hora del último inicio de sesión.
         is_admin: Indica si el usuario tiene permisos de administración.
@@ -34,6 +36,7 @@ class User(db.Model, UserMixin):
     nombre = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     country_code = db.Column(db.String(2), nullable=False, default=DEFAULT_COUNTRY_CODE, server_default=DEFAULT_COUNTRY_CODE, index=True)
+    profile_image = db.Column(db.String(255), nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     last_login = db.Column(db.DateTime(timezone=True), nullable=True)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)

@@ -6,6 +6,7 @@ Script con los formularios Flask-WTF usados por autenticación, administración,
 from typing import ClassVar
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed, FileField
 from wtforms import (
     BooleanField,
     HiddenField,
@@ -294,6 +295,7 @@ class EditUserForm(LocalizedFlaskForm):
         "nombre": NAME,
         "email": EMAIL,
         "country_code": COUNTRY,
+        "profile_image": "user.profile_image",
         "new_password": "auth.new_password",
         "submit": "common.save_changes",
     }
@@ -317,6 +319,7 @@ class EditUserForm(LocalizedFlaskForm):
     nombre = StringField("Nombre", validators=[Optional(), Length(min=2, max=50)])
     email = StringField("Email", validators=[Optional(), Email(), Length(max=255)])
     country_code = SelectField("Pais", choices=COUNTRY_CHOICES, default=DEFAULT_COUNTRY_CODE, validators=[Optional()])
+    profile_image = FileField("Foto de perfil", validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Solo se admiten imagenes JPG, PNG o WEBP.")])
     new_password = PasswordField("Nueva contraseña", validators=[Optional(), Length(min=8), PasswordSecurity()])
     submit = SubmitField("Guardar cambios")
 

@@ -1,17 +1,28 @@
-"""
+﻿"""
 Autora: Lydia Blanco Ruiz
-Script para las rutas principales, historial de consultas, perfil de usuario y estadísticas de uso.
+Script para las rutas principales, historial de consultas, perfil de usuario y estadÃ­sticas de uso.
 """
 
 import calendar
+import uuid
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from math import ceil
+from pathlib import Path
 from statistics import mean, median, variance
 
-from flask import Response, abort, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
+from flask import (
+    Response,
+    abort,
+    current_app,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from flask_login import current_user, login_required, logout_user
 from sqlalchemy import func
+from werkzeug.utils import secure_filename
 
 from app.main.code.countries import (
     country_name_for_code,
@@ -33,19 +44,21 @@ HISTORY_SORT_DATE_DESC = "date_desc"
 HISTORY_SORT_DATE_ASC = "date_asc"
 HISTORY_SORT_TIME_DESC = "time_desc"
 HISTORY_SORT_TIME_ASC = "time_asc"
+PROFILE_UPLOAD_SUBDIR = Path("uploads") / "profiles"
+PROFILE_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
 
 def paginate_consultas(base_query, per_page=10) -> tuple:
     """
-    Aplica paginación estándar a una query de consultas.
+    Aplica paginaciÃ³n estÃ¡ndar a una query de consultas.
 
-    Extrae del request.args el número de página y aplica filtrado por usuario
+    Extrae del request.args el nÃºmero de pÃ¡gina y aplica filtrado por usuario
     si el usuario actual no es administrador. Devuelve los elementos paginados
-    con información de páginas.
+    con informaciÃ³n de pÃ¡ginas.
 
     Args:
         base_query (Query): Consulta SQLAlchemy base a paginar.
-        per_page (int, optional): Elementos por página. Defaults to 10.
+        per_page (int, optional): Elementos por pÃ¡gina. Defaults to 10.
 
     Returns:
         tuple: Tupla con (items, page, total_pages, total_consultas).
@@ -225,13 +238,13 @@ def build_model_by_consulta(consultas: list) -> dict[int, str]:
 @main_bp.route("/")
 def inicio() -> str:
     """
-    Renderiza la página de inicio de la aplicación PythIA.
+    Renderiza la pÃ¡gina de inicio de la aplicaciÃ³n PythIA.
 
-    Muestra la página de inicio con el título y autor de la aplicación,
-    sin requerir autenticación.
+    Muestra la pÃ¡gina de inicio con el tÃ­tulo y autor de la aplicaciÃ³n,
+    sin requerir autenticaciÃ³n.
 
     Returns:
-        str: HTML renderizado de la página de inicio.
+        str: HTML renderizado de la pÃ¡gina de inicio.
     """
     return render_template(
         "index.html",
@@ -243,13 +256,13 @@ def inicio() -> str:
 @login_required
 def pag_principal() -> str:
     """
-    Renderiza la página principal del usuario autenticado.
+    Renderiza la pÃ¡gina principal del usuario autenticado.
 
-    Obtiene las consultas más recientes del usuario (o todas si es admin),
-    las pagina y construye metadatos asociados para mostrar en la página.
+    Obtiene las consultas mÃ¡s recientes del usuario (o todas si es admin),
+    las pagina y construye metadatos asociados para mostrar en la pÃ¡gina.
 
     Returns:
-        str: HTML renderizado de la página principal con consultas y metadata.
+        str: HTML renderizado de la pÃ¡gina principal con consultas y metadata.
     """
     consultas_usuario = (
         Consulta.query
@@ -268,16 +281,16 @@ def pag_principal() -> str:
 
 def build_activity_streak(user: User, consultas: list) -> int:
     """
-    Calcula la racha de días consecutivos con actividad reciente.
-    Usa días con consultas y el último inicio de sesión del usuario. Si el usuario
-    se ha conectado hoy, la racha puede continuar aunque todavía no haya consultado.
+    Calcula la racha de dÃ­as consecutivos con actividad reciente.
+    Usa dÃ­as con consultas y el Ãºltimo inicio de sesiÃ³n del usuario. Si el usuario
+    se ha conectado hoy, la racha puede continuar aunque todavÃ­a no haya consultado.
     
     Args:
         user (User): Usuario para el que se calcula la racha.
         consultas (list): Lista de consultas del usuario, ordenadas por fecha ascendente.
         
     Returns:
-        int: Número de días consecutivos con actividad, contando desde hoy hacia atrás.
+        int: NÃºmero de dÃ­as consecutivos con actividad, contando desde hoy hacia atrÃ¡s.
     """
     active_days = {_safe_created_at(consulta).date() for consulta in consultas}
 
@@ -301,16 +314,16 @@ def build_activity_streak(user: User, consultas: list) -> int:
 
 def build_home_dashboard_metrics(user: User, consultas: list) -> dict:
     """
-    Construye las métricas resumidas que se muestran en la página principal.
+    Construye las mÃ©tricas resumidas que se muestran en la pÃ¡gina principal.
     
     Args:
-        user (User): Usuario para el que se construyen las métricas.
+        user (User): Usuario para el que se construyen las mÃ©tricas.
         consultas (list): Lista de consultas del usuario.
         
     Returns:        
-        dict: Diccionario con métricas como racha de actividad, total de consultas,
-            modelos usados, días activos, tiempo promedio de respuesta, fecha de última consulta,
-            datos para el gráfico de anillo de consultas y calendario mensual.
+        dict: Diccionario con mÃ©tricas como racha de actividad, total de consultas,
+            modelos usados, dÃ­as activos, tiempo promedio de respuesta, fecha de Ãºltima consulta,
+            datos para el grÃ¡fico de anillo de consultas y calendario mensual.
     """
     distinct_models = {
         (job.model_name or "").strip()
@@ -348,8 +361,8 @@ def build_home_month_calendar(consultas: list) -> dict:
         consultas (list): Lista de consultas del usuario, ordenadas por fecha ascendente.
     
     Returns:
-        dict: Diccionario con la estructura del calendario mensual, incluyendo el label del mes, los días de la semana y 
-            las semanas con sus días y conteos de consultas.
+        dict: Diccionario con la estructura del calendario mensual, incluyendo el label del mes, los dÃ­as de la semana y 
+            las semanas con sus dÃ­as y conteos de consultas.
     """
     today = datetime.now(timezone.utc).date()
     month_start = today.replace(day=1)
@@ -415,14 +428,14 @@ def build_home_month_calendar(consultas: list) -> dict:
 
 def build_home_query_donut(user: User, user_total_queries: int) -> dict:
     """
-    Construye el reparto del anillo de consultas de la página principal.
+    Construye el reparto del anillo de consultas de la pÃ¡gina principal.
     
     Args:
         user (User): Usuario para el que se construye el anillo.
-        user_total_queries (int): Número total de consultas del usuario.
+        user_total_queries (int): NÃºmero total de consultas del usuario.
         
     Returns:
-        dict: Diccionario con el título del anillo, el total de consultas, el total central (consultas del usuario) y los segmentos para el gráfico.
+        dict: Diccionario con el tÃ­tulo del anillo, el total de consultas, el total central (consultas del usuario) y los segmentos para el grÃ¡fico.
     """
     colors = ["#58d68d", "#5dade2", "#f4d03f", "#ec7063", "#af7ac5", "#48c9b0", "#eb984e", "#7fb3d5"]
 
@@ -490,51 +503,192 @@ def display_name_for_donut(user: User) -> str:
     """
     return getattr(user, "nombre", None) or getattr(user, "email", None) or f"Usuario {user.id}"
 
+
+def _profile_initial(user: User) -> str:
+    """
+    Devuelve la inicial visible para el avatar por defecto.
+    
+    Args:
+        user (User): Usuario para el que se genera la inicial.
+    
+    Returns:
+        str: Inicial para mostrar en el avatar, preferentemente la primera letra del nombre, luego del email, o "U" como fallback.
+    """
+    source = (getattr(user, "nombre", "") or getattr(user, "email", "") or "U").strip()
+    return source[:1].upper() if source else "U"
+
+
+def _profile_image_url(user: User) -> str | None:
+    """
+    Construye la URL estatica de la foto de perfil, si existe.
+    
+    Args:
+        user (User): Usuario para el que se genera la URL de la foto de perfil.
+        
+    Returns:
+        str | None: URL de la foto de perfil para usar en el src del img, o None si no hay foto de perfil.
+    """
+    if not getattr(user, "profile_image", None):
+        return None
+    return url_for("static", filename=user.profile_image.replace("\\", "/"))
+
+
+def _delete_profile_image(filename: str | None) -> None:
+    """
+    Elimina una foto de perfil guardada dentro de la carpeta estatica.
+    
+    Args:
+        filename (str | None): Ruta relativa a la foto de perfil a eliminar.
+    """
+    if not filename:
+        return
+
+    static_root = Path(current_app.static_folder).resolve()
+    target = (static_root / filename).resolve()
+    upload_root = (static_root / PROFILE_UPLOAD_SUBDIR).resolve()
+
+    if upload_root in target.parents and target.exists():
+        target.unlink()
+
+
+def _save_profile_image(file_storage) -> str | None:
+    """
+    Guarda la imagen de perfil subida y devuelve su ruta relativa a static.
+    
+    Args:
+        file_storage: Archivo subido desde el formulario, esperado un FileStorage de Werkzeug.
+        
+    Returns:
+        str | None: Ruta relativa a la imagen guardada para almacenar en el perfil, o None si no se guardÃ³ ninguna imagen.
+    """
+    if not file_storage or not file_storage.filename:
+        return None
+
+    filename = secure_filename(file_storage.filename)
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if extension not in PROFILE_IMAGE_EXTENSIONS:
+        return None
+
+    upload_dir = Path(current_app.static_folder) / PROFILE_UPLOAD_SUBDIR
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    saved_name = f"user-{current_user.id}-{uuid.uuid4().hex}.{extension}"
+    destination = upload_dir / saved_name
+    file_storage.save(destination)
+    return str(PROFILE_UPLOAD_SUBDIR / saved_name).replace("\\", "/")
+
+
+def _render_edit_user(form: EditUserForm) -> str:
+    """
+    Renderiza la pagina de perfil con el avatar calculado.
+    """
+    return render_template(
+        "edit_user.html",
+        form=form,
+        user=current_user,
+        profile_initial=_profile_initial(current_user),
+        profile_image_url=_profile_image_url(current_user),
+    )
+
+
+def _update_profile_name(form: EditUserForm) -> None:
+    """
+    Actualiza el nombre del usuario si el formulario lo incluye.
+    """
+    if form.nombre.data:
+        current_user.nombre = form.nombre.data.strip()
+
+
+def _update_profile_email(form: EditUserForm) -> bool:
+    """
+    Actualiza el email y devuelve False si ya existe en otro usuario.
+    """
+    if not form.email.data:
+        return True
+
+    new_email = form.email.data.strip().lower()
+    if new_email != current_user.email and User.get_by_email(new_email):
+        form.email.errors.append(t("auth.email_exists"))
+        return False
+
+    current_user.email = new_email
+    return True
+
+
+def _update_profile_image(form: EditUserForm) -> None:
+    """
+    Guarda la nueva foto de perfil si el usuario ha subido una.
+    """
+    uploaded_profile_image = _save_profile_image(form.profile_image.data)
+    if not uploaded_profile_image:
+        return
+
+    _delete_profile_image(current_user.profile_image)
+    current_user.profile_image = uploaded_profile_image
+
+
+def _update_profile_password(form: EditUserForm) -> None:
+    """
+    Actualiza la contrasena solo cuando se ha indicado una nueva.
+    """
+    if form.new_password.data:
+        current_user.set_password(form.new_password.data)
+
+
+def _apply_edit_user_form(form: EditUserForm) -> bool:
+    """
+    Aplica los cambios del formulario al usuario actual.
+    """
+    _update_profile_name(form)
+    if not _update_profile_email(form):
+        return False
+
+    _update_profile_image(form)
+    current_user.country_code = normalize_country_code(form.country_code.data)
+    _update_profile_password(form)
+    db.session.commit()
+    return True
+
 @main_bp.get("/edit_user")
 @main_bp.post("/edit_user")
 @login_required
 def edit_user() -> str:
     """
-    Gestiona la edición del perfil de usuario.
+    Gestiona la ediciÃ³n del perfil de usuario.
 
-    En GET: presenta el formulario de edición con los datos actuales del usuario.
-    En POST: valida y guarda cambios en nombre, email y contraseña.
+    En GET: presenta el formulario de ediciÃ³n con los datos actuales del usuario.
+    En POST: valida y guarda cambios en nombre, email y contraseÃ±a.
     Valida unicidad del email antes de actualizar.
 
     Returns:
-        str: HTML renderizado del formulario de edición de usuario.
+        str: HTML renderizado del formulario de ediciÃ³n de usuario.
     """
     form = EditUserForm(obj=current_user) if request.method == "GET" else EditUserForm()
 
-    
-    if form.validate_on_submit():
-        
-        # === NOMBRE ===
-        if form.nombre.data:
-            current_user.nombre = form.nombre.data.strip()
-            
-        # === EMAIL ===
-        if form.email.data:
-            new_email = form.email.data.strip().lower()
-        
-            if new_email != current_user.email:
-                exists = User.get_by_email(new_email)
-                            
-                if exists:
-                    form.email.errors.append(t("auth.email_exists"))
-                    return render_template("edit_user.html", form=form, user=current_user)
+    if form.validate_on_submit() and not _apply_edit_user_form(form):
+        return _render_edit_user(form)
 
-            current_user.email = new_email
+    return _render_edit_user(form)
 
-        current_user.country_code = normalize_country_code(form.country_code.data)
-        
-        # === CONTRASEÑA ===
-        if form.new_password.data:
-            current_user.set_password(form.new_password.data)
+@main_bp.post("/edit_user/delete")
+@login_required
+def delete_own_account() -> Response:
+    """
+    Elimina la cuenta del usuario autenticado y cierra su sesion.
+    """
+    form = EmptyForm()
+    if not form.validate_on_submit():
+        abort(400)
 
-        db.session.commit()
-                 
-    return render_template("edit_user.html", form=form, user=current_user)
+    user = User.get_by_id(current_user.id)
+    if not user:
+        abort(404)
+
+    profile_image = user.profile_image
+    logout_user()
+    db.session.delete(user)
+    db.session.commit()
+    _delete_profile_image(profile_image)
+    return redirect(url_for("auth.login"))
 
 
 @main_bp.get("/history")
@@ -579,16 +733,16 @@ def historial() -> str:
 
 def _month_sequence(total_months: int = 12) -> list:
     """
-    Genera una secuencia de tuplas (año, mes) hacia el pasado.
+    Genera una secuencia de tuplas (aÃ±o, mes) hacia el pasado.
 
-    Comienza desde el primer día del mes actual y retrocede el número
+    Comienza desde el primer dÃ­a del mes actual y retrocede el nÃºmero
     de meses especificado, retornando la secuencia en orden ascendente.
 
     Args:
-        total_months (int, optional): Número de meses a generar. Defaults to 12.
+        total_months (int, optional): NÃºmero de meses a generar. Defaults to 12.
 
     Returns:
-        list: Lista de tuplas (año, mes) ordenadas ascendentemente.
+        list: Lista de tuplas (aÃ±o, mes) ordenadas ascendentemente.
     """
     today = datetime.now(timezone.utc).date().replace(day=1)
     months = []
@@ -608,16 +762,16 @@ def _month_sequence(total_months: int = 12) -> list:
 
 def _safe_created_at(consulta: Consulta) -> datetime:
     """
-    Obtiene la fecha de creación de una consulta sin información de zona horaria.
+    Obtiene la fecha de creaciÃ³n de una consulta sin informaciÃ³n de zona horaria.
 
-    Si la consulta no tiene fecha de creación, devuelve la fecha/hora actual.
-    Elimina la información de zona horaria (tzinfo) si existe.
+    Si la consulta no tiene fecha de creaciÃ³n, devuelve la fecha/hora actual.
+    Elimina la informaciÃ³n de zona horaria (tzinfo) si existe.
 
     Args:
         consulta (Consulta): Entidad de consulta a procesar.
 
     Returns:
-        datetime: Fecha y hora sin información de zona horaria.
+        datetime: Fecha y hora sin informaciÃ³n de zona horaria.
     """
     created_at = consulta.created_at or datetime.now(timezone.utc)
     return created_at.replace(tzinfo=None) if created_at.tzinfo else created_at
@@ -635,17 +789,17 @@ def _process_consulta_stats(
     user_counter: defaultdict,
 ) -> None:
     """
-    Procesa y actualiza las estadísticas de una consulta individual.
+    Procesa y actualiza las estadÃ­sticas de una consulta individual.
 
-    Extrae información de fecha/hora de la consulta y la distribuye en los
-    contadores por mes, día, día de semana, hora y usuario.
+    Extrae informaciÃ³n de fecha/hora de la consulta y la distribuye en los
+    contadores por mes, dÃ­a, dÃ­a de semana, hora y usuario.
 
     Args:
         consulta (Consulta): Consulta a procesar.
         monthly_counts (dict): Contador de consultas por mes.
         monthly_times (defaultdict): Tiempos de respuesta agrupados por mes.
-        daily_counts (dict): Contador de consultas por día.
-        weekday_counts (dict): Contador de consultas por día de semana.
+        daily_counts (dict): Contador de consultas por dÃ­a.
+        weekday_counts (dict): Contador de consultas por dÃ­a de semana.
         hourly_counts (dict): Contador de consultas por hora.
         user_counter (defaultdict): Contador de consultas por usuario.
 
@@ -674,15 +828,15 @@ def _process_consulta_stats(
 
 def build_usage_stats_payload(consultas: list[Consulta], *, include_top_users: bool = False) -> dict:
     """
-    Construye un payload completo de estadísticas de uso de consultas.
+    Construye un payload completo de estadÃ­sticas de uso de consultas.
 
-    Procesa una lista de consultas para generar estadísticas agregadas:
-    resúmenes, consultas mensuales, tiempos promedio, histogramas diarios,
-    semanales y horarios. Opcionalmente incluye los 8 usuarios más activos.
+    Procesa una lista de consultas para generar estadÃ­sticas agregadas:
+    resÃºmenes, consultas mensuales, tiempos promedio, histogramas diarios,
+    semanales y horarios. Opcionalmente incluye los 8 usuarios mÃ¡s activos.
 
     Args:
         consultas (list[Consulta]): Lista de entidades Consulta a procesar.
-        include_top_users (bool, optional): Incluir los 8 usuarios más activos. Defaults to False.
+        include_top_users (bool, optional): Incluir los 8 usuarios mÃ¡s activos. Defaults to False.
 
     Returns:
         dict: Diccionario con keys: summary, monthly_queries, monthly_avg_time,
@@ -804,15 +958,15 @@ def build_usage_stats_payload(consultas: list[Consulta], *, include_top_users: b
 
 def build_user_comparison_payload(user_counter: dict[str, int]) -> dict:
     """
-    Construye la payload de comparación de usuarios con estadísticas de uso.
-    Calcula la media, mediana y varianza del número de consultas por usuario
-    y ordena a los usuarios por número de consultas para mostrar en la comparación.
+    Construye la payload de comparaciÃ³n de usuarios con estadÃ­sticas de uso.
+    Calcula la media, mediana y varianza del nÃºmero de consultas por usuario
+    y ordena a los usuarios por nÃºmero de consultas para mostrar en la comparaciÃ³n.
     
     Args:
-        user_counter (dict): Diccionario con el número de consultas por usuario.
+        user_counter (dict): Diccionario con el nÃºmero de consultas por usuario.
     
     Returns:
-        dict: Payload con la comparación de usuarios y estadísticas agregadas.
+        dict: Payload con la comparaciÃ³n de usuarios y estadÃ­sticas agregadas.
     """
     counts = [count for count in user_counter.values() if count is not None]
     if not counts:
@@ -844,10 +998,10 @@ def build_selected_user_comparison_payload(consultas: list[Consulta], users: lis
     Args:
         consultas (list[Consulta]): Lista de consultas a analizar.
         users (list[User]): Lista de usuarios registrados.
-        selected_user_ids (list[int], optional): Lista de IDs de usuarios seleccionados para comparación. Si no se proporciona, se ordenan por número de consultas y se seleccionan todos.
+        selected_user_ids (list[int], optional): Lista de IDs de usuarios seleccionados para comparaciÃ³n. Si no se proporciona, se ordenan por nÃºmero de consultas y se seleccionan todos.
     
     Returns:
-        dict: Payload con comparación de usuarios seleccionados y sus estadísticas de uso.
+        dict: Payload con comparaciÃ³n de usuarios seleccionados y sus estadÃ­sticas de uso.
     """
     users_by_id = {int(user.id): user for user in users}
     counts_by_user_id = defaultdict(int)
@@ -920,14 +1074,14 @@ def build_user_country_map_payload(users: list[User], *, include_user_names: boo
 @login_required
 def stats_page() -> str:
     """
-    Renderiza la página de estadísticas de uso.
+    Renderiza la pÃ¡gina de estadÃ­sticas de uso.
 
-    Si el usuario es administrador, permite seleccionar un usuario específico
-    o ver estadísticas globales. Usuarios regulares ven sólo sus estadísticas.
-    Genera un payload completo de estadísticas y lo pasa al template.
+    Si el usuario es administrador, permite seleccionar un usuario especÃ­fico
+    o ver estadÃ­sticas globales. Usuarios regulares ven sÃ³lo sus estadÃ­sticas.
+    Genera un payload completo de estadÃ­sticas y lo pasa al template.
 
     Returns:
-        str: HTML renderizado de la página de estadísticas.
+        str: HTML renderizado de la pÃ¡gina de estadÃ­sticas.
     """
     selected_user = current_user
     selected_user_id = None
@@ -998,13 +1152,13 @@ def best_pid_for_consulta(consulta: Consulta) -> str:
 
     Intenta primero obtener el ID del fragmento con mejor ranking de la lista
     de fragmentos. Si no hay fragmentos, busca el chunk con mejor ranking
-    entre los consultaChunks. Devuelve un string vacío si no hay ninguno.
+    entre los consultaChunks. Devuelve un string vacÃ­o si no hay ninguno.
 
     Args:
         consulta (Consulta): Consulta a procesar.
 
     Returns:
-        str: ID de punto Qdrant del mejor fragmento, o string vacío.
+        str: ID de punto Qdrant del mejor fragmento, o string vacÃ­o.
     """
     fragmentos = sorted(consulta.fragmentos or [], key=lambda item: item.get("ranking", 0))
     if fragmentos:
@@ -1025,7 +1179,7 @@ def build_meta_by_consulta(consultas: list[Consulta]) -> dict:
 
     Para cada consulta, extrae el fragmento con mejor ranking y obtiene su
     qdrant_point_id, metadata y contenido. Para consultas sin fragmentos,
-    recupera la información desde Qdrant usando el legacy pid.
+    recupera la informaciÃ³n desde Qdrant usando el legacy pid.
 
     Args:
         consultas (list): Lista de entidades Consulta a procesar.
@@ -1066,7 +1220,7 @@ def build_meta_by_consulta(consultas: list[Consulta]) -> dict:
 @login_required
 def delete_consulta(consulta_id: int) -> Response:
     """
-    Elimina una consulta específica del usuario.
+    Elimina una consulta especÃ­fica del usuario.
 
     Valida el formulario CSRF y verifica que el usuario actual sea propietario
     de la consulta o administrador. Elimina la consulta de la base de datos y
@@ -1076,7 +1230,7 @@ def delete_consulta(consulta_id: int) -> Response:
         consulta_id (int): ID de la consulta a eliminar.
 
     Returns:
-        Response: Redirección al referrer o al historial.
+        Response: RedirecciÃ³n al referrer o al historial.
     """
     form = EmptyForm()
     if not form.validate_on_submit():

@@ -3,6 +3,7 @@ Autora: Lydia Blanco Ruiz
 Script con pruebas de integración de las rutas de la aplicación.
 """
 
+from io import BytesIO
 from unittest.mock import MagicMock, patch
 
 from app.test.support import BaseAppTestCase
@@ -60,6 +61,36 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 200)
         db.session.refresh(user)
         self.assertEqual(user.email, "edit-duplicate@example.com")
+
+    def test_edit_user_uploads_profile_image(self):
+        user = self.create_user(email="edit-image@example.com")
+        self.login(user.email)
+
+        response = self.client.post(
+            "/edit_user",
+            data={
+                "nombre": "Con Foto",
+                "email": user.email,
+                "country_code": "ES",
+                "new_password": "",
+                "profile_image": (BytesIO(b"fake image"), "avatar.png"),
+            },
+            content_type="multipart/form-data",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(user)
+        self.assertTrue(user.profile_image.startswith("uploads/profiles/user-"))
+        self.assertTrue(user.profile_image.endswith(".png"))
+
+    def test_user_can_delete_own_account(self):
+        user = self.create_user(email="delete-account@example.com")
+        self.login(user.email)
+
+        response = self.client.post("/edit_user/delete", follow_redirects=False)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIsNone(db.session.get(type(user), user.id))
 
     @patch("app.main.code.controllers.main.routes.qdrant_get_payloads")
     def test_history_uses_saved_fragmentos_without_calling_qdrant(self, mock_qdrant):

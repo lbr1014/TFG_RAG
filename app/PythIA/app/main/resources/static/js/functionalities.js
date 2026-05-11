@@ -253,6 +253,29 @@ function initBootstrapTooltips() {
   })
 }
 
+function initProfileImagePreview() {
+  const input = document.querySelector("[data-preview-target]")
+  if (!input) return
+
+  const preview = document.getElementById(input.dataset.previewTarget)
+  if (!preview) return
+
+  input.addEventListener("change", function () {
+    const file = input.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.addEventListener("load", function () {
+      preview.innerHTML = ""
+      const image = document.createElement("img")
+      image.src = reader.result
+      image.alt = input.labels?.[0]?.textContent || "Perfil"
+      preview.appendChild(image)
+    })
+    reader.readAsDataURL(file)
+  })
+}
+
 initLightEffect();
 
 initChunksModal();
@@ -266,3 +289,5 @@ initAdminUserSelection();
 initThemeSelector();
 
 initBootstrapTooltips();
+
+initProfileImagePreview();
