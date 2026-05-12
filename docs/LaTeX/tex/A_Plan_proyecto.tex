@@ -755,4 +755,68 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
 
 \subsection{Viabilidad legal}\label{viabilidad_legal}
 
+El desarrollo del proyecto PythIA tiene una viabilidad legal favorable, ya que las tecnologías empleadas, la recopilación de datos y el despliegue del sistema pueden realizarse respetando la normativa vigente. No obstante, debido a que el sistema utiliza técnicas de \eng{Web Scraping}, almacenamiento documental, autenticación de usuarios y modelos de inteligencia artificial, es necesario considerar distintos aspectos legales relacionados con la protección de datos (ver sección~\hyperref[subsec:proctdatos]{A.4.1}), la propiedad intelectual (ver sección~\hyperref[subsec:propiedad]{A.4.2}), el uso ético de la información pública (ver sección~\hyperref[subsec:webScraping]{A.4.3}), la licencias de \eng{software} (ver sección~\hyperref[subsec:IA]{A.4.4}) y la seguridad informática (ver sección~\hyperref[subsec:seg]{A.4.5}).
+
+\subsection{Protección de datos personales}\label{subsec:proctdatos}
+
+La aplicación permite la gestión de usuarios mediante registro, autenticación e historial de consultas. Por ello, el sistema debe cumplir el Reglamento General de Protección de Datos (RGPD)~\cite{legal:procdatos} de la Unión Europea y la legislación española complementaria (LOPDGDD)~\cite{legal:procdatoses}. Concretamente el proyecto debe respetar el principio de minimización de datos, el almacenamiento seguro de contraseñas utilizando \file{hash}, la confidencialidad de las consultas realizadas por los usuarios, la protección de las variables sensibles mediante ficheros de entorno, el uso de conexiones cifradas mediante \file{HTTPS} y certificados \file{SSL/TLS}.
+ 
+\subsection{Propiedad intelectual y derechos de autor}\label{subsec:propiedad}
+
+El código fuente desarrollado en el proyecto está protegido por la legislación de propiedad intelectual. Se conservan los derechos sobre el \eng{software} desarrollado, salvo por las condiciones establecidas por la universidad para los Trabajos Fin de Grado, cuya normativa se basa en el Real Decreto Legislativo 1/1996, por el que se aprueba la Ley de Propiedad Intelectual~\cite{legal:propintelect}.
+
+Además, el proyecto utiliza múltiples bibliotecas y herramientas de terceros, como Flasl, Docker, Qdrant, Playwright, Selenium y Ollama. Todas estas herramientas emplean licencias \eng{open source} compatibles con el desarrollo académico y de investigación (ver tabla~\ref{tabla:licencias}). Por ello, el proyecto es legalmente viable siempre que se mantengan las atribuciones correspondientes, se respeten las condiciones de redistribución de cada licencia y no se eliminen los avisos de \eng{copyright} de los terceros.
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.2\columnwidth} p{0.2\columnwidth} p{0.52\columnwidth} }
+		\toprule
+		\textbf{Herramienta} & \textbf{Licencia} & \textbf{Características} \\
+		\toprule
+		Flask & BSD-3-Clause & \eng{Framework web} ligero en Python utilizado para desarrollar la aplicación web del sistema PythIA \\
+		Jinja2 & BSD-3-Clause & Motor de plantillas utilizado por Flask para generar HTML dinámico\\
+		Werkzeug & BSD-3-Clause & Biblioteca WSGI utilizada por Flask para routing, peticiones HTTP y utilidades web\\
+		Flask-Loging & MT & Gestión de autenticación, sesiones y control de usuarios autenticados.\\
+		Flask-WTF & BSD-3-Clause & Integración de formularios WTForms con Flask y protección CSRF.\\
+		WTForm & BSD-3-Clause & Biblioteca para validación y gestión de formularios web. \\
+		SQLAlchemy & MIT & ORM utilizado para la interacción con bases de datos relacionales. \\
+		SQLite & Dominio público & Base de datos ligera utilizada en desarrollo y pruebas \\
+		PostgreSQL & PostgreSQL License & Sistema gestor de bases de datos relacional utilizado en producción \\
+		Qdrant & Apache Licence 2.0 & Base de datos vectorial especializada en búsqueda semántica mediante embeddings \\
+		Docker & Apache License 2.0 & Plataforma de contenedores utilizada para despliegue y reproducibilidad del entorno\\
+		Docker Compose & Apache License 2.0 & Herramienta para orquestar múltiples contenedores Docker\\
+		Gunicorn & MIT & Servidor WSGI utilizado para desplegar la aplicación Flask en producción\\
+		Nginx & BSD-2-Clause & Servidor web y proxy inverso utilizado para servir la aplicación y gestionar HTTPS\\
+		Playwright & Apache License 2.0 & Framework de automatización web utilizado para Web Scraping dinámico \\
+		Selenium & Apache License 2.0 & Herramienta de automatización de navegadores utilizada para pruebas y scraping web \\
+		Beautiful Soup & MIT & Biblioteca para parsear y extraer información de documentos HTML/XML \\
+		Requests & Apache License 2.0 & Biblioteca HTTP utilizada para realizar peticiones web \\
+		Transformers (Hugging Face) & Apache License 2.0 & Biblioteca para cargar y utilizar modelos LLM y modelos de \eng{embeddings} \\
+		Sentence Transformers & Apache License 2.0 & Biblioteca especializada en generación de \eng{embeddings} semánticos \\
+	PyTorch & BSD-3-Clause & Framework de aprendizaje profundo utilizado por modelos de IA \\
+	Ollama & MIT & Plataforma para ejecutar modelos LLM localmente \\
+	Poetry & MIT & Herramienta para gestión de dependencias y entornos Python \\
+	Markdownify & MIT & Conversión automática de HTML a Markdown\\
+	PyMuPDF & AGPL-3.0 & Biblioteca para lectura y procesamiento de documentos PDF \\
+	pytest & MIT & Framework de testing utilizado para pruebas unitarias y funcionales \\
+	SonarQube / SonarCloud Scanner & LGPL v3 & Herramienta de análisis estático y calidad del código \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Licencias de las herramientas de la aplicación.}
+	\label{tabla:licencias}
+\end{table}
+
+\subsection{Legalidad del \eng{Web Scraping}}\label{subsec:webScraping}
+
+El proyecto incorpora técnicas de \eng{Web Scraping} para recopilar licitaciones públicas desde la Plataforma de \contsec{}~\cite{legal:contratosSecPub}. La información extraída es pública y accesible libremente, por lo que su utilización tiene encaje legal siempre que no se vulneren mecanismos de autenticación o acceso restringido, no se produzca una sobrecarga intencionada de los servidores, se respeten las condiciones de uso del protal y se utilice la información con fines académicos y de investigación. 
+
+Según el \file{robots.txt}~\cite{legal:robots}
+
+\subsection{Uso de modelos de Inteligencia Artificial}\label{subsec:IA}
+
+El sistema usa modelos LLM y sistemas RAG para generar respuestas contextualizadas. Actualmente, la regulación europea sobre inteligencia artificial se encuentra definida por el Reglamento Europeo de Inteligencia Artificial (AI Act)~\cite{legal:IA}, el cual clasifica los sistemas IA según su nivel de riesgo. Dado que el sistema tiene fines académicos, no toma decisiones automatizadas con efectos legales, no realiza perfilado sensible de usuarios y funciona como sistemas de apoyo documental, puede considerarse un sistema de riesgo limitado. 
+
+\subsection{Seguridad Informática}\label{subsec:seg}
+
+El despliegue del sistema utilizando \file{Docker, Gunicorn, Nginx y HTTPS} permite cumplir buenas prácticas de seguridad. Además, el uso de variables de entorno para secretos, separación entre servicios, control de acceso mediante autenticación y certificados \file{SSL/TLS} reduce el riesgo relacionado con accesos no autorizados o filtraciones de información, cumpliendo asi con el Esquema Nacional de Seguridad (ENS)~\cite{legal:ENS}. 
 
