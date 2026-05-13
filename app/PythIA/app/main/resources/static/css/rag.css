@@ -4,6 +4,15 @@
   text-align: left;
 }
 
+.rag-card.rag-card-flat{
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  border-radius: 0;
+  padding: 0;
+}
+
 .rag-title{
   margin: 0;
   color: var(--app-text);
@@ -125,6 +134,10 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+.rag-guided-workspace-vertical{
+  grid-template-columns: 1fr;
 }
 
 .rag-form-block{
@@ -275,6 +288,13 @@
   line-height: 1.6;
 }
 
+.rag-answer-box{
+  padding: 14px 16px;
+  border-radius: var(--app-radius-md);
+  background: var(--app-inset-bg);
+  border: var(--app-inset-border);
+}
+
 .rag-answer{
   display: grid;
   gap: .85rem;
@@ -377,6 +397,176 @@
 
 .rag-meta{
   color: var(--app-text-soft);
+}
+
+.rag-top-grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.rag-model-card{
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 0;
+  border-radius: var(--app-radius-lg);
+  border: var(--app-surface-border);
+  background: var(--app-surface-bg);
+  box-shadow: var(--app-surface-shadow);
+  backdrop-filter: var(--app-surface-blur);
+}
+
+.rag-model-card-media{
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 12px 16px;
+}
+
+.rag-model-card-body{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 16px 12px 12px;
+}
+
+.rag-model-card-img{
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .25));
+}
+
+.rag-model-card-title{
+  margin: 0 0 .55rem;
+  color: var(--app-text);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-size: 1rem;
+}
+
+.rag-model-compare-btn{
+  margin-top: .65rem;
+  width: 100%;
+}
+
+.rag-chart-card{
+  padding: 18px;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+}
+
+.rag-chart-title{
+  margin: 0 0 .25rem;
+  color: var(--app-text);
+  font-weight: 900;
+}
+
+.rag-chart-subtitle{
+  color: var(--app-text-soft);
+  font-size: .92rem;
+  line-height: 1.4;
+}
+
+.rag-chart-body{
+  margin-top: 1rem;
+  min-height: 240px;
+}
+
+.rag-folder-tabs{
+  border-bottom: 0;
+  gap: .5rem;
+}
+
+.rag-folder-tabs .nav-link{
+  border: 1px solid rgba(var(--app-primary-rgb), .14);
+  border-bottom: 0;
+  color: var(--app-text);
+  font-weight: 850;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  padding: .65rem 1.1rem;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  background: rgba(255, 255, 255, .02);
+}
+
+.rag-folder-tabs .nav-link.active{
+  background: color-mix(in srgb, var(--app-inset-bg) 86%, transparent);
+  border-color: rgba(var(--app-primary-rgb), .22);
+}
+
+/* Panel de modos (chat/formulario) sin esquinas redondeadas */
+.rag-folder{
+  border-radius: 0;
+}
+
+/* Recuadro contenedor del chat/formulario: cuadrado (sin esquinas redondeadas) */
+.rag-mode-panel{
+  border-radius: 0;
+  border: 1px solid rgba(var(--app-primary-rgb), .14);
+  background: color-mix(in srgb, var(--app-inset-bg) 86%, transparent);
+  padding: 18px;
+}
+
+.rag-folder-body{
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* Dentro del panel de modo, el contenido debe escribirse "sobre" el panel, sin sub-recuadros */
+.rag-mode-panel :where(.rag-form-block, .rag-answer, .rag-chunk, .table-card){
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Mantener el cuadro de respuesta dentro del panel */
+.rag-mode-panel .rag-answer-box{
+  background: var(--app-inset-bg);
+  border: var(--app-inset-border);
+}
+
+.rag-mode-panel :where(.form-control, .form-select, .rag-textarea){
+  background: transparent !important;
+}
+
+.rag-mode-panel :where(.rag-answer, .rag-chunk){
+  padding: 0;
+}
+
+.rag-mode-panel :where(.rag-result, .rag-debug){
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Botón de tooltip (chat): pequeño y redondo */
+.rag-tooltip-btn{
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+  font-weight: 900;
+}
+
+@media (min-width: 992px){
+  .rag-top-grid{
+    grid-template-columns: minmax(360px, .85fr) minmax(380px, 1.15fr);
+    align-items: stretch;
+  }
 }
 
 @media (min-width: 768px){
