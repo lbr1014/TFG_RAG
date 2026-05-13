@@ -369,6 +369,8 @@ async def rag_answer(
         data = message_error(translate_for(lang, "rag.system_error"))
 
     elapsed = time.perf_counter() - start
+    # `obtener_mejor_chunk` intenta rellenar `execution_device` con el dispositivo real
+    # (vía /api/ps). Solo usamos fallback si faltase.
     data.setdefault("execution_device", get_ollama_execution_device())
 
     # Guardado en BBDD

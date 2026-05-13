@@ -65,9 +65,10 @@ if _ollama_num_gpu not in (None, ""):
     DEFAULT_NUM_GPU = int(_ollama_num_gpu)
     OLLAMA_NUM_GPU_SOURCE = "env"
 else:
-    cuda_available = torch is not None and torch.cuda.is_available()
-    DEFAULT_NUM_GPU = -1 if cuda_available else 0
-    OLLAMA_NUM_GPU_SOURCE = "auto-cuda-full-offload" if cuda_available else "auto-cpu"
+    # Por defecto pedimos a Ollama que use GPU si es posible.
+    # No lo inferimos de torch.cuda: Ollama puede estar en otra máquina/container.
+    DEFAULT_NUM_GPU = -1
+    OLLAMA_NUM_GPU_SOURCE = "auto-ollama"
 PDF_RENDER_DPI = int(os.getenv("PDF_RENDER_DPI", "200"))
 OCR_MAX_IMAGE_SIDE = int(os.getenv("OCR_MAX_IMAGE_SIDE", "1600"))
 OCR_RETRY_MAX_IMAGE_SIDES = [

@@ -638,7 +638,7 @@ def profile_image(filename: str):
     upload_dir = current_app.config["PROFILE_UPLOAD_FOLDER"]
 
     return send_from_directory(
-        upload_dir,
+        str(upload_dir),
         filename,
     )
 

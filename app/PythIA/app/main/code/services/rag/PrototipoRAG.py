@@ -176,16 +176,14 @@ class Settings:
         f"{DEFAULT_RAG_LLM_MODEL},gemma3:4b,qwen3:4b-instruct",
     )
     _ollama_num_gpu = os.getenv("OLLAMA_NUM_GPU")
-    _cuda_available = torch is not None and torch.cuda.is_available()
     if _ollama_num_gpu not in (None, ""):
         OLLAMA_NUM_GPU: int = int(_ollama_num_gpu)
         OLLAMA_NUM_GPU_SOURCE: str = "env"
-    elif _cuda_available:
-        OLLAMA_NUM_GPU: int = -1
-        OLLAMA_NUM_GPU_SOURCE: str = "auto-cuda-full-offload"
     else:
-        OLLAMA_NUM_GPU: int = 0
-        OLLAMA_NUM_GPU_SOURCE: str = "auto-cpu"
+        # Por defecto pedimos a Ollama que use GPU si es posible.
+        # No lo inferimos de torch.cuda: Ollama puede estar en otra máquina/container.
+        OLLAMA_NUM_GPU: int = -1
+        OLLAMA_NUM_GPU_SOURCE: str = "auto-ollama"
     OLLAMA_CONNECT_TIMEOUT_SECONDS: float = float(
         os.getenv("OLLAMA_CONNECT_TIMEOUT_SECONDS", "10")
     )
@@ -267,9 +265,69 @@ def get_ollama_execution_device() -> str:
     Determina el dispositivo de ejecución para Ollama.
 
     Returns:
-        str: "GPU" si se está utilizando GPU, "CPU" en caso contrario.
+        str: "GPU" si está configurado explícitamente, "GPU_REQ" si se solicita GPU
+             (pero no se puede garantizar que Ollama realmente la use), "CPU" en caso contrario.
     """
-    return "GPU" if settings.OLLAMA_NUM_GPU != 0 else "CPU"
+    num_gpu = int(getattr(settings, "OLLAMA_NUM_GPU", 0) or 0)
+    source = str(getattr(settings, "OLLAMA_NUM_GPU_SOURCE", "") or "")
+    if num_gpu == 0:
+        return "CPU"
+    if source == "env" or num_gpu > 0:
+        return "GPU"
+    return "GPU_REQ"
+
+
+async def get_ollama_effective_execution_device(
+    *,
+    model_name: str,
+    should_cancel=None,
+) -> str:
+    """
+    Intenta inferir el dispositivo REAL usado por Ollama para un modelo ya cargado.
+
+    Ollama expone `/api/ps` con `size_vram` (bytes en VRAM). Si el modelo está cargado y
+    `size_vram > 0`, consideramos que está usando GPU.
+
+    Si no se puede determinar (por error, timeout o el modelo no aparece en /api/ps),
+    se devuelve el valor configurado (`GPU`, `GPU_REQ`, `CPU`).
+    """
+    _raise_if_query_cancelled(should_cancel)
+    fallback = get_ollama_execution_device()
+
+    timeout = httpx.Timeout(
+        connect=settings.OLLAMA_CONNECT_TIMEOUT_SECONDS,
+        read=settings.OLLAMA_READ_TIMEOUT_SECONDS,
+        write=settings.OLLAMA_WRITE_TIMEOUT_SECONDS,
+        pool=settings.OLLAMA_POOL_TIMEOUT_SECONDS,
+    )
+    try:
+        async with httpx.AsyncClient(base_url=OLLAMA_BASE_URL, timeout=timeout) as client:
+            resp = await client.get("/api/ps")
+            resp.raise_for_status()
+            payload = resp.json() if resp.content else {}
+    except Exception:
+        return fallback
+
+    models = payload.get("models") if isinstance(payload, dict) else None
+    if not isinstance(models, list):
+        return fallback
+
+    normalized_target = (model_name or "").strip().lower()
+    for item in models:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or item.get("model") or "").strip().lower()
+        if not name:
+            continue
+        if name != normalized_target:
+            continue
+        try:
+            size_vram = int(item.get("size_vram") or 0)
+        except (TypeError, ValueError):
+            size_vram = 0
+        return "GPU" if size_vram > 0 else "CPU"
+
+    return fallback
 
 
 def resolve_rag_llm_model(model: str | None = None) -> str:
@@ -1679,6 +1737,9 @@ async def ask_ollama(
             },
         ],
         "stream": True,
+        # Mantiene el modelo cargado el tiempo suficiente para poder consultar /api/ps
+        # y registrar el dispositivo real (VRAM) usado.
+        "keep_alive": "30s",
         "options": {
             "num_gpu": settings.OLLAMA_NUM_GPU,
         },
@@ -1922,6 +1983,10 @@ async def obtener_mejor_chunk(
         model=model_name,
         should_cancel=should_cancel,
     )
+    effective_device = await get_ollama_effective_execution_device(
+        model_name=model_name,
+        should_cancel=should_cancel,
+    )
 
     return {
         "answer": answer,
@@ -1931,7 +1996,7 @@ async def obtener_mejor_chunk(
         "segment_index": best.get("segment_index", -1),
         "chunk": best.get("chunk", ""),
         "retrieved": retrieved,
-        "execution_device": get_ollama_execution_device(),
+        "execution_device": effective_device,
         "query_profile": query_profile,
         "retrieval_k": retrieval_k,
         "min_similarity": min_similarity,

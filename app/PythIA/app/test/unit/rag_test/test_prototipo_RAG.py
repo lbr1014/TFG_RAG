@@ -419,18 +419,18 @@ class PrototipoRAGUnitTest(unittest.TestCase):
         without_torch = _load_module_without_torch(env=auto_env)
         self.assertIsNone(without_torch.torch)
         self.assertEqual(without_torch.settings.RAG_MODEL_DEVICE, "cpu")
-        self.assertEqual(without_torch.settings.OLLAMA_NUM_GPU, 0)
-        self.assertEqual(without_torch.settings.OLLAMA_NUM_GPU_SOURCE, "auto-cpu")
+        self.assertEqual(without_torch.settings.OLLAMA_NUM_GPU, -1)
+        self.assertEqual(without_torch.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
         cuda_module = _load_module(cuda_available=True, env=auto_env)
         self.assertEqual(cuda_module.settings.RAG_MODEL_DEVICE, "cuda")
         self.assertEqual(cuda_module.settings.OLLAMA_NUM_GPU, -1)
-        self.assertEqual(cuda_module.settings.OLLAMA_NUM_GPU_SOURCE, "auto-cuda-full-offload")
+        self.assertEqual(cuda_module.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
         cpu_module = _load_module(cuda_available=False, env=auto_env)
         self.assertEqual(cpu_module.settings.RAG_MODEL_DEVICE, "cpu")
-        self.assertEqual(cpu_module.settings.OLLAMA_NUM_GPU, 0)
-        self.assertEqual(cpu_module.settings.OLLAMA_NUM_GPU_SOURCE, "auto-cpu")
+        self.assertEqual(cpu_module.settings.OLLAMA_NUM_GPU, -1)
+        self.assertEqual(cpu_module.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
     def test_embedding_model_singleton_properties_and_call_shapes(self):
         self.m.EmbeddingModelSingleton._instance = None

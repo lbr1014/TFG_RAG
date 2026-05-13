@@ -145,10 +145,22 @@ def create_app():
     app.config["DOCS_DIR"] = os.environ.get("DOCS_DIR", "pliegos")
     app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", str(50 * 1024 * 1024)))
     
-    data_dir = project_root / "data"
+    # Directorios de datos: permitir override por entorno (Docker/producción).
+    data_dir = Path(os.environ.get("DATA_DIR") or (project_root / "data"))
     app.config["DATA_DIR"] = data_dir
-    app.config["DOCS_DIR"] = data_dir / "pliegos"
-    app.config["PROFILE_UPLOAD_FOLDER"] = data_dir / "profiles"
+
+    # Si DOCS_DIR no es absoluto, lo consideramos relativo a DATA_DIR.
+    docs_dir_env = os.environ.get("DOCS_DIR")
+    docs_dir = Path(docs_dir_env) if docs_dir_env else (data_dir / "pliegos")
+    if not docs_dir.is_absolute():
+        docs_dir = data_dir / docs_dir
+    app.config["DOCS_DIR"] = docs_dir
+
+    profile_dir_env = os.environ.get("PROFILE_UPLOAD_FOLDER")
+    profile_dir = Path(profile_dir_env) if profile_dir_env else (data_dir / "profiles")
+    if not profile_dir.is_absolute():
+        profile_dir = data_dir / profile_dir
+    app.config["PROFILE_UPLOAD_FOLDER"] = profile_dir
     
     app.config["PROFILE_UPLOAD_FOLDER"].mkdir(parents=True, exist_ok=True)
 

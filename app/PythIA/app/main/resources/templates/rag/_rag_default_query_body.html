@@ -1,0 +1,113 @@
+{# Cuerpo reutilizable de rag_default_query.html (form + respuesta + debug). #}
+{% from "components/form_errors.html" import render_form_errors with context %}
+
+<form id="rag-default-form" method="post" action="{{ url_for('rag.rag_ask') }}" class="rag-form rag-guided-form" novalidate>
+  {{ form.csrf_token }}
+  {{ form.question }}
+  {{ render_form_errors(form) }}
+
+  <div class="rag-guided-workspace rag-guided-workspace-vertical">
+    <section class="rag-form-block rag-form-block-primary">
+      <div class="rag-form-block-head">
+        <span class="rag-form-block-kicker">01</span>
+        <h3 class="rag-section-title h5 mb-0">{{ t("rag_default.expediente_label") }}</h3>
+      </div>
+
+      <div class="rag-field-stack">
+        <div class="rag-field-row">
+          {{ form.expediente.label(class="form-label rag-label mb-0", for=form.expediente.id) }}
+          <div class="rag-model-select-shell">
+            {{ form.expediente(
+              class="form-select rag-model-select",
+              data_bs_toggle="tooltip",
+              data_bs_title=t("rag_default.expediente_tooltip")
+            ) }}
+          </div>
+        </div>
+
+        <div class="rag-field-row" data-summary-lock>
+          {{ form.doc_type.label(class="form-label rag-label mb-0", for=form.doc_type.id) }}
+          <div class="rag-model-select-shell">
+            {{ form.doc_type(
+              class="form-select rag-model-select",
+              data_bs_toggle="tooltip",
+              data_bs_title=t("rag_default.doc_type_tooltip")
+            ) }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rag-form-block">
+      <div class="rag-form-block-head">
+        <span class="rag-form-block-kicker">02</span>
+        <h3 class="rag-section-title h5 mb-0">{{ t("rag_default.question_kind_label") }}</h3>
+      </div>
+
+      <label class="rag-summary-switch" for="{{ form.summary.id }}">
+        {{ form.summary(class="rag-summary-input", autocomplete="off") }}
+        <span class="rag-summary-track" aria-hidden="true"></span>
+        <span class="rag-summary-copy">{{ form.summary.label.text }}</span>
+      </label>
+
+      <div class="rag-field-row" data-summary-lock>
+        {{ form.question_kind.label(class="form-label rag-label mb-0", for=form.question_kind.id) }}
+        <div class="rag-model-select-shell">
+          {{ form.question_kind(
+            class="form-select rag-model-select",
+            data_bs_toggle="tooltip",
+            data_bs_title=t("rag_default.question_kind_tooltip")
+          ) }}
+        </div>
+      </div>
+    </section>
+
+    <section class="rag-form-block rag-form-block-model{% if embed_mode %} d-none{% endif %}">
+      <div class="rag-form-block-head">
+        <span class="rag-form-block-kicker">03</span>
+        <h3 class="rag-section-title h5 mb-0">{{ form.model.label.text }}</h3>
+      </div>
+
+      <div class="rag-model-select-shell">
+        {{ form.model(class="form-select rag-model-select") }}
+      </div>
+    </section>
+
+    <section class="rag-form-block rag-form-submit">
+      <button id="ask-button" class="btn btn-modelo luz rag-guided-primary" type="submit" data-rag-ask>{{ t("rag.ask_button") }}</button>
+      <button id="cancel-button" class="btn btn-outline-light btn-header rag-guided-secondary d-none" type="button" data-rag-cancel>{{ t("rag.cancel_button") }}</button>
+      <span id="status" class="rag-status" aria-live="polite" data-rag-status></span>
+    </section>
+  </div>
+</form>
+
+<div class="rag-result mt-4">
+  <h3 class="rag-section-title h5 mb-3">{{ t("rag.answer_title") }}</h3>
+  <div class="rag-answer-box">
+    <div id="answer" class="rag-answer mb-0" aria-live="polite" data-rag-answer></div>
+  </div>
+</div>
+
+<details class="rag-debug mt-4">
+  <summary>{{ t("rag.fragment_used") }}</summary>
+
+  <div class="rag-debug-body mt-3">
+    <div class="table-card">
+      <div class="p-3 p-md-4">
+        <div class="row g-3 rag-meta small">
+          <div class="col-12 col-md-4">
+            <strong>{{ t("history.file") }}</strong> <span id="filename" data-rag-filename></span>
+          </div>
+          <div class="col-12 col-md-4">
+            <strong>{{ t("history.title_label") }}</strong> <span id="title" data-rag-title></span>
+          </div>
+          <div class="col-12 col-md-4">
+            <strong>{{ t("history.segment") }}</strong> <span id="segment_index" data-rag-segment></span>
+          </div>
+        </div>
+
+        <pre id="chunk" class="rag-chunk mb-0 mt-3" data-rag-chunk></pre>
+      </div>
+    </div>
+  </div>
+</details>

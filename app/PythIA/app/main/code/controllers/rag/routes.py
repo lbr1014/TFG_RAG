@@ -7,7 +7,15 @@ import asyncio
 import re
 from collections import defaultdict
 
-from flask import abort, current_app, jsonify, render_template, request
+from flask import (
+    abort,
+    current_app,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
 
@@ -43,26 +51,109 @@ def rag_page() -> str:
     """
     form = RAGQueryForm()
     configure_model_choices(form)
-    return render_template("rag.html", form=form)
+
+    default_form = RAGDefaultQueryForm()
+    configure_default_query_form(default_form)
+
+    usage_payload = build_model_usage_index_payload()
+    expediente_type_payload = build_expediente_type_payload()
+    return render_template(
+        "rag.html",
+        form=form,
+        default_form=default_form,
+        model_usage_payload=usage_payload,
+        expediente_type_payload=expediente_type_payload,
+    )
+
+
+def build_expediente_type_payload() -> dict[str, list[str]]:
+    """
+    Mapa expediente -> lista de tipos de documento disponibles ('administrativo', 'tecnico').
+    Sirve para filtrar expedientes en el formulario guiado del tab.
+    """
+    rows = (
+        db.session.query(Documento.numero_expediente, Documento.tipo_documento)
+        .filter(Documento.numero_expediente.isnot(None))
+        .filter(Documento.numero_expediente != "")
+        .filter(Documento.tipo_documento.isnot(None))
+        .filter(Documento.tipo_documento != "")
+        .distinct()
+        .all()
+    )
+    out: dict[str, set[str]] = {}
+    for expediente, tipo in rows:
+        if not expediente or not tipo:
+            continue
+        out.setdefault(str(expediente), set()).add(str(tipo))
+    return {k: sorted(v) for k, v in out.items()}
+
+
+def build_model_usage_index_payload(months: int = 12) -> dict:
+    """
+    Construye un payload simple de uso por modelo a lo largo del tiempo, para
+    dibujarlo con D3 en la pantalla RAG.
+
+    Returns:
+        dict con:
+          - labels: lista de strings YYYY-MM
+          - series: dict model_name -> lista de contadores por mes (alineados a labels)
+    """
+    base_query = RAGQueryState.query.filter(RAGQueryState.status == "done")
+    if not getattr(current_user, "is_admin", False):
+        base_query = base_query.filter(RAGQueryState.user_id == int(current_user.id))
+
+    jobs = base_query.order_by(RAGQueryState.created_at.asc()).all()
+
+    # Etiquetas de los últimos N meses (incluyendo el actual)
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+    month_labels: list[str] = []
+    for offset in range(months - 1, -1, -1):
+        y = now.year
+        m = now.month - offset
+        while m <= 0:
+            m += 12
+            y -= 1
+        month_labels.append(f"{y:04d}-{m:02d}")
+
+    index_by_label = {label: idx for idx, label in enumerate(month_labels)}
+    series: dict[str, list[int]] = {}
+
+    for job in jobs:
+        created = job.created_at
+        if not created:
+            continue
+        label = f"{created.year:04d}-{created.month:02d}"
+        idx = index_by_label.get(label)
+        if idx is None:
+            continue
+        result = job.result_payload or {}
+        model_name = (job.model_name or result.get("model") or resolve_rag_llm_model()).strip() or "default"
+        if model_name not in series:
+            series[model_name] = [0 for _ in month_labels]
+        series[model_name][idx] += 1
+
+    return {"labels": month_labels, "series": series}
 
 
 @rag_bp.get("/consultas-guiadas")
 @login_required
-def default_query_page() -> str:
+def default_query_page() -> ResponseReturnValue:
     """
     Muestra un formulario guiado para construir consultas frecuentes sobre pliegos.
 
     Returns:
         Respuesta HTML con el formulario de consultas predefinidas.
     """
-    form = RAGDefaultQueryForm()
-    configure_default_query_form(form)
-    return render_template("rag_default_query.html", form=form)
+    # La UI principal de consultas guiadas vive en el tab "Formulario" de /rag/.
+    # Mantenemos esta ruta por compatibilidad.
+    return redirect(url_for("rag.rag_page", mode="form"))
 
 
 @rag_bp.get("/modelos")
 @login_required
-def model_comparison_page() -> str:
+def model_comparison_page() -> ResponseReturnValue:
     """
     Muestra comparativas de uso y rendimiento por modelo RAG.
     Los administradores ven el uso global y los usuarios normales ven sus propias
@@ -369,6 +460,7 @@ def rag_ask() -> ResponseReturnValue:
         .filter(
             RAGQueryState.user_id == int(current_user.id),
             RAGQueryState.status.in_(["queued", "running"]),
+            RAGQueryState.cancel_requested.is_(False),
         )
         .order_by(RAGQueryState.created_at.desc())
         .first()

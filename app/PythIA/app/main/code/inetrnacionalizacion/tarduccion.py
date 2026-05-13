@@ -258,6 +258,7 @@ def get_client_translations() -> dict[str, str]:
         "rag.status_error",
         "rag.unexpected_error",
         "rag.cancel_error",
+        "rag.model_usage_empty",
         "vector.updating",
         "vector.updating_doc",
         "vector.done_ui",
