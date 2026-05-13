@@ -93,6 +93,17 @@
 
   <main class="app-main-shell {% block main_content_class %}{% endblock %}">
     <div class="{% block page_width_class %}app-page-width{% endblock %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="app-flash-stack mb-3 d-grid gap-2">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} mb-0" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
       {% block content %}{% endblock %}
     </div>
   </main>

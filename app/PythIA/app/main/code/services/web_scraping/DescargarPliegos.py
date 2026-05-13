@@ -21,11 +21,40 @@ from playwright.async_api import async_playwright
 RUTA_JSON = Path(os.environ.get("PLIEGOS_INPUT_JSON", "resultados_playwright_asincrono_servidor.json"))
 DEST = Path(os.environ.get("DOCS_DIR") or os.environ.get("PLIEGOS_DEST", "pliegos"))
 JSON_SALIDA = Path(os.environ.get("PLIEGOS_OUTPUT_JSON", "pliegos_pdfs.json"))
-DEST.mkdir(parents=True, exist_ok=True)
 
 # Playwright usa milisegundos para los timeouts
 TIMEOUT_MS = 90_000
 logger = logging.getLogger(__name__)
+
+
+def ensure_dest_dir() -> None:
+    """
+    Crea el directorio de destino de forma perezosa.
+
+    Importante: no lo hacemos en tiempo de import para no romper tests que
+    ejecutan el módulo con `runpy.run_module` ni entornos (CI) donde `DOCS_DIR`
+    apunte a rutas no escribibles (p. ej. `/data` en GitHub Actions).
+    """
+    global DEST
+
+    try:
+        DEST.mkdir(parents=True, exist_ok=True)
+        return
+    except PermissionError:
+        # En CI (y otros entornos) a veces se define DOCS_DIR=/data/...,
+        # pero el runner no permite escribir ahí. Hacemos fallback a un path
+        # relativo del repo para no bloquear el proceso.
+        configured = os.environ.get("DOCS_DIR") or os.environ.get("PLIEGOS_DEST")
+        if configured and Path(configured).is_absolute():
+            logger.warning(
+                "No hay permisos para crear el directorio DEST=%s. "
+                "Usando fallback local './pliegos'.",
+                DEST,
+            )
+            DEST = Path("pliegos")
+            DEST.mkdir(parents=True, exist_ok=True)
+            return
+        raise
 
 
 def limpiar_expediente(expediente: str) -> str:
@@ -92,6 +121,7 @@ async def descargar_pdf_es(context, url: str, expediente: str, nombre_doc: str, 
     destino = DEST / filename
 
     try:
+        ensure_dest_dir()
         async with aiofiles.open(destino, "wb") as f:
             await f.write(contenido)
         logger.info("Guardado: %s", destino.name)
@@ -189,6 +219,7 @@ async def run() -> None:
     Returns:
         None: Los PDFs se guardan en el directorio DEST y los metadatos en JSON_SALIDA.
     """
+    ensure_dest_dir()
     items = json.loads(RUTA_JSON.read_text(encoding="utf-8"))
 
     pdfs_por_expediente = defaultdict(list)
