@@ -43,11 +43,15 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertIn(b"modelo-a", response.data)
 
     def test_default_query_page_renders_guided_form(self):
-        response = self.client.get("/rag/consultas-guiadas")
+        response = self.client.get("/rag/consultas-guiadas", follow_redirects=False)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"rag-default-form", response.data)
-        self.assertIn(b"name=\"expediente\"", response.data)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/rag/?mode=form", response.headers.get("Location", ""))
+
+        redirected = self.client.get("/rag/consultas-guiadas", follow_redirects=True)
+        self.assertEqual(redirected.status_code, 200)
+        self.assertIn(b"rag-default-form", redirected.data)
+        self.assertIn(b"name=\"expediente\"", redirected.data)
 
     def test_model_comparison_payload_aggregates_admin_and_fallback_values(self):
         from app.main.code.controllers.rag import routes as rag_routes
@@ -196,6 +200,24 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.get_json()["job_id"], active_job.id)
         self.assertTrue(response.get_json()["reused"])
         mock_submit.assert_not_called()
+
+    @patch("app.main.code.controllers.rag.routes.executor.submit")
+    def test_rag_ask_does_not_reuse_active_job_when_cancel_requested(self, mock_submit):
+        active_job = RAGQueryState(
+            user_id=self.user.id,
+            question="Anterior",
+            status="running",
+            cancel_requested=True,
+        )
+        db.session.add(active_job)
+        db.session.commit()
+
+        response = self.client.post("/rag/ask", data={"question": "Nueva pregunta"})
+
+        self.assertEqual(response.status_code, 202)
+        self.assertNotEqual(response.get_json()["job_id"], active_job.id)
+        self.assertNotIn("reused", response.get_json())
+        mock_submit.assert_called_once()
 
     def test_rag_status_only_allows_owner(self):
         owner = self.create_user(email="owner-rag@example.com")

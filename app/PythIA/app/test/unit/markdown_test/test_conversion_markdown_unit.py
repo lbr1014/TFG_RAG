@@ -102,17 +102,17 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 runpy.run_module("app.main.code.services.markdown.Conversion_markdown", run_name="__main__")
 
-    def test_import_auto_gpu_configuration_uses_cpu_when_cuda_is_unavailable(self):
+    def test_import_auto_gpu_configuration_requests_gpu_when_env_is_missing_even_without_cuda(self):
         imported = _import_conversion_with_torch(cuda_available=False)
 
-        self.assertEqual(imported.DEFAULT_NUM_GPU, 0)
-        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-cpu")
+        self.assertEqual(imported.DEFAULT_NUM_GPU, -1)
+        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
-    def test_import_auto_gpu_configuration_uses_full_offload_when_cuda_is_available(self):
+    def test_import_auto_gpu_configuration_requests_gpu_when_env_is_missing_with_cuda(self):
         imported = _import_conversion_with_torch(cuda_available=True)
 
         self.assertEqual(imported.DEFAULT_NUM_GPU, -1)
-        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-cuda-full-offload")
+        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
     def test_build_chat_payload_sets_model_image_and_gpu_options(self):
         payload = conversion._build_chat_payload("contenido", "base64", num_gpu=0)
