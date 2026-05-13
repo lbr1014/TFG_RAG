@@ -389,14 +389,43 @@ El archivo \file{.env} contiene variables de configuración general del sistema 
 	]
 	{\footnotesize
 		\noindent
-		\texttt{FLASK\_APP=run.py}\\
-		\texttt{FLASK\_ENV=development}\\
+		\texttt{FLASK\_APP=app.main.code:create\_app}\\
 		\\
-		\texttt{POSTGRES\_DB=pythia}\\
 		\texttt{POSTGRES\_USER=postgres}\\
-		\texttt{QDRANT\_HOST=qdrant}\\
-		\texttt{QDRANT\_PORT=6333}\\
-		\texttt{OLLAMA\_HOST=http://ollama:11434}\\
+		\texttt{POSTGRES\_DB=mydatabase}\\
+		\texttt{POSTGRES\_HOST=db}\\
+		\texttt{POSTGRES\_PORT=5432}\\
+		\texttt{POSTGRES\_EXTERNAL\_PORT=5432}\\
+		\\
+		\texttt{QDRANT\_SERVICE\_HOST=qdrant}\\
+		\texttt{QDRANT\_INTERNAL\_PORT=6333}\\
+		\texttt{QDRANT\_URL\_SCHEME=http}\\
+		\\
+		\texttt{OLLAMA\_IMAGE=ollama/ollama:0.20.7}\\
+		\texttt{OLLAMA\_SERVICE\_HOST=ollama}\\
+		\texttt{OLLAMA\_INTERNAL\_PORT=11434}
+		\textit{OLLAMA\_EXTERNAL\_PORT=11435}\\
+		\texttt{OLLAMA\_NUM\_GPU=-1}\\
+		\texttt{RAG\_LLM\_MODEL=llama3.1:8b-instruct-q4\_K\_M}\\
+		\texttt{RAG\_LLM\_MODELS=llama3.1:8b-instruct-q4\_K\_M,gemma3:4b,qwen3:4b-instruct}\\
+		\texttt{OCR\_MODEL\_NAME=blaifa/Nanonets-OCR-s}\\
+		\texttt{OLLAMA\_PULL\_TIMEOUT\_SECONDS=1800}\\
+		\texttt{OLLAMA\_PULL\_IDLE\_TIMEOUT\_SECONDS=300}\\
+		\texttt{OLLAMA\_PULL\_LOG\_INTERVAL\_SECONDS=20}\\
+		\\
+		\texttt{WEB\_INTERNAL\_PORT=5000}\\
+		\texttt{NGINX\_HTTP\_INTERNAL\_PORT=80}\\
+		\texttt{NGINX\_HTTP\_EXTERNAL\_PORT=7000}\\
+		\texttt{NGINX\_HTTPS\_INTERNAL\_PORT=443}\\
+		\texttt{NGINX\_HTTPS\_EXTERNAL\_PORT=443}\\
+		\\
+		\texttt{DOCS\_DIR=/data/pliegos}\\
+		\\
+		\texttt{PROFILE\_UPLOAD\_FOLDER =/data/profiles}\\
+		\\
+		\texttt{HF\_HOME=/data/hf}\\
+		\\
+		\texttt{QDRANT\_COLLECTION=chunks}
 	}
 \end{tcolorbox}
 
@@ -414,11 +443,16 @@ El archivo \file{secret.env} contiene información sensible y credenciales priva
 	{\footnotesize
 		\noindent
 		\texttt{SECRET\_KEY}\\
+		\texttt{FLASK\_SESSION\_SIGNER}\\
 		\texttt{POSTGRES\_PASSWORD}\\
 		\\
+		\texttt{MAIL\_SERVER}\\
+		\textit{MAIL\_PORT}\\
+		\texttt{MAIL\_USE\_TLS}\\
+		\texttt{MAIL\_USE\_SSL}\\
 		\texttt{MAIL\_USERNAME}\\
 		\texttt{MAIL\_PASSWORD}\\
-		\texttt{NANONETS\_API\_KEY}\\
+		\texttt{MAIL\_DEFAULT\_SENDER}
 	}
 \end{tcolorbox}
 
@@ -436,7 +470,7 @@ Las variables de entorno definidas en ambos archivos se cargan automáticamente 
 	{\footnotesize
 		\noindent
 		\texttt{from dotenv import load\_dotenv}\\
-		\texttt{load\_dotenv()}\\
+		\texttt{load\_dotenv()}
 	}
 \end{tcolorbox}
 
@@ -450,7 +484,7 @@ Las variables de entorno definidas en ambos archivos se cargan automáticamente 
 	{\footnotesize
 		\noindent
 		\texttt{import os}\\
-		\texttt{SECRET\_KEY = os.getenv("SECRET\_KEY")}\\
+		\texttt{SECRET\_KEY = os.getenv("SECRET\_KEY")}
 	}
 \end{tcolorbox}
 
@@ -467,7 +501,7 @@ Estas variables también se utilizan en el archivo \file{docker-compose.yml} par
 		\noindent
 		\texttt{env\_file:}\\
 		\texttt{		- .env}\\
-		\texttt{		- secret.env}\\
+		\texttt{		- secret.env}
 	}
 \end{tcolorbox}
 
@@ -483,18 +517,19 @@ El proyecto incorpora configuración Docker para facilitar el despliegue y la ej
 	]
 	{\footnotesize
 		\noindent
-		\texttt{docker-compose up --build}\\
+		\texttt{docker-compose up --build}
 	}
 \end{tcolorbox}
 
 
 \section{Compilación, instalación y ejecución del proyecto}
 
-El proyecto ha sido diseñado para ejecutarse principalmente mediante contenedores Docker, lo que permite reproducir el entorno completo de forma homogénea independientemente del sistema operativo utilizado. La aplicación integra múltiples servicios que gracias a la utilización de Docker Compose se pueden desplegar de manera coordinada.
+En este apartado se describen los pasos necesarios para compilar, instalar y ejecutar el proyecto PythIA. El proyecto ha sido diseñado para ejecutarse principalmente mediante contenedores Docker, lo que permite reproducir el entorno completo de forma homogénea y transparente al usuario, independientemente del sistema operativo utilizado. La aplicación integra múltiples servicios que gracias a la utilización de Docker Compose se pueden desplegar de manera coordinada. Por ejemplo, la aplicación Flask, la base de datos PostgreSQL, la base de datos vectorial Qdrant, los modelos LLM ejecutado mediante Ollama y el servidor Nginx utilizado como proxy inverso.
 
 Antes de ejecutar el sistema es necesario tener instalados Docker, Docker Compose, Git, Python (este último solo para ejecutarlo sin usar Docker). Debido al uso de modelos LLM y de OCR se recomienda que la aplicación se despliegue en una máquina que tenga procesador multinúcleo con al menos 16GB de memeoria RAM y espacio suficiente para cargar los modelos y almacenar los documentos. Es recomendable que tenga GPU para acelerar los procesos.
 
-El primer paso para la ejecución es clonar el repositorio desde GitHub. 
+Para instalar Docker en Ubuntu se deben ejecutar los siguientes comandos:
+
 \begin{tcolorbox}[
 	colback=blue!4, 
 	colframe=blue!40, 
@@ -504,11 +539,15 @@ El primer paso para la ejecución es clonar el repositorio desde GitHub.
 	]
 	{\footnotesize
 		\noindent
-		\texttt{git clone https://github.com/lbr1014/TFG\_RAG.git}\\
+		\texttt{sudo apt install ca-certificates curl gnupg lsb-release -y}\\
+		\textit{sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y} \\
+		\textit{\# Una vez instalado, se puede comprobar que Docker funciona correctamente usando:} \\
+		\texttt{docker --version}
 	}
 \end{tcolorbox}
 
-Posteriormente se debe acceder al directorio del proyecto:
+Para instalar Docker en Windows se puede instalar descargando Docker Desktop desde la \myhref{https://www.docker.com/products/docker-desktop/}{página oficial}.
+
 \begin{tcolorbox}[
 	colback=blue!4, 
 	colframe=blue!40, 
@@ -518,10 +557,123 @@ Posteriormente se debe acceder al directorio del proyecto:
 	]
 	{\footnotesize
 		\noindent
-		\texttt{cd TFG\_RAG}\\
+		\textit{\# Una vez instalado, se puede comprobar que Docker funciona correctamente usando:} \\
+		\texttt{docker --version}
 	}
 \end{tcolorbox}
 
+Para instalar Git en Ubuntu se usa el comando:
+
+\begin{tcolorbox}[
+	colback=blue!4, 
+	colframe=blue!40, 
+	title=Terminal,
+	fonttitle=\bfseries,
+	breakable 
+	]
+	{\footnotesize
+		\noindent
+		\textit{sudo apt install git -y}
+	}
+\end{tcolorbox}
+
+En Windows se puede descargar desde la siguiente \myhref{https://git-scm.com/}{página}.
+
+En ambos casos para comprobar la instalación se usa:
+
+\begin{tcolorbox}[
+	colback=blue!4, 
+	colframe=blue!40, 
+	title=Terminal,
+	fonttitle=\bfseries,
+	breakable 
+	]
+	{\footnotesize
+		\noindent
+		\textit{git --version}
+	}
+\end{tcolorbox}
+
+El código fuente del proyecto se encuentra disponible en el repositorio \myhref{https://github.com/lbr1014/TFG_RAG}{GitHub} del proyecto. Por lo cual, el primer paso para la ejecución es clonar el repositorio desde GitHub. 
+
+\begin{tcolorbox}[
+	colback=blue!4, 
+	colframe=blue!40, 
+	title=Terminal,
+	fonttitle=\bfseries,
+	breakable 
+	]
+	{\footnotesize
+		\noindent
+		\texttt{git clone https://github.com/lbr1014/TFG\_RAG.git}
+	}
+\end{tcolorbox}
+
+Posteriormente se debe acceder al directorio del proyecto.
+
+\begin{tcolorbox}[
+	colback=blue!4, 
+	colframe=blue!40, 
+	title=Terminal,
+	fonttitle=\bfseries,
+	breakable 
+	]
+	{\footnotesize
+		\noindent
+		\texttt{cd TFG\_RAG/app/PythIA}
+	}
+\end{tcolorbox}
+
+La aplicación utiliza variables de entorno para almacenar información sensible y parámetros de configuración, como claves secretas, credenciales de correo, URLs de conexión o modelos LLM configurados.
+
+Estas variables se definen mediante archivos \texttt{.env} y \texttt{secret.env}. El archivo \texttt{secret.env} no se incluye en el repositorio debido a que contiene información privada y credenciales sensibles, pero debe generarse para ejecutarlo, las variables que deben configurarse en dicho archivo son:
+
+\begin{tcolorbox}[
+	colback=blue!4, 
+	colframe=blue!40, 
+	title=secret.env,
+	fonttitle=\bfseries,
+	breakable 
+	]
+	{\footnotesize
+		\noindent
+		\texttt{SECRET\_KEY}\\
+		\texttt{FLASK\_SESSION\_SIGNER}\\
+		\texttt{POSTGRES\_PASSWORD}\\
+		\\
+		\texttt{MAIL\_SERVER}\\
+		\textit{MAIL\_PORT}\\
+		\texttt{MAIL\_USE\_TLS}\\
+		\texttt{MAIL\_USE\_SSL}\\
+		\texttt{MAIL\_USERNAME}\\
+		\texttt{MAIL\_PASSWORD}\\
+		\texttt{MAIL\_DEFAULT\_SENDER}
+	}
+\end{tcolorbox}
+
+Una vez instalado Docker y Git, descargado el repositorio y generado el archivo \file{sencret.env} se puede ejecutar la aplicación. Para ello deben generarse las imágenes Docker. Esta construcción es automática gracias a los archivos \file{docker-compose.yml} y \file{Dockerfile}.
+
+\begin{tcolorbox}[
+	colback=blue!4, 
+	colframe=blue!40, 
+	title=Terminal,
+	fonttitle=\bfseries,
+	breakable 
+	]
+	{\footnotesize
+		\noindent
+		\texttt{\# Para construir todas las imágenes y levantar el sistema completo por primera vez se debe ejecutar: }\\
+		\texttt{docker compose up --build}\\
+		\\
+		\texttt{\# Si se desea reconstruir las imágenes sin reutilizar la caché de Docker se puede usar:}\\
+		\texttt{docker compose build --no-cache}\\
+		\\
+		\texttt{\# Para reconstruir únicamente las imágenes sin ejecutar los contenedores:}\\
+		\texttt{docker compose build}
+	}
+\end{tcolorbox}
+
+Estos comandos van a construir las imágenes Docker, descargando las dependencias necesarias, levantando PostgreSQL, Qdrant, Ollama, inicializando la aplicación Flask y configurando Nginx y Gunicorn.
 
 
 
