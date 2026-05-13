@@ -40,6 +40,19 @@ from .inetrnacionalizacion.tarduccion import t
 AUTH_LOGIN_REQUIRED = "auth.login_required"
 
 
+def _is_test_env() -> bool:
+    """
+    Detecta si estamos ejecutando tests (pytest/unittest/CI) para relajar
+    requisitos de configuración y usar defaults seguros.
+    """
+    return (
+        os.environ.get("PYTHIA_TESTING") == "1"
+        or os.environ.get("TESTING") == "1"
+        or "PYTEST_CURRENT_TEST" in os.environ
+        or os.environ.get("GITHUB_ACTIONS") == "true"
+    )
+
+
 def _get_required_env(var_name: str) -> str:
     """
     Devuelve una variable de entorno obligatoria.
@@ -53,6 +66,10 @@ def _get_required_env(var_name: str) -> str:
     value = os.environ.get(var_name)
     if value:
         return value
+    if _is_test_env():
+        # Defaults solo para tests/CI: evita que create_app reviente cuando el
+        # pipeline no inyecta secretos reales.
+        return "test-secret"
     raise RuntimeError(f"{var_name} no está definida. Revisa tu .env o variables de entorno.")
 
 
@@ -115,7 +132,10 @@ def create_app():
     app.config[_flask_session_config_name()] = _get_required_env("FLASK_SESSION_SIGNER")
     db_url = _build_database_url_from_env()
     if not db_url:
-        raise RuntimeError("DATABASE_URL no está definida y no se pudo construir con POSTGRES_*.")
+        if _is_test_env():
+            db_url = "sqlite:///:memory:"
+        else:
+            raise RuntimeError("DATABASE_URL no está definida y no se pudo construir con POSTGRES_*.")
 
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
