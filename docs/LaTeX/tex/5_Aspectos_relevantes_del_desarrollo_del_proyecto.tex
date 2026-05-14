@@ -123,38 +123,112 @@ Pipeline combina ARES + evaluación (RAGAS + embeddings)
 
 \section{Desarrollo \eng{web}}
 
-explicación general sobre flask y como se ha dividido la aplicación (separación de frontend y backend)
+Tras realizar un primer prototipo \eng{RAG} se comenzó el diseño de una aplicación \eng{web} para permitir a los usuarios interactuar con el sistema de manera sencilla y visual. Para ello se decidió utilizar Flask como \eng{framework} de desarrollo \eng{web}. 
+
+Flask es un \eng{framework} ligero para Python basado en la arquitectura WSGI que permite desarrollar aplicaciones web de manera modular y escalable. Una de las razones principales para su elección fue su flexibilidad, ya que facilita integrar distintos componentes del sistema \eng{RAG}, como el \eng{retriever}, el procesamiento documental o los modelos \eng{LLM}, dentro de una misma aplicación. Además, Flask permite estructurar el proyecto utilizando \eng{blueprints}, lo que facilitó dividir la aplicación en módulos independientes y mejorar su mantenibilidad.
+
+Durante las primeras fases del desarrollo \eng{web} se realizaron prototipos muy simples cuyo objetivo principal era únicamente permitir realizar consultas al sistema \eng{RAG} desde una interfaz básica. Estas primeras versiones consistían en páginas HTML estáticas con formularios mínimos para introducir preguntas y mostrar respuestas del modelo. Conforme el proyecto evolucionó, la aplicación fue creciendo progresivamente hasta convertirse en una plataforma web completa con autenticación, gestión documental, historial de consultas, paneles administrativos y procesamiento asíncrono de tareas.
+
+Desde el punto de vista arquitectónico, la aplicación se divide en \eng{frontend} y \eng{backend}. El \eng{frontend} se encarga de la interacción visual con el usuario y el \eng{backend} se encarga de la lógica de negocio, procesamiento documental, acceso a bases de datos y comunicación con el sistema \eng{RAG}.
 
 \subsection{\eng{Frontend}}
 
-Diseño de interfaz, modo claro/oscuro, inetrnacionalización
+El \eng{frontend} de PythIA ha evolucionado respecto a los primeros prototipos desarrollados durante el proyecto. Las primeras interfaces eran simples y estaban centradas en validar el funcionamiento técnico del sistema \eng{RAG}. Sin embargo, conforme el proyecto avanzó, se comenzó a trabajar en el diseño de una interfaz más moderna, usable y adaptada a distintos tipos de usuarios. En la cual la complejidad del sistema \eng{RAG} es transparente para el usuario.
 
-Uso de boostrap, responsive
- 
-Uso de D3 gráficas
+El diseño visual de la aplicación se ha ido desarrollando a lo largo de todo el proyecto mediante distintas iteraciones de las páginas. Uno de los cambios más importantes respecto a los primeros prototipos fue la incorporación de soporte completo para modo claro y modo oscuro (dejando por defecto el modo del sistema salvo que el usuario indique otra cosa en su perfil) mejorando así la accesibilidad y la experiencia de usuario. 
 
-Uso de driverjs para tutoriales
+Para implementar la interfaz se utilizó Bootstrap como \eng{framework} CSS principal. Bootstrap permitió acelerar el desarrollo del \eng{frontend} gracias a su sistema de componentes reutilizables, facilitando mantener una coherencia visual entre todas las páginas de la aplicación. La utilización de Bootstrap también permitió implementar un diseño \eng{responsive} para que los usuarios puedan usar la aplicación desde distintos dispositivos. 
+
+Otro aspecto importante del \eng{frontend} fue la internacionalización de la aplicación. Para esto se ha desarrollado un sistema de traducción basado en diccionarios de claves y funciones auxiliares que permiten traducir los textos de la interfaz, los formularios, los mensajes de error, las validaciones, las notificaciones y los componentes dinámicos del JavaScript. Esto permitió desacoplar completamente los textos de la interfaz del código HTML y Python.
+
+Además del diseño visual, también se incorporaron componentes gráficos interactivos utilizando D3.js. Lo que permitió generar visualizaciones mucho más dinámicas y personalizables. Además, facilitó adaptar las gráficas al diseño visual de la aplicación y a los distintos temas claro y oscuro.
+
+Por otro lado, conforme el sistema fue incorporando más funcionalidades, se observó que algunos usuarios podían tener dificultades para comprender ciertos flujos de uso. Para mejorar la experiencia de usuario se han incorporado Driver.js como sistema de tutoriales interactivos guiados. Facilitando el aprendizaje inicial de la plataforma y mejorando la accesibilidad del sistema.
 
 \subsection{\eng{Backend}}
 
-funcionalidades de la aplicación
+El \eng{backend} de PythIA es el núcleo funcional de la aplicación y el encargado de integrar todas las partes del sistema \eng{RAG}. Durante el desarrollo ha ido evolucionando desde \eng{scripts} independientes hasta una arquitectura modular basada en Flask y organizada mediante \eng{blueprints}, servicios y capas desacopladas.
 
-controladores
+Sus funcionalidades son:
+\begin{itemize}
+\tightlist
+	\item Gestión de usuarios.
+	\item Registro e inicio de sesión.
+	\item Recuperación de contraseñas.
+	\item Gestión documental.
+	\item Importación automática de licitaciones mediante \eng{web scraping}
+	\item Conversión de documentos.
+	\item Generación de \eng{embeddings}
+	\item Indexación vectorial.
+	\item Consultas del sistema \eng{RAG}.
+	\item Historial de consultas
+	\item Estadisticas de uso y de comparación de modelos
+\end{itemize}
 
-servicios (lógica de negocio)
+La aplicación se organizó utilizando controladores Flask agrupados mediante \eng{blueprints}. Cada \eng{blueprint} encapsula un conjunto concreto de funcionalidades, como autenticación, administración, consultas \eng{RAG}, gestión documental y páginas principales. Esta organización ha permitido desacoplar las distintas partes del sistema y mejorar la escalabilidad del proyecto.
 
-modelo de datos y comunicación entre ellos y las capas
+Por debajo de los controladores se implementó una capa de servicios encargada de la lógica de negocio. Esta separación fue especialmente importante conforme el proyecto fue creciendo, ya que evita sobrecargar los controladores Flask con lógica de negocio. Permitiendo reutilizar código entre distintas partes de la aplicación y facilitando el mantenimiento. Concretamente se han implementado los siguientes servicios:
+\begin{itemize}
+\tightlist
+	\item Comunicación con los \eng{LLM}.
+	\item Recuperación semántica.
+	\item Generación de \eng{embeddings}.
+	\item Conversión a Markdown.
+	\item Procesamiento de PDF.
+	\item \eng{Web scraping}.
+	\item Gestión de tareas asíncronas.
+	\item Gestión de documentos.
+	\item Procesamiento del historial.
+\end{itemize}
 
-seguridad y control de acceso
+En cuanto a los modelos de datos, la aplicación utiliza SQLAlchemy como ORM principal. Los modelos representan entidades como:
 
-control de excepciones
+\begin{itemize}
+\tightlist
+	\item Usuarios
+	\item Consultas
+	\item Documentos
+	\item \file{Chunks}
+	\item \file{Embeddings}
+	\item Estados de tareas
+	\item Configuraciones del sistema
+\end{itemize}
 
-tareas asíncronas
+Además de la base de datos relacional utilizada para la gestión general de la aplicación, el \eng{backend} también integra Qdrant como base de datos vectorial para almacenar los \eng{embeddings} utilizados por el sistema \eng{RAG}.
 
+La comunicación entre las distintas capas de la aplicación sigue una arquitectura multicapa donde el usuario interactúa con el \eng{frontend}. A continuación los controladores reciben las peticiones y lso servicios ejecutan la lógica de negocio. Los modelos gestionan el acceso a los datos y los resultados se devuelven al \eng{frontend}.
+
+Otro aspecto importante fue la seguridad y el control de acceso. La aplicación implementa autenticación mediante Flask-Login y utiliza distintos roles de usuario para restringir determinadas funcionalidades administrativas. Entre las medidas de seguridad implementadas destacan:
+\begin{itemize}
+\tightlist
+	\item \eng{Hash} seguro de contraseñas.
+	\item Protección CSRF en formularios.
+	\item Variables de entorno para claves privadas.
+	\item Restricción de acceso por roles.
+	\item Validación de formularios.
+	\item Gestión segura de sesiones.
+	\item Protección de rutas mediante decoradores personalizados.
+\end{itemize}
+
+También se ha desarrollado un sistema centralizado de control de excepciones para evitar errores no controlados dentro de la aplicación. Esto permitió:
+
+\begin{itemize}
+\tightlist
+	\item Mostrar mensajes de error amigables.
+	\item Registrar errores mediante \eng{loggers}.
+	\item Facilitar la depuración.
+	\item Evitar caídas completas del sistema.
+\end{itemize}
+
+Finalmente, debido al elevado coste computacional de algunas operaciones, se incorporó soporte para tareas asíncronas. Esto fue especialmente importante en procesos como la conversión de PDF a Markdown, el \eng{web scraping}, la generación de \eng{embeddings}, la indexación documental y la generación de la respuesta. Permite evitar bloqueos en la interfaz web, ya que los procesos pesados pueden ejecutarse en segundo plano mientras el usuario continua usando la aplicación. 
 
 \section{Evaluación de la calidad del código}
 
-SonarQube Cloud
+A medida que el proyecto fue creciendo y la aplicación pasó de estar formada por pequeños prototipos experimentales a convertirse en un sistema \eng{web} completo surgió la necesidad de incorporar mecanismos que permitiesen evaluar y controlar la calidad de código desarrollado.
+
+Durante las primeras fases del proyecto, la prioridad principal era desarrollar \eng{scripts} funcionales sin tener en cuenta el código duplicado, las funcione demasiado complejas, la escasa modularización, la baja reutilización o las dependencias acopladas. Para facilitar la mantebilidad y la escalabilidad se decidió incorporar herramientas automáticas de análisis estático de código.
+
+Concretamente se decidió usar \myhref{https://sonarcloud.io/project/overview?id=lbr1014_TFG_RAG}{ConarCloud}. La cual es una plataforma de análisis continuo que permite evaluar automáticamente distintos indicadores relacionados con la calidad del software.
 
 \section{Despliegue}
 
