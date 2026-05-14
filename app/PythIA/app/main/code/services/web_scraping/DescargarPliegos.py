@@ -53,7 +53,7 @@ finally:
     except OSError:
         pass
 
-RUTA_JSON = WEB_SCRAPING_DATA_DIR / "resultados_playwright_asincrono_servidor.json"
+RUTA_JSON = WEB_SCRAPING_DATA_DIR / "resultados_playwright_asincrono.json"
 DEST = Path(os.environ.get("DOCS_DIR") or os.environ.get("PLIEGOS_DEST", "pliegos"))
 JSON_SALIDA = WEB_SCRAPING_DATA_DIR / "pliegos_pdfs.json"
 
