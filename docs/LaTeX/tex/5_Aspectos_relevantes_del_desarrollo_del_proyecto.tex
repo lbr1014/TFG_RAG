@@ -26,42 +26,140 @@ Durante el desarrollo del sistema \eng{RAG} se han evaluado distintos enfoques p
 
 Uno de los primeros aspectos analizados fue el uso del \eng{tokenizer}, ya que es el encargado de transformar el texto en unidades básicas (\eng{tokens}) que son la entrada real de los modelos de lenguaje (\eng{LLM}). Su correcto funcionamiento es clave tanto para el procesamiento del texto como para el control del tamaño de los fragmentos (\eng{chunks}).
 
-Se realizaron pruebas con diversos \eng{tokenizers} asociados a distintos modelos de lenguaje (como \eng{LLaMA} o \eng{Mistral}), así como con el \eng{tokenizer} incluido en los modelos de \eng{embeddings}. Se observó que utilizar el \eng{tokenizer} del propio modelo de \eng{embeddings} simplifica el \eng{pipeline} y evita inconsistencias entre la representación del texto y su vectorización. Además, permite conocer directamente el número máximo de \eng{tokens} admitido por el modelo, facilitando el control del tamaño de entrada.
+Se realizaron pruebas con diversos \eng{tokenizers} asociados a distintos modelos de lenguaje (como \eng{LLaMA} o \eng{Mistral}), así como con el \eng{tokenizer} incluido en los modelos de \eng{embeddings}. Se observó que utilizar el \eng{tokenizer} del propio modelo de \eng{embeddings} simplifica el \eng{pipeline} y evita inconsistencias entre la representación del texto y su vectorización semántica. Además, permite conocer directamente el número máximo de \eng{tokens} admitido por el modelo, facilitando el control del tamaño de entrada y evitando superar la ventana máxima soportada.
 
-Por este motivo, finalmente se optó por utilizar el \eng{tokenizer} del modelo de \eng{embeddings} (\file{SentenceTransformer}), garantizando coherencia entre el proceso de \eng{chunking} y la generación de \eng{embeddings}.
+Por este motivo, se optó por utilizar el \eng{tokenizer} del modelo de \eng{embeddings} (\file{SentenceTransformer}), garantizando coherencia entre el proceso de \eng{chunking} y la generación de \eng{embeddings}.
+
+En la implementación final, el sistema obtiene automáticamente tanto el \eng{tokenizer} como el tamaño máximo de secuencia directamente desde el modelo cargado, permitiendo adaptar dinámicamente el sistema si se cambia de modelo de \eng{embeddings}. Esto facilita la reutilización del \eng{pipeline} con distintos modelos sin necesidad de modificar manualmente los parámetros de tokenización.
 
 \subsection{\eng{Chunking}}
 
 El \eng{Chunking} consiste en dividir los documentos en fragmentos manejables. Es fundamental para ajustarse a la ventana de contexto del modelo y para mejorar la recuperación semántica. El texto se puede segmentar por longitud fija (\eng{tokens}), por secciones o párrafos o por significado semántico.
 
-Este proceso fue uno de los procesos más experimentados, probándose diferentes estrategias como el \eng{Chunking} por tamaño fijo de caracteres, por \eng{tokens} con \eng{overloap} (solapamiento) para mantener el contexto o basado en secciones o frases. 
+Este proceso fue uno de los procesos más experimentados, probándose diferentes estrategias como el \eng{Chunking} por tamaño fijo de caracteres, por \eng{tokens} con \eng{overloap} (solapamiento) para mantener el contexto o basado en secciones o frases. Durante las pruebas se  comprobó que el uso exclusivo de \eng{chunks} por tamaño fijo generaba fragmentos poco naturales, afectando negativamente a la recuperación. Por otro lado, el \eng{chunking} semántico puro resultaba más complejo y costoso.
 
-Durante las pruebas se  comprobó que el uso exclusivo de \eng{chunks} por tamaño fijo generaba fragmentos poco naturales, afectando negativamente a la recuperación. Por otro lado, el \eng{chunking} semántico puro resultaba más complejo y costoso. Por ello se optó por una estrategia híbrida, en al cual se agrupa previamente por frases o secciones y después se divide por \eng{tokens} con solapamiento. Consiguiendo así un equilibrio entre la coherencia semántica y el control técnico del tamaño, lo que mejora la calidad de la recuperación.
+Por ello se optó por una estrategia híbrida, en la cual primero se realiza una agrupación lógica del texto utilizando frases y separadores naturales del documento y posteriormente se divide en \eng{chunks} controlados por número de \eng{tokens}, incorporando solapamiento entre fragmentos consecutivos. Este solapamiento permite conservar información contextual relevante entre fragmentos cercanos, reduciendo la pérdida de información cuando una explicación queda dividida entre dos \eng{chunks}.
+
+Además, durante el desarrollo se realizaron pruebas variando tanto el tamaño de los \eng{chunks} como el porcentaje de solapamiento. Se observó que \eng{chunks} demasiado pequeños reducían la capacidad contextual del modelo, mientras que fragmentos demasiado grandes empeoraban la precisión de la recuperación y aumentaban el número de \eng{tokens} enviados al \eng{LLM}. La estrategia híbrida seleccionada consiguió un equilibrio entre coherencia semántica, precisión en la recuperación y eficiencia computacional.
 
 \subsection{\eng{Embeddings}}
 
-Los \eng{embeddings} son representaciones vectoriales del texto que capturas su significado semántico. Permiten comparar las consultas de los usuarios con los fragmentos de los documentos y realizar búsquedas por similitud. Son la base del funcionamiento del sistema de recuperación del \eng{RAG}. Por lo cual para elegir el modelo final se probaron varios comparando su calidad semántica, la velocidad de ejecución y el consumo de recursos. Finalmente, se seleccionó el modelo \file{sentence-transformers/all-MiniLM-L6-v2} debido a que ofrece buen equilibrio entre rendimiento y coste computacional. Además, su integración es sencilla y su dimensión de \eng{embedding} es suficiente para tareas de recuperación semántica.
+Los \eng{embeddings} son representaciones vectoriales del texto que capturas su significado semántico. Permiten comparar las consultas de los usuarios con los fragmentos de los documentos y realizar búsquedas por similitud. Son la base del funcionamiento del sistema de recuperación del \eng{RAG}. Por lo cual para elegir el modelo final se probaron varios comparando su calidad semántica, la velocidad de ejecución y el consumo de recursos. Finalmente, se seleccionó el modelo \file{sentence-transformers/all-MiniLM-L6-v2} debido a que ofrece buen equilibrio entre rendimiento y coste computacional. Además, su integración mediante \file{SentenceTransformer} es sencilla y su dimensión de \eng{embedding} es suficiente para tareas de recuperación semántica sobre documentos administrativos.
+
+Durante las pruebas también se evaluó el comportamiento del sistema en CPU y GPU. La implementación final permite detectar automáticamente el dispositivo disponible y ejecutar el cálculo de \eng{embeddings} utilizando aceleración por GPU cuando está disponible. Además, se incorporaron mecanismos de recuperación ante errores de memoria en CUDA, permitiendo continuar automáticamente la generación de \eng{embeddings} en CPU si la memoria de la GPU resulta insuficiente.
+
+Otra mejora relevante implementada fue el procesamiento por lotes (\eng{batch processing}) durante la generación de \eng{embeddings}. En lugar de vectorizar cada \eng{chunk} individualmente, el sistema procesa múltiples fragmentos simultáneamente, reduciendo significativamente el tiempo de indexación. 
 
 \subsection{Base de datos vectorial}
 
-La base de datos vectorial es la encargada de almacena los \eng{embeddings} y permitir realizar búsquedas en espacios de alta dimensión. Tras estudiar diversas opciones (ver sección~\hyperref[basedatos_vectorial]{4.8.1}) se eligió \eng{Qdrant} ya que, al tener soporte nativo par ala búsqueda vectorial simplifica mucho su uso eficiente. Además, permite almacenar metadatos junto con los \eng{chunks} y \eng{embeddings}, lo que se consideró de utilidad para aumentar el contexto de los \eng{chunks}. Otra ventaja que se observó con las pruebas es que permite trabajar tanto en local como en entornos distribuidos, lo que facilita el despliegue del sistema.
+La base de datos vectorial es la encargada de almacena los \eng{embeddings} y permitir realizar búsquedas en espacios de alta dimensión. Tras estudiar diversas opciones (ver sección~\hyperref[basedatos_vectorial]{4.8.1}) se eligió \eng{Qdrant} ya que, al tener soporte nativo para la búsqueda vectorial simplifica mucho su uso eficiente. Además, permite almacenar metadatos junto con los \eng{chunks} y \eng{embeddings}, lo que se consideró de utilidad para aumentar el contexto durante la recuperación. Como metadatos se incluyen los \eng{hashes SHA-256} de los documentos originales para detectar automáticamente cuándo un documento ha cambiado y reindexarlo sin duplicar información.
+
+Durante el desarrollo se implementó un sistema de creación automática de colecciones en \eng{Qdrant}. Estas colecciones están configuradas con búsqueda por similitud coseno y una dimensión de vector ajustada dinámicamente al modelo de \eng{embeddings} empleado. Para optimizar el rendimiento, los \eng{chunks} se almacenan mediante operaciones \eng{bulk upsert}, reduciendo significativamente el tiempo de indexación frente a inserciones individuales. Además, se utiliza una capa de abstracción (similar a un \eng{Object-Vector Mapping}) para encapsular la lógica de conexión, serialiación y recuperación de datos desde \eng{Qdrant}. Esta capa permite desacoplar parcialmente el sistema del motor vectorial.
 
 \subsection{\eng{Retriever} (mecanismo de recuperación)}
 
-Es el componente encargado de buscar en la base vectorial los fragmentos más relevantes para una consulta. Su calidad es crítica, ya que determina el contexto que se proporcionará al modelo. Se basa en la búsqueda por similitud vectorial, principalmente por similitud coseno. 
+Es el componente encargado de buscar en la base vectorial los fragmentos más relevantes para responder a una consulta. Su calidad es crítica, ya que determina el contexto que se proporcionará al modelo. Por lo tanto, la calidad de la respuesta depende directamente de la capacidad del \eng{retriever} para recuperar información relacionada con la pregunta del usuario. Se basa en la búsqueda por similitud vectorial, principalmente por similitud coseno. 
 
-Se hicieron diversas pruebas en las cuales se analizó como afectaba el números de \eng{chunks} recuperados para cada consulta, la utilización de metadatos para el filtrado y el impacto del tamaño del \eng{chunk} en la recuperación. En estas pruebas se observó que un valor intermedio de \eng{chunks} recuperados por cada pregunta permite encontrar un equilibrio entre la precisión y el ruido. También, se vio que el uso de metadatos (como el nombre del documento) mejora la trazabilidad de la información recuperada. 
+En los primeros prototipos del proyecto, el sistema solo recuperaba el \eng{chunk} más parecido a la consulta del usuario. Para ello, primero se convertía la pregunta en un \eng{embedding} (utilizando el mismo modelo que el que se usa para indexar los documentos). Posteriormente, se calculaba la similitud entre dicho \eng{embedding} y los almacenados en la base de datos vectorial. Finalmente, se seleccionaba el fragmento con mayor similitud y este se incorporaba directamente al \eng{prompt} enviado al \eng{LLM}. Este enfoque se planteó como punto de partida para validar el funcionamiento básico del \eng{RAG} pero presentaba limitaciones importantes en la generación de la respuesta, haciendo que la mayoría de las preguntas no las pudiese contestar.
 
-Finalmente, se optó por un \eng{retriever} basado en \eng{Qdrant} con búsqueda por similitud coseno y recuperación de varios \eng{chunks} relevantes.
+Después, se probó a cambiar el número de \eng{chunks} recuperados (\texttt{top-k retrieval}). Se observó que recuperar pocos \eng{chunks} produce respuestas demasiado limitadas, llevando a generalizaciones que no se cumplen en todos los documentos. En cambio, recuperar demasiados introduce ruido al modelo haciendo que responda con información irrelevante. Además, se vio que los contextos demasiado grandes hacen que el modelo utilice más \eng{tokens} para contestar, empeorando la latencia de generación.
+
+Otro aspecto relevante fue al evolución del propio \eng{chunking}. Al principio los documentos se dividían utilizando tamaños fijos de texto. Sin embargo, se comprobó que esta estrategia fragmentaba información relacionada y afectaba negativamente a la recuperación semántica. Posteriormente, se introdujo el uso de solapamiento entre los \eng{chunks}, permitiendo compartir parte del contenido entre fragmentos consecutivos. Esta mejora incrementó significativamente la coherencia del contexto recuperado y redujo la pérdida de información relevante entre fragmentos contiguos.
+
+Además, del contenido textual, también se añadieron metadatos asociados a cada \eng{chunk} como el nombre del documento, el título de la licitación, el identificados del fragmento, la posición dentro del documento y la información estructural obtenida durante el preprocesado. Utilizar metadatos mejoró la trazabilidad de las respuestas generadas.
+
+Finalmente el sistema utiliza una estrategia de recuperación dinámica basada en búsqueda vectorial por similitud coseno sobre Qdrant. Para cada consulta, la pregunta del usuario se transforma en un \eng{embedding} y posteriormente se calcula la similitud con todos los \eng{embedding} almacenados en la base vectorial. Pero, ahora el sistema recupera un conjunto de \eng{chunks} los cuales deben tener una similitud con la pregunta de al menos 0'5 para descartar fragmentos poco relacionados con la consulta. El número de \eng{chunks} recuperados depende del tipo de pregunta realizada, las consultas generales utilizan hasta 20 fragmentos, mientras que las consultas guiadas tienen configuraciones específicas optimizadas para cada caso. Por ejemplo, preguntas orientadas a resúmenes globales pueden recuperar hasta 80 chunks para proporcionar una visión completa del documento, mientras que consultas más concretas, como solvencia, garantías o duración contractual, utilizan entre 12 y 18 fragmentos para reducir el ruido y mantener la precisión. Además, de la recuperación semántica se aplican filtros por metadatos, como número de expediente o tipo de documento (administrativo/técnico) para limitar la búsqueda únicamnete a los documentos relevantes. Este enfoque híbrido permite equilibrar cobertura contextual, precisión semántica y eficiencia en el consumo de tokens del LLM.
 
 \subsection{\eng{Augmentation}}
 
-este proceso consiste en combinar la consulta del usuario con los fragmentos recuperados para construir un \eng{prompt} enriquecido. Esta fase incluye técnicas de ingeniería de \eng{prompts} para mejorar la calidad de la respuesta. En el desarrollo del \eng{RAG} se probaron distintas estartegias como la concatenación suimple de fragmentos, la inclusión estructurada mediante el uso de etiquetas y el control del número máximo de \eng{tokens} del \eng{prompt}.
+Este proceso consiste en combinar la consulta del usuario con los fragmentos recuperados para construir un \eng{prompt} enriquecido. Esta fase incluye técnicas de ingeniería de \eng{prompts} para mejorar la calidad de la respuesta. En el desarrollo del \eng{RAG} se probaron distintas estrategias, observándose diferencias significativas en el comportamiento del sistema. 
 
-Se comprobó que un exceso de contexto degrada la respuesta del modelo, pero un contexto insuficiente reduce su precisión. Por ello se optó por una estrategia que permite seleccionar los \eng{chunks} más relevantes, una inclusión estructurada en el \eng{prompt} y un control estricto del tamaño total que permite reservar \eng{tokens} para la respuesta.
+En las estrategias más simples, los \eng{chunks} recuperados se concatenaban junto con la pregunta del usuario. Aunque este enfoque era sencillo, el modelo tendía a mezclar información o a ignorar parte del contexto recuperado. 
+
+Observadas estas limitaciones se decidió utilizar \eng{prompts} estructurados. En los cuales se separa el contexto recuperado, la pregunta del usuario, las instrucciones del sistema y las restricciones sobre como responder. 
+
+Con este enfoque el \eng{LLM} interpreta mejor el contexto recuperado y disminuye las alucinaciones. Además, se añadieron instrucciones específicas indicando que la respuesta deben basarse únicamente en la información proporcionada por los \eng{chunks} recuperados.
+
+También, se han realizado pruebas modificando el orden de los fragmentos recuperados dentro del \eng{prompt}. Se observó que colocar primero los \eng{chunks} con mayor similitud mejora la precisión de las respuestas, especialmente en consultas complejas o ambiguas.
+
+Otra mejora importante fue la incorporación de referencias documentales dentro del \eng{prompt}. En lugar de proporcionar únicamente texto plano, cada fragmento incluye información sobre el documento de origen. Esto ayuda al modelo a contextualizar mejor la información y facilita mostrar al usuario la procedencia de la respuesta generada.
+
+Finalmente, el sistema incorpora distintos \eng{prompts} para contestar dependiendo del tipo de consulta que haga el usuario. Se ha diseñado un \eng{prompt} general utilizado para preguntas abiertas, pero, además, se han definido plantillas específicas para tareas concretas como resúmenes globales del documento, extracción de importes económicos, plazos, solvencia, criterios de adjudicación, garantías, presupuestos, duración contractual, penalizaciones o presentación de ofertas. Cada plantilla incluye instrucciones adaptadas al tipo de información buscada y define una estructura concreta para la respuesta esperada. Por ejemplo, los \eng{prompts} de tipo resumen solicitan una explicación global y estructurada del pliego, mientras que los orientados a criterios de adjudicación fuerzan al modelo a identificar ponderaciones, fórmulas y subcriterios. Además, el sistema utiliza un \eng{system prompt} por defecto que obliga al modelo a responder en español de forma breve y precisa. Esta combinación de \eng{prompts} especializados y selección dinámica del contexto permite adaptar el comportamiento del \eng{LLM} al tipo de consulta realizada, mejorando la precisión, consistencia y utilidad de las respuestas generadas.
 
 \subsection{\eng{LLM}}
 
-Es el encargado de generar la respuesta final utilizando el contexto proporcionado. La elección del modelo (tamaño, arquitectura, si es local o una \ext{API}) afecta directamente a la calidad, latencia y coste del sistema.
+Es el encargado de generar la respuesta final utilizando el contexto proporcionado por el sistema \textit{RAG}. La elección del modelo (tamaño, arquitectura, si es local o una \ext{API}) afecta directamente a la calidad, latencia y coste del sistema.
 
-Se han realizado pruebas con diversos modelos locales como \eng{Mistral} o \eng{LLaMA} 3.1 (8B). Finalmente, se ha seleccionado \eng{LLaMA} 3.1-8B, ya que tiene buen rendimiento en tareas de comprensión y generación. Otro aspecto que se tuvo en cuenta fue que permite el control total sobre el sistema sin dependencias externas. Además, se han ajustado parámetros como el número máximo de \eng{tokens} nuevos, la longitud máxima de entrada y el formato del \eng{prompt}. Lo que permitió mejorar la calidad de las respuestas y adaptarlas al contexto del sistema.
+Durante el desarrollo del proyecto, la integración de los modelos de lenguaje fue evolucionando progresivamente. Se comenzó realizando pruebas utilizando modelos locales (obtenidos de Hugging Face) ejecutados mediante Ollama. Estas pruebas permitieron comprobar la viabilidad de ejecutar modelos localmente sin depender de ninguna API externa, lo que aporta un mayor control sobre el sistema y evita costes asociados al uso de servicios comerciales.
+
+Inicialmente se realizaron pruebas con diversos modelos locales como \eng{Mistral} o \eng{LLaMA} para probar distintas arquitecturas y tamaños. Gracias a estas pruebas se puedo ver como afecta el tamaño a la respuesta generada y al tiempo invertido. Se vio que los modelos más pequeños tardaban menos en generar las respuestas, pero dichas respuestas eran de menor calidad. Tendían a ser breves y menos precisas. Mientras que los modelos más grandes generaban mejores respuestas, pero con mayor consumo de recursos y latencias. Finalmente, se seleccionó como modelo principal del sistema \eng{LLaMA} 3.1-8B, ya que tiene buen rendimiento en tareas de comprensión y generación. Este modelo ofrece un buen equilibrio entre la claridad de la respuesta generada, la utilización del contexto recuperado y los requisitos de \eng{hadrware}. Otro aspecto que se tuvo en cuenta a la hora de elegir el modelo fue que permite la ejecución en local usando Ollama. Lo que permite mantener el control total sobre el sistema sin dependencias externas. 
+ 
+Finalmente, se decidió incluir soporte para múltiples modelos configurables desde la propia aplicación \eng{web}. De tal forma que la arquitectura final permite seleccionar dinámicamente entre tres modelos distintos (\eng{LLaMA} 3.1-8B, gemma-4B y qwen3-4B, cargados desde Ollama) integrados dentro del sistema RAG. Esta evolución surgió debido a la necesidad de comparar comportamientos y ofrecer mayor flexibilidad dependiendo del tipo de consulta realizada.  
+ 
+Para soportar esta funcionalidad fue necesario desacoplar la lógica de generación del resto del \eng{pipeline RAG}, implementando una capa de abstracción que permitiese cargar dinámicamente los distintos modelos y modificar sus parámetros. Además, se añadieron funciones auxiliares para gestionar las configuraciones disponibles y mostrar automáticamente las opciones en la interfaz web.
+ 
+ Además, se han ajustado parámetros de generación como el número máximo de \eng{tokens} generados, la longitud máxima de entrada, la temperatura, el formato del \eng{prompt} y el número de \eng{chunks} recuperados. Lo que permitió mejorar la calidad de las respuestas, reduciendo alucinaciones y adaptandolas al contexto del sistema.
+
+
+\section{Conversión a \eng{Markdown}}
+
+La conversión de los documentos PDF a Markdown permite transformar documentos administrativos complejos en texto estructurado apto para el proceso de \eng{chunking}, generación de \eng{embeddings} y recuperación semántica. Inicialmente, los documentos PDF se procesaban extrayendo texto plano. Este enfoque presentaba limitaciones como la pérdida de la estructura del documento, lo que provocaba que el sistema no pudiese diferenciar los títulos, subtítulos, tablas o las secciones. Por este motivo, durante el desarrollo se comenzó a investigar la posibilidad de convertir los PDF a Markdown de forma automática.
+
+Las primeras aproximaciones consistieron en utilizar bibliotecas tradicionales de extracción de texto en Python. Estas herramientas permitían obtener el contenido textual de los PDF, pero perdían gran parte del formato original. Uno de los principales problemas encontrados fue que los documentos de licitaciones públicas presentan formatos extremadamente heterogéneos. Debido a esto se comenzaron a realizar pruebas utilizando OCR (\textit{Optical Character Recognition}). Sin embargo, aunque el OCR permitía recuperar texto que anteriormente no podía extraerse, seguía presentando problemas. No se reconocían correctamente todos los caracteres, se seguía perdiendo parte del formato, las tablas no siempre se construían bien. Además,el uso de OCR supuso un incremento considerable del tiempo de procesamiento. 
+
+La implementación final se basa en un sistema de OCR multimodal que utiliza modelos visuales ejecutados mediante \eng{Ollama}, concretamente el modelo \file{blaifa/Nanonets-OCR-s}. Este modelo recibe imágenes de las páginas del PDF junto con un \eng{prompt} especializado que fuerza la generación de Markdown estructurado, incluyendo títulos jerárquicos, tablas HTML, ecuaciones en \LaTeX{}, listas y otros elementos relevantes del documento original.
+
+El procesamiento se realiza de forma asíncrona página a página. Primero, cada página del PDF se convierte individualmente en una imagen utilizando \file{pdf2image}, evitando cargar el documento completo en memoria y reduciendo así el consumo de recursos. Posteriormente, las páginas se procesan concurrentemente mediante tareas asíncronas controladas con semáforos, permitiendo paralelizar parcialmente el OCR y mejorar el rendimiento global del sistema. Esta arquitectura resulta especialmente importante debido al elevado tiempo de procesamiento de los documentos administrativos extensos.
+
+Además, la implementación está preparada para utilizar aceleración por GPU cuando está disponible. El sistema detecta automáticamente la configuración de GPU y solicita a \eng{Ollama} la ejecución del modelo visual utilizando todas las capas posibles en GPU. También se incorporaron mecanismos de \eng{fallback} a CPU en caso de error, así como reintentos automáticos reduciendo progresivamente la resolución de las imágenes cuando el modelo produce fallos de memoria o errores internos. Estas optimizaciones fueron necesarias debido al elevado consumo computacional del OCR multimodal, especialmente en documentos con muchas páginas o tablas complejas.
+
+Tras la conversión inicial, el Markdown generado pasa por una fase adicional de normalización automática. En esta etapa se corrigen índices con puntos suspensivos, se detectan encabezados numerados y se transforman en títulos Markdown jerárquicos, incluso cuando el modelo OCR no los reconoce correctamente. Para ello se desarrollaron reglas específicas adaptadas a la estructura habitual de los pliegos.
+
+Durante el desarrollo se observó que esta aproximación mejora considerablemente la calidad del texto utilizado posteriormente por el sistema \eng{RAG}, especialmente frente a OCR tradicionales basados únicamente en extracción plana de texto. Sin embargo, también se detectaron varias limitaciones importantes. La principal es el elevado tiempo de procesamiento, ya que cada página debe renderizarse como imagen y posteriormente analizarse mediante un modelo multimodal. Además, aunque el sistema consigue detectar correctamente gran parte de la estructura documental, no siempre identifica de forma precisa todas las secciones, tablas o jerarquías debido a que los formatos de los documentos son poco homogéneos. 
+
+\section{Evaluación \eng{RAG}}
+
+Pipeline combina ARES + evaluación (RAGAS + embeddings)
+
+\section{Desarrollo \eng{web}}
+
+explicación general sobre flask y como se ha dividido la aplicación (separación de frontend y backend)
+
+\subsection{\eng{Frontend}}
+
+Diseño de interfaz, modo claro/oscuro, inetrnacionalización
+
+Uso de boostrap, responsive
+ 
+Uso de D3 gráficas
+
+Uso de driverjs para tutoriales
+
+\subsection{\eng{Backend}}
+
+funcionalidades de la aplicación
+
+controladores
+
+servicios (lógica de negocio)
+
+modelo de datos y comunicación entre ellos y las capas
+
+seguridad y control de acceso
+
+control de excepciones
+
+tareas asíncronas
+
+
+\section{Evaluación de la calidad del código}
+
+SonarQube Cloud
+
+\section{Despliegue}
+
+Docker + Gunicorn + Nginx
+
+\section{Integración CI/CD}
+
+GuitHub Actions
