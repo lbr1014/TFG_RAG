@@ -18,9 +18,31 @@ Tuple = tuple
 import aiofiles
 from playwright.async_api import async_playwright
 
-RUTA_JSON = Path(os.environ.get("PLIEGOS_INPUT_JSON", "resultados_playwright_asincrono_servidor.json"))
+def _project_root() -> Path:
+    # .../app/main/code/services/web_scraping/DescargarPliegos.py -> project root
+    return Path(__file__).resolve().parents[5]
+
+
+WEB_SCRAPING_DATA_DIR = _project_root() / "data" / "web_scraping"
+WEB_SCRAPING_DATA_DIR.mkdir(parents=True, exist_ok=True)
+if os.name != "nt":
+    try:
+        WEB_SCRAPING_DATA_DIR.chmod(0o775)
+    except OSError:
+        pass
+_write_test = WEB_SCRAPING_DATA_DIR / ".write_test.tmp"
+try:
+    with _write_test.open("w", encoding="utf-8") as f:
+        f.write("ok")
+finally:
+    try:
+        _write_test.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+RUTA_JSON = WEB_SCRAPING_DATA_DIR / "resultados_playwright_asincrono_servidor.json"
 DEST = Path(os.environ.get("DOCS_DIR") or os.environ.get("PLIEGOS_DEST", "pliegos"))
-JSON_SALIDA = Path(os.environ.get("PLIEGOS_OUTPUT_JSON", "pliegos_pdfs.json"))
+JSON_SALIDA = WEB_SCRAPING_DATA_DIR / "pliegos_pdfs.json"
 
 # Playwright usa milisegundos para los timeouts
 TIMEOUT_MS = 90_000

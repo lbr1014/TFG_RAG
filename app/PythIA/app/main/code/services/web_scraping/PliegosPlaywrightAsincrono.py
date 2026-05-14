@@ -18,10 +18,56 @@ from playwright.async_api import TimeoutError as PWTimeoutError
 
 # ======== Constantes ========
 BASE_URL = "https://contrataciondelestado.es/wps/portal/plataforma"
-OUTPUT_JSON = "resultados_playwright_asincrono_servidor.json"
+OUTPUT_JSON_FILENAME = "resultados_playwright_asincrono.json"
 QUERY = "licitacion"
 logger = logging.getLogger(__name__)
 OBJETIVO = "Junta de Gobierno de la Diputación Provincial de Burgos"
+
+
+def _project_root() -> Path:
+    """
+    Obtiene la ruta raíz del proyecto.
+
+    Returns:
+        Path: Ruta absoluta al directorio raíz del proyecto, asumiendo que este script está ubicado en app/main/code/services/web_scraping/.
+    """
+    return Path(__file__).resolve().parents[5]
+
+
+def _ensure_writable_dir(path: Path) -> None:
+    """
+    Asegura que el directorio especificado existe y es escribible. Crea el directorio si no existe y prueba a escribir un archivo temporal para verificar permisos.
+    
+    Args:
+        path (Path): Ruta al directorio a verificar.
+    """
+    path.mkdir(parents=True, exist_ok=True)
+    if os.name != "nt":
+        try:
+            path.chmod(0o775)
+        except OSError:
+            pass
+    test_file = path / ".write_test.tmp"
+    try:
+        with test_file.open("w", encoding="utf-8") as f:
+            f.write("ok")
+    finally:
+        try:
+            test_file.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+OUTPUT_DIR = _project_root() / "data" / "web_scraping"
+try:
+    _ensure_writable_dir(OUTPUT_DIR)
+except OSError as e:
+    raise RuntimeError(
+        f"No hay permisos de escritura en '{OUTPUT_DIR}'. "
+        "Asegura que el usuario del proceso puede escribir en data/web_scraping."
+    ) from e
+
+OUTPUT_JSON = str(OUTPUT_DIR / OUTPUT_JSON_FILENAME)
 
 
 def _norm(s: str) -> str:
