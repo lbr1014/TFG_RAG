@@ -1476,7 +1476,7 @@ def _scraping_cancel_message(lang: str) -> str:
     return translate_for(lang, SCRAPING_CANCELLED)
 
 
-def _build_scraping_context() -> tuple[Path, Path, Path, Path, Path, dict[str, str]]:
+def _build_scraping_context() -> tuple[Path, Path, Path, Path, Path, dict[str, str], Path, Path]:
     """
     Construye el contexto necesario para ejecutar el scraping.
 
@@ -1488,11 +1488,16 @@ def _build_scraping_context() -> tuple[Path, Path, Path, Path, Path, dict[str, s
     scraper_dir = root / "services" / "web_scraping"
     script_1 = scraper_dir / "PliegosPlaywrightAsincrono.py"
     script_2 = scraper_dir / "DescargarPliegos.py"
+    data_dir = Path(current_app.config["DATA_DIR"])
+    scraping_data_dir = data_dir / "web_scraping"
+    resultados_json = scraping_data_dir / "resultados_playwright_asincrono_servidor.json"
+    pliegos_json = scraping_data_dir / "pliegos_pdfs.json"
     env = os.environ.copy()
     env["PLIEGOS_DEST"] = str(base_pliegos)
-    env["PLIEGOS_INPUT_JSON"] = str(scraper_dir / "resultados_playwright_asincrono_servidor.json")
-    env["PLIEGOS_OUTPUT_JSON"] = str(scraper_dir / "pliegos_pdfs.json")
-    return base_pliegos, scraper_dir, script_1, script_2, root, env
+    # Mantener variables por compatibilidad (aunque los scripts ahora usan data/web_scraping).
+    env["PLIEGOS_INPUT_JSON"] = str(resultados_json)
+    env["PLIEGOS_OUTPUT_JSON"] = str(pliegos_json)
+    return base_pliegos, scraper_dir, script_1, script_2, root, env, resultados_json, pliegos_json
 
 
 def _execute_subprocess_with_cancellation(script_path: Path, cwd: Path, env: dict[str, str], should_cancel, lang: str) -> None:
@@ -1710,7 +1715,7 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
             _mark_job_running(job, message=translate_for(lang, "scraping.starting"))
             db.session.commit()
 
-            base_pliegos, scraper_dir, script_1, script_2, _root, env = _build_scraping_context()
+            base_pliegos, scraper_dir, script_1, script_2, _root, env, resultados_json, _pliegos_json = _build_scraping_context()
 
             def should_cancel() -> bool:
                 """
@@ -1721,15 +1726,26 @@ def scraping_async(app, job_id: int, user_email: str, docs_url: str, lang: str =
                 """
                 return _job_should_cancel(job)
 
-            _run_scraping_script(
-                job,
-                script_1,
-                scraper_dir,
-                env,
-                should_cancel,
-                lang,
-                message=translate_for(lang, "scraping.script_1"),
-            )
+            try:
+                _run_scraping_script(
+                    job,
+                    script_1,
+                    scraper_dir,
+                    env,
+                    should_cancel,
+                    lang,
+                    message=translate_for(lang, "scraping.script_1"),
+                )
+            except subprocess.CalledProcessError as exc:
+                # Si el extractor falla pero ya ha ido persistiendo resultados, intentamos descargar con lo disponible para maximizar pliegos.
+                if resultados_json.exists():
+                    app.logger.warning(
+                        "El extractor falló, pero existe '%s'. Continuando con descarga. stderr=%s",
+                        resultados_json,
+                        (exc.stderr or "")[-2000:],
+                    )
+                else:
+                    raise
             _run_scraping_script(
                 job,
                 script_2,

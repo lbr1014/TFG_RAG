@@ -242,6 +242,9 @@ async def run() -> None:
         None: Los PDFs se guardan en el directorio DEST y los metadatos en JSON_SALIDA.
     """
     ensure_dest_dir()
+    if not RUTA_JSON.exists():
+        raise FileNotFoundError(
+            f"No se encontró el JSON de entrada en '{RUTA_JSON}'. ")
     items = json.loads(RUTA_JSON.read_text(encoding="utf-8"))
 
     pdfs_por_expediente = defaultdict(list)

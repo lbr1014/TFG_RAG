@@ -18,7 +18,6 @@ class CreateAppPathsUnitTest(unittest.TestCase):
                 "DATABASE_URL": "sqlite:///:memory:",
                 "DATA_DIR": str(data_dir),
                 "DOCS_DIR": "pliegos",
-                "PROFILE_UPLOAD_FOLDER": "profiles",
                 "SECRET_KEY": "test",
                 "FLASK_SESSION_SIGNER": "signer",
             }

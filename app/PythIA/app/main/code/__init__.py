@@ -143,11 +143,8 @@ def _configure_data_dirs(app: Flask, *, project_root: Path) -> None:
         docs_dir = data_dir / docs_dir
     app.config["DOCS_DIR"] = docs_dir
 
-    profile_dir_env = os.environ.get("PROFILE_UPLOAD_FOLDER")
-    profile_dir = Path(profile_dir_env) if profile_dir_env else (data_dir / "profiles")
-    if not profile_dir.is_absolute():
-        profile_dir = data_dir / profile_dir
-    app.config["PROFILE_UPLOAD_FOLDER"] = profile_dir
+    # Fotos de perfil: siempre dentro de DATA_DIR (no se permite override a rutas externas).
+    app.config["PROFILE_UPLOAD_FOLDER"] = data_dir / "profiles"
 
 
 def create_app():
@@ -187,14 +184,27 @@ def create_app():
     _configure_max_content_length(app)
     _configure_data_dirs(app, project_root=project_root)
 
-    data_dir = app.config["DATA_DIR"]
-
     try:
-        app.config["PROFILE_UPLOAD_FOLDER"].mkdir(parents=True, exist_ok=True)
-    except (PermissionError, FileNotFoundError):
-        fallback_profile_dir = (Path(data_dir) / "profiles").resolve()
-        app.config["PROFILE_UPLOAD_FOLDER"] = fallback_profile_dir
-        fallback_profile_dir.mkdir(parents=True, exist_ok=True)
+        profile_dir = Path(app.config["PROFILE_UPLOAD_FOLDER"])
+        profile_dir.mkdir(parents=True, exist_ok=True)
+        if os.name != "nt":
+            try:
+                profile_dir.chmod(0o775)
+            except OSError:
+                pass
+        write_test = profile_dir / ".write_test.tmp"
+        try:
+            write_test.write_text("ok", encoding="utf-8")
+        finally:
+            try:
+                write_test.unlink(missing_ok=True)
+            except OSError:
+                pass
+    except OSError as e:
+        raise RuntimeError(
+            f"No hay permisos de escritura en '{app.config['PROFILE_UPLOAD_FOLDER']}'. "
+            "Asegura que el usuario del proceso puede escribir dentro de data/."
+        ) from e
 
     # Flask Mail
     app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "")
