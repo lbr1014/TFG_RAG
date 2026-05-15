@@ -84,7 +84,7 @@ Los componentes clave del \eng{pipeline} de indexación son:
 \begin{itemize}
 \tightlist
 	\item Carga de datos (\eng{data loading}): consiste en conectarse a las fuentes, por ejemplo, sistemas de ficheros, \eng{data lakers}, CMS o APIs, para la extracción del texto en bruto y el parsing de este en formatos heterogéneos, como pueden ser PDF, DOCX, JSON o HTML. Luego se le añaden metadatos y finalmente se hace limpieza quitando código, etiquetas raras y enmascarando datos confidenciales.
-	\item División de texto (\eng{chunking}): segmentación en unidades manejables, los \eng{chunks}, para mejorar la recuperación y el alineamiento con las capacidades de contexto \eng{LLM}. Ayuda a respetar la ventana de contexto, mitiga el problema de perdida en el medio y facilita la búsqueda eficiente. Para dividir el texto puede usar diversos métodos:
+	\item División de texto (\eng{chunking}): segmentación en unidades manejables, los \eng{chunks}, para mejorar la recuperación y el alineamiento con las capacidades de contexto \eng{LLM}. Ayuda a respetar la ventana de contexto, mitiga el problema de perdida en el medio\footnote{El problema de la perdida en el medio ocurre cuando los LLM pierden precisión al procesar mucha información, priorizando el inicio y el final~\cite{concpteo:lostmiddle}.} y facilita la búsqueda eficiente. Para dividir el texto puede usar diversos métodos:
 	\begin{itemize}
 		\item Tamaño fijo: divide el texto en longitudes uniformes, como un número de caracteres o \eng{tokens}.
 		\item Especializados: divide el texto basándose en su estructura como encabezados o párrafos. 
@@ -129,7 +129,7 @@ Los componentes clave del \eng{pipeline} de generación son:
 \end{itemize} 
 
 \subsection{Capas de soporte}
-Además de los dos \eng{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, caché semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \eng{prompt}, envenenamiento de dato o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \eng{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
+Además de los dos \eng{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, caché semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \eng{prompt}, envenenamiento de dato\footnote{El envenenamiento de datos es un ciberataque que corrompe los conjuntos de datos de entrenamiento utilizados para la Inteligencia Artificial~\cite{concpteo:envdtos}.} o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \eng{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
 \begin{enumerate}
 \tightlist
 	\item \textbf{Capas críticas}: son las capas imprescindibles del \eng{RAGOps stack}.
