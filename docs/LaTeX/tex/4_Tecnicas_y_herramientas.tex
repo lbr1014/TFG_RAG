@@ -15,7 +15,7 @@ Para la gestión del flujo de trabajo y organización de tareas se ha adoptado l
 \section{Repositorio}
 Para alojar el repositorio se han valorado distintas alternativas como \myhref{https://bitbucket.org/}{Bitbucket}, \myhref{https://github.com/}{GitHub}, \myhref{https://gitlab.com/}{GitLab} o \myhref{https://trello.com/}{Trello}. Finalmente se ha elegido GitHub que es una plataforma basada en la nube que permite alojar repositorios de código. GitHub ofrece funciones muy útiles como ramas (\eng{branches}), \eng{pull requests}, seguimiento de cambios (\eng{commits}), historial del proyecto, gestión de incidencias (\eng{issues}). Además, permite la colaboración entre usuarios, lo que es muy útil para la revisión del proyecto.
 
-Otra ventaja es que GitHub es compatible con herramientas de integración y despliegue continuo, lo que facilita la automatización de pruebas y la entrega de \eng{software}. Asimismo, permite incluir documentación directamente en el repositorio, ya sea mediante archivos \ext{README} o a través de \eng{wikis}, lo que mejora la claridad y la reproducibilidad del trabajo. Finalmente, al tratarse de la plataforma más utilizada a nivel mundial, cuenta con abundante documentación, lo que la convierte en una alternativa sólida y con amplio soporte~\cite{gitHub}.
+Otra ventaja es que GitHub es compatible con herramientas de integración y despliegue continuo (Github Actions), lo que facilita la automatización de pruebas y la entrega de \eng{software}. Asimismo, permite incluir documentación directamente en el repositorio, ya sea mediante archivos \ext{README} o a través de \eng{wikis}, lo que mejora la claridad y la reproducibilidad del trabajo. Finalmente, al tratarse de la plataforma más utilizada a nivel mundial, cuenta con abundante documentación, lo que la convierte en una alternativa sólida y con amplio soporte~\cite{gitHub}.
 
 \section{Gestión de tareas}
 Para la gestión de las tareas del proyecto se han valorado diversas herramientas, como \myhref{https://www.zenhub.com/}{\eng{ZenHub}}, \myhref{https://github.com/}{\eng{GitHub
@@ -130,6 +130,16 @@ Se ha optado por utilizar \eng{Flask} para el desarrollo \eng{web} en lugar de o
 	\item Soporte WSGI: como se ha comentado anteriormente, \eng{Flask} se basa en este estándar para la comunicación entre aplicaciones \eng{web} y servidores \eng{Python}. La utilización de este estándar garantiza la compatibilidad con múltiples servidores de producción y facilita su despliegue mediante \eng{Docker}.
 	\item Extensiones: a pesar de que es minimalista, permite incorporar extensiones para bases de datos, autenticación o validación de formularios.
 \end{itemize}  
+
+\section{Evaluación de la calidad del código}
+
+Para evaluar y mantener la calidad del código desarrollado también se han incorporado herramientas de análisis estático. Concretamente se ha utilizado \myhref{https://www.sonarsource.com/products/sonarqube/cloud/}{SonarCloud} y \myhref{https://docs.astral.sh/ruff/}{Ruff}.
+
+SonarCloud es una plataforma de análisis continuo integrada con GitHub que permite detectar automáticamente \eng{bugs}, vulnerabilidades de seguridad, duplicidad de código, problemas de mantenibilidad, complejidad ciclomática y el \eng{coverage} de las pruebas. Su utilización facilita identificar códigos que requieren refactorización y mejorar progresivamente la arquitectura de la aplicación. 
+
+Por su parte, Ruff es una herramienta ligera y muy rápida orientada al análisis estático y validación del estilo de código Python. Sirve para comprobar automáticamente errores de estilo, \eng{imports} no utilizados, variables redundantes y malas prácticas de programación. Ayuda a mantener una estructura homogénea y coherente en todo el proyecto. 
+
+
 
 \section{Despliegue de la aplicación}
 Para desplegar la \eng{web} se han utilizado las herramientas \eng{docker} (ver sección~\hyperref[docker]{4.9.1}), \eng{nginx} (ver sección~\hyperref[nginx]{4.9.2}), \eng{gunicorn} (ver sección~\hyperref[gunicorn]{4.9.3}), DNS (ver sección~\hyperref[dns]{4.9.4}) y el certificado SSL/TLS (ver sección~\hyperref[https]{4.9.5}). El uso de estas herramientas permite separar la responsabilidad y asegurar la portabilidad, el rendimiento y la seguridad. 
