@@ -119,7 +119,11 @@ Durante el desarrollo se observó que esta aproximación mejora considerablement
 
 \section{Evaluación \eng{RAG}}
 
-Pipeline combina ARES + evaluación (RAGAS + embeddings)
+Un aspecto relevante del proyecto fue incluir una evaluación del sistema \eng{RAG} implementado. Para dicha evaluación se ha utilizado un \eng{pipeline} de evaluación \eng {RAG} propio. El cual se inspira en \eng{frameworks} existentes como ARES (\eng{Automated RAG Evaluation System}) y RAGAS (\eng{Retrieval-Augmented Generation Assessment}). El objetivo principal era construir un sistema de evaluación reproducible, automatizable y completamente local, evitando dependencias de API externas y garantizando la confidencialidad de los documentos utilizados.
+
+La arquitectura implementada combina distintos enfoques de evaluación con la generación automática de \eng{datasets} de evaluación. Para la generación de dichos \eng{datatsets} se utiliza ARES, el cual geenra de manera automática preguntas, respuestas y evidencias documentales a partir de los propios \eng{chunks} almacenados en la base de datos vectorial.
+
+Respecto a la evaluación, por un lado, se utiliza RAGAS para calcular métricas semánticas relacionadas con la calidad de la recuperación y de la generación utilizando un enfoque \eng{LLM-as-a-judge}. Las métricas utilizadas son \eng{Faithfulness}, \eng{Answer relevance}, \eng{Answer correctness}, \eng{Context precision y recall} y \eng{Context relevance}. Las cuales permiten analizar si la respuesta realmente está fundamentada en el contexto recuperado y si dicho contexto es adecuado para responder la consulta. Esta evaluación se combina con métricas de respaldo basadas en \eng{embeddings} y similitud coseno. Estas métricas permiten calcular automáticamente el grado de similitud semántica entre preguntas, respuestas, contexto recuperado y \eng{ground truth} utilizando representaciones vectoriales. Finalmente, ambas métricas se combinan mediante medias ponderadas. Consiguiendo una evaluación híbrida más robusta y estable. Esta combinación permitió reducir la variabilidad típica de los sistemas basados únicamente en \eng{LLM-as-a-judge} y mejorar la reproducibilidad de los resultados.
 
 \section{Desarrollo \eng{web}}
 
@@ -228,12 +232,42 @@ A medida que el proyecto fue creciendo y la aplicación pasó de estar formada p
 
 Durante las primeras fases del proyecto, la prioridad principal era desarrollar \eng{scripts} funcionales sin tener en cuenta el código duplicado, las funcione demasiado complejas, la escasa modularización, la baja reutilización o las dependencias acopladas. Para facilitar la mantebilidad y la escalabilidad se decidió incorporar herramientas automáticas de análisis estático de código.
 
-Concretamente se decidió usar \myhref{https://sonarcloud.io/project/overview?id=lbr1014_TFG_RAG}{ConarCloud}. La cual es una plataforma de análisis continuo que permite evaluar automáticamente distintos indicadores relacionados con la calidad del software.
+Concretamente se decidió usar \myhref{https://sonarcloud.io/project/overview?id=lbr1014_TFG_RAG}{SonarCloud}. La cual se integró directamente con el repositorio GitHub del proyecto, para analizar automáticamente distintos indicadores relacionados con la calidad del software. Su uso permitió detectar y solucionar \eng{bugs}, vulnerabilidades de seguridad, código duplicado, funciones extremadamente complejas, funciones demasiado largas, variables sin utilizar, problemas de mantenibilidad, incumplimientos de estándares de calidad y problemas con tipado y control de excepciones.
+
+Como consecuencia de estos análisis, se realizaron diversas refactorizaciones importantes dentro del proyecto. Por ejemplo se realizó una separación más estricta entre los controladores y los servicios, se modularizaron las funciones más complejas, se reutilizó la lógica común reduciendo el código duplicado y se mejoró el control de excepciones.
+
+Además, de SonarCloud también se utilizó \myhref{https://docs.astral.sh/ruff/}{Ruff} como herramienta complementaria para el análisis estático y mejora de la calidad del código. Ruff se integró dentro del flujo de desarrollo para realizar comprobaciones rápidas relacionadas con el estilo, complejidad y consistencia del código. Su principal ventaja es su gran velocidad de ejecución que permitió utilizarlo frecuentemente durante el desarrollo sin afectar significativamente al tiempo de trabajo. Gracias a Ruff se detectaron automáticamente problemas como \eng{imports} no utilizados, variables redundantes, código muerto, errores de estilo, complejidad innecesaria y diversas malas prácticas de programación en Python. Además, se empleó para mantener una estructura homogénea en todo el proyecto, como por ejemplo, en los nombres de las funciones y variables. Esto ayudó a mejorar la legibilidad, consistencia y mantenibilidad del código, especialmente en un proyecto grande y modular como PythIA, donde coexistían múltiples componentes relacionados con Flask, el sistema RAG, el procesamiento documental y las tareas asíncronas.
+
+ Para mejorar la legibilidad también se añadieron comentarios y documentación y se realizó separación de responsabilidades.
+
+Además del análisis estático, la calidad del código también se complementó con pruebas unitarias y pruebas funcionales desarrolladas durante distintas fases del proyecto. Estas pruebas permitieron verificar el correcto funcionamiento de los formularios, la gestión de usuarios, las validaciones, los servicios principales, la integración del sistema \eng{RAG} y el procesamiento documental. 
 
 \section{Despliegue}
 
-Docker + Gunicorn + Nginx
+Uno de los aspectos más importantes durante el desarrollo de PythIA fue el diseño de un entorno de despliegue estable, reproducible y preparado para producción.
+
+En las primeras fases del proyecto, la aplicación se ejecutaba en entornos locales de desarrollo utilizando el servidor integrado de Flask. Aunque esta aproximación era suficiente para validar prototipos y desarrollar funcionalidades, presentaba importantes limitaciones relacionadas con el rendimiento, la escalabilidad, la seguridad y la reproducibilidad del entorno.
+
+Para resolver estos problemas se decidió utilizar Docker. Lo que permitió encapsular los componentes necesarios de la aplicación dentro de contenedores independientes, garantizando que el sistema se ejecute de manera consistente independientemente del entorno donde fuese desplegado. 
+
+La utilización de Docker aportó múltiples ventajas al proyecto, por ejemplo permitió aumentar la reproductibilidad del entorno, aislar los servicios y simplificar la gestión de dependencias. Mejorando la mantenibilidad y la portabilidad entre distintos entornos. Además, hizó que el despliegue fuese más fácil. 
+
+En las primeras versiones, Flask seguía ejecutándose utilizando su servidor de desarrollo integrado. Sin embargo, este servidor no está diseñado para entornos productivos, ya que no gestiona adecuadamente múltiples peticiones concurrentes ni ofrece suficiente robustez frente a cargas elevadas. Para solucionar estos problemas se integró Gunicorn como servidor WSGI de producción. El cual se encarga de ejecutar múltiples workers de Flask de manera concurrente, mejorando significativamente el rendimiento y la estabilidad del sistema. Permitiendo gestionar mejor las peticiones simultáneas, el tiempo de espera, los procesos bloqueantes y la recuperación frente a fallos.
+
+Otro aspecto importante fue la incorporación de Nginx como \eng{proxy} inverso. Nginx se sitúa delante de Gunicorn y asume la gestión de conexiones HTTP, el balanceo interno de peticiones, la gestión de cabeceras, la optimización de rendimiento, la seguridad básica de acceso y se encarga de servir los archivos estáticos. Su utilización de manera conjunta con Gunicorn permitió separar las responsabilidades del sistema \eng{web}, mejorando tanto el rendimiento como la seguridad de la aplicación.
+
+La configuración de Docker presento alguna dificulta, por ejemplo, en la integración entre Flask, Qdrant y PostgreSQL, ya que la aplicación dependía simultáneamente de una base de datos relacional y otra vectorial. Lo que obligó a diseñar cuidadosamente la inicialización y configuración de los servicios para evitar errores durante el arranque del sistema.
+
+Otro aspecto relevante fue la gestión de las variables sensibles y claves privadas. Para ello se utilizaron archivos de variables de entorno diferenciados, separando las configuraciones públicas de las credenciales privadas del sistema. Esto permitió mejorar la seguridad y facilitar la configuración en distintos entornos.
+
+La arquitectura final del despliegue está dividida en varios contenedores especializados que se comunican entre sí mediante redes Docker internas. El sistema se divide principalmente en cinco servicios, un contenedor PostgreSQL para la persistencia de datos relacionales de la aplicación, un contenedor Qdrant encargado de la base de datos vectorial, un contenedor Ollama responsable de ejecutar los modelos de lenguaje y OCR multimodal utilizando aceleración por GPU, un contenedor principal con la aplicación Flask ejecutada mediante Gunicorn y un contenedor Nginx utilizado como \eng{proxy} inverso y punto de entrada HTTPS del sistema. Es decir, la aplicación web no se comunica directamente con el exterior, sino que todas las peticiones pasan previamente por Nginx. Esto permite mejorar la seguridad y gestionar cetificados TLS y balanceo de peticiones. Además, se incorporan volúmenes persistentes para almacenar datos de PostgreSQL, índices vectoriales de \eng{Qdrant}, modelos descargados de \eng{Ollama} y cachés de \eng{HuggingFace}, evitando perder información al reiniciar los contenedores. La arquitectura también incluye comprobaciones automáticas de estado (\eng{healthchecks}) y dependencias entre servicios para asegurar que cada componente esté disponible antes de iniciar los demás.
 
 \section{Integración CI/CD}
 
-GuitHub Actions
+Durante el desarrollo también se incorporaron mecanismos de integración continua y automatización del flujo de desarrollo mediante GitHub Actions.
+
+En las primeras fases del proyecto, todas las comprobaciones del sistema se realizaban manualmente. Cada modificación requería ejecutar localmente las pruebas, comprobar dependencias y verificar manualmente el correcto funcionamiento de la aplicación. Conforme el proyecto fue creciendo, este enfoque comenzó a resultar poco escalable y propenso a errores.
+
+Para mejorar este proceso se decidió incorporar un \eng{pipeline} CI/CD utilizando GitHub Actions. La integración se configuró para ejecutarse automáticamente tanto al realizar \eng{commits} sobre la rama principal (\eng{main}) como al abrir o actualizar \eng{pull requests}. De esta forma cada cambio realizado en el repositorio desencadena las comprobaciones de calidad del sistema. 
+
+El \eng{pipeline} CI/CD comienza clonando el repositorio y configurando el entorno Python utilizado por el proyecto. Luego instala las dependencias definidas para el entorno Docker de producción. Esto garantiza que las comprobaciones se realicen en un entorno lo más parecido posible al despliegue real. Una vez preparado el entorno, se ejecutan de manera automática los \eng{tests} del proyecto mediante \file{unittest}. Además, durante la ejecución de las pruebas se calcula la cobertura de código utilizando \file{coverage.py}, generándose informes detallados sobre qué partes del sistema están siendo verificadas por los \eng{tests} y cuales no. Tras la ejecución de las pruebas, GitHub Actions integra automáticamente el proyecto con SonarCloud para realizar el análisis estático del código. 
