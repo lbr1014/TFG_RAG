@@ -57,6 +57,7 @@ services:
     image: ${OLLAMA_IMAGE:-ollama/ollama:0.20.7}
     pull_policy: always
     container_name: flask_ollama_ocr
+    entrypoint: ["sh", "-lc"]
     gpus: all
     ports:
       - "${OCR_OLLAMA_EXTERNAL_PORT:-11435}:${OLLAMA_INTERNAL_PORT}"
@@ -67,16 +68,16 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
       OCR_MODEL_NAME: ${OCR_MODEL_NAME:-blaifa/Nanonets-OCR-s}
     command: >
-      sh -lc "ollama serve & pid=$$!;
+      ollama serve & pid=$$!;
       until ollama list >/dev/null 2>&1; do sleep 1; done;
-      if ! ollama list 2>/dev/null | grep -Fq \"$$OCR_MODEL_NAME\"; then
-        echo \"[ollama_ocr] Pulling OCR model: $$OCR_MODEL_NAME\";
-        ollama pull \"$$OCR_MODEL_NAME\";
+      if ! ollama list 2>/dev/null | grep -Fq "$$OCR_MODEL_NAME"; then
+        echo "[ollama_ocr] Pulling OCR model: $$OCR_MODEL_NAME";
+        ollama pull "$$OCR_MODEL_NAME";
       fi;
-      wait $$pid"
+      wait $$pid
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "sh", "-lc", "ollama list 2>/dev/null | grep -Fq \"$$OCR_MODEL_NAME\""]
+      test: ["CMD-SHELL", "ollama list 2>/dev/null | grep -Fq \"$$OCR_MODEL_NAME\""]
       interval: 10s
       timeout: 5s
       retries: 30
