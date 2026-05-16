@@ -53,6 +53,26 @@ services:
       timeout: 5s
       retries: 30
 
+  ollama_ocr:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.20.7}
+    pull_policy: always
+    container_name: flask_ollama_ocr
+    gpus: all
+    ports:
+      - "${OCR_OLLAMA_EXTERNAL_PORT:-11435}:${OLLAMA_INTERNAL_PORT}"
+    volumes:
+      - ollama_ocr:/root/.ollama
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      OCR_MODEL_NAME: ${OCR_MODEL_NAME:-blaifa/Nanonets-OCR-s}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "sh", "-lc", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
   web:
     build:
       context: .
@@ -70,10 +90,13 @@ services:
         condition: service_healthy
       ollama:
         condition: service_healthy
+      ollama_ocr:
+        condition: service_healthy
       qdrant:
         condition: service_started
     environment:
       - OLLAMA_BASE_URL=${OLLAMA_SERVICE_HOST}:${OLLAMA_INTERNAL_PORT}
+      - OCR_OLLAMA_BASE_URL=${OCR_OLLAMA_SERVICE_HOST:-ollama_ocr}:${OLLAMA_INTERNAL_PORT}
       - QDRANT_URL=${QDRANT_SERVICE_HOST}:${QDRANT_INTERNAL_PORT}
       - RAG_MODEL_DEVICE=${RAG_MODEL_DEVICE:-cpu}
       - RAG_MAX_WORKERS=${RAG_MAX_WORKERS:-4}
@@ -145,4 +168,5 @@ volumes:
   pgdata:
   qdrantdata:
   ollama:
+  ollama_ocr:
   hf_cache:

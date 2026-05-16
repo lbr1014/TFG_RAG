@@ -8,8 +8,10 @@ import base64
 import logging
 import os
 import shutil
+import statistics
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 import httpx
@@ -70,7 +72,7 @@ else:
     OLLAMA_NUM_GPU_SOURCE = "auto-ollama"
 PDF_RENDER_DPI = int(os.getenv("PDF_RENDER_DPI", "200"))
 OCR_MAX_IMAGE_SIDE = int(os.getenv("OCR_MAX_IMAGE_SIDE", "1600"))
-OCR_CONCURRENCY = int(os.getenv("OCR_CONCURRENCY", "2"))
+OCR_CONCURRENCY = int(os.getenv("OCR_CONCURRENCY", "1"))
 OCR_RETRY_MAX_IMAGE_SIDES = [
     int(value.strip())
     for value in os.getenv("OCR_RETRY_MAX_IMAGE_SIDES", "1600,1280,1024,896,768").split(",")
@@ -99,7 +101,63 @@ def _service_url_from_env(env_name: str, default_host: str) -> str:
     return value
 
 
-OLLAMA_BASE_URL = _service_url_from_env("OLLAMA_BASE_URL", "ollama:11434")
+OCR_OLLAMA_BASE_URL = _service_url_from_env(
+    "OCR_OLLAMA_BASE_URL",
+    os.getenv("OLLAMA_BASE_URL", "ollama:11434"),
+)
+OLLAMA_BASE_URL = OCR_OLLAMA_BASE_URL
+
+
+def _pct(values: list[float], percentile: float) -> float:
+    """
+    Calcula el percentil de una lista de valores.
+
+    Args:
+        values (list[float]): Lista de valores numéricos.
+        percentile (float): Percentil a calcular (entre 0 y 1, por ejemplo 0.50 para la mediana).
+
+    Returns:
+        float: El valor del percentil calculado.
+    """
+    if not values:
+        return 0.0
+    values_sorted = sorted(values)
+    k = (len(values_sorted) - 1) * percentile
+    f = int(k)
+    c = min(f + 1, len(values_sorted) - 1)
+    if f == c:
+        return values_sorted[f]
+    d0 = values_sorted[f] * (c - k)
+    d1 = values_sorted[c] * (k - f)
+    return d0 + d1
+
+
+def _log_timing_summary(pdf_path: Path, total_pages: int, timings: dict[str, list[float]]) -> None:
+    """
+    Registra un resumen de los tiempos de procesamiento para cada etapa del OCR. 
+    
+    Args:
+        pdf_path: Ruta al archivo PDF procesado.
+        total_pages: Número total de páginas del PDF.
+        timings: Diccionario con listas de tiempos para cada etapa (render_s, ocr_s, etc.).
+    """
+    
+    parts = []
+    for key in ("render_s", "ocr_s", "resize_s", "cleanup_s"):
+        values = timings.get(key) or []
+        if not values:
+            continue
+        parts.append(
+            f"{key}: n={len(values)} avg={statistics.fmean(values):.2f}s p50={_pct(values, 0.50):.2f}s p95={_pct(values, 0.95):.2f}s"
+        )
+    if not parts:
+        return
+    logger.info(
+        "Markdown timings | pdf=%s | pages=%s | %s",
+        pdf_path.name,
+        total_pages,
+        " | ".join(parts),
+    )
 
 
 class OllamaOCRException(RuntimeError):
@@ -720,6 +778,7 @@ async def process_pdf_async(pdf_path: Path, on_page_start=None, model_name: str 
     total_pages = get_pdf_page_count(pdf_path)
     page_markdowns: list[str | None] = [None for _ in range(total_pages)]
     tmp_dir = Path(tempfile.mkdtemp(prefix="nanonets_ocr_"))
+    timings: dict[str, list[float]] = {"render_s": [], "resize_s": [], "ocr_s": [], "cleanup_s": []}
     timeout = httpx.Timeout(
         connect=OLLAMA_CONNECT_TIMEOUT_SECONDS,
         read=OLLAMA_READ_TIMEOUT_SECONDS,
@@ -736,9 +795,12 @@ async def process_pdf_async(pdf_path: Path, on_page_start=None, model_name: str 
                     if on_page_start is not None:
                         on_page_start(page_number, total_pages)
                     logger.info("Página %s/%s", page_number, total_pages)
+                    t0 = time.perf_counter()
                     img_path = await asyncio.to_thread(pdf_page_to_image, pdf_path, page_number, tmp_dir)
+                    timings["render_s"].append(time.perf_counter() - t0)
                     try:
                         try:
+                            t1 = time.perf_counter()
                             md = await ocr_page_with_nanonets_async(
                                 client,
                                 img_path,
@@ -746,6 +808,7 @@ async def process_pdf_async(pdf_path: Path, on_page_start=None, model_name: str 
                                 total_pages,
                                 model_name=resolved_model,
                             )
+                            timings["ocr_s"].append(time.perf_counter() - t1)
                         except OllamaOCRException as exc:
                             if OCR_PAGE_FAILURE_MODE == "raise":
                                 raise
@@ -763,8 +826,11 @@ async def process_pdf_async(pdf_path: Path, on_page_start=None, model_name: str 
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
     full_md = "\n\n".join([chunk for chunk in page_markdowns if chunk])
+    t_cleanup = time.perf_counter()
     full_md = clean_index_dots(full_md)
     full_md = normalize_headings(full_md)
+    timings["cleanup_s"].append(time.perf_counter() - t_cleanup)
+    _log_timing_summary(pdf_path, total_pages, timings)
 
     return full_md
 
