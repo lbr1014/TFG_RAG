@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="{{ lang }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ doc.nombre }} (Markdown)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/markdown_viewer.css') }}">
+  </head>
+  <body>
+    <main class="markdown-shell">
+      <header class="markdown-header">
+        <h1 class="markdown-title">{{ doc.nombre }}</h1>
+      </header>
+      <article class="markdown-body">
+        {{ content }}
+      </article>
+    </main>
+  </body>
+</html>

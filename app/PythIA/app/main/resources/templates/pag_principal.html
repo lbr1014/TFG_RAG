@@ -46,40 +46,62 @@
             <div class="carousel-inner">
               <div class="carousel-item active">
                 <article class="home-metric-slide">
-                  <span class="home-metric-eyebrow">{{ t("home.metric_streak_title") }}</span>
+                  <div class="home-metric-eyebrow-row">
+                    <span class="home-metric-icon" aria-hidden="true"><i class="bi bi-fire"></i></span>
+                    <span class="home-metric-eyebrow">{{ t("home.metric_streak_title") }}</span>
+                  </div>
                   <strong class="home-metric-value">{{ dashboard_metrics.activity_streak }}</strong>
                   <span class="home-metric-label">{{ t("home.metric_streak_label") }}</span>
                 </article>
               </div>
               <div class="carousel-item">
                 <article class="home-metric-slide">
-                  <span class="home-metric-eyebrow">{{ t("home.metric_queries_title") }}</span>
+                  <div class="home-metric-eyebrow-row">
+                    <span class="home-metric-icon" aria-hidden="true"><i class="bi bi-chat-dots"></i></span>
+                    <span class="home-metric-eyebrow">{{ t("home.metric_queries_title") }}</span>
+                  </div>
                   <strong class="home-metric-value">{{ dashboard_metrics.total_queries }}</strong>
                   <span class="home-metric-label">{{ t("home.metric_queries_label") }}</span>
                 </article>
               </div>
               <div class="carousel-item">
                 <article class="home-metric-slide">
-                  <span class="home-metric-eyebrow">{{ t("home.metric_models_title") }}</span>
+                  <div class="home-metric-eyebrow-row">
+                    <span class="home-metric-icon" aria-hidden="true"><i class="bi bi-cpu"></i></span>
+                    <span class="home-metric-eyebrow">{{ t("home.metric_models_title") }}</span>
+                  </div>
                   <strong class="home-metric-value">{{ dashboard_metrics.models_used }}</strong>
                   <span class="home-metric-label">{{ t("home.metric_models_label") }}</span>
                 </article>
               </div>
               <div class="carousel-item">
                 <article class="home-metric-slide">
-                  <span class="home-metric-eyebrow">{{ t("home.metric_activity_title") }}</span>
+                  <div class="home-metric-eyebrow-row">
+                    <span class="home-metric-icon" aria-hidden="true"><i class="bi bi-calendar-check"></i></span>
+                    <span class="home-metric-eyebrow">{{ t("home.metric_activity_title") }}</span>
+                  </div>
                   <strong class="home-metric-value">{{ dashboard_metrics.active_days }}</strong>
                   <span class="home-metric-label">{{ t("home.metric_activity_label") }}</span>
                 </article>
               </div>
               <div class="carousel-item">
                 <article class="home-metric-slide">
-                  <span class="home-metric-eyebrow">{{ t("home.metric_avg_time_title") }}</span>
+                  <div class="home-metric-eyebrow-row">
+                    <span class="home-metric-icon" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
+                    <span class="home-metric-eyebrow">{{ t("home.metric_avg_time_title") }}</span>
+                  </div>
                   <strong class="home-metric-value">{{ dashboard_metrics.avg_response_time }}{{ t("stats.metric_seconds") }}</strong>
                   <span class="home-metric-label">{{ t("home.metric_avg_time_label") }}</span>
                 </article>
               </div>
             </div>
+
+            <button class="carousel-control-prev home-metric-control" type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide="prev" aria-label="{{ t('common.previous') }}">
+              <span class="home-metric-control-icon" aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+            </button>
+            <button class="carousel-control-next home-metric-control" type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide="next" aria-label="{{ t('common.next') }}">
+              <span class="home-metric-control-icon" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+            </button>
 
             <div class="carousel-indicators home-metric-indicators position-static mt-3">
               <button type="button" data-bs-target="#homeMetricsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="{{ t('home.metric_streak_title') }}"></button>
@@ -104,7 +126,7 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="{{ url_for('static', filename='vendor/d3/7.9.0/d3.min.js') }}"></script>
   <script>
     window.PYTHIA_HOME_DASHBOARD = {
       calendar: {{ dashboard_metrics.month_calendar|tojson }},

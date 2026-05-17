@@ -9,7 +9,40 @@
 
 {% block content %}
   <div class="py-4 py-md-5">
-    <form method="GET" action="{{ url_for('main.historial') }}" class="admin-users-filter history-filter mb-3">
+    {% set history_has_filters = filters.user_id or filters.date or filters.model or filters.device or filters.sort %}
+    <div class="app-sticky-bar app-sticky-surface app-sticky-shell">
+      <div class="app-filter-toolbar">
+        <button class="btn btn-outline-light btn-sm app-filter-toggle"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#historyFilterCollapse"
+                aria-controls="historyFilterCollapse"
+                aria-expanded="false"
+                aria-label="{{ t('common.filter') }}">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
+
+        <div class="app-filter-actions">
+          {% if consultas %}
+            <label class="history-select-all mb-0">
+              <input class="form-check-input" type="checkbox" id="select-all-users" aria-label="{{ t('users.select_all') }}">
+              <span>{{ t("users.select_all") }}</span>
+            </label>
+          {% endif %}
+          <button type="button"
+                  class="btn btn-danger btn-sm admin-users-bulk-button"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteConfirmModal"
+                  data-item-name="{{ t('history.title')|lower }}"
+                  data-form-id="bulk-history-delete-form"
+                  disabled>
+            {{ t("common.delete") }}
+          </button>
+        </div>
+      </div>
+
+      <div id="historyFilterCollapse" class="collapse app-filter-collapse">
+      <form method="GET" action="{{ url_for('main.historial') }}" class="admin-users-filter history-filter mb-0">
       {% if current_user.is_admin %}
         <div class="history-filter-field">
           <label for="history-user-filter" class="form-label">{{ t("history.user") }}</label>
@@ -61,6 +94,8 @@
         <a href="{{ url_for('main.historial') }}" class="btn btn-outline-light">{{ t("common.clear") }}</a>
       </div>
     </form>
+      </div>
+    </div>
 
     {% if not consultas %}
       <div class="alert alert-info">{{ t("history.empty") }}</div>

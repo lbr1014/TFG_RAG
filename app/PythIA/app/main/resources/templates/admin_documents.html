@@ -47,18 +47,49 @@
             <div class="form-text mt-2">{{ t("docs.upload_help") }}</div>
           </div>
 
-          <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary">{{ t("docs.upload_button") }}</button>
-            <button form="scrapingForm" type="submit" class="btn btn-outline-light">{{ t("docs.scraping_button") }}</button>
-            <button form="markdownForm"
-                    type="submit"
-                    class="btn btn-outline-light"
-                    {% if pending_markdown == 0 %}disabled{% endif %}>
-              {{ t("docs.markdown_button") }}{% if pending_markdown %} ({{ pending_markdown }}){% endif %}
+          <div class="mb-3">
+            <button type="submit"
+                    class="btn btn-primary w-100"
+                    data-bs-toggle="tooltip"
+                    data-bs-title="{{ t('docs.upload_button_tooltip') }}">
+              {{ t("docs.upload_button") }}
             </button>
-            <button form="vectorForm" type="submit" class="btn btn-primary">
-              {{ t("docs.vector_button") }}
-            </button>
+          </div>
+
+          <div class="documents-actions-group">
+            <div class="documents-actions-title">{{ t("docs.actions_title") }}</div>
+            <div class="d-grid gap-2">
+              <div class="documents-action">
+                <button form="scrapingForm"
+                        type="submit"
+                        class="btn btn-outline-light w-100"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="{{ t('docs.scraping_button_tooltip') }}">
+                  {{ t("docs.scraping_button") }}
+                </button>
+              </div>
+
+              <div class="documents-action">
+                <button form="markdownForm"
+                        type="submit"
+                        class="btn btn-outline-light w-100"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="{{ t('docs.markdown_button_tooltip') }}"
+                        {% if pending_markdown == 0 %}disabled{% endif %}>
+                  {{ t("docs.markdown_button") }}{% if pending_markdown %} ({{ pending_markdown }}){% endif %}
+                </button>
+              </div>
+
+              <div class="documents-action">
+                <button form="vectorForm"
+                        type="submit"
+                        class="btn btn-primary w-100"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="{{ t('docs.vector_button_tooltip') }}">
+                  {{ t("docs.vector_button") }}
+                </button>
+              </div>
+            </div>
           </div>
         </form>
 
@@ -73,7 +104,7 @@
         </form>
 
         <div id="scraping-progress" data-finished="false" class="mt-4 d-none" aria-label="{{ t('docs.progress_aria') }}">
-          <progress class="progress upload-progress w-100" value="0" max="100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></progress>
+          <progress class="progress progress-bar upload-progress w-100" value="0" max="100" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></progress>
           <div class="progress-text small text-muted-app mt-2 text-center" aria-live="polite">
             {{ t("docs.running_default") }}
           </div>
@@ -86,7 +117,37 @@
       </aside>
 
       <section class="admin-users-table-panel documents-section">
-        <form method="GET" action="{{ url_for('admin.documents_list_page') }}" class="admin-users-filter users-filter documents-filter">
+        {% set documents_has_filters = filters.name or filters.type or filters.status or filters.markdown %}
+        <div class="app-sticky-bar app-sticky-surface app-sticky-shell">
+          <div class="app-filter-toolbar">
+            <button class="btn btn-outline-light btn-sm app-filter-toggle"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#documentsFilterCollapse"
+                    aria-controls="documentsFilterCollapse"
+                    aria-expanded="false"
+                    aria-label="{{ t('common.filter') }}">
+              <i class="bi bi-funnel" aria-hidden="true"></i>
+            </button>
+
+            <div class="app-filter-actions">
+              {% if docs %}
+                <div class="documents-counter">{{ t("docs.count", count=(total_docs if total_docs is defined else docs|length)) }}</div>
+                <button type="button"
+                        class="btn btn-danger btn-sm admin-users-bulk-button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteConfirmModal"
+                        data-item-name="{{ t('docs.selected_documents') }}"
+                        data-form-id="bulk-documents-form"
+                        disabled>
+                  {{ t("common.delete") }}
+                </button>
+              {% endif %}
+            </div>
+          </div>
+
+          <div id="documentsFilterCollapse" class="collapse app-filter-collapse">
+          <form method="GET" action="{{ url_for('admin.documents_list_page') }}" class="admin-users-filter users-filter documents-filter mb-0">
           <div>
             <label for="doc-name-filter" class="form-label">{{ t("common.name") }}</label>
             <input id="doc-name-filter"
@@ -136,25 +197,14 @@
             <a href="{{ url_for('admin.documents_list_page') }}" class="btn btn-outline-light">{{ t("common.clear") }}</a>
           </div>
         </form>
+          </div>
+        </div>
 
         {% if not docs %}
           <div class="alert alert-info mt-4">{{ t("docs.empty") }}</div>
         {% else %}
           <form id="bulk-documents-form" method="POST" action="{{ url_for('admin.bulk_delete_documents') }}">
             {{ post_form.hidden_tag() }}
-
-            <div class="documents-list-toolbar">
-              <div class="documents-counter">{{ t("docs.count", count=(total_docs if total_docs is defined else docs|length)) }}</div>
-              <button type="button"
-                      class="btn btn-danger btn-sm admin-users-bulk-button"
-                      data-bs-toggle="modal"
-                      data-bs-target="#deleteConfirmModal"
-                      data-item-name="{{ t('docs.selected_documents') }}"
-                      data-form-id="bulk-documents-form"
-                      disabled>
-                {{ t("common.delete") }}
-              </button>
-            </div>
 
             <div class="table-card">
               <div class="table-responsive">

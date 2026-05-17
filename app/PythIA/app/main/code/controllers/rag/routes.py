@@ -11,10 +11,8 @@ from flask import (
     abort,
     current_app,
     jsonify,
-    redirect,
     render_template,
     request,
-    url_for,
 )
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
@@ -99,8 +97,6 @@ def build_model_usage_index_payload(months: int = 12) -> dict:
           - series: dict model_name -> lista de contadores por mes (alineados a labels)
     """
     base_query = RAGQueryState.query.filter(RAGQueryState.status == "done")
-    if not getattr(current_user, "is_admin", False):
-        base_query = base_query.filter(RAGQueryState.user_id == int(current_user.id))
 
     jobs = base_query.order_by(RAGQueryState.created_at.asc()).all()
 
@@ -137,20 +133,6 @@ def build_model_usage_index_payload(months: int = 12) -> dict:
     return {"labels": month_labels, "series": series}
 
 
-@rag_bp.get("/consultas-guiadas")
-@login_required
-def default_query_page() -> ResponseReturnValue:
-    """
-    Muestra un formulario guiado para construir consultas frecuentes sobre pliegos.
-
-    Returns:
-        Respuesta HTML con el formulario de consultas predefinidas.
-    """
-    # La UI principal de consultas guiadas vive en el tab "Formulario" de /rag/.
-    # Mantenemos esta ruta por compatibilidad.
-    return redirect(url_for("rag.rag_page", mode="form"))
-
-
 @rag_bp.get("/modelos")
 @login_required
 def model_comparison_page() -> ResponseReturnValue:
@@ -177,8 +159,6 @@ def build_model_comparison_payload() -> dict:
         dict: Payload con comparación de modelos y estadísticas agregadas.
     """
     base_query = RAGQueryState.query.filter(RAGQueryState.status == "done")
-    if not getattr(current_user, "is_admin", False):
-        base_query = base_query.filter(RAGQueryState.user_id == int(current_user.id))
 
     jobs = base_query.order_by(RAGQueryState.finished_at.asc(), RAGQueryState.created_at.asc()).all()
     models = defaultdict(
@@ -243,7 +223,7 @@ def build_model_comparison_payload() -> dict:
             "avg_time": round(sum(all_times) / len(all_times), 2) if all_times else 0,
         },
         "models": comparison,
-        "scope": "global" if getattr(current_user, "is_admin", False) else "user",
+        "scope": "global",
     }
 
 
@@ -298,6 +278,9 @@ def extract_token_count(job: RAGQueryState, result: dict) -> int:
 def configure_model_choices(form: RAGQueryForm) -> None:
     """
     Carga en el formulario los modelos LLM disponibles para Ollama.
+    
+    Args:
+        form (RAGQueryForm): El formulario a configurar.
     """
     form.model.choices = get_rag_llm_model_choices()
     preferred_model = resolve_rag_llm_model()

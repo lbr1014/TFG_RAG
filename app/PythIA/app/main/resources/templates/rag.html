@@ -5,6 +5,7 @@
 
 {% block styles %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -63,6 +64,9 @@
     </div>
   </section>
 </div>
+
+<template id="chunks-content-rag"></template>
+{% include "components/modal_chunks.html" %}
 {% endblock %}
 
 {% block scripts %}
@@ -93,9 +97,12 @@
     const titleEl = root.querySelector("[data-rag-title]");
     const segmentEl = root.querySelector("[data-rag-segment]");
     const chunkEl = root.querySelector("[data-rag-chunk]");
+    const traceButtons = Array.from(root.querySelectorAll("[data-consulta-id='rag']"));
+    const traceTemplate = document.getElementById("chunks-content-rag");
 
     let activeJobId = null;
     let pollingTimer = null;
+    let lastTracePayload = null;
 
     const isGuided = form.id === "rag-default-form";
     const expedienteEl = isGuided ? form.querySelector("select[name='expediente']") : null;
@@ -152,6 +159,9 @@
       if (titleEl) titleEl.textContent = "";
       if (segmentEl) segmentEl.textContent = "";
       if (chunkEl) chunkEl.textContent = "";
+      lastTracePayload = null;
+      traceButtons.forEach((button) => (button.disabled = true));
+      if (traceTemplate) traceTemplate.innerHTML = "";
     }
 
     function setRunningUI(message) {
@@ -210,6 +220,77 @@
       if (titleEl) titleEl.textContent = result?.title || "-";
       if (segmentEl) segmentEl.textContent = result?.segment_index ?? "-";
       if (chunkEl) chunkEl.textContent = result?.chunk || tr("rag.no_chunk");
+      lastTracePayload = result?.retrieved || null;
+      const enabled = Array.isArray(lastTracePayload) && lastTracePayload.length > 0;
+      traceButtons.forEach((button) => (button.disabled = !enabled));
+      if (traceTemplate && enabled) {
+        const best = lastTracePayload[0] || {};
+        const bestMeta = best.metadata || {};
+        const bestFilename = best.filename || bestMeta.filename || "-";
+        const bestTitle = best.title || bestMeta.title || "-";
+        const bestSegment = best.segment_index ?? bestMeta.segment_index ?? "-";
+        const bestSimilarity = best.similitud ?? "-";
+        const bestChunk = best.chunk || "";
+
+        const rows = lastTracePayload.slice(0, 10).map((item) => {
+          const meta = item.metadata || {};
+          const similarity = item.similitud ?? "-";
+          const filename = item.filename || meta.filename || "-";
+          const segment = item.segment_index ?? meta.segment_index ?? "-";
+          return `
+            <tr>
+              <td>${escapeHtml(item.ranking ?? "-")}</td>
+              <td>${escapeHtml(typeof similarity === "number" ? similarity.toFixed(6) : similarity)}</td>
+              <td>${escapeHtml(filename)}</td>
+              <td>${escapeHtml(segment)}</td>
+            </tr>`;
+        }).join("");
+
+        traceTemplate.innerHTML = `
+          <div>
+            <h3 class="chunks-modal-title">${escapeHtml(tr("history.chunks_details", { id: "RAG" }))}</h3>
+            <p class="chunks-modal-sub">${escapeHtml(tr("rag.fragment_used"))}</p>
+          </div>
+
+          <div class="chunks-card">
+            <p style="margin:0 0 .4rem 0;"><strong>${escapeHtml(tr("history.best_fragment"))}</strong></p>
+            <div class="chunks-meta-grid">
+              <div><b>${escapeHtml(tr("history.file"))}</b> ${escapeHtml(bestFilename)}</div>
+              <div><b>${escapeHtml(tr("history.title_label"))}</b> ${escapeHtml(bestTitle)}</div>
+              <div><b>${escapeHtml(tr("history.segment"))}</b> ${escapeHtml(bestSegment)}</div>
+              <div><b>${escapeHtml(tr("history.similarity"))}</b> ${escapeHtml(typeof bestSimilarity === "number" ? bestSimilarity.toFixed(6) : bestSimilarity)}</div>
+            </div>
+            <pre class="chunks-pre">${escapeHtml(bestChunk || tr("rag.no_chunk"))}</pre>
+          </div>
+
+          <div class="chunks-card">
+            <p style="margin:0 0 .4rem 0;"><strong>${escapeHtml(tr("history.top_chunks", { shown: Math.min(10, lastTracePayload.length), total: lastTracePayload.length }))}</strong></p>
+            <div class="table-card mt-3">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 app-table">
+                  <thead>
+                    <tr>
+                      <th>${escapeHtml(tr("history.ranking"))}</th>
+                      <th>${escapeHtml(tr("history.similarity"))}</th>
+                      <th>${escapeHtml(tr("history.document"))}</th>
+                      <th>${escapeHtml(tr("history.segment"))}</th>
+                    </tr>
+                  </thead>
+                  <tbody>${rows}</tbody>
+                </table>
+              </div>
+            </div>
+          </div>`;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
     }
 
     function csrfHeaders() {

@@ -116,6 +116,10 @@ def localize_runtime_message(message, lang=None) -> str:
     if message in DIRECT_RUNTIME_MESSAGE_MAP:
         return translate_for(language, DIRECT_RUNTIME_MESSAGE_MAP[message])
 
+    # Si el proceso ha persistido directamente una key de i18n devolvemos su traduccion.
+    if message in TRANSLATIONS.get(language, {}) or message in TRANSLATIONS.get(DEFAULT_LANGUAGE, {}):
+        return translate_for(language, message)
+
     markdown_done = re.fullmatch(r"Conversi[oó]n completada\. (\d+) documentos convertidos\.", message)
     if markdown_done:
         return translate_for(language, "markdown.done_stats", count=markdown_done.group(1))
@@ -248,17 +252,29 @@ def get_client_translations() -> dict[str, str]:
         "validation.summary_title",
         "rag.no_answer",
         "rag.no_chunk",
+        "rag.view_all_fragments",
         "rag.empty_question",
         "rag.question_too_long",
         "rag.invalid_question",
         "rag.querying",
         "rag.sending",
+        "rag.done",
         "rag.cancelled",
         "rag.failed",
         "rag.status_error",
         "rag.unexpected_error",
         "rag.cancel_error",
         "rag.model_usage_empty",
+        "rag.fragment_used",
+        "history.chunks_details",
+        "history.best_fragment",
+        "history.file",
+        "history.title_label",
+        "history.segment",
+        "history.similarity",
+        "history.top_chunks",
+        "history.ranking",
+        "history.document",
         "vector.updating",
         "vector.updating_doc",
         "vector.done_ui",

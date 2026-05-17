@@ -26,6 +26,7 @@ from flask import (
 )
 from flask.typing import ResponseReturnValue
 from flask_login import current_user, login_required
+from markupsafe import Markup
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.main.code.countries import (
@@ -1364,7 +1365,26 @@ def view_document(doc_id: int) -> ResponseReturnValue:
     if fmt == "markdown":
         if not doc.markdown_content:
             abort(404)
-        return Response(doc.markdown_content, mimetype="text/markdown; charset=utf-8")
+        try:
+            import importlib
+
+            md = importlib.import_module("markdown")
+            render_markdown = md.markdown
+        except ModuleNotFoundError:
+            # Fallback: si la libreria no esta instalada, devuelve el markdown en bruto.
+            return Response(doc.markdown_content, mimetype="text/markdown; charset=utf-8")
+
+        rendered = render_markdown(
+            doc.markdown_content,
+            extensions=["extra", "fenced_code", "tables", "toc"],
+            output_format="html5",
+        )
+        return render_template(
+            "view_markdown.html",
+            doc=doc,
+            content=Markup(rendered),
+            lang=get_locale(),
+        )
 
     pdf_path = Path(doc.path)
     if not pdf_path.exists():
@@ -1494,9 +1514,6 @@ def _build_scraping_context() -> tuple[Path, Path, Path, Path, Path, dict[str, s
     pliegos_json = scraping_data_dir / "pliegos_pdfs.json"
     env = os.environ.copy()
     env["PLIEGOS_DEST"] = str(base_pliegos)
-    # Mantener variables por compatibilidad (aunque los scripts ahora usan data/web_scraping).
-    env["PLIEGOS_INPUT_JSON"] = str(resultados_json)
-    env["PLIEGOS_OUTPUT_JSON"] = str(pliegos_json)
     return base_pliegos, scraper_dir, script_1, script_2, root, env, resultados_json, pliegos_json
 
 

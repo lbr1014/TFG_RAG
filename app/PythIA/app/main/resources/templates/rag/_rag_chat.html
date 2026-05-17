@@ -32,8 +32,17 @@
   </div>
 </div>
 
-<details class="rag-debug mt-4">
-  <summary>{{ t("rag.fragment_used") }}</summary>
+<section class="rag-debug mt-4" aria-label="{{ t('rag.fragment_used') }}">
+  <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+    <h3 class="rag-section-title h6 mb-0">{{ t("rag.fragment_used") }}</h3>
+    <button type="button"
+            class="btn btn-outline-light btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#chunksModal"
+            data-consulta-id="rag">
+      {{ t("rag.view_all_fragments") }}
+    </button>
+  </div>
 
   <div class="rag-debug-body mt-3">
     <div class="table-card">
@@ -54,4 +63,4 @@
       </div>
     </div>
   </div>
-</details>
+</section>

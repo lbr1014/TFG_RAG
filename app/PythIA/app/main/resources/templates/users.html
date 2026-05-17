@@ -60,7 +60,45 @@
       </aside>
 
       <section class="admin-users-table-panel">
-        <form method="GET" action="{{ url_for('admin.users') }}" class="admin-users-filter users-filter">
+        {% set users_has_filters = filters.name or filters.country or filters.role %}
+        <div class="app-sticky-bar app-sticky-surface app-sticky-shell">
+          <div class="app-filter-toolbar">
+            <button class="btn btn-outline-light btn-sm app-filter-toggle"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#usersFilterCollapse"
+                    aria-controls="usersFilterCollapse"
+                    aria-expanded="false"
+                    >
+              <i class="bi bi-funnel" aria-hidden="true"></i>
+              <span class="visually-hidden">{{ t("common.filter") }}</span>
+            </button>
+
+            <div class="app-filter-actions">
+              <button type="submit"
+                      name="bulk_action"
+                      value="toggle"
+                      class="btn btn-outline-light btn-sm admin-users-bulk-button"
+                      form="bulk-users-form"
+                      disabled>
+                {{ t("users.bulk_change_type") }}
+              </button>
+              <button type="button"
+                      class="btn btn-danger btn-sm admin-users-bulk-button"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteConfirmModal"
+                      data-item-name="{{ t('users.selected_users') }}"
+                      data-form-id="bulk-users-form"
+                      data-submit-name="bulk_action"
+                      data-submit-value="delete"
+                      disabled>
+                {{ t("common.delete") }}
+              </button>
+            </div>
+          </div>
+
+          <div id="usersFilterCollapse" class="collapse app-filter-collapse">
+          <form method="GET" action="{{ url_for('admin.users') }}" class="admin-users-filter users-filter mb-0">
           <div>
             <label for="user-name-filter" class="form-label">{{ t("common.name") }}</label>
             <input id="user-name-filter"
@@ -95,29 +133,14 @@
             <a href="{{ url_for('admin.users') }}" class="btn btn-outline-light">{{ t("common.clear") }}</a>
           </div>
         </form>
+          </div>
+        </div>
 
         <form id="bulk-users-form" method="POST" action="{{ url_for('admin.bulk_users') }}">
           {{ post_form.hidden_tag() }}
           <input type="hidden" name="filter_name" value="{{ filters.name }}">
           <input type="hidden" name="filter_country" value="{{ filters.country }}">
           <input type="hidden" name="filter_role" value="{{ filters.role }}">
-
-          <div class="admin-users-bulk-actions">
-            <button type="submit" name="bulk_action" value="toggle" class="btn btn-outline-light btn-sm admin-users-bulk-button" disabled>
-              {{ t("users.bulk_change_type") }}
-            </button>
-            <button type="button"
-                    class="btn btn-danger btn-sm admin-users-bulk-button"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteConfirmModal"
-                    data-item-name="{{ t('users.selected_users') }}"
-                    data-form-id="bulk-users-form"
-                    data-submit-name="bulk_action"
-                    data-submit-value="delete"
-                    disabled>
-              {{ t("common.delete") }}
-            </button>
-          </div>
 
         <div class="table-card mt-0">
           <div class="table-responsive">

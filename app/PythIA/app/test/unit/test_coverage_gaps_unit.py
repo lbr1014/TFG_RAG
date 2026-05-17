@@ -64,7 +64,7 @@ class RagRoutesPayloadsUnitTest(unittest.TestCase):
         self.assertEqual(payload["EXP-2"], ["administrativo"])
         self.assertNotIn("EXP-3", payload)
 
-    def test_build_model_usage_index_payload_counts_months_and_scopes_user(self):
+    def test_build_model_usage_index_payload_counts_months_global(self):
         from app.main.code.controllers.rag import routes as rag_routes
 
         class _Job:

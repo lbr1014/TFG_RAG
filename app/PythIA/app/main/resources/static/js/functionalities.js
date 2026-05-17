@@ -155,7 +155,7 @@ function initHistoryAnswerModal() {
     }
   }
 
-  document.querySelectorAll(".history-card-answer-trigger").forEach((trigger) => {
+  document.querySelectorAll(".history-card-answer-button").forEach((trigger) => {
     trigger.addEventListener("click", function () {
       renderAnswerFromCard(trigger)
       answerModalInstance?.show()
@@ -167,6 +167,19 @@ function initHistoryAnswerModal() {
     const questionNode = document.getElementById("answer-modal-question")
     if (body) body.innerHTML = ""
     if (questionNode) questionNode.textContent = ""
+  })
+}
+
+function initHistoryCardSelection() {
+  document.querySelectorAll(".history-card-select-trigger").forEach((trigger) => {
+    trigger.addEventListener("click", function (event) {
+      event.preventDefault()
+      const card = trigger.closest(".history-query-card")
+      const checkbox = card?.querySelector(".user-row-checkbox")
+      if (!checkbox) return
+      checkbox.checked = !checkbox.checked
+      checkbox.dispatchEvent(new Event("change", { bubbles: true }))
+    })
   })
 }
 
@@ -352,5 +365,7 @@ initAdminUserSelection();
 initThemeSelector();
 
 initBootstrapTooltips();
+
+initHistoryCardSelection();
 
 initProfileImagePreview();

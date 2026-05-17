@@ -86,6 +86,8 @@
   --app-danger: #dc3545;
   --app-danger-rgb: 220, 53, 69;
   --app-danger-hover: #bb2d3b;
+  --app-sticky-header-offset: 86px;
+  --app-sticky-breadcrumb-height: 44px;
 }
 
 body[data-theme="light"] {
@@ -735,6 +737,11 @@ body[data-theme="light"] .app-main-shell .btn-outline-light {
 
 .app-breadcrumb-shell {
   padding: 1rem 1.25rem 0;
+  position: sticky;
+  top: var(--app-sticky-header-offset);
+  z-index: 1025;
+  background: transparent;
+  backdrop-filter: none;
 }
 
 .app-breadcrumb {
@@ -1420,6 +1427,11 @@ body[data-theme="light"] .invalid-feedback.d-block {
 }
 
 @media (max-width: 767.98px) {
+  :root {
+    --app-sticky-header-offset: 104px;
+    --app-sticky-breadcrumb-height: 44px;
+  }
+
   .welcome,
   .last-login {
     overflow-wrap: anywhere;
@@ -1457,6 +1469,7 @@ body[data-theme="light"] .invalid-feedback.d-block {
 
   .app-breadcrumb-shell {
     padding: 0.85rem 1rem 0;
+    top: var(--app-sticky-header-offset);
   }
 
   .auth-container {

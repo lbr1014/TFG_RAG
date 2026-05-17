@@ -40,6 +40,18 @@
   font-weight: 700;
 }
 
+.documents-actions-group {
+  margin-top: 0.35rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.documents-actions-title {
+  font-weight: 900;
+  color: var(--app-heading);
+  margin-bottom: 0.6rem;
+}
+
 body[data-theme="light"] .documents-manage-banner {
   background:
     radial-gradient(circle at 95% 0%, rgba(255, 255, 255, 0.22), transparent 34%),

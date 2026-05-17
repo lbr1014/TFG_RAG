@@ -42,17 +42,6 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"modelo-a", response.data)
 
-    def test_default_query_page_renders_guided_form(self):
-        response = self.client.get("/rag/consultas-guiadas", follow_redirects=False)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/rag/?mode=form", response.headers.get("Location", ""))
-
-        redirected = self.client.get("/rag/consultas-guiadas", follow_redirects=True)
-        self.assertEqual(redirected.status_code, 200)
-        self.assertIn(b"rag-default-form", redirected.data)
-        self.assertIn(b"name=\"expediente\"", redirected.data)
-
     def test_model_comparison_payload_aggregates_admin_and_fallback_values(self):
         from app.main.code.controllers.rag import routes as rag_routes
 
@@ -103,7 +92,7 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
             login_user(self.user)
             payload = rag_routes.build_model_comparison_payload()
 
-        self.assertEqual(payload["scope"], "user")
+        self.assertEqual(payload["scope"], "global")
         self.assertEqual(payload["summary"]["models"], 0)
         self.assertEqual(payload["models"], [])
 
