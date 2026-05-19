@@ -102,9 +102,9 @@ def _job_is_stale_since_boot(job: Any, *, boot_at: datetime | None) -> bool:
     if getattr(job, "status", None) not in ACTIVE_STATUSES:
         return False
 
-    started_at = _normalize_dt_for_compare(getattr(job, "started_at", None), reference=boot_at)
-    created_at = _normalize_dt_for_compare(getattr(job, "created_at", None), reference=boot_at)
     boot_cmp = boot_at.replace(tzinfo=None) if boot_at.tzinfo is not None else boot_at
+    started_at = _normalize_dt_for_compare(getattr(job, "started_at", None), reference=boot_cmp)
+    created_at = _normalize_dt_for_compare(getattr(job, "created_at", None), reference=boot_cmp)
 
     if started_at and started_at < boot_cmp:
         return True
