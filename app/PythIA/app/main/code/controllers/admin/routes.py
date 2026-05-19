@@ -60,6 +60,125 @@ from ...services.documentos import DocumentosService, JobCancelledError
 from ...services.rag.PrototipoRAG import index_pliegos_dir, qdrant_delete_by_filename
 from . import admin_bp
 
+MIMETYPE = "text/markdown; charset=utf-8"
+STALE_JOB_MESSAGE = "Proceso interrumpido por reinicio del servicio."
+ACTIVE_STATUSES = {"queued", "running"}
+
+
+def _normalize_dt_for_compare(dt: datetime | None, *, reference: datetime) -> datetime | None:
+    """
+    Normaliza dt para poder compararlo con reference evitando errores de naive/aware (frecuente en tests con SQLite).
+    
+    Args:
+        dt: Fecha a normalizar.
+        reference: Fecha de referencia para determinar si dt debe ser naive o aware.
+        
+    Returns:
+        La fecha dt normalizada para ser comparable con reference, o None si dt era None.
+    """
+    if not dt:
+        return None
+    dt_is_naive = dt.tzinfo is None
+    ref_is_naive = reference.tzinfo is None
+    if dt_is_naive == ref_is_naive:
+        return dt
+    return dt.replace(tzinfo=None) if not dt_is_naive else dt
+
+
+def _job_is_stale_since_boot(job: Any, *, boot_at: datetime | None) -> bool:
+    """
+    Un job 'stale' es uno que aparece como queued/running pero fue creado o
+    iniciado antes del arranque actual del servicio.
+    
+    Args:
+        job: Instancia del job a evaluar, que debe tener atributos 'status', 'created_at' y 'started_at'.
+        boot_at: Fecha y hora del arranque actual del servicio.
+        
+    Returns:
+        ``True`` si el job es stale y por tanto se considera interrumpido por el reinicio, ``False`` en caso contrario.
+    """
+    if not boot_at:
+        return False
+    if getattr(job, "status", None) not in ACTIVE_STATUSES:
+        return False
+
+    started_at = _normalize_dt_for_compare(getattr(job, "started_at", None), reference=boot_at)
+    created_at = _normalize_dt_for_compare(getattr(job, "created_at", None), reference=boot_at)
+    boot_cmp = boot_at.replace(tzinfo=None) if boot_at.tzinfo is not None else boot_at
+
+    if started_at and started_at < boot_cmp:
+        return True
+    
+    return not started_at and created_at and created_at < boot_cmp
+
+def _mark_job_as_stale(job: Any) -> None:
+    """
+    Marca un job como interrumpido por reinicio del servicio.
+    
+    Args:
+        job: Instancia del job a actualizar, que idealmente debería implementar un método mark_failed(message) o atributos status, error y finished_at.
+        
+    Returns:
+        None. El job se actualiza para reflejar que fue interrumpido por el reinicio.
+    """
+    try:
+        job.mark_failed(STALE_JOB_MESSAGE, message=STALE_JOB_MESSAGE)
+        return
+    except (AttributeError, TypeError, ValueError):
+        # Fallback si el modelo no implementa mark_failed o la firma no coincide.
+        pass
+
+    job.status = "failed"
+    job.error = STALE_JOB_MESSAGE
+    job.finished_at = JobStateMixin.now()
+
+
+@admin_bp.get("/jobs/active")
+@login_required
+@admin_required
+def active_jobs_status() -> ResponseReturnValue:
+    """
+    Devuelve el job activo (queued/running) por tipo para reanudar el tracking.
+    
+    Returns:
+        Una respuesta JSON con el estado del job activo de cada tipo o ``null`` si no hay ninguno. Si el job activo es anterior al ultimo reinicio del servicio, se marca como fallido por interrupcion.
+    """
+
+    def _latest_active(model: Any) -> Any:
+        """
+        Obtiene el job activo más reciente de un modelo dado.
+
+        Args:
+            model (Any): Modelo SQLAlchemy del que obtener el job activo más reciente.
+
+        Returns:
+            Any: La instancia del job activo más reciente o ``None`` si no hay ninguno. Si el job activo es antiguo, se marca como fallido y se devuelve ``None``.
+        """
+        
+        job = (
+            model.query.filter(model.status.in_(["queued", "running"]))
+            .order_by(model.id.desc())
+            .first()
+        )
+        boot_at = current_app.config.get("APP_BOOT_AT")
+        if job and _job_is_stale_since_boot(job, boot_at=boot_at):
+            _mark_job_as_stale(job)
+            db.session.commit()
+            return None
+        return job
+
+    markdown = _latest_active(MarkdownConversionState)
+    vector = _latest_active(VectorUpdateState)
+    scraping = _latest_active(WebScrapingSate)
+
+    return jsonify(
+        {
+            "markdown": {"job_id": markdown.id, "status": markdown.status} if markdown else None,
+            "vector": {"job_id": vector.id, "status": vector.status} if vector else None,
+            "scraping": {"job_id": scraping.id, "status": scraping.status} if scraping else None,
+        }
+    )
+
 USERS = "admin.users"
 DOCUMENTS = "admin.documents_list_page"
 DOC_TYPE_UNKNOWN = "unknown"
@@ -723,6 +842,11 @@ def markdown_conversion_status(job_id: int) -> ResponseReturnValue:
     if not job:
         abort(404)
 
+    boot_at = current_app.config.get("APP_BOOT_AT")
+    if _job_is_stale_since_boot(job, boot_at=boot_at):
+        _mark_job_as_stale(job)
+        db.session.commit()
+
     return jsonify(
         {
             "status": job.status,
@@ -1111,7 +1235,7 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
                 """
                 return _job_should_cancel(job)
 
-            def on_current_doc(nombre: str):
+            def on_current_doc(nombre: str) -> None:
                 """
                 Actualiza el documento actual del job vectorial.
 
@@ -1126,7 +1250,7 @@ def documentos_async(app, job_id: int, user_email: str, docs_url: str, lang: str
                 job.current_doc = nombre
                 db.session.commit()
 
-            def on_progress(i: int, total: int):
+            def on_progress(i: int, total: int) -> None:
                 """
                 Actualiza el progreso del job vectorial.
 
@@ -1215,6 +1339,11 @@ def vector_db_status(job_id: int) -> ResponseReturnValue:
     if not job:
         abort(404)
 
+    boot_at = current_app.config.get("APP_BOOT_AT")
+    if _job_is_stale_since_boot(job, boot_at=boot_at):
+        _mark_job_as_stale(job)
+        db.session.commit()
+
     return jsonify(
         {
             "status": job.status,
@@ -1277,6 +1406,9 @@ def documents_list_page() -> ResponseReturnValue:
 def bulk_delete_documents() -> ResponseReturnValue:
     """
     Elimina varios documentos seleccionados.
+    
+    Returns:
+        Una redireccion a la pagina de documentos.
     """
     _validate_post_action()
     selected_ids = request.form.getlist("selected_doc_ids", type=int)
@@ -1335,7 +1467,7 @@ def download_document(doc_id: int) -> ResponseReturnValue:
     if fmt == "markdown":
         if not doc.markdown_content:
             abort(404)
-        response = Response(doc.markdown_content, mimetype="text/markdown; charset=utf-8")
+        response = Response(doc.markdown_content, mimetype=MIMETYPE)
         response.headers["Content-Disposition"] = f'attachment; filename="{Path(doc.nombre).stem}.md"'
         return response
 
@@ -1365,6 +1497,9 @@ def view_document(doc_id: int) -> ResponseReturnValue:
     if fmt == "markdown":
         if not doc.markdown_content:
             abort(404)
+        render_mode = (request.args.get("render") or "").strip().lower()
+        if render_mode != "html":
+            return Response(doc.markdown_content, mimetype=MIMETYPE)
         try:
             import importlib
 
@@ -1372,7 +1507,7 @@ def view_document(doc_id: int) -> ResponseReturnValue:
             render_markdown = md.markdown
         except ModuleNotFoundError:
             # Fallback: si la libreria no esta instalada, devuelve el markdown en bruto.
-            return Response(doc.markdown_content, mimetype="text/markdown; charset=utf-8")
+            return Response(doc.markdown_content, mimetype=MIMETYPE)
 
         rendered = render_markdown(
             doc.markdown_content,
@@ -1471,6 +1606,11 @@ def web_scraping_status(job_id: int) -> ResponseReturnValue:
     job = WebScrapingSate.query.get(job_id)
     if not job:
         abort(404)
+
+    boot_at = current_app.config.get("APP_BOOT_AT")
+    if _job_is_stale_since_boot(job, boot_at=boot_at):
+        _mark_job_as_stale(job)
+        db.session.commit()
 
     return jsonify(
         {

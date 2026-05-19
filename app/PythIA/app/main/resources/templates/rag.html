@@ -166,9 +166,14 @@
 
     function setRunningUI(message) {
       if (statusEl) {
+        const label = message || tr("rag.querying");
         statusEl.innerHTML = `
-          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-          <span>${message || tr("rag.querying")}</span>`;
+          <div class="d-flex align-items-center gap-2 w-100 justify-content-center">
+            <div class="progress flex-grow-1" style="min-width: 180px; max-width: 520px; height: 0.85rem;" aria-label="${label}">
+              <div class="progress-bar progress-bar-striped progress-bar-animated w-100" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="rag-status-text">${label}</div>
+          </div>`;
       }
       if (statusEl) statusEl.classList.remove("is-error");
       if (askButton) askButton.disabled = true;
@@ -382,7 +387,7 @@
         }
 
         if (status === "cancelled") {
-          if (statusEl) statusEl.textContent = tr("rag.cancelled");
+          if (statusEl) statusEl.textContent = "";
           clearResult();
           showToast(tr("rag.cancelled"), tr("rag.cancelled"), "secondary");
           return;
@@ -465,6 +470,26 @@
       summaryEl?.addEventListener("change", () => applyGuidedSummaryMode());
       applyGuidedSummaryMode();
     }
+
+    // Reanuda la UI si había un job en ejecución (p. ej. al recargar la página).
+    // Si no hay job activo, limpia cualquier estado residual.
+    (async () => {
+      try {
+        const data = await fetchJson("{{ url_for('rag.rag_active') }}");
+        const jobId = data?.job_id;
+        if (jobId) {
+          activeJobId = jobId;
+          pollJob(activeJobId);
+          return;
+        }
+        activeJobId = null;
+        stopPolling();
+        setIdleUI();
+        if (statusEl) statusEl.textContent = "";
+      } catch {
+        // Si falla el endpoint, no bloqueamos la interacción del usuario.
+      }
+    })();
   }
 
   ["rag-chat-pane", "rag-form-pane"].forEach((id) => {
@@ -641,7 +666,6 @@
         .attr("opacity", 0.9);
     });
 
-    // Legend (auto-wrap, below chart)
     const maxLegendWidth = width - margin.left - margin.right;
     const legendY = height - margin.bottom + 26;
     const legend = svg.append("g").attr("transform", `translate(${margin.left},${legendY})`);
@@ -653,7 +677,7 @@
     const swatchSize = 10;
     const textOffsetX = 14;
     const fontSize = 11;
-    const approxCharWidth = 6.2; // good enough for layout; avoids DOM measurements
+    const approxCharWidth = 6.2; 
 
     let cursorX = 0;
     let cursorY = 0;

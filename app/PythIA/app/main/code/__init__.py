@@ -31,6 +31,7 @@ from app.main.code.model import (
 from app.main.code.model import (
     WebScrapingSate as WebScrapingSate,
 )
+from app.main.code.model.job_state import JobStateMixin
 from app.main.code.services.documentos import DocumentosService as DocumentosService
 
 from .error_handling import register_error_handlers, wants_json_response
@@ -166,6 +167,9 @@ def create_app():
         template_folder=os.path.join(main_dir, "resources", "templates"),
         static_folder=os.path.join(main_dir, "resources", "static"),
     )
+
+    # Timestamp de arranque del proceso/app (para detectar jobs "huérfanos" tras reinicios).
+    app.config["APP_BOOT_AT"] = JobStateMixin.now()
 
     app.config[_flask_session_config_name()] = _get_required_env("FLASK_SESSION_SIGNER")
     db_url = _build_database_url_from_env()

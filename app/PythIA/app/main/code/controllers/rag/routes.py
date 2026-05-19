@@ -68,6 +68,9 @@ def build_expediente_type_payload() -> dict[str, list[str]]:
     """
     Mapa expediente -> lista de tipos de documento disponibles ('administrativo', 'tecnico').
     Sirve para filtrar expedientes en el formulario guiado del tab.
+    
+    Returns:
+        dict con número de expediente como clave y lista de tipos documentales asociados como valor.
     """
     rows = (
         db.session.query(Documento.numero_expediente, Documento.tipo_documento)
@@ -82,7 +85,11 @@ def build_expediente_type_payload() -> dict[str, list[str]]:
     for expediente, tipo in rows:
         if not expediente or not tipo:
             continue
-        out.setdefault(str(expediente), set()).add(str(tipo))
+        expediente_key = str(expediente).strip()
+        normalized_type = str(tipo).strip().lower()
+        if not expediente_key or not normalized_type:
+            continue
+        out.setdefault(expediente_key, set()).add(normalized_type)
     return {k: sorted(v) for k, v in out.items()}
 
 
@@ -90,6 +97,9 @@ def build_model_usage_index_payload(months: int = 12) -> dict:
     """
     Construye un payload simple de uso por modelo a lo largo del tiempo, para
     dibujarlo con D3 en la pantalla RAG.
+    
+    Args:
+        months: Número de meses hacia atrás a incluir en el índice (incluyendo el actual).
 
     Returns:
         dict con:
@@ -382,17 +392,59 @@ def get_expediente_choices() -> list[tuple[str, str]]:
         list[tuple[str, str]]: Lista de tuplas con número de expediente y su traducción para el formulario, incluyendo una opción para "cualquiera".
     """
     rows = (
-        db.session.query(Documento.numero_expediente)
+        db.session.query(Documento.numero_expediente, Documento.tipo_documento, Documento.nombre)
         .filter(Documento.numero_expediente.isnot(None))
         .filter(Documento.numero_expediente != "")
-        .distinct()
         .order_by(Documento.numero_expediente.asc())
         .all()
     )
-    choices = [("", t("rag_default.expediente_any"))]
-    choices.extend((value, value) for (value,) in rows if value)
+
+    by_expediente: dict[str, dict[str, object]] = {}
+    process_rows(by_expediente, rows)
+
+    choices: list[tuple[str, str]] = [("", t("rag_default.expediente_any"))]
+    for exp in sorted(by_expediente.keys()):
+        entry = by_expediente[exp]
+        types = sorted(entry.get("types") or [])
+        names = entry.get("names") or []
+        pretty_types = " / ".join(type_label(v) for v in types) if types else t("rag_default.doc_type_any")
+        title = min(names, key=lambda s: (len(s), s.lower()))[0] if names else "-"
+        if title.lower().endswith(".pdf"):
+            title = title[:-4]
+        label = f"{exp} — {pretty_types} — {title}"
+        choices.append((exp, label))
+
     return choices
 
+def type_label(type_value: str) -> str:
+    """
+    Convierte un tipo documental en su etiqueta traducida.
+    
+    Args:
+        type_value (str): El valor del tipo documental, como "administrativo" o " tecnico".
+
+    Returns:
+        str: La etiqueta traducida para el tipo documental, o el valor original si no se reconoce, o "-" si no se proporciona ningún valor.
+    """
+    value = (type_value or "").strip().lower()
+    if value == "administrativo":
+        return t("rag_default.doc_type_admin")
+    if value == "tecnico":
+        return t("rag_default.doc_type_technical")
+    return value or "-"
+
+def process_rows(by_expediente: dict[str, dict[str, object]], rows: list[tuple[str, str, str]]) -> None:
+    for expediente, tipo, nombre in rows:
+        if not expediente:
+            continue
+        exp = str(expediente).strip()
+        if not exp:
+            continue
+        entry = by_expediente.setdefault(exp, {"types": set(), "names": []})
+        if tipo:
+            entry["types"].add(str(tipo))
+        if nombre:
+            entry["names"].append(str(nombre))
 
 def get_user_job_or_404(job_id: int) -> RAGQueryState:
     """
@@ -493,6 +545,31 @@ def rag_status(job_id: int) -> ResponseReturnValue:
             "cancel_requested": bool(job.cancel_requested),
         }
     )
+
+@rag_bp.get("/active")
+@login_required
+def rag_active() -> ResponseReturnValue:
+    """
+    Devuelve el job RAG activo del usuario autenticado (si existe).
+    Se usa para reanudar el polling de la UI tras recargar la página.
+    
+    Returns:
+        Respuesta JSON con el identificador y estado del job activo, o null si no hay
+    """
+    active_job = (
+        RAGQueryState.query.filter(
+            RAGQueryState.user_id == int(current_user.id),
+            RAGQueryState.status.in_(["queued", "running"]),
+            RAGQueryState.cancel_requested.is_(False),
+        )
+        .order_by(RAGQueryState.created_at.desc())
+        .first()
+    )
+
+    if not active_job:
+        return jsonify({"job_id": None}), 200
+
+    return jsonify({"job_id": active_job.id, "status": active_job.status}), 200
 
 @rag_bp.post("/cancel/<int:job_id>")
 @login_required
