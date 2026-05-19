@@ -695,11 +695,20 @@ Para analizar la viabilidad económica se ha seguido el coste total de propiedad
 	\label{tabla:explicacion_TCO}
 \end{table}
 
-Para llevar a cabo el estudio de la viabilidad económica se va a considerar que el trabajo llevado a cabo por la alumna lo ha realizado un desarrollador contratado durante los 9 meses que ha durado el proyecto. Si se supone un escenario empresarial real en España y se toma como referencia el \myhref{https://www.boe.es/buscar/doc.php?id=BOE-A-2024-2251}{Salario Mínimo Interprofesional (SMI) de 2024}, el salario mínimo anual es de 15\,876\,€, es decir, 1\,134\,€ al mes (se divide en 14 pagas). Además, a este salario hay que añadirle los gastos por la cotización a la \myhref{https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/36537}{Seguridad Social}. Normalmente la cotización es del 28,30\%, de los cuales 23,60\% se corresponden con gastos de la empresa. Por lo cual el gasto por la contratación del desarrollado sería:
+Para llevar a cabo el estudio de la viabilidad económica se va a considerar que el trabajo llevado a cabo por la alumna lo ha realizado un desarrollador contratado durante los 9 meses que ha durado el proyecto. Si se supone un escenario empresarial real en España y se toma como referencia el \myhref{https://www.boe.es/buscar/doc.php?id=BOE-A-2024-2251}{Salario Mínimo Interprofesional (SMI) de 2024}, el salario mínimo anual es de 15\,876\,€, es decir, 1\,134\,€ al mes (se divide en 14 pagas). Además, a este salario hay que añadirle los gastos por la cotización a la \myhref{https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/36537}{Seguridad Social}. Normalmente la cotización es del 28,30\%, de los cuales 23,60\% se corresponden con gastos de la empresa. Este impuesto se conoce como contingencias comunes. Además, debe sumarse un 5,5\% por la tasa de desempelo y un 0,2\% por Fogasa. Por lo cual el gasto mensual final por la contratación del desarrollado sería:
+
 $$
-1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 9\,\text{meses}
-= 12\,614,62\,\text{\texteuro}
+1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 
+= 1\,481,97\,\text{\texteuro}
 $$
+
+El gasto total tras los 9 meses que ha durado el desarrollo sería:
+
+$$
+1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 \cdot 9\,\text{meses}
+= 13\,335,04\,\text{\texteuro}
+$$
+
 
 Respecto a la adquisición de \eng{hardware} no ha sido necesaria la adquisición de \eng{hardware} específico adicional. El sistema \eng{RAG} se ha implementado de forma que se pueda ejecutar en entornos estándares, sin requerir servidores dedicados ni equipamiento especializado. El desarrollo y las pruebas se han realizado utilizando mi equipo personal y servidores ya disponibles en la universidad. El equipo utilizado ha sido un \myhref{https://support.hp.com/es-es/document/ish_7878690-7886844-16}{\eng{Victus by HP Gaming Laptop 16-r0xxx}}. El coste de adquisición del portátil fueron unos 1\,200\,€. Considerando un periodo de amortización de 5 años, el coste amortizado correspondiente al proyecto con una duración de 9 meses (del 11 de septiembre al 11 junio) sería:
 $$
@@ -764,8 +773,9 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
     		>{\raggedright\arraybackslash}p{0.46\linewidth}
     		>{\raggedleft\arraybackslash}p{0.46\linewidth}}
 		\toprule
-		\textbf{Componentes}    & \textbf{Estimación (euros)}\\
+		\textbf{Componentes}    & \textbf{Estimación (\texteuro)}\\
 		\midrule
+		Empleados & 13\,335,04\\
 		Adquisición \eng{hardware} & 180  \\
 		Adquisición \eng{software} & 21,75  \\
 		Instalación & 2\,522,92  \\
@@ -775,7 +785,7 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
 		Infraestructura & 0 \\
 		Tiempo inactivo & 0 \\
 		Espacio y energía & 720 \\
-		Coste total del proyecto & 11\,229 \\
+		Coste total del proyecto & 24\,564,10 \\
 		\bottomrule
 	\end{tabularx}
 	\caption{Coste total del proyecto.}
