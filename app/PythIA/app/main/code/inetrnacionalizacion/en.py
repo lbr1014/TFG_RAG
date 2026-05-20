@@ -307,7 +307,7 @@ TRANSLATIONS_EN={
     "stats.comparison_global": "Global",
     "stats.comparison_filter_label": "Users to compare",
     "stats.comparison_filter_apply": "Apply",
-    "stats.comparison_filter_help": "Compare from 1 user up to all registered users by holding Ctrl.",
+    "stats.comparison_filter_help": "You can compare a single user or all registered users. To select multiple users, hold Ctrl.",
     "stats.chart_user_locations": "Users by country",
     "stats.chart_user_locations_help": "Countries are colored by the number of registered users.",
     "stats.map_users": "users",
