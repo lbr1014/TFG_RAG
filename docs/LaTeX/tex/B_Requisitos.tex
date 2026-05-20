@@ -2,9 +2,13 @@
 
 \section{Introducción}
 
+En este apartado se recoge la especificación de requisitos del sistema desarrollado. En él se describen los objetivos generales del proyecto (ver sección~\hyperref[req:objgen]{B.2}), así como los requisitos funcionales y no funcionales(ver sección~\hyperref[req:req]{B.3}) que definen el comportamiento esperado de la aplicación y las restricciones que debe cumplir durante su funcionamiento (ver sección~\hyperref[req:esp]{B.4}).
 
+El propósito de esta especificación es servir como guía durante el desarrollo del sistema y como referencia para verificar que la aplicación implementa correctamente las funcionalidades previstas. Además, este documento permite definir de forma clara el alcance del proyecto y establecer una descripción detallada de las capacidades que ofrece la aplicación.
 
-\section{Objetivos generales}
+La organización de este apartado se ha realizado tomando como referencia las recomendaciones del estándar \file{IEEE 830-1998}~\cite{req:ieee} para la elaboración de documentos de especificación de requisitos software (\eng{Software Requirements Specification}, SRS). Dicho estándar establece una serie de características deseables para una correcta especificación de requisitos, indicando que esta debe ser completa, consistente, inequívoca, correcta, trazable, verificable y fácilmente modificable.
+
+\section{Objetivos generales} \label{req:objgen}
 
 Los objetivos generales que se buscan cumplir con este proyecto son:
 \begin{itemize}
@@ -13,9 +17,11 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\item Automatizar la recopilación, procesamiento e indexación de documentos de licitaciones, de forma que puedan ser integrados eficientemente en una base de datos vectorial.
 	\item Facilitar la consulta de la información de las licitaciones mediante una aplicación web intuitiva y accesible para usuarios autentificados.
 	\item Mejorar la comprensión y análisis de la información administrativa y técnica contenida en las licitaciones.
+	\item Proporcionar la trazabilidad de la respuesta del modelo, mostrando la información documental con la que se alimenta al \eng{LLM}. 
+	\item Incorporar mecanismos automáticos de evaluación que permitan analizar la calidad de las respuestas generadas por el sistema \eng{RAG}.
 \end{itemize}
 
-\section{Catálogo de requisitos}
+\section{Catálogo de requisitos} \label{req:req}
 
 A continuación se van a definir los requisitos del proyecto, tanto los funcionales como los no funcionales.
 
@@ -144,7 +150,7 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 	\item \req{RFN-18} Obsevabilidad: el sistema debe proporcionar \eng{logs} y métricas para monitorizar el estado del procesamiento y las consultas.
 \end{itemize}
 
-\section{Especificación de requisitos}
+\section{Especificación de requisitos} \label{req:esp}
 
 Los actores del sistema son:
 \begin{itemize}
