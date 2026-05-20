@@ -9,17 +9,16 @@ from zoneinfo import ZoneInfo
 
 from flask_login import login_user
 
-from app.test.support import BaseAppTestCase
-
-from app.main.code.model.consulta import Consulta
 from app.main.code.controllers.main.routes import (
     best_pid_for_consulta,
-    build_selected_user_comparison_payload,
     build_meta_by_consulta,
+    build_selected_user_comparison_payload,
     build_usage_stats_payload,
     build_user_country_map_payload,
     paginate_consultas,
 )
+from app.main.code.model.consulta import Consulta
+from app.test.support import BaseAppTestCase
 
 
 class MainRoutesUnitTest(BaseAppTestCase):
