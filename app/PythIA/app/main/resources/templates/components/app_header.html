@@ -70,35 +70,40 @@
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ t('common.close') }}"></button>
     </div>
     <div class="offcanvas-body">
+      <div class="d-grid mb-3">
+        <button type="button" class="btn btn-outline-light" id="pythia-tour-start">
+          <i class="bi bi-magic me-1" aria-hidden="true"></i>{{ t("nav.tutorial") }}
+        </button>
+      </div>
       <ul class="navbar-nav justify-content-end flex-grow-1 pe-0 app-navbar-nav-mobile">
         {% if request.endpoint != 'main.pag_principal' %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.pag_principal') }}">{{ t("nav.home") }}</a>
+            <a class="nav-link app-nav-link" id="nav-home" href="{{ url_for('main.pag_principal') }}">{{ t("nav.home") }}</a>
           </li>
         {% endif %}
         {% if request.endpoint != 'main.historial' %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.historial') }}">{{ t("nav.query_history") }}</a>
+            <a class="nav-link app-nav-link" id="nav-history" href="{{ url_for('main.historial') }}">{{ t("nav.query_history") }}</a>
           </li>
         {% endif %}
         {% if request.endpoint != 'main.edit_user' %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.edit_user') }}">{{ t("nav.edit_user") }}</a>
+            <a class="nav-link app-nav-link" id="nav-profile" href="{{ url_for('main.edit_user') }}">{{ t("nav.edit_user") }}</a>
           </li>
         {% endif %}
         {% if request.endpoint != 'main.stats_page' %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.stats_page') }}">{{ t("nav.usage_stats") }}</a>
+            <a class="nav-link app-nav-link" id="nav-stats" href="{{ url_for('main.stats_page') }}">{{ t("nav.usage_stats") }}</a>
           </li>
         {% endif %}
         {% if current_user.is_admin and request.endpoint != 'admin.documents_list_page' %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('admin.documents_list_page') }}">{{ t("nav.manage_documents") }}</a>
+            <a class="nav-link app-nav-link" id="nav-docs" href="{{ url_for('admin.documents_list_page') }}">{{ t("nav.manage_documents") }}</a>
           </li>
         {% endif %}
         {% if current_user.is_admin and request.endpoint != 'admin.users' %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('admin.users') }}">{{ t("nav.manage_users") }}</a>
+            <a class="nav-link app-nav-link" id="nav-users" href="{{ url_for('admin.users') }}">{{ t("nav.manage_users") }}</a>
           </li>
         {% endif %}
       </ul>
@@ -106,15 +111,15 @@
       <div class="app-mobile-panel mt-3">
         <div class="mobile-nav-section">
           <div class="offcanvas-section-label">{{ t("nav.appearance") }}</div>
-          <div class="list-group app-offcanvas-group">
-            <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="dark">{{ t("nav.dark_mode") }}</button>
-            <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="light">{{ t("nav.light_mode") }}</button>
+          <div class="list-group app-offcanvas-group" id="nav-theme">
+            <button type="button" class="list-group-item list-group-item-action theme-option" id="nav-theme-dark" data-theme-value="dark">{{ t("nav.dark_mode") }}</button>
+            <button type="button" class="list-group-item list-group-item-action theme-option" id="nav-theme-light" data-theme-value="light">{{ t("nav.light_mode") }}</button>
           </div>
         </div>
 
         <div class="mobile-nav-section">
           <div class="offcanvas-section-label">{{ t("nav.internationalization") }}</div>
-          <div class="list-group app-offcanvas-group">
+          <div class="list-group app-offcanvas-group" id="nav-i18n">
             {% for lang_code, lang_name in supported_languages.items() %}
               <form method="POST" action="{{ url_for('set_language_route') }}" class="m-0">
                 {{ language_form.csrf_token }}
@@ -130,7 +135,7 @@
 
         <form method="POST" action="{{ url_for('auth.logout') }}" class="m-0">
           {{ logout_form.hidden_tag() }}
-          <button type="submit" class="btn btn-light btn-header w-100 mt-3">{{ t("nav.logout") }}</button>
+          <button type="submit" class="btn btn-light btn-header w-100 mt-3" id="nav-logout">{{ t("nav.logout") }}</button>
         </form>
       </div>
     </div>
