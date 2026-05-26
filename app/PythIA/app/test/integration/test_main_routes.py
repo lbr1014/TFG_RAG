@@ -39,7 +39,7 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
             "/edit_user",
             data={
                 "nombre": "Nombre Nuevo",
-                "email": "nuevo@example.com",
+                "email": "lydiablanco71@gmail.com",
                 "new_password": "Nueva123",
             },
             follow_redirects=True,
@@ -48,7 +48,7 @@ class MainRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 200)
         db.session.refresh(user)
         self.assertEqual(user.nombre, "Nombre Nuevo")
-        self.assertEqual(user.email, "nuevo@example.com")
+        self.assertEqual(user.email, "lydiablanco71@gmail.com")
         self.assertTrue(user.check_password("Nueva123"))
 
     def test_edit_user_rejects_duplicate_email(self):
