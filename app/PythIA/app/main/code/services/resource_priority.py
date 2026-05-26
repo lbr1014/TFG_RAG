@@ -14,21 +14,6 @@ from contextlib import asynccontextmanager, contextmanager
 _rag_active_lock = threading.Lock()
 _rag_active_count = 0
 _rag_active_event = threading.Event()
-_ollama_slot: asyncio.Semaphore | None = None
-
-
-def _get_ollama_slot() -> asyncio.Semaphore:
-    """
-    Obtiene el semáforo para controlar el acceso a las peticiones a Ollama. Si no existe, lo crea de forma segura para evitar condiciones de carrera.
-
-    Returns:
-        asyncio.Semaphore: Un semáforo que controla el acceso a las peticiones a Ollama, para reducir la contención en GPU.
-    """
-    global _ollama_slot  
-    if _ollama_slot is None:
-        # Serializa peticiones a Ollama para reducir contención en GPU.
-        _ollama_slot = asyncio.Semaphore(1)
-    return _ollama_slot
 
 
 def is_rag_active() -> bool:
@@ -72,48 +57,23 @@ async def rag_priority_async():
 
 
 @asynccontextmanager
-async def ollama_request_slot_async():
-    """
-    Serializa peticiones a Ollama (RAG + OCR) para que, en condiciones normales,
-    solo haya una generación activa usando GPU/servidor.
-    """
-    slot = _get_ollama_slot()
-    async with slot:
-        yield
-
-
-@asynccontextmanager
 async def ollama_request_slot_background_async(*, poll_timeout_s: float = 0.25):
     """
     Variante para procesos largos (OCR/Markdown).
 
     Garantiza que si hay una consulta RAG activa, el background job espere y no
-    "se cuele" con una nueva petición a Ollama. Esto no puede interrumpir una
-    petición ya en vuelo, pero reduce el impacto en latencia al impedir que se
-    inicien nuevas peticiones de OCR mientras el usuario espera respuesta.
-    
-    Args:
-        poll_timeout_s: Intervalo entre comprobaciones de si RAG sigue activo, en segundos.
+    inicie nuevas peticiones a Ollama. Esto no puede interrumpir una peticiÃ³n ya
+    en vuelo, pero evita que se lancen nuevas peticiones de OCR mientras el
+    usuario espera respuesta.
     """
-    slot = _get_ollama_slot()
-    while True:
-        await wait_for_rag_idle_async(poll_timeout_s=poll_timeout_s)
-        await slot.acquire()
-        # Re-check: puede haberse activado RAG justo después de adquirir el slot.
-        if not _rag_active_event.is_set():
-            break
-        slot.release()
-        await asyncio.sleep(0)
-    try:
-        yield
-    finally:
-        slot.release()
+    await wait_for_rag_idle_async(poll_timeout_s=poll_timeout_s)
+    yield
 
 
 def wait_for_rag_idle(timeout: float | None = None) -> bool:
     """
     Espera a que no haya RAG activo.
-    
+
     Args:
         timeout: Tiempo máximo a esperar en segundos. Si es None, esperará indefinidamente.
 
@@ -138,10 +98,8 @@ async def wait_for_rag_idle_async(*, poll_timeout_s: float = 0.5) -> None:
     Espera de forma async-friendly hasta que no haya RAG activo.
     
     Args:
-        poll_timeout_s: Intervalo entre comprobaciones en segundos.
-        
+        poll_timeout_s: Intervalo en segundos para revisar el estado del flag. Por defecto 0.5s.
+    
     """
-    import asyncio
-
     while _rag_active_event.is_set():
         await asyncio.to_thread(_rag_active_event.wait, poll_timeout_s)

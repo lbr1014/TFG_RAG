@@ -27,7 +27,7 @@ from app.main.code.inetrnacionalizacion.tarduccion import (
 )
 from app.main.code.model.documento import Documento
 from app.main.code.model.rag_query_state import RAGQueryState
-from app.main.code.services.async_tasks import executor
+from app.main.code.services.async_tasks import cancel_tracked, executor, submit_tracked
 from app.main.code.services.rag.PrototipoRAG import (
     QueryCancelledError,
     get_rag_llm_model_choices,
@@ -518,7 +518,16 @@ def rag_ask() -> ResponseReturnValue:
     db.session.commit()
 
     app_obj = current_app._get_current_object()
-    executor.submit(run_rag_query_async, app_obj, job.id, int(current_user.id), current_lang)
+    submit_tracked(
+        executor,
+        "rag",
+        job.id,
+        run_rag_query_async,
+        app_obj,
+        job.id,
+        int(current_user.id),
+        current_lang,
+    )
 
     return jsonify({"job_id": job.id}), 202
 
@@ -595,6 +604,7 @@ def rag_cancel(job_id: int) -> ResponseReturnValue:
     job.mark_cancel_requested(t("rag.cancelling"))
 
     if job.status == "queued":
+        cancel_tracked(job_type="rag", tracked_job_id=job.id)
         job.mark_cancelled()
 
     db.session.commit()

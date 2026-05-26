@@ -12,6 +12,7 @@ import asyncio
 import atexit
 import json
 import logging
+import math
 import os
 import re
 import time
@@ -1833,11 +1834,7 @@ async def ask_ollama(
         pool=settings.OLLAMA_POOL_TIMEOUT_SECONDS,
     )
     try:
-        from app.main.code.services.resource_priority import ollama_request_slot_async
-
-        async with ollama_request_slot_async(), httpx.AsyncClient(
-            base_url=OLLAMA_BASE_URL, timeout=timeout
-        ) as client:
+        async with httpx.AsyncClient(base_url=OLLAMA_BASE_URL, timeout=timeout) as client:
             await ensure_ollama_model_available(client, model_name, should_cancel=should_cancel)
             async with client.stream(
                 "POST",
@@ -2025,6 +2022,32 @@ async def obtener_mejor_chunk(
     # Normaliza a lista de dicts
     retrieved: list[dict] = []
     context_blocks: list[str] = []
+
+    def _to_jsonable(value: Any) -> Any:
+        """
+        Convierte un valor a un formato JSON serializable.
+
+        Args:
+            value (Any): El valor a convertir.
+
+        Returns:
+            Any: El valor convertido a un formato JSON serializable.
+        """
+        if value is None or isinstance(value, (str, bool, int)):
+            return value
+        if isinstance(value, float):
+            return value if math.isfinite(value) else None
+        if isinstance(value, (list, tuple)):
+            return [_to_jsonable(v) for v in value]
+        if isinstance(value, dict):
+            return {str(k): _to_jsonable(v) for k, v in value.items()}
+        # numpy / torch scalars sometimes expose `.item()`
+        if hasattr(value, "item"):
+            try:
+                return _to_jsonable(value.item())
+            except Exception:
+                pass
+        return str(value)
     
     for idx, p in enumerate(points, start=1):
         if should_cancel and should_cancel():
@@ -2034,16 +2057,23 @@ async def obtener_mejor_chunk(
         meta = (payload.get("metadata") or {})
         content = payload.get("content", "") or ""
 
+        try:
+            score = float(getattr(p, "score", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            score = 0.0
+        if not math.isfinite(score):
+            score = 0.0
+
         item = {
             "ranking": idx,
-            "similitud": float(getattr(p, "score", 0.0)),
+            "similitud": score,
             "qdrant_point_id": str(getattr(p, "id", "")),
             "document_id": meta.get("document_id"),
             "doc_sha256": meta.get("sha256"),
             "segment_index": meta.get("segment_index", -1),
             "filename": meta.get("filename", ""),
             "title": meta.get("title", ""),
-            "metadata": dict(meta),
+            "metadata": _to_jsonable(dict(meta)),
             "chunk": content,
         }
         retrieved.append(item)
