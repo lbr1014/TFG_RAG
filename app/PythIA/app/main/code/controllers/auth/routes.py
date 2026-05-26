@@ -157,19 +157,21 @@ def forgot_password() -> ResponseReturnValue:
         email = form.email.data.lower().strip()
         user = User.get_by_email(email)
 
-        if user:
-            token = generate_reset_token(user.email)
-            reset_url = url_for("auth.reset_password", token=token, _external=True)
+        if not user:
+            form.email.errors.append(t("auth.email_not_registered"))
+            return render_template("forgot_password.html", form=form)
 
-            msg = Message(
-                subject=t("auth.recovery_subject"),
-                recipients=[user.email],
-            )
-            msg.body = t("auth.recovery_body", name=user.nombre, reset_url=reset_url)
-            mail.send(msg)
+        token = generate_reset_token(user.email)
+        reset_url = url_for("auth.reset_password", token=token, _external=True)
 
-            flash(t("auth.recovery_sent"), "info")
+        msg = Message(
+            subject=t("auth.recovery_subject"),
+            recipients=[user.email],
+        )
+        msg.body = t("auth.recovery_body", name=user.nombre, reset_url=reset_url)
+        mail.send(msg)
 
+        flash(t("auth.recovery_sent"), "info")
         return redirect(url_for("auth.login"))
 
     return render_template("forgot_password.html", form=form)

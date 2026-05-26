@@ -7,8 +7,6 @@ from types import SimpleNamespace
 
 from wtforms.validators import ValidationError
 
-from app.test.support import BaseAppTestCase
-
 from app.main.code.forms import (
     AdminCreateUserForm,
     EditUserForm,
@@ -23,6 +21,7 @@ from app.main.code.forms import (
     SignupForm,
 )
 from app.main.code.inetrnacionalizacion.tarduccion import t
+from app.test.support import BaseAppTestCase
 
 
 class FormTestMixin:
@@ -121,7 +120,7 @@ class SignupFormUnitTest(FormTestMixin, BaseAppTestCase):
             SignupForm,
             {
                 "nombre": "Lydia",
-                "email": "lydia@example.com",
+                "email": "lydiablanco71@gmail.com",
                 "password": "Segura123",
                 "confirm_password": "Segura123",
             },
@@ -132,7 +131,7 @@ class SignupFormUnitTest(FormTestMixin, BaseAppTestCase):
             SignupForm,
             {
                 "nombre": "Lydia",
-                "email": "lydia@example.com",
+                "email": "lydiablanco71@gmail.com",
                 "password": "Segura123",
                 "confirm_password": "Distinta123",
             },

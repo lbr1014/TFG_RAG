@@ -5,6 +5,7 @@ Script con los formularios Flask-WTF usados por autenticación, administración,
 
 from typing import ClassVar
 
+from flask import current_app
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField
 from wtforms import (
@@ -29,6 +30,7 @@ from wtforms.validators import (
 from .countries import COUNTRY_CHOICES, DEFAULT_COUNTRY_CODE, country_choices
 from .error_handling import PasswordSecurity
 from .inetrnacionalizacion.tarduccion import get_locale, localize_form, t
+from .services.email_verification import verify_email
 from .services.rag.PrototipoRAG import get_rag_llm_model_choices
 
 # Constantes para claves de traducción de campos comunes
@@ -248,6 +250,24 @@ class SignupForm(LocalizedFlaskForm):
         validators=[DataRequired(), EqualTo("password", message="Las contraseñas no coinciden")],
     )
     submit = SubmitField("Crear cuenta")
+
+    def validate_email(self, field: StringField) -> None:
+        """
+        Valida el email usando Emailable (si hay API key configurada).
+        Si no hay API key o hay un error de red, no bloquea el registro par aevitar fallso.
+        
+        Args: 
+            field (StringField): Campo de email a validar.
+        """
+        api_key = current_app.config.get("EMAILABLE_API_KEY")
+        if not api_key:
+            return
+
+        result = verify_email(field.data.lower().strip())
+        state = (result or {}).get("state")
+
+        if state in {"undeliverable", "invalid", "disposable"}:
+            raise ValidationError(t("auth.email_undeliverable"))
 
 
 class AdminCreateUserForm(LocalizedFlaskForm):

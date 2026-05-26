@@ -219,6 +219,9 @@ def create_app():
     app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD", "")
     app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"])
 
+    # Validación de los email (Emailable) (opcional)
+    app.config["EMAILABLE_API_KEY"] = os.environ.get("EMAILABLE_API_KEY") or None
+
     # init extensions
     db.init_app(app)
     migrate.init_app(app, db)
