@@ -371,10 +371,7 @@ def build_guided_question(form: RAGDefaultQueryForm) -> str:
     summary_mode = bool(form.summary.data)
 
     scope = f"Para el expediente {expediente}" if expediente else "Para los pliegos disponibles de forma general"
-    doc_scope = ""
-    if not summary_mode and doc_type:
-        doc_type_text = "tecnico" if doc_type == "tecnico" else "administrativo"
-        doc_scope = f" en el pliego {doc_type_text}"
+    doc_scope = f" [doc_type={doc_type}]" if (not summary_mode and doc_type) else ""
 
     task = (
         "elabora un resumen general y detallado del documento completo."

@@ -1631,6 +1631,39 @@ def iter_clean_lines(text: str) -> Iterable[str]:
             yield line
 
 
+def _normalize_tipo_documento(value: str | None) -> str:
+    """
+    Normaliza valores de tipo documental para que coincidan con lo almacenado en Qdrant (en minusculas, sin tildes y si espacios).
+    Además, aplica reglas para mapear variantes comunes a un mismo valor estándar ("tecnico" y "administrativo").
+    
+    Args:
+        value: El valor de tipo documental a normalizar, que puede ser None o una cadena de texto.
+    
+    Returns:
+        El valor normalizado, o una cadena vacía si el valor es None o vacío.
+        
+    """
+    if value is None:
+        return ""
+    value = str(value).strip().lower()
+    if not value:
+        return ""
+    try:
+        import unicodedata
+
+        value = unicodedata.normalize("NFKD", value)
+        value = "".join(ch for ch in value if not unicodedata.combining(ch))
+    except (ImportError, AttributeError, TypeError, ValueError):
+        pass
+    value = re.sub(r"\s+", " ", value).strip()
+    # Canonicalización
+    if value.startswith("tecnic"):
+        return "tecnico"
+    if value.startswith("admin"):
+        return "administrativo"
+    return value
+
+
 def build_metadata_filter(
     numero_expediente: str | None = None,
     tipo_documento: str | None = None,
@@ -1647,11 +1680,57 @@ def build_metadata_filter(
     Returns:
         Un objeto qmodels.Filter que combina las condiciones de filtrado para número de expediente y tipo de documento, o None si no se proporcionan filtros.
     """
-    return build_qdrant_metadata_filter(
-        numero_expediente=numero_expediente,
-        tipo_documento=tipo_documento,
-        document_id=int(document_id) if document_id is not None else None,
-    )
+    must: list[Any] = []
+
+    if numero_expediente is not None and numero_expediente != "":
+        must.append(
+            qmodels.FieldCondition(
+                key="metadata.numero_expediente",
+                match=qmodels.MatchValue(value=numero_expediente),
+            )
+        )
+
+    if document_id is not None:
+        must.append(
+            qmodels.FieldCondition(
+                key="metadata.document_id",
+                match=qmodels.MatchValue(value=int(document_id)),
+            )
+        )
+
+    raw_tipo = (tipo_documento or "").strip()
+    tipo = _normalize_tipo_documento(raw_tipo)
+
+    tipo_field = "metadata.tipo_documento"
+    missing_tipo_conditions: list[Any] = []
+
+
+    if raw_tipo:
+        match_values = [tipo]
+        if tipo == "tecnico":
+            match_values.append("técnico")
+        match_tipo = qmodels.FieldCondition(
+            key=tipo_field,
+            match=(
+                qmodels.MatchAny(any=match_values)
+                if hasattr(qmodels, "MatchAny") and len(match_values) > 1
+                else qmodels.MatchValue(value=tipo)
+            ),
+        )
+        should = [match_tipo, *missing_tipo_conditions]
+        return qmodels.Filter(
+            must=must or None,
+            should=should,
+            min_should=(
+                qmodels.MinShould(conditions=should, min_count=1)
+                if hasattr(qmodels, "MinShould")
+                else None
+            ),
+        )
+
+    if not must:
+        return None
+    return qmodels.Filter(must=must)
 
 def recuperacion_chunk(
     user_query: str,
@@ -1722,24 +1801,139 @@ def recuperacion_chunk_con_scores(
         numero_expediente=numero_expediente,
         tipo_documento=tipo_documento,
     )
-    try:
-        VectorBaseDocument._ensure_collection()
+    _log_qdrant_query_filter(query_filter, numero_expediente=numero_expediente, tipo_documento=tipo_documento)
 
-        res = qdrant.query_points(
-            collection_name=VectorBaseDocument.get_collection_name(),
-            query=query_vector,
-            limit=k,
+    try:
+        points = _qdrant_query_points_with_optional_tipo_fallback(
+            query_vector=query_vector,
+            k=k,
             query_filter=query_filter,
-            with_payload=True,
-            with_vectors=False,
+            numero_expediente=numero_expediente,
+            tipo_documento=tipo_documento,
         )
-        points = getattr(res, "points", res)
-        if min_similarity is None:
-            return points
-        return [p for p in points if float(getattr(p, "score", 0.0)) > min_similarity]
+        return _filter_points_by_similarity(points, min_similarity=min_similarity, k=k)
     except QDRANT_RECOVERABLE_ERRORS as e:
         logger.warning("Qdrant no disponible para recuperar chunks: %s", e)
         return []
+
+
+def _log_qdrant_query_filter(
+    query_filter: qmodels.Filter | None,
+    *,
+    numero_expediente: str | None,
+    tipo_documento: str | None,
+) -> None:
+    """
+    Registra información sobre el filtro de Qdrant que se va a aplicar en la consulta.
+
+    Args:
+        query_filter (qmodels.Filter | None): El filtro de Qdrant que se va a aplicar en la consulta, o None si no se aplica ningún filtro. 
+        numero_expediente (str | None): El número de expediente que se está utilizando como filtro en la consulta, o None si no se está filtrando por número de expediente.
+        tipo_documento (str | None): El tipo de documento que se está utilizando como filtro en la consulta, o None si no se está filtrando por tipo de documento.
+    """
+    if query_filter is None or not (numero_expediente or tipo_documento):
+        return
+    try:
+        dump = query_filter.model_dump() if hasattr(query_filter, "model_dump") else str(query_filter)
+    except (AttributeError, TypeError, ValueError):
+        dump = "<unserializable-filter>"
+    logger.info(
+        "Qdrant query_filter aplicado (expediente=%s, tipo=%s): %s",
+        (numero_expediente or ""),
+        (tipo_documento or ""),
+        dump,
+    )
+
+
+def _qdrant_query_points_with_optional_tipo_fallback(
+    *,
+    query_vector: list[float],
+    k: int,
+    query_filter: qmodels.Filter | None,
+    numero_expediente: str | None,
+    tipo_documento: str | None,
+) -> list[qmodels.ScoredPoint]:
+    """
+    Recupera puntos de Qdrant usando el vector de consulta y el filtro dado. Si no se encuentran puntos y se estaba filtrando por tipo_documento, 
+    reintenta la consulta sin el filtro de tipo_documento para evitar que un filtro demasiado restrictivo deje sin resultados.
+
+    Args:
+        query_vector (list[float]): El vector de embedding que se usará para la búsqueda de similitud en Qdrant.
+        k (int): El número de puntos a recuperar.
+        query_filter (qmodels.Filter | None): El filtro de Qdrant que se va a aplicar en la consulta, o None si no se aplica ningún filtro.
+        numero_expediente (str | None): El número de expediente que se está utilizando como filtro en la consulta, o None si no se está filtrando por número de expediente.
+        tipo_documento (str | None): El tipo de documento que se está utilizando como filtro en la consulta, o None si no se está filtrando por tipo de documento.
+
+    Returns:
+        list[qmodels.ScoredPoint]: Una lista de objetos qmodels.ScoredPoint que representan los chunks más similares encontrados en Qdrant, ordenados por similitud.
+        Cada objeto incluye el id del punto, el score de similitud, y el payload con el contenido y metadatos del chunk. Si no se encuentran puntos con el filtro de tipo_documento, se devuelve el resultado de la consulta sin ese filtro.
+    """
+    
+    VectorBaseDocument._ensure_collection()
+
+    res = qdrant.query_points(
+        collection_name=VectorBaseDocument.get_collection_name(),
+        query=query_vector,
+        limit=k,
+        query_filter=query_filter,
+        with_payload=True,
+        with_vectors=False,
+    )
+    points = getattr(res, "points", res)
+    if points or not tipo_documento:
+        return points
+
+    fallback_filter = build_metadata_filter(
+        numero_expediente=numero_expediente,
+        tipo_documento=None,
+    )
+    logger.warning(
+        "Qdrant devolvió 0 puntos con tipo=%s; reintentando sin filtro de tipo.",
+        (tipo_documento or ""),
+    )
+    res2 = qdrant.query_points(
+        collection_name=VectorBaseDocument.get_collection_name(),
+        query=query_vector,
+        limit=k,
+        query_filter=fallback_filter,
+        with_payload=True,
+        with_vectors=False,
+    )
+    points2 = getattr(res2, "points", res2)
+    return points2 or points
+
+
+def _filter_points_by_similarity(
+    points: list[qmodels.ScoredPoint],
+    *,
+    min_similarity: float | None,
+    k: int,
+) -> list[qmodels.ScoredPoint]:
+    """
+    Filtra una lista de puntos por similitud.
+
+    Args:
+        points (list[qmodels.ScoredPoint]): La lista de puntos a filtrar, cada uno con un atributo 'score' que representa la similitud.
+        min_similarity (float | None): El umbral mínimo de similitud. Solo se devolverán los puntos cuyo 'score' sea mayor que este valor. Si es None, no se aplica ningún filtro de similitud.
+        k (int): El número máximo de puntos a devolver. Si después de aplicar el filtro de similitud quedan más de k puntos, se devolverán solo los k primeros.
+
+    Returns:
+        list[qmodels.ScoredPoint]: La lista de puntos filtrados. Si después de aplicar el filtro de similitud no quedan puntos pero la lista original no estaba vacía, se devuelve la lista original sin filtrar para asegurar que siempre se devuelva algo si había puntos disponibles.
+    """
+    if min_similarity is None:
+        return points
+
+    filtered = [p for p in points if float(getattr(p, "score", 0.0)) > min_similarity]
+    if filtered or not points:
+        return filtered
+
+    logger.info(
+        "Todos los puntos quedaron por debajo de min_similarity=%s (raw=%d). Usando top-%d sin umbral.",
+        min_similarity,
+        len(points),
+        min(len(points), k),
+    )
+    return list(points)
 
 
 def build_rag_prompt(
@@ -1953,7 +2147,7 @@ async def obtener_mejor_chunk(
     query_profile: str = "general",
     retrieval_k: int = DEFAULT_RAG_MAX_CHUNKS,
     min_similarity: float | None = DEFAULT_RAG_MIN_SIMILARITY,
-    ) -> dict:
+) -> dict:
     """
     Dada una pregunta del usuario, recupera los chunks más relevantes de Qdrant y usa Ollama para generar una respuesta basada en esos chunks.
     
@@ -1978,16 +2172,9 @@ async def obtener_mejor_chunk(
     """
     user_query = (user_query or "").strip()
     model_name = resolve_rag_llm_model(model)
-    if should_cancel and should_cancel():
-        raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+    _raise_if_query_cancelled(should_cancel)
 
-    if on_status:
-        on_status(f"Preparando modelo {model_name}...")
-    await ensure_ollama_model_ready(
-        model_name,
-        should_cancel=should_cancel,
-        on_status=on_status,
-    )
+    await _prepare_ollama_model(model_name, should_cancel=should_cancel, on_status=on_status)
 
     if on_status:
         on_status("Recuperando fragmentos relevantes...")
@@ -2001,57 +2188,157 @@ async def obtener_mejor_chunk(
         min_similarity=min_similarity,
     )
     if not points:
-        return {
-            "answer": "No he encontrado ningún fragmento relevante en la base de datos.",
-            "title": "",
-            "filename": "",
-            "segment_index": -1,
-            "chunk": "",
-            "retrieved": [],
-            "model": model_name,
-            "execution_device": get_ollama_execution_device(),
-            "query_profile": query_profile,
-            "retrieval_k": retrieval_k,
-            "min_similarity": min_similarity,
-            "applied_filters": {
-                "numero_expediente": numero_expediente,
-                "tipo_documento": tipo_documento,
-            },
-        }
+        logger.info(
+            "RAG sin fragmentos (expediente=%s, tipo=%s, k=%s, min_sim=%s)",
+            (numero_expediente or ""),
+            (tipo_documento or ""),
+            retrieval_k,
+            min_similarity,
+        )
+        return _empty_rag_result(
+            model_name=model_name,
+            query_profile=query_profile,
+            retrieval_k=retrieval_k,
+            min_similarity=min_similarity,
+            numero_expediente=numero_expediente,
+            tipo_documento=tipo_documento,
+        )
+
+    retrieved, context_blocks = _build_retrieved_and_context(points, should_cancel=should_cancel)
+    best = retrieved[0]
+
+    if on_status:
+        on_status("Generando respuesta del modelo...")
+
+    answer = await ask_rag_llm(
+        user_query=user_query,
+        context_blocks=context_blocks,
+        query_profile=query_profile,
+        model=model_name,
+        should_cancel=should_cancel,
+    )
+    effective_device = await get_ollama_effective_execution_device(
+        model_name=model_name,
+        should_cancel=should_cancel,
+    )
+
+    return _rag_result_from_best(
+        answer=answer,
+        model_name=model_name,
+        best=best,
+        retrieved=retrieved,
+        execution_device=effective_device,
+        query_profile=query_profile,
+        retrieval_k=retrieval_k,
+        min_similarity=min_similarity,
+        numero_expediente=numero_expediente,
+        tipo_documento=tipo_documento,
+    )
+
+
+async def _prepare_ollama_model(model_name: str, *, should_cancel=None, on_status=None) -> None:
+    """
+    Prepara el modelo Ollama para su uso.
+
+    Args:
+        model_name (str): El nombre del modelo a preparar.
+        should_cancel (_type_, optional): Una función para verificar si la operación ha sido cancelada. Defaults to None.
+        on_status (_type_, optional): Una función para actualizar el estado de la operación. Defaults to None.
+    """
+    if on_status:
+        on_status(f"Preparando modelo {model_name}...")
+    await ensure_ollama_model_ready(
+        model_name,
+        should_cancel=should_cancel,
+        on_status=on_status,
+    )
+
+
+def _empty_rag_result(
+    *,
+    model_name: str,
+    query_profile: str,
+    retrieval_k: int,
+    min_similarity: float | None,
+    numero_expediente: str | None,
+    tipo_documento: str | None,
+) -> dict:
+    """
+    Construye un resultado de RAG vacío, indicando que no hay información disponible.
+
+    Args:
+        model_name (str): El nombre del modelo de lenguaje utilizado para la consulta.
+        query_profile (str): El perfil de la consulta.
+        retrieval_k (int): El número de fragmentos a recuperar.
+        min_similarity (float | None): La similitud mínima para considerar un fragmento relevante.
+        numero_expediente (str | None): El número de expediente.
+        tipo_documento (str | None): El tipo de documento.
+
+    Returns:
+        dict: El resultado de RAG vacío.
+    """
+    return {
+        "answer": "No hay información disponible sobre tu consulta en la base de datos. Por favor realiza otra búsqueda o revisa los filtros aplicados. Los temas sobre los que puedes preguntar son los contenidos en las licitaciones del estado, por ejemplo: plazos, importes, requisitos, criterios de adjudicación, etc.",
+        "title": "",
+        "filename": "",
+        "segment_index": -1,
+        "chunk": "",
+        "retrieved": [],
+        "model": model_name,
+        "execution_device": get_ollama_execution_device(),
+        "query_profile": query_profile,
+        "retrieval_k": retrieval_k,
+        "min_similarity": min_similarity,
+        "applied_filters": {
+            "numero_expediente": numero_expediente,
+            "tipo_documento": tipo_documento,
+        },
+    }
+
+
+def _to_jsonable(value: Any) -> Any:
+    """
+    Convierte un valor a un formato JSONable.
+
+    Args:
+        value (Any): El valor a convertir.
+
+    Returns:
+        Any: El valor convertido a un formato JSONable. Si el valor es de un tipo primitivo (str, bool, int, float), se devuelve tal cual. Si el valor es una lista o tupla, 
+        se convierte recursivamente cada elemento. Si el valor es un diccionario, se convierte recursivamente cada clave y valor. Si el valor tiene un método 'item', se intenta convertir el resultado de ese método.
+    """
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, (list, tuple)):
+        return [_to_jsonable(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _to_jsonable(v) for k, v in value.items()}
+    if hasattr(value, "item"):
+        try:
+            return _to_jsonable(value.item())
+        except (AttributeError, TypeError, ValueError):
+            pass
+    return str(value)
+
+
+def _build_retrieved_and_context(points: list[Any], *, should_cancel=None) -> tuple[list[dict], list[str]]:
+    """
+    Construye las estructuras de datos para los chunks recuperados y los bloques de contexto a partir de los puntos devueltos por Qdrant.
     
-    # Normaliza a lista de dicts
+    Args:
+        points: La lista de puntos devueltos por Qdrant, cada uno con un payload que contiene el contenido del chunk y sus metadatos, y un score de similitud.
+        should_cancel: Función opcional que devuelve True si se ha solicitado cancelar la consulta. Si se detecta que el usuario ha cancelado la consulta, se lanzará una QueryCancelledError.
+    
+    Returns:
+        Una tupla con dos elementos: la lista de chunks recuperados y la lista de bloques de contexto.
+    """
     retrieved: list[dict] = []
     context_blocks: list[str] = []
 
-    def _to_jsonable(value: Any) -> Any:
-        """
-        Convierte un valor a un formato JSON serializable.
-
-        Args:
-            value (Any): El valor a convertir.
-
-        Returns:
-            Any: El valor convertido a un formato JSON serializable.
-        """
-        if value is None or isinstance(value, (str, bool, int)):
-            return value
-        if isinstance(value, float):
-            return value if math.isfinite(value) else None
-        if isinstance(value, (list, tuple)):
-            return [_to_jsonable(v) for v in value]
-        if isinstance(value, dict):
-            return {str(k): _to_jsonable(v) for k, v in value.items()}
-        # numpy / torch scalars sometimes expose `.item()`
-        if hasattr(value, "item"):
-            try:
-                return _to_jsonable(value.item())
-            except Exception:
-                pass
-        return str(value)
-    
     for idx, p in enumerate(points, start=1):
-        if should_cancel and should_cancel():
-            raise QueryCancelledError(QUERY_CANCELLED_MESSAGE)
+        _raise_if_query_cancelled(should_cancel)
 
         payload = p.payload or {}
         meta = (payload.get("metadata") or {})
@@ -2081,24 +2368,41 @@ async def obtener_mejor_chunk(
             f"""[CHUNK #{idx} | score={item['similitud']:.6f} | file={item['filename']} | seg={item['segment_index']}]
             \"\"\"{content}\"\"\""""
         )
-        
-    best = retrieved[0]
-        
-    if on_status:
-        on_status("Generando respuesta del modelo...")
+    return retrieved, context_blocks
 
-    answer = await ask_rag_llm(
-        user_query=user_query,
-        context_blocks=context_blocks,
-        query_profile=query_profile,
-        model=model_name,
-        should_cancel=should_cancel,
-    )
-    effective_device = await get_ollama_effective_execution_device(
-        model_name=model_name,
-        should_cancel=should_cancel,
-    )
 
+def _rag_result_from_best(
+    *,
+    answer: str,
+    model_name: str,
+    best: dict,
+    retrieved: list[dict],
+    execution_device: str,
+    query_profile: str,
+    retrieval_k: int,
+    min_similarity: float | None,
+    numero_expediente: str | None,
+    tipo_documento: str | None,
+) -> dict:
+    """
+    Construye el resultado final de RAG a partir de la respuesta generada por el modelo, el chunk más relevante y la lista de chunks recuperados.
+
+    Args:
+        answer (str): La respuesta generada por el modelo de lenguaje basada en los chunks recuperados.
+        model_name (str): El nombre del modelo de lenguaje utilizado para generar la respuesta.
+        best (dict): Un diccionario con los detalles del chunk más relevante encontrado, incluyendo título del documento, nombre del archivo, índice de segmento y el texto del chunk.
+        retrieved (list[dict]): La lista de chunks recuperados con sus scores y metadatos, ordenados por relevancia.
+        execution_device (str): El dispositivo en el que se ejecutó la consulta.
+        query_profile (str): El perfil de consulta utilizado.
+        retrieval_k (int): El número de chunks a recuperar.
+        min_similarity (float | None): La similitud mínima requerida para incluir un chunk en los resultados.
+        numero_expediente (str | None): El número de expediente asociado al documento, que se utiliza para filtrar los resultados.
+        tipo_documento (str | None): El tipo de documento, que se utiliza para filtrar los resultados.
+
+    Returns:
+        dict: Un diccionario con la respuesta generada por el modelo, detalles del chunk más relevante (título del documento, nombre del archivo, índice de segmento, texto del chunk), la lista de chunks recuperados con sus scores y metadatos, el modelo usado, 
+        el dispositivo de ejecución, el perfil de consulta, los parámetros de recuperación y los filtros aplicados.
+    """
     return {
         "answer": answer,
         "model": model_name,
@@ -2107,7 +2411,7 @@ async def obtener_mejor_chunk(
         "segment_index": best.get("segment_index", -1),
         "chunk": best.get("chunk", ""),
         "retrieved": retrieved,
-        "execution_device": effective_device,
+        "execution_device": execution_device,
         "query_profile": query_profile,
         "retrieval_k": retrieval_k,
         "min_similarity": min_similarity,
@@ -2192,7 +2496,7 @@ def index_pdf(
                 "title": title,
                 "sha256": doc_hash,
                 "numero_expediente": numero_expediente,
-                "tipo_documento": tipo_documento,
+                "tipo_documento": _normalize_tipo_documento(tipo_documento) or None,
             }
             if document_id is not None:
                 base_meta["document_id"] = int(document_id)
@@ -2279,7 +2583,7 @@ def index_markdown(
             "title": safe_title,
             "sha256": safe_hash,
             "numero_expediente": numero_expediente,
-            "tipo_documento": tipo_documento,
+            "tipo_documento": _normalize_tipo_documento(tipo_documento) or None,
             "source": "markdown",
         }
         if document_id is not None:

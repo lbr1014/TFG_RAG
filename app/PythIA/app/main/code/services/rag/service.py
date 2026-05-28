@@ -329,6 +329,11 @@ async def rag_answer(
     """
 
     question = (question or "").strip()
+    tipo_override: str | None = None
+    marker = re.search(r"\[doc_type\s*=\s*(administrativo|tecnico)\s*\]", question, re.IGNORECASE)
+    if marker:
+        tipo_override = marker.group(1).strip().lower()
+        question = re.sub(r"\s*\[doc_type\s*=\s*(administrativo|tecnico)\s*\]\s*", " ", question, flags=re.IGNORECASE).strip()
     invalid = validate_question(question, lang=lang)
 
     if invalid:
@@ -337,7 +342,7 @@ async def rag_answer(
     start = time.perf_counter()
     data: dict[str, Any]
     numero_expediente = resolve_numero_expediente(question)
-    tipo_documento = detect_tipo_documento(question)
+    tipo_documento = tipo_override or detect_tipo_documento(question)
     query_profile, retrieval_k = detect_guided_query_profile(question)
 
     try:
