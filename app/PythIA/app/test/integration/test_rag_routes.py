@@ -8,10 +8,9 @@ from unittest.mock import MagicMock, patch
 
 from flask_login import login_user
 
-from app.test.support import BaseAppTestCase
-
-from app.main.code.model.rag_query_state import RAGQueryState
 from app.main.code.extensions import db
+from app.main.code.model.rag_query_state import RAGQueryState
+from app.test.support import BaseAppTestCase
 
 
 class RAGRoutesIntegrationTest(BaseAppTestCase):
@@ -138,7 +137,7 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 202)
         job = db.session.get(RAGQueryState, response.get_json()["job_id"])
         self.assertIn("expediente EXP-55", job.question)
-        self.assertIn("pliego tecnico", job.question)
+        self.assertIn("doc_type=tecnico", job.question)
         self.assertIn("cantidades economicas", job.question)
         self.assertEqual(job.model_name, "fake-model")
         mock_submit.assert_called_once()

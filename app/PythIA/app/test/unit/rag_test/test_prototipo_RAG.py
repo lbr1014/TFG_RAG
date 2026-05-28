@@ -1,1011 +1,448 @@
 import asyncio
-import importlib
+import hashlib
 import os
-import runpy
-import sys
 import tempfile
 import types
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 
-class _FakeArray:
-    def __init__(self, values):
-        self.values = values
+def _import_prototipo():
+    # Los tests de integración instalan un stub de PrototipoRAG para probar el comportamiento del módulo, lo cargamos por ruta bajo otro nombre.
+    import sys
+    from importlib.machinery import SourceFileLoader
+    from importlib.util import module_from_spec, spec_from_loader
+    from pathlib import Path
 
-    def tolist(self):
-        return self.values
-
-
-class _FakeTokenizer:
-    def tokenize(self, text):
-        if text == "BAD":
-            raise RuntimeError("token error")
-        return text.split()
-
-
-class _FakeSentenceTransformer:
-    fail_cuda_oom_once = False
-    def __init__(self, model_id, device="cpu", cache_folder=None):
-        self.model_id = model_id
-        self.device = device
-        self.cache_folder = cache_folder
-        self.max_seq_length = 8
-        self.tokenizer = _FakeTokenizer()
-        self.eval_called = False
-
-    def eval(self):
-        self.eval_called = True
-    def to(self, device):
-        self.device = device
-        return self
-
-    def get_sentence_embedding_dimension(self):
-        return 3
-
-    def encode(self, input_text, **_kwargs):
-        if self.device != "cpu" and self.fail_cuda_oom_once:
-            self.fail_cuda_oom_once = False
-            raise RuntimeError("CUDA error: out of memory")
-        if isinstance(input_text, list):
-            return [_FakeArray([float(i), float(i + 1), float(i + 2)]) for i, _ in enumerate(input_text)]
-        return _FakeArray([1.0, 2.0, 3.0])
+    repo_root = Path(__file__).resolve().parents[4]
+    module_path = repo_root / "app" / "main" / "code" / "services" / "rag" / "PrototipoRAG.py"
+    loader = SourceFileLoader("PrototipoRAG_real_for_tests", str(module_path))
+    spec = spec_from_loader(loader.name, loader)
+    module = module_from_spec(spec)
+    sys.modules[loader.name] = module
+    loader.exec_module(module)
+    return module
 
 
-class _FakeCuda:
-    available = False
-
-    @classmethod
-    def is_available(cls):
-        return cls.available
-
-    @staticmethod
-    def get_device_name(_index):
-        return "Fake GPU"
-
-    @staticmethod
-    def device_count():
-        return 2
-
-    @staticmethod
-    def empty_cache():
-        return None
-
-class _FakeQdrantClient:
-    fail_init = False
-    fail_get_collections_times = 0
-    instances = []
-
-    def __init__(self, **kwargs):
-        if self.fail_init:
-            raise RuntimeError("init failed")
-        self.kwargs = kwargs
-        self.closed = False
-        self.collections_checked = 0
-        self.collections = {}
-        self.scroll_result = ([], None)
-        self.retrieve_result = []
-        self.query_result = []
-        self.deleted = []
-        self.upserts = []
-        _FakeQdrantClient.instances.append(self)
-
-    def get_collections(self):
-        self.collections_checked += 1
-        if self.collections_checked <= _FakeQdrantClient.fail_get_collections_times:
-            raise RuntimeError("not ready")
-        return []
-
-    def close(self):
-        self.closed = True
-
-    def get_collection(self, name):
-        if name not in self.collections:
-            raise RuntimeError("missing")
-        return self.collections[name]
-
-    def recreate_collection(self, collection_name, vectors_config):
-        self.collections[collection_name] = vectors_config
-
-    def scroll(self, **_kwargs):
-        return self.scroll_result
-
-    def retrieve(self, **_kwargs):
-        return self.retrieve_result
-
-    def delete(self, **kwargs):
-        self.deleted.append(kwargs)
-
-    def upsert(self, **kwargs):
-        self.upserts.append(kwargs)
-
-    def query_points(self, **_kwargs):
-        return self.query_result
-
-
-def _install_fake_dependencies(cuda_available=False):
-    _FakeCuda.available = cuda_available
-    _FakeQdrantClient.fail_init = False
-    _FakeQdrantClient.fail_get_collections_times = 0
-    _FakeQdrantClient.instances = []
-
-    sentence_transformers = types.ModuleType("sentence_transformers")
-    sentence_transformers.SentenceTransformer = _FakeSentenceTransformer
-
-    qdrant_client = types.ModuleType("qdrant_client")
-    qdrant_client.QdrantClient = _FakeQdrantClient
-
-    qmodels = types.ModuleType("qdrant_client.models")
-
-    class _Model:
-        def __init__(self, **kwargs):
-            self.__dict__.update(kwargs)
-
-    class Distance:
-        COSINE = "Cosine"
-
-    qmodels.Filter = _Model
-    qmodels.FieldCondition = _Model
-    qmodels.MatchValue = _Model
-    qmodels.FilterSelector = _Model
-    qmodels.VectorParams = _Model
-    qmodels.PointStruct = _Model
-    qmodels.Distance = Distance
-    qmodels.ScoredPoint = _Model
-    qmodels.Record = _Model
-    qdrant_client.models = qmodels
-
-    torch = types.ModuleType("torch")
-    torch.cuda = _FakeCuda
-
-    sys.modules["sentence_transformers"] = sentence_transformers
-    sys.modules["qdrant_client"] = qdrant_client
-    sys.modules["qdrant_client.models"] = qmodels
-    sys.modules["torch"] = torch
-
-
-def _load_module(cuda_available=False, env=None):
-    old_env = {}
-    env = env or {}
-    for key, value in env.items():
-        old_env[key] = os.environ.get(key)
-        if value is None:
-            os.environ.pop(key, None)
-        else:
-            os.environ[key] = value
-    _install_fake_dependencies(cuda_available=cuda_available)
-    sys.modules.pop("app.main.code.services.rag.PrototipoRAG", None)
+def _import_prototipo_with_env(env: dict[str, str | None]):
+    old_env: dict[str, str | None] = {k: os.environ.get(k) for k in env}
     try:
-        return importlib.import_module("app.main.code.services.rag.PrototipoRAG")
-    finally:
-        for key, value in old_env.items():
+        for key, value in env.items():
             if value is None:
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = value
 
+        import sys
+        from importlib.machinery import SourceFileLoader
+        from importlib.util import module_from_spec, spec_from_loader
+        from pathlib import Path
 
-def _load_module_without_torch(env=None):
-    real_import = __import__
-    old_env = {}
-    env = env or {}
-    old_torch = sys.modules.pop("torch", None)
+        repo_root = Path(__file__).resolve().parents[4]
+        module_path = repo_root / "app" / "main" / "code" / "services" / "rag" / "PrototipoRAG.py"
+        module_name = f"PrototipoRAG_real_for_tests_{uuid4().hex}"
+        loader = SourceFileLoader(module_name, str(module_path))
+        spec = spec_from_loader(loader.name, loader)
+        module = module_from_spec(spec)
+        sys.modules[loader.name] = module
+        loader.exec_module(module)
+        return module
+    finally:
+        for key, old_value in old_env.items():
+            if old_value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = old_value
 
-    def import_without_torch(name, *args, **kwargs):
-        if name == "torch":
-            raise ImportError("torch missing")
+
+def _import_prototipo_with_missing_qdrant_http_exceptions():
+    """
+    Carga PrototipoRAG por ruta forzando el fallback del try/except:
+    `from qdrant_client.http.exceptions import ...`.
+    """
+    import builtins
+    import sys
+    from importlib.machinery import SourceFileLoader
+    from importlib.util import module_from_spec, spec_from_loader
+    from unittest.mock import patch
+
+    real_import = builtins.__import__
+
+    def import_block_qdrant_http_exceptions(name, *args, **kwargs):
+        if name == "qdrant_client.http.exceptions":
+            raise ImportError("blocked for test")
         return real_import(name, *args, **kwargs)
 
-    for key, value in env.items():
-        old_env[key] = os.environ.get(key)
-        if value is None:
-            os.environ.pop(key, None)
-        else:
-            os.environ[key] = value
-    _install_fake_dependencies()
-    sys.modules.pop("torch", None)
-    sys.modules.pop("app.main.code.services.rag.PrototipoRAG", None)
+    old_exc = sys.modules.pop("qdrant_client.http.exceptions", None)
+    old_http = sys.modules.get("qdrant_client.http")
     try:
-        with patch("builtins.__import__", side_effect=import_without_torch):
-            return importlib.import_module("app.main.code.services.rag.PrototipoRAG")
+        if "qdrant_client.http" not in sys.modules:
+            http_pkg = types.ModuleType("qdrant_client.http")
+            http_pkg.__path__ = []
+            sys.modules["qdrant_client.http"] = http_pkg
+
+        repo_root = Path(__file__).resolve().parents[4]
+        module_path = repo_root / "app" / "main" / "code" / "services" / "rag" / "PrototipoRAG.py"
+        module_name = f"PrototipoRAG_real_missing_qdrant_http_{uuid4().hex}"
+        loader = SourceFileLoader(module_name, str(module_path))
+        spec = spec_from_loader(loader.name, loader)
+        module = module_from_spec(spec)
+        sys.modules[loader.name] = module
+        with patch("builtins.__import__", side_effect=import_block_qdrant_http_exceptions):
+            loader.exec_module(module)
+        return module
     finally:
-        for key, value in old_env.items():
-            if value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = value
-        if old_torch is None:
-            sys.modules.pop("torch", None)
+        if old_exc is not None:
+            sys.modules["qdrant_client.http.exceptions"] = old_exc
         else:
-            sys.modules["torch"] = old_torch
+            sys.modules.pop("qdrant_client.http.exceptions", None)
+        if old_http is None:
+            sys.modules.pop("qdrant_client.http", None)
+        else:
+            sys.modules["qdrant_client.http"] = old_http
 
 
-class _AsyncStream:
-    def __init__(self, lines=None, exc=None):
-        self.lines = lines or []
-        self.exc = exc
-        self.status_code = 200
-        self.text = ""
-
-    async def __aenter__(self):
-        if self.exc:
-            raise self.exc
-        return self
-
-    async def __aexit__(self, *_args):
-        return False
-
-    def raise_for_status(self):
-        return None
-
-    async def aiter_lines(self):
-        for line in self.lines:
-            yield line
-
-
-class _FailingAsyncStream(_AsyncStream):
-    def __init__(self, module, status_code=500, body=b"boom"):
-        super().__init__([])
-        self.module = module
-        self.status_code = status_code
-        self.body = body
-
-    def raise_for_status(self):
-        request = self.module.httpx.Request("POST", "http://ollama/api")
-        response = self.module.httpx.Response(self.status_code, request=request)
-        raise self.module.httpx.HTTPStatusError("error", request=request, response=response)
-
-    async def aread(self):
-        return self.body
-
-
-class _AsyncClient:
-    stream_obj = _AsyncStream([])
-    created = []
-
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-        _AsyncClient.created.append(self)
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, *_args):
-        return False
-
-    async def post(self, *_args, **_kwargs):
-        return SimpleNamespace(status_code=200, text="", raise_for_status=lambda: None)
-
-    def stream(self, *_args, **kwargs):
-        self.stream_kwargs = kwargs
-        return self.stream_obj
-
-
-class PrototipoRAGUnitTest(unittest.TestCase):
+class PrototipoRAGSmokeUnitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.module = _load_module()
-        _load_module(cuda_available=True)
-        _load_module(env={"OLLAMA_NUM_GPU": "3", "OLLAMA_READ_TIMEOUT_SECONDS": "5", "QDRANT_URL": "http://qdrant.local"})
-        cls.module = _load_module()
+        cls.m = _import_prototipo()
 
-    def setUp(self):
-        self.m = self.module
-        self.m.qdrant = _FakeQdrantClient()
-        self.m.EmbeddingModelSingleton._instance = None
-        self.m.embedding_model = self.m.EmbeddingModelSingleton()
+    def test_build_metadata_filter_tecnico_and_admin_include_missing_tipo(self):
+        self.assertIsNone(self.m.build_metadata_filter())
 
-    def test_embedding_error_helpers_cover_cpu_and_debug_paths(self):
-        model = self.m.EmbeddingModelSingleton(model_id="fake-model", device="cpu")
-        model._move_to_cpu()
-        self.assertEqual(model._device, "cpu")
+        tecnico = self.m.build_metadata_filter("EXP", "tecnico")
+        self.assertEqual([c.key for c in tecnico.must], ["metadata.numero_expediente"])
+        self.assertTrue(tecnico.should)
+        self.assertEqual(getattr(tecnico.should[0], "key", None), "metadata.tipo_documento")
 
-        bad_cuda = SimpleNamespace(empty_cache=MagicMock(side_effect=RuntimeError("cache")))
-        original_torch = self.m.torch
-        try:
-            self.m.torch = SimpleNamespace(cuda=bad_cuda)
-            with patch.object(self.m.logger, "debug") as mock_debug:
-                model._clear_cuda_cache()
-        finally:
-            self.m.torch = original_torch
+        admin = self.m.build_metadata_filter("EXP", "administrativo")
+        self.assertEqual([c.key for c in admin.must], ["metadata.numero_expediente"])
+        self.assertTrue(admin.should)
+        self.assertEqual(getattr(admin.should[0], "key", None), "metadata.tipo_documento")
 
-        mock_debug.assert_called_once()
+    def test_service_url_from_env_builds_scheme_and_trims(self):
+        module = self.m
+        with patch.dict(os.environ, {"X_URL": "host:123", "X_URL_SCHEME": "https"}):
+            self.assertEqual(module._service_url_from_env("X_URL", "fallback"), "https://host:123")
+        with patch.dict(os.environ, {"X_URL": "http://ready/"}):
+            self.assertEqual(module._service_url_from_env("X_URL", "fallback"), "http://ready")
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(module._service_url_from_env("X_URL", "fallback"), "http://fallback")
 
-    def test_embedding_call_reraises_non_cuda_errors(self):
-        model = self.m.EmbeddingModelSingleton(model_id="fake-model", device="cuda")
-        model._model.encode = MagicMock(side_effect=RuntimeError("fallo generico"))
+    def test_normalize_tipo_documento_canonicalizes(self):
+        module = self.m
+        self.assertEqual(module._normalize_tipo_documento("TÉCNICO"), "tecnico")
+        self.assertEqual(module._normalize_tipo_documento("Tecnica"), "tecnico")
+        self.assertEqual(module._normalize_tipo_documento(" ADMINISTRATIVO "), "administrativo")
 
-        with self.assertRaises(RuntimeError):
-            model("texto")
+    def test_normalize_retrieval_k_bounds(self):
+        self.assertEqual(self.m.normalize_retrieval_k(1), self.m.DEFAULT_RAG_MIN_CHUNKS)
+        self.assertEqual(self.m.normalize_retrieval_k(999), 999)
 
-    def test_lazy_embedding_and_qdrant_helpers(self):
-        lazy_embedding = self.m.LazyEmbeddingModel()
-        fake_embedding = MagicMock(return_value=[1.0])
-
-        with patch.object(lazy_embedding, "_get_instance", return_value=fake_embedding):
-            self.assertEqual(lazy_embedding("texto"), [1.0])
-
-        lazy_qdrant = self.m.LazyQdrantClient()
-        with patch.object(self.m, "_make_qdrant_client", return_value=None):
-            with self.assertRaises(RuntimeError):
-                lazy_qdrant._get_client()
-
-        closeable = MagicMock()
-        closeable.ping.return_value = "pong"
-        lazy_qdrant._client = closeable
-        self.assertEqual(lazy_qdrant.ping(), "pong")
-        lazy_qdrant.close()
-        closeable.close.assert_called_once_with()
-        self.assertIsNone(lazy_qdrant._client)
-
-    def test_main_block_runs_with_empty_pliegos_directory(self):
-        pliegos_dir = Path(self.m.__file__).parent / "pliegos"
-        pliegos_dir.mkdir(exist_ok=True)
-
-        _install_fake_dependencies()
-        old_module = sys.modules.pop("app.main.code.services.rag.PrototipoRAG", None)
-        try:
-            runpy.run_module("app.main.code.services.rag.PrototipoRAG", run_name="__main__")
-        finally:
-            sys.modules["app.main.code.services.rag.PrototipoRAG"] = old_module or self.m
-
-    def test_service_urls_and_backend_descriptions(self):
-        with patch.dict(os.environ, {"X_SERVICE": "host:123", "X_SERVICE_SCHEME": "https"}):
-            self.assertEqual(self.m._service_url_from_env("X_SERVICE", "fallback"), "https://host:123")
-        with patch.dict(os.environ, {"X_SERVICE": "http://ready/"}):
-            self.assertEqual(self.m._service_url_from_env("X_SERVICE", "fallback"), "http://ready")
-
-        self.m.settings.RAG_MODEL_DEVICE = "cpu"
-        self.assertEqual(self.m._embedding_execution_backend(), "CPU (cpu)")
-        self.m.settings.RAG_MODEL_DEVICE = "cuda:0"
-        self.m.torch = None
-        self.assertIn("torch no disponible", self.m._embedding_execution_backend())
-        self.m.torch = sys.modules["torch"]
-        _FakeCuda.available = False
-        self.assertIn("CUDA no disponible", self.m._embedding_execution_backend())
-        _FakeCuda.available = True
-        self.assertIn("Fake GPU", self.m._embedding_execution_backend())
-
-        self.m.settings.OLLAMA_NUM_GPU = -1
-        self.m.settings.OLLAMA_NUM_GPU_SOURCE = "auto"
-        self.assertIn("all layers", self.m._ollama_execution_backend())
-        self.m.settings.OLLAMA_NUM_GPU = 2
-        self.assertIn("num_gpu=2", self.m._ollama_execution_backend())
-        self.assertEqual(self.m.get_ollama_execution_device(), "GPU")
-        self.m.settings.OLLAMA_NUM_GPU = 0
-        self.assertIn("CPU", self.m._ollama_execution_backend())
-        self.assertEqual(self.m.get_ollama_execution_device(), "CPU")
-
-    def test_rag_model_choices_and_pull_progress_formatting(self):
+    def test_llm_model_resolution_and_choices(self):
         original_default = self.m.settings.DEFAULT_RAG_LLM_MODEL
         original_models = self.m.settings.RAG_LLM_MODELS
         try:
-            self.m.settings.DEFAULT_RAG_LLM_MODEL = "llama"
-            self.m.settings.RAG_LLM_MODELS = " llama, gemma , qwen, gemma "
+            self.m.settings.DEFAULT_RAG_LLM_MODEL = "llama3:default"
+            self.m.settings.RAG_LLM_MODELS = " gemma3:4b , llama3:default, qwen3:4b-instruct , "
 
-            self.assertEqual(self.m.resolve_rag_llm_model(" gemma "), "gemma")
-            self.assertEqual(self.m.resolve_rag_llm_model(" "), "llama")
-            self.assertEqual(self.m.get_available_rag_llm_models(), ["llama", "gemma", "qwen"])
+            self.assertEqual(self.m.resolve_rag_llm_model(None), "llama3:default")
+            self.assertEqual(self.m.resolve_rag_llm_model("   "), "llama3:default")
+            self.assertEqual(self.m.resolve_rag_llm_model(" gemma3:4b "), "gemma3:4b")
+
+            available = self.m.get_available_rag_llm_models()
+            self.assertEqual(
+                available,
+                ["llama3:default", "gemma3:4b", "qwen3:4b-instruct"],
+            )
             self.assertEqual(
                 self.m.get_rag_llm_model_choices(),
-                [("llama", "llama"), ("gemma", "gemma"), ("qwen", "qwen")],
+                [(m, m) for m in available],
             )
         finally:
             self.m.settings.DEFAULT_RAG_LLM_MODEL = original_default
             self.m.settings.RAG_LLM_MODELS = original_models
 
-        self.assertEqual(self.m._format_bytes(None), "-")
-        self.assertEqual(self.m._format_bytes(-1), "-")
-        self.assertEqual(self.m._format_bytes(12), "12 B")
-        self.assertEqual(self.m._format_bytes(2048), "2.0 KB")
-        self.assertIn(
-            "50.0% (1.0 KB / 2.0 KB)",
-            self.m._format_ollama_pull_progress(
-                "gemma",
-                {"status": "pulling", "digest": "abcdef1234567890", "completed": 1024, "total": 2048},
-            ),
-        )
-        self.assertEqual(
-            self.m._format_ollama_pull_progress("gemma", {"completed": 1024}),
-            "gemma: descargando (1.0 KB)",
-        )
+    def test_build_rag_prompt_falls_back_to_general_profile(self):
+        module = self.m
+        prompt = module.build_rag_prompt("pregunta", ["ctx1", "ctx2"], query_profile="unknown-profile")
+        self.assertIn("pregunta", prompt)
+        self.assertIn("ctx1", prompt)
 
-    def test_import_without_torch_and_auto_ollama_gpu_branches(self):
-        auto_env = {"OLLAMA_NUM_GPU": "", "RAG_MODEL_DEVICE": None}
+    def test_make_qdrant_client_success_none_and_raise(self):
+        module = self.m
 
-        without_torch = _load_module_without_torch(env=auto_env)
-        self.assertIsNone(without_torch.torch)
-        self.assertEqual(without_torch.settings.RAG_MODEL_DEVICE, "cpu")
-        self.assertEqual(without_torch.settings.OLLAMA_NUM_GPU, -1)
-        self.assertEqual(without_torch.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
+        class _Client:
+            def __init__(self):
+                self.calls = 0
 
-        cuda_module = _load_module(cuda_available=True, env=auto_env)
-        self.assertEqual(cuda_module.settings.RAG_MODEL_DEVICE, "cuda")
-        self.assertEqual(cuda_module.settings.OLLAMA_NUM_GPU, -1)
-        self.assertEqual(cuda_module.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
+            def get_collections(self):
+                self.calls += 1
+                return []
 
-        cpu_module = _load_module(cuda_available=False, env=auto_env)
-        self.assertEqual(cpu_module.settings.RAG_MODEL_DEVICE, "cpu")
-        self.assertEqual(cpu_module.settings.OLLAMA_NUM_GPU, -1)
-        self.assertEqual(cpu_module.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
+        class _ClientSlow(_Client):
+            def __init__(self):
+                super().__init__()
+                self.calls = 0
 
-    def test_embedding_model_singleton_properties_and_call_shapes(self):
-        self.m.EmbeddingModelSingleton._instance = None
-        model = self.m.EmbeddingModelSingleton(model_id="fake-model", device="cpu", cache_dir=Path("cache"))
-        same_model = self.m.EmbeddingModelSingleton()
+            def get_collections(self):
+                self.calls += 1
+                raise module.httpx.HTTPError("not ready")
 
-        self.assertIs(model, same_model)
-        self.assertEqual(model.model_id, "fake-model")
-        self.assertEqual(model.embedding_size, 3)
-        self.assertEqual(model.max_input_length, 8)
-        self.assertIsInstance(model.tokenizer, _FakeTokenizer)
-        self.assertEqual(model("texto"), [1.0, 2.0, 3.0])
-        self.assertEqual(model(["a", "b"]), [[0.0, 1.0, 2.0], [1.0, 2.0, 3.0]])
-        self.assertIsInstance(model("texto", to_list=False), _FakeArray)
+        def fake_ctor(**_kwargs):
+            return _Client()
 
-    def test_embedding_model_falls_back_to_cpu_when_cuda_runs_out_of_memory(self):
-        self.m.EmbeddingModelSingleton._instance = None
-        model = self.m.EmbeddingModelSingleton(model_id="fake-model", device="cuda")
-        model._model.fail_cuda_oom_once = True
-        self.assertEqual(model("texto"), [1.0, 2.0, 3.0])
-        self.assertEqual(model._device, "cpu")
-        self.assertEqual(model._model.device, "cpu")
-        self.assertEqual(self.m.settings.RAG_MODEL_DEVICE, "cpu")
+        def fake_ctor_slow(**_kwargs):
+            return _ClientSlow()
 
-    def test_make_qdrant_client_retries_returns_none_and_raises_on_init_failure(self):
-        _FakeQdrantClient.fail_get_collections_times = 2
-        with patch.object(self.m.time, "sleep") as mock_sleep:
-            client = self.m._make_qdrant_client()
-        self.assertIsInstance(client, _FakeQdrantClient)
-        self.assertEqual(mock_sleep.call_count, 2)
+        with patch.object(module, "QDRANT_URL", ""), patch.object(module, "QdrantClient", side_effect=fake_ctor):
+            client = module._make_qdrant_client()
+        self.assertIsNotNone(client)
 
-        _FakeQdrantClient.fail_get_collections_times = 99
-        with patch.object(self.m.time, "sleep"):
-            self.assertIsNone(self.m._make_qdrant_client())
+        with (
+            patch.object(module, "QDRANT_URL", ""),
+            patch.object(module, "QdrantClient", side_effect=fake_ctor_slow),
+            patch.object(module.time, "sleep", return_value=None),
+        ):
+            client2 = module._make_qdrant_client()
+        self.assertIsNone(client2)
 
-        _FakeQdrantClient.fail_init = True
-        with self.assertRaises(RuntimeError):
-            self.m._make_qdrant_client()
-        _FakeQdrantClient.fail_init = False
+        def fake_ctor_raise(**_kwargs):
+            raise ValueError("bad cfg")
 
-    def test_close_qdrant_closes_ignores_errors_and_clears_global(self):
-        client = _FakeQdrantClient()
-        self.m.qdrant = client
-        self.m._close_qdrant()
-        self.assertTrue(client.closed)
-        self.assertIsNone(self.m.qdrant)
+        with (
+            patch.object(module, "QDRANT_URL", ""),
+            patch.object(module, "QdrantClient", side_effect=fake_ctor_raise),
+            self.assertRaises(RuntimeError),
+        ):
+            module._make_qdrant_client()
 
-        bad_client = MagicMock()
-        bad_client.close.side_effect = RuntimeError("close")
-        self.m.qdrant = bad_client
-        self.m._close_qdrant()
-        self.assertIsNone(self.m.qdrant)
+    def test_build_qdrant_metadata_filter_and_exists(self):
+        module = self.m
 
-    def test_hash_filters_and_qdrant_helpers(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "a.pdf"
-            path.write_bytes(b"abc")
-            self.assertEqual(self.m.pdf_sha256(path), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+        self.assertIsNone(module.build_qdrant_metadata_filter())
+        self.assertIsNone(module.build_qdrant_metadata_filter(filename=""))
 
-        self.assertIsNone(self.m.build_qdrant_metadata_filter())
-        filename_filter = self.m.build_qdrant_metadata_filter(filename="a.pdf")
-        self.assertEqual(filename_filter.must[0].key, "metadata.filename")
-        hash_filter = self.m.build_qdrant_metadata_filter(filename="a.pdf", sha256="hash")
-        self.assertEqual(hash_filter.must[1].key, "metadata.sha256")
+        f = module.build_qdrant_metadata_filter(filename="a.pdf", document_id=1)
+        self.assertTrue(f.must)
 
-        self.m.qdrant.scroll_result = ([object()], None)
-        self.assertTrue(self.m.qdrant_has_filename("a.pdf"))
-        self.assertTrue(self.m.qdrant_has_same_hash("a.pdf", "hash"))
-        self.m.qdrant.scroll_result = ([], None)
-        self.assertFalse(self.m.qdrant_has_filename("a.pdf"))
+        module.qdrant = MagicMock()
+        module.qdrant.scroll.return_value = (["x"], None)
+        self.assertTrue(module.qdrant_exists_by_metadata(filename="a.pdf"))
+        module.qdrant.scroll.return_value = ([], None)
+        self.assertFalse(module.qdrant_exists_by_metadata(filename="a.pdf"))
 
-        self.m.qdrant_delete_by_filename("a.pdf")
-        self.assertEqual(len(self.m.qdrant.deleted), 1)
+    def test_close_qdrant_atexit_handler(self):
+        module = self.m
+        fake_qdrant = MagicMock()
+        fake_qdrant.close.side_effect = module.httpx.HTTPError("boom")
+        module.qdrant = fake_qdrant
+        module._close_qdrant()
+        self.assertIsNone(module.qdrant)
 
-    def test_qdrant_get_payloads_empty_success_and_error_paths(self):
-        self.assertEqual(self.m.qdrant_get_payloads(["", None]), {})
+    def test_qdrant_get_payloads_empty_and_error_paths(self):
+        module = self.m
+        module.qdrant = MagicMock()
 
-        point_id = uuid4()
-        self.m.qdrant.retrieve_result = [SimpleNamespace(id=point_id, payload={"content": "txt"})]
-        self.assertEqual(self.m.qdrant_get_payloads([str(point_id)]), {str(point_id): {"content": "txt"}})
+        self.assertEqual(module.qdrant_get_payloads([]), {})
+        self.assertEqual(module.qdrant_get_payloads(["", None]), {})
 
-        self.m.qdrant.retrieve = MagicMock(side_effect=ValueError("missing collection"))
-        self.assertEqual(self.m.qdrant_get_payloads(["x"]), {})
-        self.m.qdrant.retrieve = MagicMock(side_effect=RuntimeError("boom"))
-        self.assertEqual(self.m.qdrant_get_payloads(["x"]), {})
+        module.qdrant.retrieve.side_effect = ValueError("missing collection")
+        self.assertEqual(module.qdrant_get_payloads(["1"]), {})
 
-    def test_vector_document_mapping_save_find_and_search(self):
+        module.qdrant.retrieve.side_effect = module.httpx.HTTPError("down")
+        self.assertEqual(module.qdrant_get_payloads(["1"]), {})
+
+        module.qdrant.retrieve.side_effect = None
+        module.qdrant.retrieve.return_value = [SimpleNamespace(id="1", payload={"a": 1})]
+        self.assertEqual(module.qdrant_get_payloads(["1"]), {"1": {"a": 1}})
+
+    def test_qdrant_delete_by_filename_uses_filter_selector(self):
+        module = self.m
+        module.qdrant = MagicMock()
+        with patch.object(module.VectorBaseDocument, "_ensure_collection"):
+            module.qdrant_delete_by_filename("a.pdf")
+        module.qdrant.delete.assert_called_once()
+
+    def test_vector_base_document_collection_and_mappings(self):
+        module = self.m
+
+        # evita depender del singleton real
+        class _Embed:
+            model_id = "m"
+            embedding_size = 3
+            max_input_length = 8
+            tokenizer = SimpleNamespace(tokenize=lambda s: s.split())
+
+            def __call__(self, input_text, to_list=True):
+                if isinstance(input_text, list):
+                    return [[0.0, 0.0, 0.0] for _ in input_text]
+                return [0.0, 0.0, 0.0]
+
+        module.embedding_model = _Embed()
+
+        module.qdrant = MagicMock()
+        # fuerza collection missing para que recree
+        module.qdrant.get_collection.side_effect = RuntimeError("missing")
+
+        # get_collection_name
+        self.assertEqual(module.VectorBaseDocument.get_collection_name(), "vector_base_document")
+
+        # _ensure_collection para crear colección
+        module.VectorBaseDocument._ensure_collection()
+        module.qdrant.recreate_collection.assert_called_once()
+
         doc_id = uuid4()
-        doc = self.m.VectorBaseDocument(id=doc_id, content="texto", embedding=[0.1], metadata={"a": 1})
-
-        self.m.qdrant.collections[self.m.VectorBaseDocument.get_collection_name()] = object()
+        doc = module.VectorBaseDocument(id=doc_id, content="txt", embedding=[0.1, 0.2, 0.3], metadata={"a": 1})
         point = doc.to_point()
         self.assertEqual(point.id, str(doc_id))
         self.assertEqual(point.payload["metadata"], {"a": 1})
+        self.assertEqual(point.payload["model_id"], "m")
 
-        record = SimpleNamespace(id=doc_id, payload={"content": "texto", "metadata": {"b": 2}}, vector=[0.2])
-        restored = self.m.VectorBaseDocument.from_record(record)
-        self.assertEqual(restored.content, "texto")
-        self.assertEqual(restored.metadata, {"b": 2})
-        defaulted = self.m.VectorBaseDocument.from_record(SimpleNamespace(id=doc_id, payload=None))
-        self.assertEqual(defaulted.content, "")
+        # from_record con payload None
+        record = SimpleNamespace(id=doc_id, payload=None)
+        restored = module.VectorBaseDocument.from_record(record)
+        self.assertEqual(restored.content, "")
+        self.assertEqual(restored.metadata, {})
 
-        doc.save()
-        self.m.VectorBaseDocument.save_many([doc])
-        self.assertEqual(len(self.m.qdrant.upserts), 2)
+        # save / save_many upsert
+        module.qdrant.upsert.reset_mock()
+        with patch.object(module.VectorBaseDocument, "_ensure_collection"):
+            doc.save()
+            module.VectorBaseDocument.save_many([doc])
+        self.assertEqual(module.qdrant.upsert.call_count, 2)
 
-        next_id = uuid4()
-        self.m.qdrant.scroll_result = ([record], str(next_id))
-        docs, offset = self.m.VectorBaseDocument.bulk_find(limit=1, offset=doc_id)
-        self.assertEqual(docs[0].id, doc_id)
-        self.assertEqual(offset, next_id)
-        self.m.qdrant.scroll_result = ([record], None)
-        _, offset = self.m.VectorBaseDocument.bulk_find()
-        self.assertIsNone(offset)
+        # bulk_find (next offset convertido a UUID)
+        next_id = str(uuid4())
+        module.qdrant.scroll.return_value = ([SimpleNamespace(id=doc_id, payload={"content": "x", "metadata": {}}, vector=None)], next_id)
+        with patch.object(module.VectorBaseDocument, "_ensure_collection"):
+            docs, off = module.VectorBaseDocument.bulk_find(limit=1, offset=doc_id)
+        self.assertEqual(docs[0].content, "x")
+        self.assertEqual(str(off), next_id)
 
-        self.m.qdrant.query_result = SimpleNamespace(points=[record])
-        self.assertEqual(self.m.VectorBaseDocument.search([0.1])[0].metadata, {"b": 2})
-        self.m.qdrant.query_result = [record]
-        self.assertEqual(self.m.VectorBaseDocument.search([0.1])[0].content, "texto")
-
-        self.m.qdrant.collections = {}
-        self.m.VectorBaseDocument._ensure_collection()
-        self.assertIn(self.m.VectorBaseDocument.get_collection_name(), self.m.qdrant.collections)
-
-    def test_chunking_and_token_helpers(self):
-        fake_embedding_model = SimpleNamespace(tokenizer=_FakeTokenizer(), max_input_length=4)
-        self.m.embedding_model = fake_embedding_model
-        text = "uno dos\ntres cuatro\nBAD\ncinco seis"
-        chunks = self.m.chunk_text(text, overlap_ratio=0.5)
-        self.assertTrue(chunks)
-        self.assertEqual(self.m.token_len(self.m.embedding_model.tokenizer, "uno dos"), 2)
-        self.assertIsNone(self.m.token_len(self.m.embedding_model.tokenizer, "BAD"))
-
-        out = []
-        self.m.get_chunk(out, [("  ", 1)])
-        self.assertEqual(out, [])
-        overlap, tokens = self.m.token_overlap([("a", 1), ("b c", 2), ("d", 1)], 2)
-        self.assertEqual(overlap, [("d", 1)])
-        self.assertEqual(tokens, 1)
-        self.assertEqual(list(self.m.iter_clean_lines("\n a \n\n b")), ["a", "b"])
-
-    def test_metadata_filters_and_retrieval_helpers(self):
-        self.assertIsNone(self.m.build_metadata_filter())
-        both = self.m.build_metadata_filter("EXP", "tecnico")
-        self.assertEqual([condition.key for condition in both.must], ["metadata.numero_expediente", "metadata.tipo_documento"])
-
-        record = SimpleNamespace(id=uuid4(), payload={"content": "txt", "metadata": {"filename": "doc.pdf"}}, score=0.4)
-        self.m.qdrant.query_result = SimpleNamespace(points=[record])
-        result = self.m.recuperacion_chunk("pregunta", k=3, numero_expediente="EXP")
-        self.assertEqual(result[0].content, "txt")
-        self.assertEqual(result[0].metadata["filename"], "doc.pdf")
-
-        point = SimpleNamespace(id=uuid4(), payload={"content": "txt"}, score=0.51)
-        low_score = SimpleNamespace(id=uuid4(), payload={"content": "low"}, score=0.5)
-        self.m.qdrant.query_result = SimpleNamespace(points=[point, low_score])
-        self.assertEqual(self.m.recuperacion_chunk_con_scores("pregunta"), [point])
-        self.assertEqual(self.m.normalize_retrieval_k(1), 5)
-        self.assertEqual(self.m.normalize_retrieval_k(80), 80)
-
-        self.m.qdrant.query_points = MagicMock(return_value=SimpleNamespace(points=[point]))
-        self.m.recuperacion_chunk_con_scores("pregunta", k=1)
-        self.assertEqual(self.m.qdrant.query_points.call_args.kwargs["limit"], 5)
-
-        self.m.qdrant.query_points = MagicMock(return_value=SimpleNamespace(points=[point]))
-        self.m.recuperacion_chunk_con_scores("pregunta", k=80)
-        self.assertEqual(self.m.qdrant.query_points.call_args.kwargs["limit"], 80)
-
-        self.m.qdrant.query_points = MagicMock(side_effect=RuntimeError("qdrant down"))
-        self.assertEqual(self.m.recuperacion_chunk_con_scores("pregunta"), [])
-
-    def test_ask_ollama_success_cancel_and_timeout(self):
-        _AsyncClient.created = []
-        _AsyncClient.stream_obj = _AsyncStream([
-            "",
-            '{"response": "Hola ", "done": false}',
-            '{"response": "mundo", "done": true}',
-            '{"response": "ignorado", "done": true}',
-        ])
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient):
-            answer = asyncio.run(self.m.ask_ollama("prompt", model="m"))
-        self.assertEqual(answer, "Hola mundo")
-        self.assertEqual(_AsyncClient.created[0].stream_kwargs["json"]["model"], "m")
-
-        with self.assertRaises(self.m.QueryCancelledError):
-            asyncio.run(self.m.ask_ollama("prompt", should_cancel=lambda: True))
-
-        calls = {"n": 0}
-
-        def cancel_after_first_line():
-            calls["n"] += 1
-            return calls["n"] > 1
-
-        _AsyncClient.stream_obj = _AsyncStream(['{"response": "x"}'])
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient):
-            with self.assertRaises(self.m.QueryCancelledError):
-                asyncio.run(self.m.ask_ollama("prompt", should_cancel=cancel_after_first_line))
-
-        _AsyncClient.stream_obj = _AsyncStream(exc=self.m.httpx.TimeoutException("slow"))
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient):
-            with self.assertRaises(self.m.OllamaTimeoutError) as ctx:
-                asyncio.run(self.m.ask_ollama("prompt"))
-        self.assertIn("sin limite", str(ctx.exception))
-
-        self.m.settings.OLLAMA_READ_TIMEOUT_SECONDS = 5
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient):
-            with self.assertRaises(self.m.OllamaTimeoutError) as ctx:
-                asyncio.run(self.m.ask_ollama("prompt"))
-        self.assertIn("5 s", str(ctx.exception))
-        self.m.settings.OLLAMA_READ_TIMEOUT_SECONDS = None
-
-    def test_ask_ollama_reports_chat_http_errors(self):
-        _AsyncClient.created = []
-
-        _AsyncClient.stream_obj = _FailingAsyncStream(
-            self.m,
-            status_code=404,
-            body=b'{"error":"model not found"}',
+        module.qdrant.query_points.return_value = SimpleNamespace(
+            points=[SimpleNamespace(id=doc_id, payload={"content": "s", "metadata": {}}, vector=None)]
         )
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient):
-            with self.assertRaises(self.m.OllamaModelNotFoundError):
-                asyncio.run(self.m.ask_ollama("prompt", model="missing"))
+        with patch.object(module.VectorBaseDocument, "_ensure_collection"):
+            res = module.VectorBaseDocument.search([0.1, 0.2, 0.3], limit=1)
+        self.assertEqual(res[0].content, "s")
 
-        _AsyncClient.stream_obj = _FailingAsyncStream(
-            self.m,
-            status_code=500,
-            body=b"ollama down",
-        )
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient):
-            with self.assertRaises(RuntimeError) as ctx:
-                asyncio.run(self.m.ask_ollama("prompt", model="broken"))
-        self.assertIn("HTTP 500", str(ctx.exception))
+        module.qdrant.query_points.return_value = [
+            SimpleNamespace(id=doc_id, payload={"content": "s2", "metadata": {}}, vector=None)
+        ]
+        with patch.object(module.VectorBaseDocument, "_ensure_collection"):
+            res2 = module.VectorBaseDocument.search([0.1, 0.2, 0.3], limit=1)
+        self.assertEqual(res2[0].content, "s2")
 
-        _AsyncClient.stream_obj = _FailingAsyncStream(self.m, status_code=500, body=b"")
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient):
-            with self.assertRaises(self.m.httpx.HTTPStatusError):
-                asyncio.run(self.m.ask_ollama("prompt", model="broken"))
+    def test_lazy_qdrant_client_get_client_and_getattr(self):
+        module = self.m
 
-    def test_ask_ollama_cancels_while_reading_chat_stream(self):
-        _AsyncClient.created = []
-        _AsyncClient.stream_obj = _AsyncStream(['{"response": "x"}'])
-        cancel_calls = {"n": 0}
-
-        def cancel_on_stream_line():
-            cancel_calls["n"] += 1
-            return cancel_calls["n"] > 1
-
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient), patch.object(
-            self.m,
-            "ensure_ollama_model_available",
-            new_callable=unittest.mock.AsyncMock,
+        lazy = module.LazyQdrantClient()
+        with (
+            patch.object(module, "_make_qdrant_client", return_value=None),
+            self.assertRaises(RuntimeError),
         ):
-            with self.assertRaises(self.m.QueryCancelledError):
-                asyncio.run(self.m.ask_ollama("prompt", model="m", should_cancel=cancel_on_stream_line))
+            lazy._get_client()
 
-    def test_ask_rag_llm_applies_generation_timeout(self):
-        original_timeout = self.m.settings.OLLAMA_GENERATION_TIMEOUT_SECONDS
+        client = MagicMock()
+        client.ping.return_value = "pong"
+        lazy._client = client
+        self.assertEqual(lazy.ping(), "pong")
+        client.ping.assert_called_once()
 
-        async def slow_ask_ollama(*_args, **_kwargs):
-            await asyncio.sleep(10)
-            return "late"
+    def test_index_pdf_success_and_failures(self):
+        module = self.m
 
-        try:
-            self.m.settings.OLLAMA_GENERATION_TIMEOUT_SECONDS = 0.01
-            with patch.object(self.m, "ask_ollama", side_effect=slow_ask_ollama):
-                with self.assertRaises(self.m.OllamaTimeoutError) as ctx:
-                    asyncio.run(self.m.ask_rag_llm("pregunta", ["contexto"], model="m"))
-            self.assertIn("tiempo máximo de generación", str(ctx.exception))
-        finally:
-            self.m.settings.OLLAMA_GENERATION_TIMEOUT_SECONDS = original_timeout
+        class _Page:
+            def __init__(self, text):
+                self._text = text
 
-    def test_ensure_ollama_model_ready_opens_client_and_delegates(self):
-        _AsyncClient.created = []
-        with patch.object(self.m.httpx, "AsyncClient", _AsyncClient), patch.object(
-            self.m,
-            "ensure_ollama_model_available",
-            new_callable=unittest.mock.AsyncMock,
-        ) as mock_ensure:
-            asyncio.run(self.m.ensure_ollama_model_ready("m"))
+            def extract_text(self):
+                return self._text
 
-        self.assertEqual(_AsyncClient.created[0].kwargs["base_url"], self.m.OLLAMA_BASE_URL)
-        mock_ensure.assert_awaited_once()
+        class _Reader:
+            def __init__(self, meta, pages):
+                self.metadata = meta
+                self.pages = pages
 
-    def test_ensure_ollama_model_available_error_and_download_paths(self):
-        class Response:
-            def __init__(self, module, status_code=200, text=""):
-                self.module = module
-                self.status_code = status_code
-                self.text = text
-
-            def raise_for_status(self):
-                request = self.module.httpx.Request("POST", "http://ollama/api/show")
-                response = self.module.httpx.Response(self.status_code, request=request)
-                raise self.module.httpx.HTTPStatusError("error", request=request, response=response)
-
-        class Client:
-            def __init__(self, module, show_response, stream_obj=None):
-                self.module = module
-                self.show_response = show_response
-                self.stream_obj = stream_obj or _AsyncStream([])
-
-            async def post(self, *_args, **_kwargs):
-                return self.show_response
-
-            def stream(self, *_args, **_kwargs):
-                return self.stream_obj
-
-        with self.assertRaises(self.m.QueryCancelledError):
-            asyncio.run(
-                self.m.ensure_ollama_model_available(
-                    Client(self.m, Response(self.m)),
-                    "m",
-                    should_cancel=lambda: True,
-                )
-            )
-
-        with self.assertRaises(RuntimeError) as ctx:
-            asyncio.run(
-                self.m.ensure_ollama_model_available(
-                    Client(self.m, Response(self.m, status_code=500, text="show failed")),
-                    "m",
-                )
-            )
-        self.assertIn("show failed", str(ctx.exception))
-
-        with self.assertRaises(self.m.OllamaModelNotFoundError) as ctx:
-            asyncio.run(
-                self.m.ensure_ollama_model_available(
-                    Client(
-                        self.m,
-                        Response(self.m, status_code=404),
-                        _FailingAsyncStream(self.m, status_code=500, body=b"pull failed"),
-                    ),
-                    "m",
-                )
-            )
-        self.assertIn("pull failed", str(ctx.exception))
-
-        with self.assertRaises(self.m.OllamaModelNotFoundError) as ctx:
-            asyncio.run(
-                self.m.ensure_ollama_model_available(
-                    Client(
-                        self.m,
-                        Response(self.m, status_code=404),
-                        _AsyncStream(['{"error": "manifest missing"}']),
-                    ),
-                    "m",
-                )
-            )
-        self.assertIn("manifest missing", str(ctx.exception))
-
-        statuses = []
-        asyncio.run(
-            self.m.ensure_ollama_model_available(
-                Client(
-                    self.m,
-                    Response(self.m, status_code=404),
-                    _AsyncStream([
-                        "",
-                        '{"status": "pulling", "digest": "abcdef123456", "completed": 1024, "total": 2048}',
-                        '{"status": "success", "done": true}',
-                    ]),
-                ),
-                "m",
-                on_status=statuses.append,
-            )
-        )
-        self.assertIn("Descargando modelo m", statuses[0])
-        self.assertTrue(any("m: success" in item for item in statuses))
-
-        cancel_calls = {"n": 0}
-
-        def cancel_after_download_starts():
-            cancel_calls["n"] += 1
-            return cancel_calls["n"] > 1
-
-        with self.assertRaises(self.m.QueryCancelledError):
-            asyncio.run(
-                self.m.ensure_ollama_model_available(
-                    Client(self.m, Response(self.m, status_code=404), _AsyncStream(['{"status": "pulling"}'])),
-                    "m",
-                    should_cancel=cancel_after_download_starts,
-                )
-            )
-
-    def test_ensure_ollama_model_available_timeout_paths(self):
-        class Response:
-            status_code = 404
-            text = ""
-
-        class Client:
-            async def post(self, *_args, **_kwargs):
-                return Response()
-
-            def stream(self, *_args, **_kwargs):
-                return _AsyncStream(['{"status": "pulling"}'])
-
-        original_total = self.m.settings.OLLAMA_PULL_TIMEOUT_SECONDS
-        original_idle = self.m.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS
-        try:
-            self.m.settings.OLLAMA_PULL_TIMEOUT_SECONDS = 30
-            self.m.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = 0
-            monotonic_values = iter([0, 31])
-            fake_time = SimpleNamespace(monotonic=lambda: next(monotonic_values))
-
-            with patch.object(self.m, "time", fake_time):
-                with self.assertRaises(self.m.OllamaTimeoutError) as ctx:
-                    asyncio.run(self.m.ensure_ollama_model_available(Client(), "m"))
-            self.assertIn("superó 30", str(ctx.exception))
-
-            async def fake_wait_for(*_args, **_kwargs):
-                raise asyncio.TimeoutError()
-
-            self.m.settings.OLLAMA_PULL_TIMEOUT_SECONDS = 0
-            self.m.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = 12
-            with patch.object(self.m.asyncio, "wait_for", side_effect=fake_wait_for):
-                with self.assertRaises(self.m.OllamaTimeoutError) as ctx:
-                    asyncio.run(self.m.ensure_ollama_model_available(Client(), "m"))
-            self.assertIn("no avanzó durante 12", str(ctx.exception))
-        finally:
-            self.m.settings.OLLAMA_PULL_TIMEOUT_SECONDS = original_total
-            self.m.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = original_idle
-
-    def test_obtener_chunk_de_query_and_mejor_chunk_paths(self):
-        doc = self.m.VectorBaseDocument(
-            content="chunk",
-            metadata={"title": "Titulo", "filename": "doc.pdf", "segment_index": 2},
-        )
-        with patch.object(self.m, "recuperacion_chunk", return_value=[]):
-            self.assertIsNone(self.m.obtener_chunk_de_query("pregunta"))
-        with patch.object(self.m, "recuperacion_chunk", return_value=[doc]):
-            result = self.m.obtener_chunk_de_query("pregunta")
-        self.assertEqual(result["filename"], "doc.pdf")
-
-        with self.assertRaises(self.m.QueryCancelledError):
-            asyncio.run(self.m.obtener_mejor_chunk(" pregunta ", should_cancel=lambda: True))
-
-        statuses = []
-        with patch.object(self.m, "recuperacion_chunk_con_scores", return_value=[]), patch.object(
-            self.m,
-            "ensure_ollama_model_ready",
-            new_callable=unittest.mock.AsyncMock,
+        with (
+            patch.object(module, "PdfReader", side_effect=RuntimeError("read")),
+            patch.object(module, "timed_block"),
         ):
-            empty = asyncio.run(self.m.obtener_mejor_chunk(" pregunta ", on_status=statuses.append, numero_expediente="EXP"))
-        self.assertEqual(empty["retrieved"], [])
-        self.assertEqual(empty["applied_filters"]["numero_expediente"], "EXP")
+            self.assertEqual(module.index_pdf(Path("doc.pdf")), [])
 
-        point = SimpleNamespace(
-            id=uuid4(),
-            score=0.75,
-            payload={
-                "content": "contenido",
-                "metadata": {
-                    "document_id": 7,
-                    "sha256": "sha",
-                    "segment_index": 4,
-                    "filename": "doc.pdf",
-                    "title": "Titulo",
-                },
-            },
-        )
-        async def fake_ask_ollama(_prompt, **_kwargs):
-            return "respuesta"
-
-        with patch.object(self.m, "recuperacion_chunk_con_scores", return_value=[point]), patch.object(
-            self.m,
-            "ensure_ollama_model_ready",
-            new_callable=unittest.mock.AsyncMock,
-        ), patch.object(
-            self.m,
-            "ask_ollama",
-            side_effect=fake_ask_ollama,
+        with (
+            patch.object(module, "PdfReader", return_value=_Reader({}, [_Page("   ")])),
+            patch.object(module, "timed_block"),
         ):
-            full = asyncio.run(self.m.obtener_mejor_chunk(" pregunta ", on_status=statuses.append, tipo_documento="tecnico"))
-        self.assertEqual(full["answer"], "respuesta")
-        self.assertEqual(full["retrieved"][0]["qdrant_point_id"], str(point.id))
-        self.assertIn("Generando respuesta del modelo...", statuses)
+            self.assertEqual(module.index_pdf(Path("doc.pdf")), [])
 
-        cancel_calls = {"n": 0}
-
-        def cancel_in_loop():
-            cancel_calls["n"] += 1
-            return cancel_calls["n"] > 1
-
-        with patch.object(self.m, "recuperacion_chunk_con_scores", return_value=[point]), patch.object(
-            self.m,
-            "ensure_ollama_model_ready",
-            new_callable=unittest.mock.AsyncMock,
+        with (
+            patch.object(module, "PdfReader", return_value=_Reader({"/Title": "T"}, [_Page("texto")])),
+            patch.object(module, "timed_block"),
+            patch.object(module, "chunk_text", side_effect=RuntimeError("chunk")),
         ):
-            with self.assertRaises(self.m.QueryCancelledError):
-                asyncio.run(self.m.obtener_mejor_chunk("pregunta", should_cancel=cancel_in_loop))
+            self.assertEqual(module.index_pdf(Path("doc.pdf")), [])
 
-    def test_index_pdf_error_empty_chunk_mismatch_and_success_paths(self):
+        with (
+            patch.object(module, "PdfReader", return_value=_Reader({"/Title": "T"}, [_Page("texto")])),
+            patch.object(module, "timed_block"),
+            patch.object(module, "chunk_text", return_value=["a", "b"]),
+            patch.object(module, "embedding_model", return_value=[[1.0]]),
+        ):
+            self.assertEqual(module.index_pdf(Path("doc.pdf")), [])
+
+        with (
+            patch.object(module, "PdfReader", return_value=_Reader({"/Title": "T"}, [_Page("texto")])),
+            patch.object(module, "timed_block"),
+            patch.object(module, "chunk_text", return_value=["a", "b"]),
+            patch.object(module, "embedding_model", return_value=[[1.0], [2.0]]),
+            patch.object(module, "pdf_sha256", return_value="sha"),
+            patch.object(module.VectorBaseDocument, "save_many") as mock_save_many,
+        ):
+            docs = module.index_pdf(Path("doc.pdf"), document_id=5, numero_expediente="EXP", tipo_documento="admin")
+        self.assertEqual(len(docs), 2)
+        self.assertEqual(docs[0].metadata["document_id"], 5)
+        self.assertEqual(docs[0].metadata["segment_index"], 0)
+        mock_save_many.assert_called_once()
+
+    def test_pdf_sha256_matches_hashlib(self):
+        module = self.m
         with tempfile.TemporaryDirectory() as tmp:
-            pdf_path = Path(tmp) / "doc.pdf"
-            pdf_path.write_bytes(b"%PDF-1.4 fake")
+            p = Path(tmp) / "a.pdf"
+            content = b"pdf-bytes"
+            p.write_bytes(content)
+            expected = hashlib.sha256(content).hexdigest()
+            self.assertEqual(module.pdf_sha256(p), expected)
 
-            with patch.object(self.m, "PdfReader", side_effect=RuntimeError("read")):
-                self.assertEqual(self.m.index_pdf(pdf_path), [])
+    def test_index_pliegos_dir_counts_new_modified_omitted_and_errors(self):
+        module = self.m
+        with self.assertRaises(SystemExit):
+            module.index_pliegos_dir(Path("missing-dir"))
 
-            empty_reader = SimpleNamespace(metadata={}, pages=[SimpleNamespace(extract_text=lambda: "   ")])
-            with patch.object(self.m, "PdfReader", return_value=empty_reader):
-                self.assertEqual(self.m.index_pdf(pdf_path), [])
-
-            text_reader = SimpleNamespace(metadata={"/Title": "Titulo"}, pages=[SimpleNamespace(extract_text=lambda: "texto")])
-            with patch.object(self.m, "PdfReader", return_value=text_reader), patch.object(
-                self.m,
-                "chunk_text",
-                side_effect=RuntimeError("chunk"),
-            ):
-                self.assertEqual(self.m.index_pdf(pdf_path), [])
-
-            with patch.object(self.m, "PdfReader", return_value=text_reader), patch.object(self.m, "chunk_text", return_value=[]):
-                self.assertEqual(self.m.index_pdf(pdf_path), [])
-
-            with patch.object(self.m, "PdfReader", return_value=text_reader), patch.object(
-                self.m,
-                "chunk_text",
-                return_value=["a", "b"],
-            ), patch.object(self.m, "embedding_model", MagicMock(return_value=[[1.0]])):
-                self.assertEqual(self.m.index_pdf(pdf_path), [])
-
-            fake_embedding = MagicMock(return_value=[[1.0], [2.0]])
-            fake_embedding.model_id = "model"
-            fake_embedding.embedding_size = 1
-            fake_embedding.max_input_length = 8
-            with patch.object(self.m, "PdfReader", return_value=text_reader), patch.object(
-                self.m,
-                "pdf_sha256",
-                return_value="hash",
-            ), patch.object(self.m, "chunk_text", return_value=["a", "b"]), patch.object(
-                self.m,
-                "embedding_model",
-                fake_embedding,
-            ), patch.object(self.m.VectorBaseDocument, "save_many") as mock_save_many:
-                docs = self.m.index_pdf(pdf_path, document_id=5, numero_expediente="EXP", tipo_documento="admin")
-            self.assertEqual(len(docs), 2)
-            self.assertEqual(docs[0].metadata["document_id"], 5)
-            self.assertEqual(docs[0].metadata["segment_index"], 0)
-            mock_save_many.assert_called_once()
-
-    def test_index_pliegos_dir_summarizes_missing_same_modified_new_and_errors(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            missing = Path(tmp) / "missing"
-            with self.assertRaises(SystemExit):
-                self.m.index_pliegos_dir(missing)
-
-            pliegos = Path(tmp) / "pliegos"
-            pliegos.mkdir()
-            same = pliegos / "a.pdf"
-            modified = pliegos / "b.pdf"
-            new = pliegos / "c.pdf"
-            error = pliegos / "d.pdf"
-            for path in (same, modified, new, error):
-                path.write_bytes(path.name.encode())
-
-            def same_hash(filename, _doc_hash):
-                return filename == same.name
-
-            def has_filename(filename):
-                return filename == modified.name
-
-            def fake_index(path):
-                if path.name == error.name:
+        with (
+            patch.object(module.VectorBaseDocument, "_ensure_collection"),
+            patch.object(module, "pdf_sha256", side_effect=lambda p: f"hash-{p.name}"),
+            patch.object(module, "qdrant_has_same_hash", side_effect=lambda fn, h: fn == "same.pdf"),
+            patch.object(module, "qdrant_has_filename", side_effect=lambda fn: fn in {"same.pdf", "mod.pdf"}),
+            patch.object(module, "qdrant_delete_by_filename") as mock_delete,
+        ):
+            def fake_index_pdf(path, **_kwargs):
+                if path.name == "err.pdf":
                     return []
                 return [object(), object()]
 
-            with patch.object(self.m.VectorBaseDocument, "_ensure_collection"), patch.object(
-                self.m,
-                "qdrant_has_same_hash",
-                side_effect=same_hash,
-            ), patch.object(self.m, "qdrant_has_filename", side_effect=has_filename), patch.object(
-                self.m,
-                "qdrant_delete_by_filename",
-            ) as mock_delete, patch.object(self.m, "index_pdf", side_effect=fake_index):
-                summary = self.m.index_pliegos_dir(pliegos)
+            with patch.object(module, "index_pdf", side_effect=fake_index_pdf):
+                import tempfile
+
+                with tempfile.TemporaryDirectory() as tmp:
+                    d = Path(tmp)
+                    for name in ("same.pdf", "mod.pdf", "new.pdf", "err.pdf"):
+                        (d / name).write_bytes(b"x")
+                    summary = module.index_pliegos_dir(d)
 
         self.assertEqual(summary["pdfs_total"], 4)
         self.assertEqual(summary["pdfs_omitidos"], 1)
@@ -1013,7 +450,856 @@ class PrototipoRAGUnitTest(unittest.TestCase):
         self.assertEqual(summary["pdfs_nuevos"], 2)
         self.assertEqual(summary["chunks_guardados"], 4)
         self.assertEqual(summary["pdfs_error_o_sin_texto"], 1)
-        mock_delete.assert_called_once_with(modified.name)
+        mock_delete.assert_called_once_with("mod.pdf")
+
+    def test_index_markdown_empty_and_success_and_errors(self):
+        module = self.m
+
+        self.assertEqual(module.index_markdown("   ", filename="doc.md"), [])
+
+        with patch.object(module, "chunk_text", side_effect=RuntimeError("chunk")):
+            self.assertEqual(module.index_markdown("# Hola", filename="doc.md"), [])
+
+        with (
+            patch.object(module, "chunk_text", return_value=["a", "b"]),
+            patch.object(module, "embedding_model", return_value=[[1.0]]),
+        ):
+            self.assertEqual(module.index_markdown("# Hola", filename="doc.md"), [])
+
+        with (
+            patch.object(module, "chunk_text", return_value=["a", "b"]),
+            patch.object(module, "embedding_model", return_value=[[1.0], [2.0]]),
+            patch.object(module.VectorBaseDocument, "save_many") as mock_save_many,
+        ):
+            docs = module.index_markdown(
+                "# Hola",
+                filename="doc.md",
+                document_id=7,
+                numero_expediente="EXP",
+                tipo_documento="tecnico",
+                sha256="sha",
+                title="Titulo",
+            )
+        self.assertEqual(len(docs), 2)
+        self.assertEqual(docs[0].metadata["source"], "markdown")
+        self.assertEqual(docs[0].metadata["document_id"], 7)
+        mock_save_many.assert_called_once()
+
+    def test_qdrant_has_filename_and_same_hash_delegate(self):
+        module = self.m
+        with patch.object(module, "qdrant_exists_by_metadata", return_value=True) as mock_exists:
+            self.assertTrue(module.qdrant_has_filename("a.pdf"))
+            self.assertTrue(module.qdrant_has_same_hash("a.pdf", "sha"))
+        self.assertEqual(mock_exists.call_count, 2)
+
+    def test_import_fallback_qdrant_http_exceptions_defines_classes(self):
+        mod = _import_prototipo_with_missing_qdrant_http_exceptions()
+        self.assertTrue(issubclass(mod.ResponseHandlingException, RuntimeError))
+        self.assertTrue(issubclass(mod.UnexpectedResponse, RuntimeError))
+
+    def test_ask_ollama_happy_path_cancel_and_timeout(self):
+        module = self.m
+
+        with self.assertRaises(module.QueryCancelledError):
+            asyncio.run(module.ask_ollama("prompt", should_cancel=lambda: True))
+
+        class _Resp:
+            def __init__(self, lines):
+                self._lines = lines
+                self.status_code = 200
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+            async def aread(self):
+                await asyncio.sleep(0)
+                return b""
+
+            def raise_for_status(self):
+                return None
+
+            async def aiter_lines(self):
+                for line in self._lines:
+                    yield line
+
+        class _Client:
+            def __init__(self, **_kwargs):
+                # para cubrir el caso de que se intente usar el cliente para otra cosa que no sea el streaming de ask_ollama
+                pass
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+            def stream(self, *_args, **_kwargs):
+                return _Resp(
+                    [
+                        '{"response": "Hola ", "done": false}',
+                        '{"response": "mundo", "done": true}',
+                    ]
+                )
+
+        with (
+            patch.object(module.httpx, "AsyncClient", _Client),
+            patch.object(module, "ensure_ollama_model_available", new_callable=unittest.mock.AsyncMock),
+        ):
+            answer = asyncio.run(module.ask_ollama("prompt", model="m"))
+        self.assertEqual(answer, "Hola mundo")
+
+        class _TimeoutClient(_Client):
+            async def __aenter__(self):
+                raise module.httpx.TimeoutException("slow")
+
+        with (
+            patch.object(module.httpx, "AsyncClient", _TimeoutClient),
+            patch.object(module, "ensure_ollama_model_available", new_callable=unittest.mock.AsyncMock),
+            self.assertRaises(module.OllamaTimeoutError),
+        ):
+            asyncio.run(module.ask_ollama("prompt", model="m"))
+
+    def test_default_ollama_uses_gpu_auto_setting(self):
+        m = _import_prototipo_with_env({"OLLAMA_NUM_GPU": None})
+        self.assertEqual(m.settings.OLLAMA_NUM_GPU, -1)
+        self.assertEqual(m.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
+
+    def test_embedding_execution_backend_cpu_and_cuda_variants(self):
+        original_device = self.m.settings.RAG_MODEL_DEVICE
+        original_torch = getattr(self.m, "torch", None)
+        original_ollama_num_gpu = self.m.settings.OLLAMA_NUM_GPU
+        original_ollama_num_gpu_source = self.m.settings.OLLAMA_NUM_GPU_SOURCE
+        try:
+            self.m.settings.RAG_MODEL_DEVICE = "cpu"
+            self.assertIn("CPU", self.m._embedding_execution_backend())
+
+            self.m.settings.RAG_MODEL_DEVICE = "cuda:0"
+            self.m.torch = None
+            self.assertIn("torch no disponible", self.m._embedding_execution_backend())
+
+            class _CudaUnavailable:
+                @staticmethod
+                def is_available():
+                    return False
+
+            self.m.torch = SimpleNamespace(cuda=_CudaUnavailable())
+            self.assertIn("CUDA no disponible", self.m._embedding_execution_backend())
+
+            class _CudaAvailable:
+                @staticmethod
+                def is_available():
+                    return True
+
+                @staticmethod
+                def get_device_name(_index):
+                    return "Fake GPU"
+
+                @staticmethod
+                def device_count():
+                    return 1
+
+            self.m.torch = SimpleNamespace(cuda=_CudaAvailable())
+            text = self.m._embedding_execution_backend()
+            self.assertIn("Fake GPU", text)
+
+            # Comprobación de GPU con configuración de Ollama
+            self.m.settings.OLLAMA_NUM_GPU = 0
+            self.m.settings.OLLAMA_NUM_GPU_SOURCE = "env"
+            self.assertEqual(self.m.get_ollama_execution_device(), "CPU")
+            self.assertIn("CPU (num_gpu=0", self.m._ollama_execution_backend())
+
+            self.m.settings.OLLAMA_NUM_GPU = -1
+            self.m.settings.OLLAMA_NUM_GPU_SOURCE = "auto-ollama"
+            self.assertEqual(self.m.get_ollama_execution_device(), "GPU_REQ")
+            self.assertIn("GPU (num_gpu=-1", self.m._ollama_execution_backend())
+
+            self.m.settings.OLLAMA_NUM_GPU = 2
+            self.m.settings.OLLAMA_NUM_GPU_SOURCE = "auto-ollama"
+            self.assertEqual(self.m.get_ollama_execution_device(), "GPU")
+            self.assertIn("GPU (num_gpu=2", self.m._ollama_execution_backend())
+
+            self.m.settings.OLLAMA_NUM_GPU = -1
+            self.m.settings.OLLAMA_NUM_GPU_SOURCE = "env"
+            self.assertEqual(self.m.get_ollama_execution_device(), "GPU")
+        finally:
+            self.m.settings.RAG_MODEL_DEVICE = original_device
+            self.m.torch = original_torch
+            self.m.settings.OLLAMA_NUM_GPU = original_ollama_num_gpu
+            self.m.settings.OLLAMA_NUM_GPU_SOURCE = original_ollama_num_gpu_source
+
+    def test_embedding_model_cuda_oom_helpers_and_retry_to_cpu(self):
+        module = self.m
+        module.EmbeddingModelSingleton._instance = None
+
+        # _is_cuda_out_of_memory
+        self.assertTrue(module.EmbeddingModelSingleton._is_cuda_out_of_memory(RuntimeError("CUDA out of memory")))
+        self.assertFalse(module.EmbeddingModelSingleton._is_cuda_out_of_memory(RuntimeError("some other error")))
+
+        original_torch = getattr(module, "torch", None)
+        original_device = module.settings.RAG_MODEL_DEVICE
+        try:
+            class _FakeST:
+                def __init__(self, *_args, **_kwargs):
+                    self.tokenizer = object()
+
+                def eval(self):
+                    return None
+
+            # _clear_cuda_cache: llama a empty_cache y maneja RuntimeError con logger.debug
+            empty_cache = MagicMock(side_effect=RuntimeError("fail"))
+            module.torch = SimpleNamespace(cuda=SimpleNamespace(empty_cache=empty_cache))
+            with (
+                patch.object(module.logger, "debug") as mock_debug,
+                patch.object(module, "SentenceTransformer", _FakeST),
+            ):
+                model = module.EmbeddingModelSingleton(model_id="fake-model", device="cuda")
+                model._model = SimpleNamespace(to=MagicMock())
+                model._clear_cuda_cache()
+            mock_debug.assert_called_once()
+
+            module.settings.RAG_MODEL_DEVICE = "cuda"
+            model._device = "cuda"
+            with patch.object(module.logger, "warning") as mock_warn:
+                model._move_to_cpu()
+            model._model.to.assert_called_once_with("cpu")
+            self.assertEqual(model._device, "cpu")
+            self.assertEqual(module.settings.RAG_MODEL_DEVICE, "cpu")
+            mock_warn.assert_called_once()
+
+            calls = {"n": 0}
+
+            def encode_side_effect(*_args, **_kwargs):
+                calls["n"] += 1
+                if calls["n"] == 1:
+                    raise RuntimeError("CUDA out of memory")
+                return [SimpleNamespace(tolist=lambda: [1.0, 2.0, 3.0])]
+
+            model._device = "cuda"
+            model._model = SimpleNamespace(encode=MagicMock(side_effect=encode_side_effect), to=MagicMock(), tokenizer=object())
+            with (
+                patch.object(model, "_clear_cuda_cache") as mock_clear,
+                patch.object(model, "_move_to_cpu") as mock_move,
+            ):
+                out = model(["x"], to_list=True)
+            self.assertEqual(out, [[1.0, 2.0, 3.0]])
+            mock_clear.assert_called_once()
+            mock_move.assert_called_once()
+        finally:
+            module.torch = original_torch
+            module.settings.RAG_MODEL_DEVICE = original_device
+            module.EmbeddingModelSingleton._instance = None
+
+    def test_format_bytes(self):
+        self.assertEqual(self.m._format_bytes(-1), "-")
+        self.assertEqual(self.m._format_bytes("x"), "-")
+        self.assertEqual(self.m._format_bytes(0), "0 B")
+        self.assertEqual(self.m._format_bytes(1023), "1023 B")
+        self.assertEqual(self.m._format_bytes(1024), "1.0 KB")
+        self.assertEqual(self.m._format_bytes(1024 * 1024), "1.0 MB")
+
+    def test_format_ollama_pull_progress(self):
+        msg = self.m._format_ollama_pull_progress(
+            "m",
+            {"status": "pulling", "digest": "abcdef" * 10, "completed": 512, "total": 1024},
+        )
+        self.assertIn("m: pulling", msg)
+        self.assertIn("50.0%", msg)
+        self.assertIn("(512 B / 1.0 KB)", msg)
+        # digest truncado a 12 chars
+        self.assertIn(" abcdefabcdef", msg)
+
+        msg2 = self.m._format_ollama_pull_progress("m", {"completed": 1024})
+        self.assertIn("(1.0 KB)", msg2)
+
+        msg3 = self.m._format_ollama_pull_progress("m", {"completed": 9999, "total": 1})
+        self.assertIn("100.0%", msg3)
+
+    def test_extract_ollama_chat_piece_parses_response_and_message(self):
+        module = self.m
+
+        piece, done = module._extract_ollama_chat_piece('{"response":"Hola ","done":false}')
+        self.assertEqual(piece, "Hola ")
+        self.assertFalse(done)
+
+        piece2, done2 = module._extract_ollama_chat_piece('{"message":{"content":"mundo"},"done":true}')
+        self.assertEqual(piece2, "mundo")
+        self.assertTrue(done2)
+
+    def test_timeout_to_total_seconds_uses_max_defined(self):
+        module = self.m
+
+        t = module.httpx.Timeout(connect=1.0, read=2.0, write=3.0, pool=4.0)
+        self.assertEqual(module._timeout_to_total_seconds(t), 4.0)
+
+        t2 = module.httpx.Timeout(connect=None, read=5.0, write=None, pool=None)
+        self.assertEqual(module._timeout_to_total_seconds(t2), 5.0)
+
+        # Si todo es None, devuelve None
+        t3 = module.httpx.Timeout(connect=None, read=None, write=None, pool=None)
+        self.assertIsNone(module._timeout_to_total_seconds(t3))
+
+    def test_normalize_ollama_model_name_strips_and_lowercases(self):
+        module = self.m
+        self.assertEqual(module._normalize_ollama_model_name("  Llama3.1:8B "), "llama3.1:8b")
+        self.assertEqual(module._normalize_ollama_model_name(None), "")
+
+    def test_infer_device_from_ollama_ps_payload(self):
+        module = self.m
+
+        self.assertIsNone(module._infer_device_from_ollama_ps_payload({}, target_model="m"))
+        self.assertIsNone(module._infer_device_from_ollama_ps_payload({"models": "x"}, target_model="m"))
+        self.assertIsNone(module._infer_device_from_ollama_ps_payload({"models": [1, "x"]}, target_model="m"))
+
+        payload_cpu = {"models": [{"name": "m", "size_vram": 0}]}
+        self.assertEqual(module._infer_device_from_ollama_ps_payload(payload_cpu, target_model="m"), "CPU")
+
+        payload_gpu = {"models": [{"model": "m", "size_vram": 123}]}
+        self.assertEqual(module._infer_device_from_ollama_ps_payload(payload_gpu, target_model="m"), "GPU")
+
+        payload_bad_vram = {"models": [{"name": "m", "size_vram": "nope"}]}
+        self.assertEqual(module._infer_device_from_ollama_ps_payload(payload_bad_vram, target_model="m"), "CPU")
+
+    def test_get_ollama_effective_execution_device_uses_payload_or_fallback(self):
+        module = self.m
+        original_num_gpu = module.settings.OLLAMA_NUM_GPU
+        original_source = module.settings.OLLAMA_NUM_GPU_SOURCE
+        try:
+            module.settings.OLLAMA_NUM_GPU = -1
+            module.settings.OLLAMA_NUM_GPU_SOURCE = "auto-ollama"
+            self.assertEqual(module.get_ollama_execution_device(), "GPU_REQ")
+
+            with patch.object(module, "_fetch_ollama_ps_payload", side_effect=module.httpx.HTTPError("down")):
+                device = asyncio.run(module.get_ollama_effective_execution_device(model_name="m"))
+            self.assertEqual(device, "GPU_REQ")
+
+            with patch.object(module, "_fetch_ollama_ps_payload", return_value={"models": [{"name": "m", "size_vram": 0}]}):
+                device2 = asyncio.run(module.get_ollama_effective_execution_device(model_name="m"))
+            self.assertEqual(device2, "CPU")
+        finally:
+            module.settings.OLLAMA_NUM_GPU = original_num_gpu
+            module.settings.OLLAMA_NUM_GPU_SOURCE = original_source
+
+    def test_fetch_ollama_ps_payload_uses_wait_for_when_timeout_defined(self):
+        module = self.m
+
+        class _Resp:
+            def __init__(self, payload, content=b"x"):
+                self._payload = payload
+                self.content = content
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return self._payload
+
+        class _Client:
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+            async def get(self, _path):
+                await asyncio.sleep(0)
+                return _Resp({"models": []})
+
+        async def fake_wait_for(coro, timeout):
+            self.assertEqual(timeout, 3.0)
+            return await coro
+
+        timeout = module.httpx.Timeout(connect=None, read=3.0, write=None, pool=None)
+        with patch.object(module.httpx, "AsyncClient", return_value=_Client()), patch.object(
+            module.asyncio, "wait_for", side_effect=fake_wait_for
+        ):
+            payload = asyncio.run(module._fetch_ollama_ps_payload(request_timeout=timeout))
+        self.assertEqual(payload, {"models": []})
+
+    def test_fetch_ollama_ps_payload_returns_empty_when_no_content(self):
+        module = self.m
+
+        class _Resp:
+            content = b""
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"x": 1}
+
+        class _Client:
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+            async def get(self, _path):
+                await asyncio.sleep(0)
+                return _Resp()
+
+        timeout = module.httpx.Timeout(connect=None, read=None, write=None, pool=None)
+        with patch.object(module.httpx, "AsyncClient", return_value=_Client()):
+            payload = asyncio.run(module._fetch_ollama_ps_payload(request_timeout=timeout))
+        self.assertEqual(payload, {})
+
+    def test_fetch_ollama_ps_payload_no_timeout_no_wait_for(self):
+        module = self.m
+
+        class _Resp:
+            content = b"x"
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"models": []}
+
+        class _Client:
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+            async def get(self, _path):
+                await asyncio.sleep(0)
+                return _Resp()
+
+        timeout = module.httpx.Timeout(connect=None, read=None, write=None, pool=None)
+        with (
+            patch.object(module.httpx, "AsyncClient", return_value=_Client()),
+            patch.object(module.asyncio, "wait_for") as mock_wait_for,
+        ):
+            payload = asyncio.run(module._fetch_ollama_ps_payload(request_timeout=timeout))
+        self.assertEqual(payload, {"models": []})
+        mock_wait_for.assert_not_called()
+
+    def test_read_ollama_pull_line_stop_and_timeout(self):
+        module = self.m
+
+        class _ItStop:
+            async def __anext__(self):
+                raise StopAsyncIteration()
+
+        self.assertIsNone(asyncio.run(module._read_ollama_pull_line(_ItStop(), 1.0, "m")))
+
+        class _ItHang:
+            async def __anext__(self):
+                await asyncio.sleep(10)
+                return "x"
+
+        async def fake_wait_for(*_args, **_kwargs):
+            raise asyncio.TimeoutError()
+
+        with (
+            patch.object(module.asyncio, "wait_for", side_effect=fake_wait_for),
+            self.assertRaises(module.OllamaTimeoutError),
+        ):
+            asyncio.run(module._read_ollama_pull_line(_ItHang(), 1.5, "m"))
+
+    def test_emit_ollama_pull_progress_logs_and_throttles(self):
+        module = self.m
+        statuses: list[str] = []
+
+        with patch.object(module.logger, "info") as mock_info, patch.object(
+            module.time, "monotonic", side_effect=[100.0, 100.5, 101.1, 101.2]
+        ):
+            # Sin status no cambia ni loguea
+            last_progress, last_log_at = module._emit_ollama_pull_progress(
+                "m", {}, last_progress="", last_log_at=0.0, log_interval=1.0, on_status=statuses.append
+            )
+            self.assertEqual(last_progress, "")
+            self.assertEqual(last_log_at, 0.0)
+
+            payload = {"status": "pulling", "completed": 0, "total": 100}
+            last_progress, last_log_at = module._emit_ollama_pull_progress(
+                "m",
+                payload,
+                last_progress=last_progress,
+                last_log_at=last_log_at,
+                log_interval=1.0,
+                on_status=statuses.append,
+            )
+            self.assertTrue(last_progress)
+            # La primera vez que se llama a `time.monotonic()` es cuando se procesa este primer payload con status.
+            self.assertEqual(last_log_at, 100.0)
+
+            # Mismo progreso y todavía dentro del intervalo (no loguea)
+            module._emit_ollama_pull_progress(
+                "m",
+                payload,
+                last_progress=last_progress,
+                last_log_at=last_log_at,
+                log_interval=10.0,
+                on_status=statuses.append,
+            )
+
+            done_payload = {"status": "success", "done": True, "completed": 100, "total": 100}
+            module._emit_ollama_pull_progress(
+                "m",
+                done_payload,
+                last_progress=last_progress,
+                last_log_at=last_log_at,
+                log_interval=10.0,
+                on_status=statuses.append,
+            )
+
+        # 1 log por el primer progreso y 1 por done=True
+        self.assertGreaterEqual(mock_info.call_count, 2)
+        self.assertGreaterEqual(len(statuses), 2)
+
+    def test_process_ollama_pull_payload_raises_on_error_and_delegates(self):
+        module = self.m
+
+        with self.assertRaises(module.OllamaModelNotFoundError):
+            module._process_ollama_pull_payload(
+                "m",
+                '{"error":"model not found"}',
+                last_progress="",
+                last_log_at=0.0,
+                log_interval=1.0,
+            )
+
+        with patch.object(module, "_emit_ollama_pull_progress", return_value=("p", 1.0)) as mock_emit:
+            out = module._process_ollama_pull_payload(
+                "m",
+                '{"status":"pulling","completed":1,"total":10}',
+                last_progress="x",
+                last_log_at=0.0,
+                log_interval=2.0,
+                on_status=None,
+            )
+        self.assertEqual(out, ("p", 1.0))
+        args = mock_emit.call_args.args
+        self.assertEqual(args[0], "m")
+        self.assertEqual(args[1]["status"], "pulling")
+
+    def test_ensure_ollama_model_available_happy_path_and_errors(self):
+        module = self.m
+
+        class _Resp:
+            def __init__(self, status_code: int, text: str = "", body: bytes = b""):
+                self.status_code = status_code
+                self.text = text
+                self._body = body
+
+            def raise_for_status(self):
+                req = module.httpx.Request("POST", "http://ollama/api/show")
+                resp = module.httpx.Response(self.status_code, request=req, content=self._body)
+                raise module.httpx.HTTPStatusError("error", request=req, response=resp)
+
+        class _PullOK:
+            def __init__(self, lines: list[str]):
+                self._lines = lines
+                self.status_code = 200
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+            def raise_for_status(self):
+                return None
+
+            async def aread(self):
+                await asyncio.sleep(0)
+                return b""
+
+            async def aiter_lines(self):
+                for line in self._lines:
+                    yield line
+
+        class _PullFail(_PullOK):
+            def __init__(self, body: bytes):
+                super().__init__(lines=[])
+                self._body = body
+
+            def raise_for_status(self):
+                req = module.httpx.Request("POST", "http://ollama/api/pull")
+                resp = module.httpx.Response(404, request=req, content=b"")
+                raise module.httpx.HTTPStatusError("error", request=req, response=resp)
+
+            async def aread(self):
+                await asyncio.sleep(0)
+                return self._body
+
+        class _Client:
+            def __init__(self, show_resp, pull_resp=None):
+                self._show = show_resp
+                self._pull = pull_resp
+
+            async def post(self, *_args, **_kwargs):
+                await asyncio.sleep(0)
+                return self._show
+
+            def stream(self, *_args, **_kwargs):
+                return self._pull
+
+        original_total = module.settings.OLLAMA_PULL_TIMEOUT_SECONDS
+        original_idle = module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS
+        original_interval = module.settings.OLLAMA_PULL_LOG_INTERVAL_SECONDS
+        try:
+            module.settings.OLLAMA_PULL_TIMEOUT_SECONDS = 0
+            module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = 0
+            module.settings.OLLAMA_PULL_LOG_INTERVAL_SECONDS = 0
+
+            asyncio.run(module.ensure_ollama_model_available(_Client(_Resp(200)), "m"))
+
+            # 500 (RuntimeError)
+            with self.assertRaises(RuntimeError):
+                asyncio.run(module.ensure_ollama_model_available(_Client(_Resp(500, text="boom")), "m"))
+
+            # 404 (pull + progreso)
+            statuses: list[str] = []
+            lines = [
+                '{"status":"pulling","completed":0,"total":100}',
+                '{"status":"pulling","completed":50,"total":100}',
+                '{"status":"success","completed":100,"total":100,"done":true}',
+            ]
+            asyncio.run(
+                module.ensure_ollama_model_available(
+                    _Client(_Resp(404), pull_resp=_PullOK(lines)),
+                    "m",
+                    on_status=statuses.append,
+                )
+            )
+            self.assertTrue(any("Descargando modelo m" in s for s in statuses))
+            self.assertTrue(any("m: pulling" in s for s in statuses))
+            self.assertTrue(any("m: success" in s for s in statuses))
+
+            # OllamaModelNotFoundError
+            with self.assertRaises(module.OllamaModelNotFoundError):
+                asyncio.run(
+                    module.ensure_ollama_model_available(
+                        _Client(_Resp(404), pull_resp=_PullFail(b'{"error":"not found"}')),
+                        "missing",
+                    )
+                )
+        finally:
+            module.settings.OLLAMA_PULL_TIMEOUT_SECONDS = original_total
+            module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = original_idle
+            module.settings.OLLAMA_PULL_LOG_INTERVAL_SECONDS = original_interval
+
+    def test_ensure_ollama_model_available_total_timeout_expires(self):
+        module = self.m
+
+        class _ShowResp:
+            status_code = 404
+            text = ""
+
+        class _PullResp:
+            status_code = 200
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+            def raise_for_status(self):
+                return None
+
+            async def aread(self):
+                await asyncio.sleep(0)
+                return b""
+
+            async def aiter_lines(self):
+                while True:
+                    yield '{"status":"pulling","completed":0,"total":100}'
+
+        class _Client:
+            async def post(self, *_args, **_kwargs):
+                await asyncio.sleep(0)
+                return _ShowResp()
+
+            def stream(self, *_args, **_kwargs):
+                return _PullResp()
+
+        original_total = module.settings.OLLAMA_PULL_TIMEOUT_SECONDS
+        original_idle = module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS
+        try:
+            module.settings.OLLAMA_PULL_TIMEOUT_SECONDS = 1
+            module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = 0
+            mono = iter([0.0, 2.0, 2.0, 2.0])
+            with patch.object(module, "time", SimpleNamespace(monotonic=lambda: next(mono))):
+                with self.assertRaises(module.OllamaTimeoutError):
+                    asyncio.run(module.ensure_ollama_model_available(_Client(), "m"))
+        finally:
+            module.settings.OLLAMA_PULL_TIMEOUT_SECONDS = original_total
+            module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = original_idle
+
+    def test_ensure_ollama_model_ready_opens_client_and_delegates(self):
+        module = self.m
+
+        class _Client:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *_args):
+                return False
+
+        with (
+            patch.object(module.httpx, "AsyncClient", _Client),
+            patch.object(module, "ensure_ollama_model_available", new_callable=unittest.mock.AsyncMock) as mock_ensure,
+        ):
+            asyncio.run(module.ensure_ollama_model_ready("m"))
+        mock_ensure.assert_awaited_once()
+
+    def test_chunk_text_skips_bad_token_lines_and_overlaps(self):
+        module = self.m
+
+        class _Tok:
+            def tokenize(self, text):
+                if text == "BAD":
+                    raise RuntimeError("token error")
+                return text.split()
+
+        module.embedding_model = SimpleNamespace(tokenizer=_Tok(), max_input_length=5)
+        text = "uno dos\nBAD\ntres cuatro\ncinco seis\nsiete"
+        chunks = module.chunk_text(text, overlap_ratio=0.5)
+        # No debe fallar y debe ignorar BAD
+        self.assertTrue(chunks)
+        self.assertTrue(all("BAD" not in c for c in chunks))
+
+    def test_recuperacion_chunk_con_scores_filters_by_similarity(self):
+        qdrant = MagicMock()
+        module = self.m
+        module.qdrant = qdrant
+
+        good = SimpleNamespace(id=uuid4(), payload={"content": "ok"}, score=0.51)
+        bad = SimpleNamespace(id=uuid4(), payload={"content": "low"}, score=0.5)
+        qdrant.query_points.return_value = SimpleNamespace(points=[good, bad])
+
+        class _Embed:
+            embedding_size = 3
+            model_id = "m"
+            max_input_length = 8
+            tokenizer = SimpleNamespace(tokenize=lambda s: s.split())
+
+            def __call__(self, _text, to_list=True):
+                return [0.0, 0.0, 0.0]
+
+        module.embedding_model = _Embed()
+
+        with patch.object(module.VectorBaseDocument, "_ensure_collection"):
+            out = module.recuperacion_chunk_con_scores("pregunta")
+        self.assertEqual(out, [good])
+
+    def test_obtener_mejor_chunk_does_not_import_flask_package_for_resource_priority(self):
+        qpoint = SimpleNamespace(id=uuid4(), score=0.75, payload={"content": "ctx", "metadata": {}})
+
+        async def fake_ask(_prompt, **_kwargs):
+            await asyncio.sleep(0)
+            return "respuesta"
+
+        resource_priority = types.ModuleType("app.main.code.services.resource_priority")
+
+        class _AsyncNullContext:
+            async def __aenter__(self):
+                return None
+
+            async def __aexit__(self, *_args):
+                return False
+
+        resource_priority.rag_priority_async = lambda *_args, **_kwargs: _AsyncNullContext()
+
+        statuses = []
+        with patch.object(self.m, "recuperacion_chunk_con_scores", return_value=[qpoint]), patch.object(
+            self.m,
+            "ensure_ollama_model_ready",
+            new_callable=unittest.mock.AsyncMock,
+        ), patch.object(self.m, "ask_ollama", side_effect=fake_ask), patch.dict(
+            "sys.modules",
+            {"app.main.code.services.resource_priority": resource_priority},
+        ):
+            res = asyncio.run(self.m.obtener_mejor_chunk(" pregunta ", on_status=statuses.append, tipo_documento="tecnico"))
+
+        self.assertEqual(res["answer"], "respuesta")
+        self.assertTrue(statuses)
+
+    def test_raise_helpers_cover_all_raise_paths(self):
+        module = self.m
+
+        with self.assertRaises(module.QueryCancelledError):
+            module._raise_if_query_cancelled(lambda: True)
+
+        module._raise_if_query_cancelled(lambda: False)
+        module._raise_if_query_cancelled(None)
+
+        req = module.httpx.Request("POST", "http://ollama/api/show")
+
+        # _raise_for_ollama_show_status
+        module._raise_for_ollama_show_status(module.httpx.Response(200, request=req), "m")
+        module._raise_for_ollama_show_status(module.httpx.Response(404, request=req), "m")
+
+        # _raise_for_ollama_show_status
+        with self.assertRaises(RuntimeError) as ctx:
+            module._raise_for_ollama_show_status(
+                module.httpx.Response(500, request=req, content=b"boom"),
+                "m",
+            )
+        self.assertIn("HTTP 500", str(ctx.exception))
+
+        async def run_chat_status(resp):
+            return await module._raise_for_ollama_chat_status(resp, "m")
+
+        # _raise_for_ollama_chat_status
+        with self.assertRaises(module.OllamaModelNotFoundError):
+            asyncio.run(
+                run_chat_status(module.httpx.Response(404, request=req, content=b"model not found"))
+            )
+
+        # _raise_for_ollama_chat_status
+        with self.assertRaises(RuntimeError) as ctx:
+            asyncio.run(
+                run_chat_status(module.httpx.Response(500, request=req, content=b"ollama down"))
+            )
+        self.assertIn("HTTP 500", str(ctx.exception))
+
+        # _raise_for_ollama_chat_status
+        with self.assertRaises(module.httpx.HTTPStatusError):
+            asyncio.run(run_chat_status(module.httpx.Response(500, request=req, content=b"")))
+
+    def test_exceptions_query_cancel_timeout_and_model_not_found(self):
+        module = self.m
+
+        # _ollama_pull_read_timeout(total_timeout, idle_timeout, elapsed)
+        self.assertIsNone(module._ollama_pull_read_timeout(total_timeout=0, idle_timeout=0, elapsed=0))
+        self.assertEqual(module._ollama_pull_read_timeout(total_timeout=0, idle_timeout=5, elapsed=999), 5)
+
+        self.assertEqual(module._ollama_pull_read_timeout(total_timeout=10, idle_timeout=0, elapsed=3), 7)
+        self.assertEqual(module._ollama_pull_read_timeout(total_timeout=10, idle_timeout=-1, elapsed=1000), 0.1)
+
+        self.assertEqual(module._ollama_pull_read_timeout(total_timeout=10, idle_timeout=2, elapsed=3), 2)
+        self.assertEqual(module._ollama_pull_read_timeout(total_timeout=10, idle_timeout=20, elapsed=3), 7)
+
+    def test_timed_block_logs_elapsed_seconds(self):
+        values = iter([10.0, 10.125])
+
+        def fake_perf_counter():
+            return next(values)
+
+        with (
+            patch.object(self.m.time, "perf_counter", side_effect=fake_perf_counter),
+            patch.object(self.m.logger, "info") as mock_info,
+            self.m.timed_block("bloque"),
+        ):
+            # solo se comprueba que se loguee el tiempo correcto al salir.
+            pass
+
+        mock_info.assert_called_once()
+        args = mock_info.call_args.args
+        self.assertEqual(args[0], "Tiempo %s: %.3f s")
+        self.assertEqual(args[1], "bloque")
+        self.assertAlmostEqual(args[2], 0.125, places=6)
 
 
 if __name__ == "__main__":

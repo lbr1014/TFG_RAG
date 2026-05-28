@@ -9,8 +9,11 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from werkzeug.datastructures import FileStorage
-from app.test.support import BaseAppTestCase
 
+from app.main.code.extensions import db
+from app.main.code.model.chunk import Chunk
+from app.main.code.model.documento import Documento
+from app.main.code.model.embedding import Embedding
 from app.main.code.services.documentos import (
     STATUS_WITH_MARKDOWN,
     DocumentosService,
@@ -19,10 +22,7 @@ from app.main.code.services.documentos import (
     infer_document_metadata_from_filename,
     update_sql,
 )
-from app.main.code.model.chunk import Chunk
-from app.main.code.model.documento import Documento
-from app.main.code.model.embedding import Embedding
-from app.main.code.extensions import db
+from app.test.support import BaseAppTestCase
 
 
 class DocumentosServiceUnitTest(BaseAppTestCase):
@@ -420,7 +420,9 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
         vector_doc = SimpleNamespace(id="qid-md", content="Texto", metadata={"segment_index": 0, "sha256": doc.hash})
         index_pdf = MagicMock(return_value=[SimpleNamespace(id="qid-pdf", content="PDF", metadata={"segment_index": 0})])
 
-        with patch("app.main.code.services.rag.PrototipoRAG.index_markdown", return_value=[vector_doc]) as mock_index_md:
+        from app.main.code.services.rag import PrototipoRAG as prototipo_rag
+
+        with patch.object(prototipo_rag, "index_markdown", return_value=[vector_doc]) as mock_index_md:
             indexed = service._index_vector_document(doc, index_pdf)
 
         self.assertEqual(indexed, 1)
