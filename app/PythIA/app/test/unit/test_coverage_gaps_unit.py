@@ -25,6 +25,7 @@ class CreateAppPathsUnitTest(unittest.TestCase):
                 "dotenv.load_dotenv", return_value=False
             ):
                 import importlib
+
                 import app.main.code as code_pkg
 
                 importlib.reload(code_pkg)
@@ -94,8 +95,7 @@ class RagRoutesPayloadsUnitTest(unittest.TestCase):
             payload = rag_routes.build_model_usage_index_payload(months=2)
 
         self.assertEqual(len(payload["labels"]), 2)
-        # La query está mockeada, así que devolvemos jobs de varios usuarios; el objetivo
-        # del test es cubrir el agregado por mes/modelo.
+        # La query está mockeada, así que devolvemos jobs de varios usuarios para cubrir el agregado por mes/modelo.
         self.assertEqual(payload["series"]["m1"][-1], 2)
         self.assertEqual(payload["series"]["m2"][-1], 1)
 
@@ -263,7 +263,19 @@ class DocumentosServiceUnitTest(unittest.TestCase):
 
 class PrototipoRAGOllamaDeviceUnitTest(unittest.TestCase):
     def test_effective_device_reads_ps_size_vram(self):
-        from app.main.code.services.rag import PrototipoRAG as pr
+        # Módulo real para acceder a httpx y a la lógica de device.
+        import sys
+        from importlib.machinery import SourceFileLoader
+        from importlib.util import module_from_spec, spec_from_loader
+        from pathlib import Path
+
+        repo_root = Path(__file__).resolve().parents[3]
+        module_path = repo_root / "app" / "main" / "code" / "services" / "rag" / "PrototipoRAG.py"
+        loader = SourceFileLoader("PrototipoRAG_real_for_coverage_gaps", str(module_path))
+        spec = spec_from_loader(loader.name, loader)
+        pr = module_from_spec(spec)
+        sys.modules[loader.name] = pr
+        loader.exec_module(pr)
 
         class _Resp:
             def __init__(self, payload):
@@ -302,7 +314,9 @@ class PrototipoRAGOllamaDeviceUnitTest(unittest.TestCase):
 
 class DescargarPliegosUnitTest(unittest.TestCase):
     def test_limpiar_expediente_replaces_bad_chars_and_fallback(self):
-        from app.main.code.services.web_scraping.DescargarPliegos import limpiar_expediente
+        from app.main.code.services.web_scraping.DescargarPliegos import (
+            limpiar_expediente,
+        )
 
         self.assertEqual(limpiar_expediente(" EXP/12 "), "EXP_12")
         self.assertEqual(limpiar_expediente(".."), "expediente")
@@ -314,7 +328,7 @@ class DescargarPliegosUnitTest(unittest.TestCase):
         original_dest = mod.DEST
         try:
             configured = "C:\\data\\pliegos" if os.name == "nt" else "/data/pliegos"
-            mod.DEST = Path(configured)  # absolute per-platform; will be forced to error via patch
+            mod.DEST = Path(configured)  
             with patch.object(Path, "mkdir", side_effect=[PermissionError(), None]) as _mk, patch.dict(
                 os.environ, {"DOCS_DIR": configured}
             ):
