@@ -19,7 +19,7 @@ Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
 Babel==2.15.0
 pycountry==24.6.1
-fsspec==2026.1.0
+fsspec==2023.10.0
 greenlet==3.3.0
 grpcio==1.76.0
 h11==0.16.0
@@ -75,4 +75,7 @@ WTForms==3.2.1
 gunicorn==22.0.0
 Flask-Mail
 itsdangerous
+
+# Dependencias de evaluación RAG (ARES/RAGAS)
+-r /app/requirements_evaluation.txt
 

@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copiamos primero requirements para aprovechar cache
 COPY docker/requirements_docker.txt /app/requirements_docker.txt
+COPY app/main/code/services/evaluation/requirements.txt /app/requirements_evaluation.txt
 RUN pip install --upgrade pip \
  && pip install -r requirements_docker.txt 
 
@@ -45,4 +46,3 @@ EXPOSE 5000
 USER appuser
 
 CMD ["/app/docker/entrypoint.sh"]
-
