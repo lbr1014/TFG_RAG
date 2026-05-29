@@ -333,7 +333,14 @@ async def rag_answer(
     marker = re.search(r"\[doc_type\s*=\s*(administrativo|tecnico)\s*\]", question, re.IGNORECASE)
     if marker:
         tipo_override = marker.group(1).strip().lower()
-        question = re.sub(r"\s*\[doc_type\s*=\s*(administrativo|tecnico)\s*\]\s*", " ", question, flags=re.IGNORECASE).strip()
+        # Evita regex con cuantificadores "abiertos" alrededor de un patrón variable:
+        # eliminamos el marcador y su whitespace adyacente de forma determinista.
+        left, right = marker.span()
+        while left > 0 and question[left - 1].isspace():
+            left -= 1
+        while right < len(question) and question[right].isspace():
+            right += 1
+        question = (question[:left] + " " + question[right:]).strip()
     invalid = validate_question(question, lang=lang)
 
     if invalid:
