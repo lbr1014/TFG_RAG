@@ -200,7 +200,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         view_body = view_response.data.decode("utf-8")
         # Dependiendo de la configuración, la vista puede devolver el markdown en texto plano o un viewer HTML.
         normalized = view_body.strip().lower()
-        if normalized.startswith("<!doctype html") or normalized.startswith("<html"):
+        if normalized.startswith(("<!doctype html", "<html")):
             self.assertIn("pliego.pdf", normalized)
         else:
             self.assertEqual(view_body, "# Markdown")
