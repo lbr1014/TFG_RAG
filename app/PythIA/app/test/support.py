@@ -90,13 +90,13 @@ def _install_rag_stub() -> None:
 
 _install_rag_stub()
 
-from app.main.code import create_app  # noqa: E402
-from app.main.code.model.chunk import Chunk  # noqa: E402
-from app.main.code.model.consulta import Consulta  # noqa: E402
-from app.main.code.model.consulta_chunk import ConsultaChunk  # noqa: E402
-from app.main.code.model.documento import Documento  # noqa: E402
-from app.main.code.model.user import User  # noqa: E402
-from app.main.code.extensions import db  # noqa: E402
+from app.main.code import create_app  
+from app.main.code.extensions import db  
+from app.main.code.model.chunk import Chunk  
+from app.main.code.model.consulta import Consulta  
+from app.main.code.model.consulta_chunk import ConsultaChunk  
+from app.main.code.model.documento import Documento  
+from app.main.code.model.user import User  
 
 
 @event.listens_for(Engine, "connect")
@@ -109,13 +109,18 @@ def _set_sqlite_pragma(dbapi_connection, _connection_record):
 
 class BaseAppTestCase(unittest.TestCase):
     def setUp(self):
-        self._env_backup = {key: os.environ.get(key) for key in ("FLASK_SESSION_SIGNER", "DATABASE_URL")}
+        self._env_backup = {
+            key: os.environ.get(key)
+            for key in ("FLASK_SESSION_SIGNER", "DATABASE_URL", "DATA_DIR", "DOCS_DIR")
+        }
         self._tmpdir = Path(tempfile.mkdtemp(prefix="pythia-tests-"))
         self._db_path = self._tmpdir / "test.sqlite"
         self._docs_dir = self._tmpdir / "docs"
 
         os.environ["FLASK_SESSION_SIGNER"] = "test-session-signer"
         os.environ["DATABASE_URL"] = f"sqlite:///{self._db_path.as_posix()}"
+        os.environ["DATA_DIR"] = str(self._tmpdir / "data")
+        os.environ["DOCS_DIR"] = str(self._docs_dir)
 
         self.app = create_app()
         self.app.config.update(
