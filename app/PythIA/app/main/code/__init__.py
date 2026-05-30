@@ -143,7 +143,10 @@ def _configure_data_dirs(app: Flask, *, project_root: Path) -> None:
         data_dir = Path(data_dir_env)
     else:
         docker_data_dir = Path("/data")
-        data_dir = docker_data_dir if docker_data_dir.is_dir() else (project_root / "data")
+        if os.name != "nt" and docker_data_dir.is_dir():
+            data_dir = docker_data_dir
+        else:
+            data_dir = project_root / "data"
     app.config["DATA_DIR"] = data_dir
 
     docs_dir_env = os.environ.get("DOCS_DIR")

@@ -11,13 +11,24 @@ import os
 import traceback
 import urllib.parse
 from pathlib import Path
-from turtle import pd
 from typing import Any
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 PROJECT_ROOT = Path(__file__).resolve().parents[5]
 
-from datasets import Dataset
-from langchain_community.embeddings import HuggingFaceEmbeddings
+try:
+    from datasets import Dataset
+except ImportError:
+    Dataset = None
+
+try:
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+except ImportError:
+    HuggingFaceEmbeddings = None
 
 try:
     from langchain_community.llms import Ollama as OllamaLLM
@@ -35,8 +46,12 @@ try:
     from langchain_ollama import ChatOllama as OllamaChatOllama
 except ImportError:
     OllamaChatOllama = None  
-from ragas import evaluate
-from ragas.run_config import RunConfig
+try:
+    from ragas import evaluate
+    from ragas.run_config import RunConfig
+except ImportError:
+    evaluate = None
+    RunConfig = None
 
 from app.main.code.services.rag.PrototipoRAG import obtener_mejor_chunk
 
@@ -98,7 +113,11 @@ def _is_local_hostname(hostname: str | None) -> bool:
     if not hostname:
         return False
     hostname = hostname.strip().lower()
-    return hostname in {"localhost", "127.0.0.1", "::1"}
+    if hostname in {"localhost", "127.0.0.1", "::1"}:
+        return True
+    # En redes internas (p.ej. Docker Compose), es común usar hostnames de un solo segmento
+    # como "ollama" o "qdrant". Tratamos estos como locales para permitir http por defecto.
+    return "." not in hostname
 
 
 def _normalize_base_url(raw_value: str) -> str:
@@ -133,12 +152,16 @@ def _normalize_base_url(raw_value: str) -> str:
     return value
 
 
-OLLAMA_BASE_URL = _normalize_base_url(
-    os.getenv(
-        "OLLAMA_BASE_URL",
-        os.getenv("ARES_OLLAMA_BASE_URL", "http://127.0.0.1:11435"),
+try:
+    OLLAMA_BASE_URL = _normalize_base_url(
+        os.getenv(
+            "OLLAMA_BASE_URL",
+            os.getenv("ARES_OLLAMA_BASE_URL", "http://127.0.0.1:11435"),
+        )
     )
-)
+except ValueError:
+    # Evita romper imports en entornos donde config.env tenga una URL inválida.
+    OLLAMA_BASE_URL = ""
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct-q4_K_M")
 RAGAS_JUDGE_MODEL = os.getenv("RAGAS_JUDGE_MODEL", "gemma3:4b")
 OLLAMA_REQUEST_TIMEOUT = int(os.getenv("OLLAMA_REQUEST_TIMEOUT", "300"))
@@ -899,7 +922,7 @@ def _ragas_evaluate_with_timeout_fallback(
         return result_local, active_aliases_local
 
 
-def _ragas_summarize(df_local: pd.DataFrame, aliases_local: dict[str, str]) -> dict:
+def _ragas_summarize(df_local: Any, aliases_local: dict[str, str]) -> dict:
     """
     Resume las métricas RAGAS calculadas en un DataFrame.
 
@@ -942,7 +965,7 @@ def _ragas_normalize_rows(raw_records: list[dict], aliases_local: dict[str, str]
     return out_rows
 
 
-def _ragas_add_column_diagnostics(df_local: pd.DataFrame, aliases_local: dict[str, str], diagnostics_local: dict) -> None:
+def _ragas_add_column_diagnostics(df_local: Any, aliases_local: dict[str, str], diagnostics_local: dict) -> None:
     """
     Agrega diagnósticos sobre las columnas del DataFrame resultante de la evaluación RAGAS.
 
@@ -1004,6 +1027,12 @@ def run_ragas(
     metrics, aliases = resolve_ragas_metrics(rows)
     if not metrics:
         return _ragas_empty_result(aliases)
+
+    if Dataset is None or RunConfig is None or evaluate is None:
+        raise RuntimeError(
+            "Dependencias de RAGAS no disponibles (datasets/ragas). "
+            "Instala requirements_dev.txt o las dependencias de evaluación."
+        )
 
     dataset = Dataset.from_list(rows)
     run_config = RunConfig(
@@ -1140,6 +1169,12 @@ def main():
     if not rows:
         raise SystemExit(
             f"No se pudieron construir filas para la evaluacion a partir de {RAGAS_QUESTIONS_PATH}."
+        )
+
+    if HuggingFaceEmbeddings is None:
+        raise RuntimeError(
+            "No se pudo importar langchain_community.embeddings.HuggingFaceEmbeddings. "
+            "Instala las dependencias de evaluación."
         )
 
     embeddings_device = resolve_embeddings_device()

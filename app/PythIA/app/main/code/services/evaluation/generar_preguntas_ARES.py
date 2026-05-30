@@ -17,6 +17,8 @@ Configuration (via variables de entorno):
     ARES_QAS_PER_CHUNK: Número de pares Q&A a solicitar por chunk.
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import os
@@ -174,7 +176,7 @@ def pass_quality(question: str, answer: str, evidence: str, chunk: str) -> bool:
     return evidence in chunk
 
 
-def _build_shuffle_rng() -> secrets.SystemRandom | 'random.Random':
+def _build_shuffle_rng() -> secrets.SystemRandom | random.Random:
     """
     Construye un generador de números aleatorios para mezclar los chunks.
     
@@ -188,8 +190,6 @@ def _build_shuffle_rng() -> secrets.SystemRandom | 'random.Random':
             "Shuffling chunks with a cryptographically secure RNG (ARES_SHUFFLE_SEED not set)"
         )
         return secrets.SystemRandom()
-
-    import random
 
     print(f"Shuffling chunks with a deterministic seed (ARES_SHUFFLE_SEED={shuffle_seed_raw})")
     return random.Random(int(shuffle_seed_raw))
