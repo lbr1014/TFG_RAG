@@ -5,6 +5,7 @@ la traducción de formularios y la inicialización de los componentes de interna
 correctamente textos y mensajes en distintos idiomas, así como gestionar adecuadamente situaciones en las que faltan traducciones o configuraciones específicas.
 """
 
+import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -188,3 +189,14 @@ class TraduccionUnitTest(BaseAppTestCase):
         self.assertEqual(valid.headers["Location"], "/target")
         with self.client.session_transaction() as client_session:
             self.assertEqual(client_session["lang"], "en")
+            
+class TarduccionRuntimeMessagesUnitTest(unittest.TestCase):
+    def test_localize_runtime_message_translates_when_message_is_i18n_key(self):
+        """
+        Verifica que los mensajes de ejecución que corresponden a claves de internacionalización 
+        son traducidos correctamente al idioma solicitado utilizando el sistema de traducciones de la aplicación.
+        """
+        out = tarduccion.localize_runtime_message("common.email", lang="es")
+        self.assertNotEqual(out, "common.email")
+        self.assertTrue(out)
+
