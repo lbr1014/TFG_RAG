@@ -1,3 +1,11 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con pruebas unitarias del módulo PliegosPlaywrightAsincrono.py, encargado de realizar el scraping de licitaciones públicas mediante Playwright. 
+Las pruebas verifican la navegación por la plataforma de contratación, la localización de elementos de la interfaz, la extracción de datos de las licitaciones, 
+el procesamiento de tablas y documentos, la actualización de resultados y la gestión de errores durante la automatización del navegador.
+"""
+
+import asyncio
 import importlib
 import importlib.util
 import json
@@ -10,6 +18,9 @@ from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 
 def _module_available(name):
+    """
+    Comprueba si un módulo está disponible para importación.
+    """
     try:
         return importlib.util.find_spec(name) is not None
     except (ImportError, ValueError):
@@ -17,11 +28,17 @@ def _module_available(name):
 
 
 def _install_optional_dependency_stubs():
+    """
+    Instala stubs para dependencias opcionales, permitiendo que las pruebas se ejecuten incluso si Playwright no está instalado.
+    """
     if _module_available("playwright"):
         return
 
     class TimeoutErrorStub(Exception):
-        pass
+        """
+        Stub para Playwright TimeoutError.
+        """
+        
 
     if "playwright" not in sys.modules:
         sys.modules["playwright"] = types.ModuleType("playwright")
@@ -43,18 +60,36 @@ pliegos = importlib.import_module("app.main.code.services.web_scraping.PliegosPl
 
 
 class AsyncContext:
+    """
+    Context manager asíncrono de prueba para simular expect_navigation.
+    """
     def __init__(self, value=None):
+        """
+        Inicializa el contexto con un valor opcional.
+        """
         self.value = value
 
     async def __aenter__(self):
+        """
+        Entra en el contexto asíncrono, devolviendo el valor configurado.
+        """
         return self.value
 
     async def __aexit__(self, *_args):
+        """
+        Sale del contexto asíncrono sin manejar excepciones.
+        """
         return False
 
 
 class FakeLocator:
+    """
+    Locator de prueba para simular elementos de la interfaz en las pruebas unitarias.
+    """
     def __init__(self, *, count=1, text="", attrs=None, children=None, nth_items=None, first=None, last=None):
+        """
+        Inicializa el locator con propiedades configurables para simular diferentes escenarios de prueba.
+        """
         self._count = count
         self._text = text
         self._attrs = attrs or {}
@@ -68,23 +103,44 @@ class FakeLocator:
         self.select_option = AsyncMock()
 
     async def count(self):
+        """
+        Devuelve el número de elementos encontrados por el locator.
+        """
+        await asyncio.sleep(0)
         return self._count
 
     async def inner_text(self):
+        """
+        Devuelve el texto interno del elemento localizado.
+        """
+        await asyncio.sleep(0)
         return self._text
 
     async def get_attribute(self, name):
+        """
+        Devuelve el valor de un atributo del elemento localizado.
+        """
+        await asyncio.sleep(0)
         return self._attrs.get(name)
 
     def locator(self, selector, **kwargs):
+        """
+        Devuelve un nuevo locator basado en un selector y opciones de búsqueda, simulando la búsqueda de elementos hijos.
+        """
         key = (selector, "has_text") if "has_text" in kwargs else selector
         return self._children.get(key, FakeLocator(count=0))
 
     def nth(self, index):
+        """
+        Devuelve el locator correspondiente al índice especificado, simulando la selección de un elemento específico dentro de un conjunto.
+        """
         return self._nth_items[index]
 
 
 class FakePage:
+    """
+    Página de prueba para simular la interfaz de Playwright en las pruebas unitarias.
+    """
     def __init__(self, *, url="https://contratacion.test/base/", locators=None):
         self.url = url
         self._locators = locators or {}
@@ -96,20 +152,35 @@ class FakePage:
         self.set_default_navigation_timeout = MagicMock()
 
     def locator(self, selector):
+        """
+        Devuelve un locator basado en un selector, simulando la búsqueda de elementos en la página.
+        """
         return self._locators.get(selector, FakeLocator(count=0))
 
     def get_by_role(self, *_args, **_kwargs):
+        """
+        Simula la búsqueda de elementos por rol, devolviendo un locator de prueba.
+        """
         return FakeLocator()
 
     def expect_navigation(self, **_kwargs):
+        """
+        Simula el contexto de espera por navegación, devolviendo un contexto de prueba que puede ser utilizado en las pruebas unitarias.
+        """
         return AsyncContext()
 
 
 class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
     def test_norm_collapses_whitespace(self):
+        """
+        Verifica la normalización de cadenas eliminando espacios y saltos de línea innecesarios.
+        """
         self.assertEqual(pliegos._norm("  uno\n dos\t tres  "), "uno dos tres")
 
     def test_pestana_diputacion_maps_search_terms_to_tabs(self):
+        """
+        Comprueba la correspondencia entre términos de búsqueda y las pestañas de navegación de la plataforma.
+        """
         self.assertEqual(pliegos.pestana_diputacion("ver documentos del pliego"), "Documentos")
         self.assertEqual(pliegos.pestana_diputacion("licitacion abierta"), "Licitaciones")
         self.assertEqual(pliegos.pestana_diputacion("contrato menor"), "Contratos Menores")
@@ -118,6 +189,9 @@ class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
         self.assertEqual(pliegos.pestana_diputacion("sin coincidencia"), "perfil")
 
     def test_actualizar_por_expediente_inserts_and_updates_by_expediente(self):
+        """
+        Verifica la inserción y actualización de resultados utilizando el número de expediente como identificador único.
+        """
         resultados = []
         index = {}
         first = {"datos": {"Expediente": "EXP-1", "valor": "a"}}
@@ -130,12 +204,18 @@ class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
         self.assertEqual(index, {"EXP-1": 0})
 
     def test_actualizar_por_expediente_appends_items_without_expediente(self):
+        """
+        Comprueba la gestión de registros que no disponen de identificador de expediente.
+        """
         resultados = []
 
         self.assertTrue(pliegos.actualizar_por_expediente(resultados, {}, {"datos": {}}))
         self.assertEqual(resultados, [{"datos": {}}])
 
     def test_cargar_resultados_existentes_returns_empty_for_missing_or_invalid_file(self):
+        """
+        Verifica el tratamiento de archivos inexistentes o con formato JSON inválido.
+        """
         with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=False):
             self.assertEqual(pliegos.cargar_resultados_existentes(), [])
 
@@ -145,6 +225,9 @@ class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
             self.assertEqual(pliegos.cargar_resultados_existentes(), [])
 
     def test_cargar_resultados_existentes_returns_list_json(self):
+        """
+        Comprueba la carga correcta de resultados almacenados previamente en formato JSON.
+        """
         data = [{"datos": {"Expediente": "EXP"}}]
 
         with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.Path.exists", return_value=True), patch(
@@ -155,6 +238,9 @@ class PliegosPlaywrightAsincronoUnitTest(unittest.TestCase):
 
 class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
     async def test_encontrar_frame_returns_first_frame_with_selector(self):
+        """
+        Verifica la localización del primer frame que contiene un selector determinado.
+        """
         failing_frame = MagicMock()
         failing_frame.wait_for_selector = AsyncMock(side_effect=pliegos.PWTimeoutError("missing"))
         matching_frame = MagicMock()
@@ -167,17 +253,22 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         matching_frame.wait_for_selector.assert_awaited_once_with("#selector", timeout=800)
 
     async def test_encontrar_frame_raises_timeout_when_no_frame_matches(self):
+        """
+        Comprueba la generación de una excepción cuando no se encuentra el frame buscado dentro del tiempo establecido.
+        """
         frame = MagicMock()
         frame.wait_for_selector = AsyncMock(side_effect=pliegos.PWTimeoutError("missing"))
         page = MagicMock(frames=[frame])
 
-        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.time.monotonic", side_effect=[0, 1]), patch(
-            "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.asyncio.sleep", new=AsyncMock()
-        ):
-            with self.assertRaises(pliegos.PWTimeoutError):
-                await pliegos.encontrar_frame(page, "#selector", timeout_ms=500)
+        with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.time.monotonic", side_effect=[0, 1]), \
+             patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.asyncio.sleep", new=AsyncMock()), \
+             self.assertRaises(pliegos.PWTimeoutError):
+            await pliegos.encontrar_frame(page, "#selector", timeout_ms=500)
 
     async def test_encontrar_frame_waits_between_failed_attempts(self):
+        """
+        Verifica el mecanismo de reintentos utilizado para localizar frames dinámicos.
+        """
         frame = MagicMock()
         frame.wait_for_selector = AsyncMock(side_effect=[pliegos.PWTimeoutError("missing"), None])
         page = MagicMock(frames=[frame])
@@ -191,6 +282,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         mock_sleep.assert_awaited_once_with(0.25)
 
     async def test_eleccion_organo_selects_by_value_and_clicks_add(self):
+        """
+        Comprueba la selección de órganos de contratación utilizando el valor interno de la opción correspondiente.
+        """
         option = FakeLocator(attrs={"value": "org-1"})
         select = FakeLocator(
             children={
@@ -209,6 +303,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         add_button.click.assert_awaited_once()
 
     async def test_eleccion_organo_falls_back_to_label_when_option_has_no_value(self):
+        """
+        Verifica el uso de etiquetas visibles como alternativa cuando una opción no dispone de valor interno.
+        """
         option = FakeLocator(attrs={"value": None})
         select = FakeLocator(
             children={
@@ -225,6 +322,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         select.select_option.assert_awaited_once_with(label="Diputacion")
 
     async def test_ir_pestana_clicks_mapped_tab_and_waits(self):
+        """
+        Comprueba la navegación entre pestañas y la espera de los elementos necesarios para continuar el scraping.
+        """
         locator = FakeLocator()
         page = FakePage()
         page.locator = MagicMock(return_value=MagicMock(first=locator))
@@ -240,10 +340,16 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(page.wait_for_timeout.await_count, 2)
 
     async def test_ir_pestana_rejects_unknown_tab(self):
+        """
+        Verifica que no se permite acceder a pestañas desconocidas o no soportadas.
+        """
         with self.assertRaises(ValueError):
             await pliegos.ir_pestana(FakePage(), "No existe")
 
     async def test_ir_pestana_wraps_timeout_and_ignores_optional_wait_error(self):
+        """
+        Comprueba la gestión de tiempos de espera y errores no críticos durante la navegación.
+        """
         failing_locator = FakeLocator()
         failing_locator.wait_for = AsyncMock(side_effect=pliegos.PWTimeoutError("missing"))
         page = FakePage()
@@ -264,6 +370,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(page.wait_for_timeout.await_count, 2)
 
     async def test_set_if_text_stores_normalized_text_only_when_present(self):
+        """
+        Verifica el almacenamiento de textos únicamente cuando contienen información válida.
+        """
         datos = {}
 
         await pliegos.set_if_text(datos, "Campo", FakeLocator(text="  Valor\n normalizado "))
@@ -272,6 +381,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datos, {"Campo": "Valor normalizado"})
 
     async def test_documentos_extract_links_joins_absolute_urls(self):
+        """
+        Comprueba la extracción y normalización de enlaces absolutos de documentos asociados a una licitación.
+        """
         link_1 = FakeLocator(attrs={"href": "/doc/1"})
         link_2 = FakeLocator(attrs={"href": "#"})
         link_3 = FakeLocator(attrs={"href": "https://externo.test/doc/3"})
@@ -287,6 +399,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_parse_documentos_doue_extracts_link_and_dates(self):
+        """
+        Verifica la extracción de enlaces y fechas relacionadas con publicaciones en el DOUE.
+        """
         envio = FakeLocator(text="  Envio 01/01 ")
         publi_link = FakeLocator(text="  Publicacion 02/01 ", attrs={"href": "/doue"})
         doue_td = FakeLocator(
@@ -305,6 +420,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datos["DOUE - Publicación (fecha)"], "Publicacion 02/01")
 
     async def test_parse_documentos_doue_uses_plain_publication_text_without_link(self):
+        """
+        Verifica la extracción de enlaces y fechas relacionadas con publicaciones en el DOUE.
+        """
         publi_span = FakeLocator(text="Sin publicacion")
         doue_td = FakeLocator(
             children={
@@ -321,6 +439,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datos, {"DOUE - Publicación (fecha)": "Sin publicacion"})
 
     async def test_parse_label_value_table_extracts_label_and_value_pairs(self):
+        """
+        Verifica la extracción de pares etiqueta-valor desde tablas informativas de licitación.
+        """
         row_with_text = FakeLocator(
             children={
                 "span.cl-blue-dark.bold, span[id*=':form1:label_']": FakeLocator(first=FakeLocator(text="Presupuesto")),
@@ -343,6 +464,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datos, {"Presupuesto": "1000 EUR", "Procedimiento": "Abierto"})
 
     async def test_table_parsers_return_or_continue_when_tables_or_labels_are_missing(self):
+        """
+        Comprueba que el proceso continúa correctamente cuando faltan tablas o campos esperados.
+        """
         datos = {"previo": "ok"}
 
         await pliegos.parse_head_table(FakePage(locators={"#head": FakeLocator(count=0)}), datos, "#head")
@@ -361,6 +485,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(docs)
 
     async def test_parse_head_table_extracts_main_fields_and_resolves_links(self):
+        """
+        Verifica la extracción de los principales datos identificativos de una licitación.
+        """
         row_0 = FakeLocator(
             children={
                 "a[href][id*=':URLOrganoContratacion']": FakeLocator(first=FakeLocator(attrs={"href": "/organo"})),
@@ -389,6 +516,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datos["Enlace a la licitación"], "https://base.test/licitacion")
 
     async def test_parse_documentos_builds_document_rows(self):
+        """
+        Comprueba la generación de estructuras de datos correspondientes a los documentos asociados a una licitación.
+        """
         row = FakeLocator(
             children={
                 "td:nth-of-type(1)": FakeLocator(text="Publicado"),
@@ -415,6 +545,10 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_extraer_detalles_licitacion_combines_table_and_document_parsers(self):
+        """
+        Verifica la integración de los distintos analizadores encargados de extraer los detalles completos de una licitación.
+        """
+        
         with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.parse_head_table", new=AsyncMock()) as mock_head, patch(
             "app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.parse_label_value_table", new=AsyncMock()
         ) as mock_label, patch(
@@ -423,9 +557,11 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         ):
 
             async def fill_head(_page, datos, _selector):
+                await asyncio.sleep(0)
                 datos["Expediente"] = "EXP-1"
 
             async def fill_label(_page, datos, selector):
+                await asyncio.sleep(0)
                 datos[selector] = "ok"
 
             mock_head.side_effect = fill_head
@@ -438,6 +574,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(mock_label.await_count, 2)
 
     async def test_extraer_licitaciones_visits_rows_updates_and_stops_without_next_page(self):
+        """
+        Comprueba la extracción secuencial de licitaciones y la finalización correcta cuando no existen más páginas.
+        """
         enlace = FakeLocator()
         row = FakeLocator(children={'td.tdExpediente a:not([target="_blank"])': FakeLocator(first=enlace)})
         rows = FakeLocator(count=1, nth_items=[row])
@@ -468,6 +607,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         mock_tab.assert_awaited_once_with(page, "Licitaciones")
 
     async def test_extraer_licitaciones_updates_duplicate_expediente(self):
+        """
+        Verifica la actualización de registros ya existentes cuando se encuentra nuevamente el mismo expediente.
+        """
         enlace = FakeLocator()
         row = FakeLocator(children={'td.tdExpediente a:not([target="_blank"])': FakeLocator(first=enlace)})
         rows = FakeLocator(count=1, nth_items=[row])
@@ -494,6 +636,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result, [{"datos": {"Expediente": "EXP-1", "valor": "new"}}])
 
     async def test_extraer_licitaciones_clicks_next_page_when_visible(self):
+        """
+        Comprueba la navegación automática entre páginas de resultados cuando existen páginas adicionales.
+        """
         rows = FakeLocator(count=0, nth_items=[])
         tabla = FakeLocator(children={"tbody tr": rows})
         boton_siguiente = FakeLocator()
@@ -510,6 +655,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         boton_siguiente.click.assert_awaited_once_with(force=True)
 
     async def test_guardar_licitacion_json_writes_temp_file_and_replaces_atomically(self):
+        """
+        Verifica el almacenamiento seguro de resultados mediante escritura temporal y reemplazo atómico del archivo final.
+        """
         with tempfile.TemporaryDirectory() as tmpdir:
             output = Path(tmpdir) / "licitaciones.json"
             with patch("app.main.code.services.web_scraping.PliegosPlaywrightAsincrono.OUTPUT_JSON", str(output)):
@@ -519,6 +667,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(output.with_suffix(".json.tmp").exists())
 
     async def test_run_uses_playwright_flow_saves_and_closes_resources(self):
+        """
+        Comprueba la ejecución completa del proceso de scraping, incluyendo almacenamiento de resultados y liberación de recursos.
+        """
         page = FakePage()
         context = MagicMock()
         context.tracing.start = AsyncMock()
@@ -549,6 +700,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         browser.close.assert_awaited_once()
 
     async def test_run_handles_timeout_and_still_saves_and_closes(self):
+        """
+        Verifica la gestión de errores por tiempo de espera garantizando el guardado de resultados y la liberación de recursos.
+        """
         context = MagicMock()
         context.tracing.start = AsyncMock()
         context.tracing.stop = AsyncMock()
@@ -573,6 +727,9 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         browser.close.assert_awaited_once()
 
     async def test_run_ignores_navigation_timeouts_before_searching_frame(self):
+        """
+        Comprueba que determinados errores de navegación no impiden continuar con el proceso de extracción.
+        """
         perfil_link = FakeLocator()
         perfil_link.click = AsyncMock(side_effect=pliegos.PWTimeoutError("perfil"))
         seleccionar_link = FakeLocator()
@@ -601,7 +758,11 @@ class PliegosPlaywrightAsincronoAsyncUnitTest(unittest.IsolatedAsyncioTestCase):
         seleccionar_link.click.assert_awaited_once()
 
     async def test_main_guard_runs_async_entrypoint(self):
+        """
+        Verifica que la ejecución directa del script lanza correctamente el proceso asíncrono principal.
+        """
         import runpy
+        await asyncio.sleep(0)
 
         def close_coroutine(coro):
             coro.close()
