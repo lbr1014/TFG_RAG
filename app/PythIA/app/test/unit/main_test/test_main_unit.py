@@ -1,6 +1,10 @@
 """
 Autora: Lydia Blanco Ruiz
-Script con pruebas unitarias de la aplicación.
+Script con pruebas unitarias de la aplicación, relacionadas con la gestión del historial de consultas RAG y la generación de estadísticas 
+para la interfaz de administración. Las pruebas verifican la paginación de consultas, la construcción de métricas de uso, 
+la comparación de actividad entre usuarios, la elaboración de mapas geográficos de usuarios y la recuperación de metadatos asociados 
+a los fragmentos utilizados durante las consultas. Su objetivo es garantizar la correcta generación de información analítica y 
+de seguimiento a partir de los datos almacenados por el sistema.
 """
 
 from datetime import datetime
@@ -23,6 +27,10 @@ from app.test.support import BaseAppTestCase
 
 class MainRoutesUnitTest(BaseAppTestCase):
     def test_paginate_consultas_normalizes_page_and_filters_regular_user(self):
+        """
+        Verifica que la paginación de consultas normaliza correctamente el número de página solicitado y limita los 
+        resultados a las consultas del usuario autenticado cuando este no es administrador.
+        """
         user = self.create_user(email="regular-page@example.com")
         other = self.create_user(email="other-page@example.com")
         own_consulta = self.create_consulta(user)
@@ -38,6 +46,10 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(total_consultas, 1)
 
     def test_paginate_consultas_caps_page_and_keeps_admin_scope(self):
+        """
+        Comprueba que la paginación ajusta automáticamente páginas fuera de rango y permite a los administradores visualizar 
+        consultas de todos los usuarios.
+        """
         admin = self.create_user(email="admin-page@example.com", is_admin=True)
         user = self.create_user(email="regular-admin-page@example.com")
         self.create_consulta(admin)
@@ -56,6 +68,10 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(total_consultas, 2)
 
     def test_build_usage_stats_payload_counts_queries_and_top_users(self):
+        """
+        Verifica la generación de estadísticas de uso, incluyendo número de consultas, tiempos de respuesta, actividad diaria, 
+        usuarios más activos y métricas comparativas.
+        """
         user_1 = self.create_user(nombre="Ana", email="ana@example.com")
         user_2 = self.create_user(nombre="Luis", email="luis@example.com")
 
@@ -83,6 +99,9 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(payload["user_comparison"]["stats"]["variance"], 0.5)
 
     def test_build_usage_stats_payload_handles_december_calendar_end(self):
+        """
+        Comprueba la generación correcta de estadísticas cuando no existen consultas registradas y se requiere construir series temporales completas.
+        """
         with patch("app.main.code.controllers.main.routes._month_sequence", return_value=[(2026, 12)]):
             payload = build_usage_stats_payload([])
 
@@ -92,6 +111,9 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(payload["daily_queries"][-1], {"date": "2026-12-31", "count": 0})
 
     def test_build_selected_user_comparison_payload_respects_admin_selection(self):
+        """
+        Verifica la construcción de estadísticas comparativas utilizando únicamente los usuarios seleccionados por un administrador.
+        """
         user_1 = self.create_user(nombre="Ana", email="ana-selected@example.com")
         user_2 = self.create_user(nombre="Luis", email="luis-selected@example.com")
         user_3 = self.create_user(nombre="Eva", email="eva-selected@example.com")
@@ -118,6 +140,10 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(payload["stats"]["median"], 0.5)
 
     def test_build_selected_user_comparison_payload_defaults_to_all_users(self):
+        """
+        Comprueba que las comparativas de usuarios incluyen automáticamente a todos los usuarios disponibles cuando no se 
+        especifica una selección concreta.
+        """
         user_1 = self.create_user(nombre="Ana", email="ana-all@example.com")
         user_2 = self.create_user(nombre="Luis", email="luis-all@example.com")
         user_3 = self.create_user(nombre="Eva", email="eva-all@example.com")
@@ -136,6 +162,10 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(payload["stats"]["median"], 1)
 
     def test_build_user_country_map_payload_hides_names_unless_requested(self):
+        """
+        Verifica la generación de mapas de distribución geográfica de usuarios, ocultando o mostrando nombres 
+        individuales según la configuración solicitada.
+        """
         user_1 = self.create_user(nombre="Ana", email="ana-map@example.com", country_code="ES")
         user_2 = self.create_user(nombre="Luis", email="luis-map@example.com", country_code="ES")
         user_3 = self.create_user(nombre="Marie", email="marie-map@example.com", country_code="FR")
@@ -149,6 +179,10 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(spain["users"], ["Ana", "Luis"])
 
     def test_best_pid_for_consulta_uses_fragmentos_chunks_or_empty_value(self):
+        """
+        Comprueba la obtención del identificador de fragmento más representativo asociado a una consulta utilizando diferentes
+        fuentes de información disponibles.
+        """
         user = self.create_user(email="pid@example.com")
         consulta_with_fragmentos = self.create_consulta(
             user,
@@ -168,6 +202,10 @@ class MainRoutesUnitTest(BaseAppTestCase):
 
     @patch("app.main.code.controllers.main.routes.qdrant_get_payloads")
     def test_build_meta_by_consulta_uses_saved_fragmentos_and_legacy_qdrant_payloads(self, mock_qdrant):
+        """
+        Verifica la construcción de metadatos asociados a consultas utilizando tanto fragmentos almacenados directamente como información 
+        recuperada desde Qdrant para mantener la compatibilidad con datos históricos.
+        """
         user = self.create_user(email="meta@example.com")
         saved = self.create_consulta(
             user,
