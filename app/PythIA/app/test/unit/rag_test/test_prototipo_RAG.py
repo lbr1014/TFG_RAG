@@ -1,3 +1,13 @@
+"""
+Autora: Lydia Blanco Ruiz
+Script con pruebas unitarias para el módulo PrototipoRAG.
+Las pruebas verifican la configuración e inicialización de los servicios externos (Qdrant y Ollama), la indexación de documentos PDF y Markdown, 
+la gestión de embeddings, la recuperación de contexto, la construcción de filtros y prompts, la administración de colecciones vectoriales, 
+la detección de dispositivos de ejecución (CPU/GPU), la gestión de modelos de lenguaje y el tratamiento de errores, cancelaciones y 
+tiempos de espera. Su objetivo es garantizar la robustez y el correcto funcionamiento de todos los componentes que intervienen en el 
+ciclo completo de indexación, recuperación y generación de respuestas del sistema RAG.
+"""
+
 import asyncio
 import hashlib
 import os
@@ -11,7 +21,11 @@ from uuid import uuid4
 
 
 def _import_prototipo():
-    # Los tests de integración instalan un stub de PrototipoRAG para probar el comportamiento del módulo, lo cargamos por ruta bajo otro nombre.
+    """
+    Carga PrototipoRAG por ruta para evitar que los tests de integración interfieran con las pruebas unitarias de este módulo. 
+    Los tests de integración instalan un stub de PrototipoRAG para probar el comportamiento del módulo, pero en este test
+    se carga el stub por ruta bajo otro nombre para evitar el riesgo de colisión.
+    """
     import sys
     from importlib.machinery import SourceFileLoader
     from importlib.util import module_from_spec, spec_from_loader
@@ -28,6 +42,9 @@ def _import_prototipo():
 
 
 def _import_prototipo_with_env(env: dict[str, str | None]):
+    """
+    Carga PrototipoRAG configurando temporalmente variables de entorno específicas para verificar distintos escenarios de inicialización.
+    """
     old_env: dict[str, str | None] = {k: os.environ.get(k) for k in env}
     try:
         for key, value in env.items():
@@ -60,8 +77,8 @@ def _import_prototipo_with_env(env: dict[str, str | None]):
 
 def _import_prototipo_with_missing_qdrant_http_exceptions():
     """
-    Carga PrototipoRAG por ruta forzando el fallback del try/except:
-    `from qdrant_client.http.exceptions import ...`.
+    Carga PrototipoRAG por ruta bloqueando la importación de qdrant_client.http.exceptions para probar el comportamiento del módulo 
+    cuando no están disponibles las excepciones HTTP de Qdrant.
     """
     import builtins
     import sys
@@ -72,6 +89,9 @@ def _import_prototipo_with_missing_qdrant_http_exceptions():
     real_import = builtins.__import__
 
     def import_block_qdrant_http_exceptions(name, *args, **kwargs):
+        """
+        Bloquea la importación de qdrant_client.http.exceptions para simular su ausencia durante la carga del módulo.
+        """
         if name == "qdrant_client.http.exceptions":
             raise ImportError("blocked for test")
         return real_import(name, *args, **kwargs)
@@ -108,9 +128,15 @@ def _import_prototipo_with_missing_qdrant_http_exceptions():
 class PrototipoRAGSmokeUnitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        """
+        Verifica la importación segura del módulo PrototipoRAG y la disponibilidad de sus componentes principales.
+        """
         cls.m = _import_prototipo()
 
-    def test_build_metadata_filter_tecnico_and_admin_include_missing_tipo(self):
+    def test_build_metadata_filter_tecnico_and_admin(self):
+        """
+        Verifica la construcción de filtros de metadatos para documentos técnicos y administrativos.
+        """
         self.assertIsNone(self.m.build_metadata_filter())
 
         tecnico = self.m.build_metadata_filter("EXP", "tecnico")
@@ -124,6 +150,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(getattr(admin.should[0], "key", None), "metadata.tipo_documento")
 
     def test_service_url_from_env_builds_scheme_and_trims(self):
+        """
+        Comprueba la generación de URL de servicios a partir de variables de entorno y la normalización de sus formatos.
+        """
         module = self.m
         with patch.dict(os.environ, {"X_URL": "host:123", "X_URL_SCHEME": "https"}):
             self.assertEqual(module._service_url_from_env("X_URL", "fallback"), "https://host:123")
@@ -133,16 +162,25 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             self.assertEqual(module._service_url_from_env("X_URL", "fallback"), "http://fallback")
 
     def test_normalize_tipo_documento_canonicalizes(self):
+        """
+        Verifica la normalización de los tipos documentales a formatos canónicos internos.
+        """
         module = self.m
         self.assertEqual(module._normalize_tipo_documento("TÉCNICO"), "tecnico")
         self.assertEqual(module._normalize_tipo_documento("Tecnica"), "tecnico")
         self.assertEqual(module._normalize_tipo_documento(" ADMINISTRATIVO "), "administrativo")
 
     def test_normalize_retrieval_k_bounds(self):
+        """
+        Comprueba la validación y normalización del número de fragmentos recuperados durante las búsquedas RAG.
+        """
         self.assertEqual(self.m.normalize_retrieval_k(1), self.m.DEFAULT_RAG_MIN_CHUNKS)
         self.assertEqual(self.m.normalize_retrieval_k(999), 999)
 
     def test_llm_model_resolution_and_choices(self):
+        """
+        Verifica la resolución de modelos LLM por defecto y la obtención de modelos disponibles para selección.
+        """
         original_default = self.m.settings.DEFAULT_RAG_LLM_MODEL
         original_models = self.m.settings.RAG_LLM_MODELS
         try:
@@ -167,35 +205,60 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             self.m.settings.RAG_LLM_MODELS = original_models
 
     def test_build_rag_prompt_falls_back_to_general_profile(self):
+        """
+        Comprueba la generación de prompts RAG utilizando perfiles de consulta por defecto cuando no existe un perfil específico.
+        """
         module = self.m
         prompt = module.build_rag_prompt("pregunta", ["ctx1", "ctx2"], query_profile="unknown-profile")
         self.assertIn("pregunta", prompt)
         self.assertIn("ctx1", prompt)
 
     def test_make_qdrant_client_success_none_and_raise(self):
+        """
+        Verifica la creación del cliente Qdrant y la gestión de errores de conexión o configuración.
+        """
         module = self.m
 
         class _Client:
             def __init__(self):
+                """
+                Simula un cliente Qdrant con un método get_collections que siempre devuelve una lista vacía,
+                indicando que el servicio está operativo.
+                """
                 self.calls = 0
 
             def get_collections(self):
+                """
+                Simula una respuesta exitosa de Qdrant indicando que el servicio está listo.
+                """
                 self.calls += 1
                 return []
 
         class _ClientSlow(_Client):
             def __init__(self):
+                """
+                Simula un cliente Qdrant que responde pero tarda en estar listo, provocando múltiples intentos de conexión.
+                """
                 super().__init__()
                 self.calls = 0
 
             def get_collections(self):
+                """
+                Simula un cliente Qdrant que responde pero no está listo, provocando múltiples intentos de conexión antes de fallar.
+                """
                 self.calls += 1
                 raise module.httpx.HTTPError("not ready")
 
         def fake_ctor(**_kwargs):
+            """
+            Simula la creación exitosa de un cliente Qdrant operativo.
+            """
             return _Client()
 
         def fake_ctor_slow(**_kwargs):
+            """
+            Simula la creación de un cliente Qdrant que responde pero no está listo, provocando múltiples intentos de conexión antes de fallar.
+            """
             return _ClientSlow()
 
         with patch.object(module, "QDRANT_URL", ""), patch.object(module, "QdrantClient", side_effect=fake_ctor):
@@ -211,6 +274,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertIsNone(client2)
 
         def fake_ctor_raise(**_kwargs):
+            """
+            Simula un error de configuración o conexión al intentar crear el cliente Qdrant, provocando una excepción inmediata.
+            """
             raise ValueError("bad cfg")
 
         with (
@@ -221,6 +287,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             module._make_qdrant_client()
 
     def test_build_qdrant_metadata_filter_and_exists(self):
+        """
+        Comprueba la construcción de filtros de búsqueda en Qdrant y la detección de documentos existentes mediante metadatos.
+        """
         module = self.m
 
         self.assertIsNone(module.build_qdrant_metadata_filter())
@@ -236,6 +305,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertFalse(module.qdrant_exists_by_metadata(filename="a.pdf"))
 
     def test_close_qdrant_atexit_handler(self):
+        """
+        Verifica el cierre seguro del cliente Qdrant durante la finalización de la aplicación.
+        """
         module = self.m
         fake_qdrant = MagicMock()
         fake_qdrant.close.side_effect = module.httpx.HTTPError("boom")
@@ -244,6 +316,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertIsNone(module.qdrant)
 
     def test_qdrant_get_payloads_empty_and_error_paths(self):
+        """
+        Comprueba la recuperación de metadatos desde Qdrant y el tratamiento de errores asociados.
+        """
         module = self.m
         module.qdrant = MagicMock()
 
@@ -261,6 +336,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(module.qdrant_get_payloads(["1"]), {"1": {"a": 1}})
 
     def test_qdrant_delete_by_filename_uses_filter_selector(self):
+        """
+        Verifica la eliminación de documentos indexados utilizando filtros por nombre de archivo.
+        """
         module = self.m
         module.qdrant = MagicMock()
         with patch.object(module.VectorBaseDocument, "_ensure_collection"):
@@ -268,9 +346,12 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         module.qdrant.delete.assert_called_once()
 
     def test_vector_base_document_collection_and_mappings(self):
+        """
+        Comprueba la creación, almacenamiento, recuperación y búsqueda de documentos vectoriales en Qdrant.
+        """
         module = self.m
 
-        # evita depender del singleton real
+        # Evita depender del singleton real
         class _Embed:
             model_id = "m"
             embedding_size = 3
@@ -285,7 +366,7 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         module.embedding_model = _Embed()
 
         module.qdrant = MagicMock()
-        # fuerza collection missing para que recree
+        # Fuerza collection missing para que recree
         module.qdrant.get_collection.side_effect = RuntimeError("missing")
 
         # get_collection_name
@@ -308,14 +389,14 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(restored.content, "")
         self.assertEqual(restored.metadata, {})
 
-        # save / save_many upsert
+        # save / save_many 
         module.qdrant.upsert.reset_mock()
         with patch.object(module.VectorBaseDocument, "_ensure_collection"):
             doc.save()
             module.VectorBaseDocument.save_many([doc])
         self.assertEqual(module.qdrant.upsert.call_count, 2)
 
-        # bulk_find (next offset convertido a UUID)
+        # bulk_find 
         next_id = str(uuid4())
         module.qdrant.scroll.return_value = ([SimpleNamespace(id=doc_id, payload={"content": "x", "metadata": {}}, vector=None)], next_id)
         with patch.object(module.VectorBaseDocument, "_ensure_collection"):
@@ -338,6 +419,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(res2[0].content, "s2")
 
     def test_lazy_qdrant_client_get_client_and_getattr(self):
+        """
+        Verifica el funcionamiento del cliente Qdrant diferido y la delegación de llamadas al cliente real.
+        """
         module = self.m
 
         lazy = module.LazyQdrantClient()
@@ -354,17 +438,29 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         client.ping.assert_called_once()
 
     def test_index_pdf_success_and_failures(self):
+        """
+        Comprueba la indexación de documentos PDF y la gestión de errores durante el proceso.
+        """
         module = self.m
 
         class _Page:
             def __init__(self, text):
+                """
+                Simula una página de un PDF con un método extract_text que devuelve el texto de la página.
+                """
                 self._text = text
 
             def extract_text(self):
+                """
+                Simula la extracción de texto de una página PDF, devolviendo el texto predefinido para esta página.
+                """
                 return self._text
 
         class _Reader:
             def __init__(self, meta, pages):
+                """
+                Simula un lector de PDF con metadatos y páginas, proporcionando acceso a ambos a través de atributos.
+                """
                 self.metadata = meta
                 self.pages = pages
 
@@ -410,6 +506,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         mock_save_many.assert_called_once()
 
     def test_pdf_sha256_matches_hashlib(self):
+        """
+        Verifica el cálculo correcto de hashes SHA-256 para documentos PDF.
+        """
         module = self.m
         with tempfile.TemporaryDirectory() as tmp:
             p = Path(tmp) / "a.pdf"
@@ -419,6 +518,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             self.assertEqual(module.pdf_sha256(p), expected)
 
     def test_index_pliegos_dir_counts_new_modified_omitted_and_errors(self):
+        """
+        Comprueba la indexación masiva de directorios de pliegos y el cálculo de estadísticas de procesamiento.
+        """
         module = self.m
         with self.assertRaises(SystemExit):
             module.index_pliegos_dir(Path("missing-dir"))
@@ -431,6 +533,10 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             patch.object(module, "qdrant_delete_by_filename") as mock_delete,
         ):
             def fake_index_pdf(path, **_kwargs):
+                """
+                Simula la indexación de PDFs con resultados predefinidos según el nombre del archivo para probar el conteo de estadísticas 
+                en la indexación masiva.
+                """
                 if path.name == "err.pdf":
                     return []
                 return [object(), object()]
@@ -452,7 +558,10 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(summary["pdfs_error_o_sin_texto"], 1)
         mock_delete.assert_called_once_with("mod.pdf")
 
-    def test_index_markdown_empty_and_success_and_errors(self):
+    def test_index_markdown_empty_success_errors(self):
+        """
+        Verifica la indexación de contenido Markdown y el tratamiento de errores asociados.
+        """
         module = self.m
 
         self.assertEqual(module.index_markdown("   ", filename="doc.md"), [])
@@ -486,6 +595,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         mock_save_many.assert_called_once()
 
     def test_qdrant_has_filename_and_same_hash_delegate(self):
+        """
+        Comprueba la detección de documentos existentes mediante nombre de archivo o hash.
+        """
         module = self.m
         with patch.object(module, "qdrant_exists_by_metadata", return_value=True) as mock_exists:
             self.assertTrue(module.qdrant_has_filename("a.pdf"))
@@ -493,11 +605,17 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(mock_exists.call_count, 2)
 
     def test_import_fallback_qdrant_http_exceptions_defines_classes(self):
+        """
+        Verifica la definición de excepciones alternativas cuando no están disponibles las proporcionadas por Qdrant.
+        """
         mod = _import_prototipo_with_missing_qdrant_http_exceptions()
         self.assertTrue(issubclass(mod.ResponseHandlingException, RuntimeError))
         self.assertTrue(issubclass(mod.UnexpectedResponse, RuntimeError))
 
     def test_ask_ollama_happy_path_cancel_and_timeout(self):
+        """
+        Comprueba la generación de respuestas mediante Ollama, incluyendo cancelaciones y tiempos de espera.
+        """
         module = self.m
 
         with self.assertRaises(module.QueryCancelledError):
@@ -505,38 +623,70 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
 
         class _Resp:
             def __init__(self, lines):
+                """
+                Simula una respuesta de streaming de Ollama con líneas predefinidas para probar la generación de respuestas y 
+                el manejo de cancelaciones.
+                """
                 self._lines = lines
                 self.status_code = 200
 
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de una respuesta HTTP asincrónica, devolviendo el objeto de respuesta para su uso en el 
+                bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de una respuesta HTTP asincrónica, permitiendo la limpieza de recursos si es necesario.
+                """
                 return False
 
             async def aread(self):
+                """
+                Simula la lectura asincrónica de datos de una respuesta HTTP, devolviendo un bloque de bytes vacío para indicar el 
+                final de la transmisión.
+                """
                 await asyncio.sleep(0)
                 return b""
 
             def raise_for_status(self):
-                return None
+                """
+                Simula la verificación del estado de una respuesta HTTP, no lanzando ninguna excepción para indicar un estado exitoso.
+                """
 
             async def aiter_lines(self):
+                """
+                Simula la iteración asincrónica sobre las líneas de una respuesta HTTP, devolviendo las líneas
+                predefinidas para esta respuesta.
+                """
                 for line in self._lines:
                     yield line
 
         class _Client:
             def __init__(self, **_kwargs):
-                # para cubrir el caso de que se intente usar el cliente para otra cosa que no sea el streaming de ask_ollama
-                pass
+                """
+                Simula un cliente HTTP asincrónico para Ollama, proporcionando un método de streaming que devuelve una respuesta simulada.
+                """
 
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de un cliente HTTP asincrónico, devolviendo el objeto de cliente para su uso en el bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de un cliente HTTP asincrónico, permitiendo la limpieza de recursos si es necesario.
+                """
                 return False
 
             def stream(self, *_args, **_kwargs):
+                """
+                Simula el método de streaming de un cliente HTTP asincrónico, devolviendo una respuesta simulada con líneas predefinidas
+                para probar la generación de respuestas y el manejo de cancelaciones.
+                """
                 return _Resp(
                     [
                         '{"response": "Hola ", "done": false}',
@@ -553,6 +703,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
 
         class _TimeoutClient(_Client):
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de un cliente HTTP asincrónico que tarda en responder, provocando un tiempo de espera.
+                """
                 raise module.httpx.TimeoutException("slow")
 
         with (
@@ -563,11 +716,17 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             asyncio.run(module.ask_ollama("prompt", model="m"))
 
     def test_default_ollama_uses_gpu_auto_setting(self):
+        """
+        Verifica la configuración automática del uso de GPU por parte de Ollama.
+        """
         m = _import_prototipo_with_env({"OLLAMA_NUM_GPU": None})
         self.assertEqual(m.settings.OLLAMA_NUM_GPU, -1)
         self.assertEqual(m.settings.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
     def test_embedding_execution_backend_cpu_and_cuda_variants(self):
+        """
+        Comprueba la detección y descripción del dispositivo utilizado para generar embeddings.
+        """
         original_device = self.m.settings.RAG_MODEL_DEVICE
         original_torch = getattr(self.m, "torch", None)
         original_ollama_num_gpu = self.m.settings.OLLAMA_NUM_GPU
@@ -583,6 +742,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             class _CudaUnavailable:
                 @staticmethod
                 def is_available():
+                    """
+                    Simula un entorno donde CUDA no está disponible, devolviendo False para indicar que no se puede utilizar GPU.
+                    """
                     return False
 
             self.m.torch = SimpleNamespace(cuda=_CudaUnavailable())
@@ -591,14 +753,24 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             class _CudaAvailable:
                 @staticmethod
                 def is_available():
+                    """
+                    Simula un entorno donde CUDA está disponible, devolviendo True para indicar que se puede utilizar GPU.
+                    """
                     return True
 
                 @staticmethod
                 def get_device_name(_index):
+                    """
+                    Simula la obtención del nombre de un dispositivo CUDA, devolviendo un nombre de GPU ficticio para probar la descripción 
+                    del backend de ejecución.
+                    """
                     return "Fake GPU"
 
                 @staticmethod
                 def device_count():
+                    """
+                    Simula la obtención del número de dispositivos CUDA disponibles, devolviendo 1 para indicar que hay una GPU disponible.
+                    """
                     return 1
 
             self.m.torch = SimpleNamespace(cuda=_CudaAvailable())
@@ -630,7 +802,10 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             self.m.settings.OLLAMA_NUM_GPU = original_ollama_num_gpu
             self.m.settings.OLLAMA_NUM_GPU_SOURCE = original_ollama_num_gpu_source
 
-    def test_embedding_model_cuda_oom_helpers_and_retry_to_cpu(self):
+    def test_embedding_model_cuda_helpers_and_retry_to_cpu(self):
+        """
+        Verifica la recuperación automática ante errores de memoria GPU y el cambio de ejecución a CPU.
+        """
         module = self.m
         module.EmbeddingModelSingleton._instance = None
 
@@ -643,10 +818,15 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         try:
             class _FakeST:
                 def __init__(self, *_args, **_kwargs):
+                    """
+                    Simula un modelo de embeddings con un tokenizer para probar la recuperación ante errores de memoria GPU y el cambio a CPU.
+                    """
                     self.tokenizer = object()
 
                 def eval(self):
-                    return None
+                    """
+                    Simula la configuración del modelo en modo de evaluación, devolviendo self para permitir el encadenamiento de llamadas.
+                    """
 
             # _clear_cuda_cache: llama a empty_cache y maneja RuntimeError con logger.debug
             empty_cache = MagicMock(side_effect=RuntimeError("fail"))
@@ -672,6 +852,10 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             calls = {"n": 0}
 
             def encode_side_effect(*_args, **_kwargs):
+                """
+                Simula un error de memoria GPU en la primera llamada a encode, y una respuesta exitosa en la segunda llamada para probar 
+                la recuperación automática y el cambio a CPU.
+                """
                 calls["n"] += 1
                 if calls["n"] == 1:
                     raise RuntimeError("CUDA out of memory")
@@ -692,7 +876,68 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             module.settings.RAG_MODEL_DEVICE = original_device
             module.EmbeddingModelSingleton._instance = None
 
+    def test_embedding_model_when_already_cpu(self):
+        """
+        Comprueba el comportamiento del modelo de embeddings cuando ya se encuentra ejecutándose en CPU.
+        """
+        module = self.m
+        module.EmbeddingModelSingleton._instance = None
+
+        class FakeModel:
+            def to(self, _device):
+                raise AssertionError("should not move when already cpu")
+
+        model = module.EmbeddingModelSingleton.__new__(module.EmbeddingModelSingleton)
+        model._initialized = True
+        model._model_id = "fake-model"
+        model._device = "cpu"
+        model._model = FakeModel()
+
+        model._move_to_cpu()  # debe retornar sin tocar .to()
+        self.assertEqual(model.model_id, "fake-model")
+
+    def test_embedding_model_call_raises_when_runtime_error_is_not_cuda_oom(self):
+        """
+        Verifica la propagación de errores de ejecución que no corresponden a falta de memoria GPU.
+        """
+        module = self.m
+        module.EmbeddingModelSingleton._instance = None
+
+        class FakeModel:
+            def encode(self, *_args, **_kwargs):
+                raise RuntimeError("boom")
+
+        model = module.EmbeddingModelSingleton.__new__(module.EmbeddingModelSingleton)
+        model._initialized = True
+        model._model_id = "fake-model"
+        model._device = "cuda"
+        model._model = FakeModel()
+
+        with self.assertRaises(RuntimeError):
+            model("hola", to_list=False)
+
+    def test_embedding_size_property_uses_sentence_embedding_dimension(self):
+        """
+        Comprueba la obtención correcta de la dimensión de los embeddings generados.
+        """
+        module = self.m
+
+        class FakeModel:
+            def get_sentence_embedding_dimension(self):
+                return 7
+
+        singleton = module.EmbeddingModelSingleton.__new__(module.EmbeddingModelSingleton)
+        singleton._initialized = True
+        singleton._model_id = "m"
+        singleton._device = "cpu"
+        singleton._model = FakeModel()
+
+        self.assertEqual(singleton.embedding_size, 7)
+
     def test_format_bytes(self):
+        """
+        Verifica el formateo legible de tamaños de memoria y almacenamiento.
+        """
         self.assertEqual(self.m._format_bytes(-1), "-")
         self.assertEqual(self.m._format_bytes("x"), "-")
         self.assertEqual(self.m._format_bytes(0), "0 B")
@@ -701,6 +946,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(self.m._format_bytes(1024 * 1024), "1.0 MB")
 
     def test_format_ollama_pull_progress(self):
+        """
+        Comprueba la generación de mensajes de progreso durante la descarga de modelos Ollama.
+        """
         msg = self.m._format_ollama_pull_progress(
             "m",
             {"status": "pulling", "digest": "abcdef" * 10, "completed": 512, "total": 1024},
@@ -708,7 +956,7 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertIn("m: pulling", msg)
         self.assertIn("50.0%", msg)
         self.assertIn("(512 B / 1.0 KB)", msg)
-        # digest truncado a 12 chars
+        # Truncado a 12 chars
         self.assertIn(" abcdefabcdef", msg)
 
         msg2 = self.m._format_ollama_pull_progress("m", {"completed": 1024})
@@ -718,6 +966,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertIn("100.0%", msg3)
 
     def test_extract_ollama_chat_piece_parses_response_and_message(self):
+        """
+        Verifica la extracción de fragmentos de respuesta generados por Ollama durante la conversación.
+        """
         module = self.m
 
         piece, done = module._extract_ollama_chat_piece('{"response":"Hola ","done":false}')
@@ -729,6 +980,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertTrue(done2)
 
     def test_timeout_to_total_seconds_uses_max_defined(self):
+        """
+        Comprueba la conversión de configuraciones de timeout a valores numéricos utilizables.
+        """
         module = self.m
 
         t = module.httpx.Timeout(connect=1.0, read=2.0, write=3.0, pool=4.0)
@@ -742,11 +996,17 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertIsNone(module._timeout_to_total_seconds(t3))
 
     def test_normalize_ollama_model_name_strips_and_lowercases(self):
+        """
+        Verifica la normalización de nombres de modelos Ollama.
+        """
         module = self.m
         self.assertEqual(module._normalize_ollama_model_name("  Llama3.1:8B "), "llama3.1:8b")
         self.assertEqual(module._normalize_ollama_model_name(None), "")
 
     def test_infer_device_from_ollama_ps_payload(self):
+        """
+        Comprueba la detección del dispositivo utilizado por Ollama a partir de la información de procesos activos.
+        """
         module = self.m
 
         self.assertIsNone(module._infer_device_from_ollama_ps_payload({}, target_model="m"))
@@ -763,6 +1023,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(module._infer_device_from_ollama_ps_payload(payload_bad_vram, target_model="m"), "CPU")
 
     def test_get_ollama_effective_execution_device_uses_payload_or_fallback(self):
+        """
+        Verifica la determinación del dispositivo efectivo utilizado por Ollama utilizando información real o mecanismos de respaldo.
+        """
         module = self.m
         original_num_gpu = module.settings.OLLAMA_NUM_GPU
         original_source = module.settings.OLLAMA_NUM_GPU_SOURCE
@@ -783,32 +1046,57 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             module.settings.OLLAMA_NUM_GPU_SOURCE = original_source
 
     def test_fetch_ollama_ps_payload_uses_wait_for_when_timeout_defined(self):
+        """
+        Comprueba la recuperación de información de procesos Ollama respetando tiempos máximos de espera.
+        """
         module = self.m
 
         class _Resp:
             def __init__(self, payload, content=b"x"):
+                """ 
+                Simula una respuesta HTTP asincrónica de Ollama con un payload JSON y contenido de respuesta para probar la recuperación de 
+                información de procesos y el manejo de tiempos de espera. 
+                """
                 self._payload = payload
                 self.content = content
 
             def raise_for_status(self):
-                return None
+                """
+                Lanza una excepción si el estado de la respuesta indica un error, o no hace nada si el estado es exitoso.
+                """
 
             def json(self):
+                """
+                Simula la conversión de la respuesta HTTP a JSON, devolviendo el payload predefinido para esta respuesta.
+                """
                 return self._payload
 
         class _Client:
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de un cliente HTTP asincrónico, devolviendo el objeto de cliente para su uso en el bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de un cliente HTTP asincrónico, permitiendo la limpieza de recursos si es necesario.
+                """
                 return False
 
             async def get(self, _path):
+                """
+                Simula la realización de una solicitud GET asincrónica a Ollama, devolviendo una respuesta simulada con un 
+                payload vacío para probar la recuperación de información de procesos y el manejo de tiempos de espera.
+                """
                 await asyncio.sleep(0)
                 return _Resp({"models": []})
 
-        async def fake_wait_for(coro, timeout):
-            self.assertEqual(timeout, 3.0)
+        async def fake_wait_for(coro, **_kwargs):
+            """
+            Simula la función asyncio.wait_for para probar la recuperación de información de procesos con tiempos de espera, verificando que se
+            respeta el timeout definido y devolviendo el resultado de la corrutina proporcionada.
+            """
             return await coro
 
         timeout = module.httpx.Timeout(connect=None, read=3.0, write=None, pool=None)
@@ -819,25 +1107,43 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(payload, {"models": []})
 
     def test_fetch_ollama_ps_payload_returns_empty_when_no_content(self):
+        """
+        Verifica el tratamiento de respuestas vacías obtenidas desde Ollama.
+        """
         module = self.m
 
         class _Resp:
             content = b""
 
             def raise_for_status(self):
-                return None
+                """
+                Lanza una excepción si el estado de la respuesta indica un error, o no hace nada si el estado es exitoso.
+                """
 
             def json(self):
+                """
+                Simula la conversión de la respuesta HTTP a JSON, devolviendo un diccionario vacío para representar la ausencia
+                de contenido útil en la respuesta.
+                """
                 return {"x": 1}
 
         class _Client:
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de un cliente HTTP asincrónico, devolviendo el objeto de cliente para su uso en el bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de un cliente HTTP asincrónico, permitiendo la limpieza de recursos si es necesario.
+                """
                 return False
 
             async def get(self, _path):
+                """
+                Simula la realización de una solicitud GET asincrónica a Ollama, devolviendo una respuesta simulada sin contenido para probar el tratamiento de respuestas vacías.
+                """
                 await asyncio.sleep(0)
                 return _Resp()
 
@@ -847,25 +1153,45 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(payload, {})
 
     def test_fetch_ollama_ps_payload_no_timeout_no_wait_for(self):
+        """
+        Comprueba el comportamiento de recuperación de información cuando no se establecen límites temporales.
+        """
         module = self.m
 
         class _Resp:
             content = b"x"
 
             def raise_for_status(self):
-                return None
+                """
+                Lanza una excepción si el estado de la respuesta indica un error, o no hace nada si el estado es exitoso.
+                """
 
             def json(self):
+                """
+                Simula la conversión de la respuesta HTTP a JSON, devolviendo un diccionario con una clave "models" vacía para representar 
+                la ausencia de modelos activos en Ollama. 
+                """
                 return {"models": []}
 
         class _Client:
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de un cliente HTTP asincrónico, devolviendo el objeto de cliente para su uso en el bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de un cliente HTTP asincrónico, permitiendo la limpieza de recursos si es necesario.
+                """
                 return False
 
             async def get(self, _path):
+                """
+                Simula la realización de una solicitud GET asincrónica a Ollama, devolviendo una respuesta simulada con un payload 
+                que indica que no hay modelos activos, y sin respetar ningún tiempo de espera para probar el comportamiento cuando 
+                no se establecen límites temporales.
+                """
                 await asyncio.sleep(0)
                 return _Resp()
 
@@ -879,20 +1205,34 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         mock_wait_for.assert_not_called()
 
     def test_read_ollama_pull_line_stop_and_timeout(self):
+        """
+        Verifica la lectura de eventos de descarga de modelos Ollama y la gestión de tiempos de espera.
+        """
         module = self.m
 
         class _ItStop:
             async def __anext__(self):
+                """
+                Simula un iterador asincrónico que se detiene inmediatamente para probar el manejo de la finalización de la
+                transmisión durante la lectura de eventos de descarga de modelos Ollama.
+                """
                 raise StopAsyncIteration()
 
         self.assertIsNone(asyncio.run(module._read_ollama_pull_line(_ItStop(), 1.0, "m")))
 
         class _ItHang:
             async def __anext__(self):
+                """
+                Simula un iterador asincrónico que se cuelga durante la lectura de eventos de descarga de modelos Ollama.
+                """
                 await asyncio.sleep(10)
                 return "x"
 
         async def fake_wait_for(*_args, **_kwargs):
+            """
+            Simula la función asyncio.wait_for para probar la gestión de tiempos de espera durante la lectura de eventos 
+            de descarga de modelos Ollama, provocando un tiempo de espera al devolver una excepción de timeout.
+            """
             raise asyncio.TimeoutError()
 
         with (
@@ -902,6 +1242,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             asyncio.run(module._read_ollama_pull_line(_ItHang(), 1.5, "m"))
 
     def test_emit_ollama_pull_progress_logs_and_throttles(self):
+        """
+        Comprueba la generación controlada de mensajes de progreso evitando exceso de registros.
+        """
         module = self.m
         statuses: list[str] = []
 
@@ -953,6 +1296,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertGreaterEqual(len(statuses), 2)
 
     def test_process_ollama_pull_payload_raises_on_error_and_delegates(self):
+        """
+        Verifica el procesamiento de eventos de descarga y la gestión de errores recibidos desde Ollama.
+        """
         module = self.m
 
         with self.assertRaises(module.OllamaModelNotFoundError):
@@ -979,65 +1325,123 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(args[1]["status"], "pulling")
 
     def test_ensure_ollama_model_available_happy_path_and_errors(self):
+        """
+        Comprueba la verificación y descarga automática de modelos Ollama cuando no están disponibles localmente.
+        """
         module = self.m
 
         class _Resp:
             def __init__(self, status_code: int, text: str = "", body: bytes = b""):
+                """
+                Simula una respuesta HTTP asincrónica de Ollama con un código de estado, texto y cuerpo para probar la verificación 
+                y descarga automática de modelos.
+                """
                 self.status_code = status_code
                 self.text = text
                 self._body = body
 
             def raise_for_status(self):
+                """
+                Simula la verificación del estado de una respuesta HTTP asincrónica, lanzando una excepción si el código de estado 
+                indica un error.
+                """
                 req = module.httpx.Request("POST", "http://ollama/api/show")
                 resp = module.httpx.Response(self.status_code, request=req, content=self._body)
                 raise module.httpx.HTTPStatusError("error", request=req, response=resp)
 
         class _PullOK:
             def __init__(self, lines: list[str]):
+                """
+                Simula una respuesta de streaming HTTP asincrónica de Ollama durante la descarga de un modelo, proporcionando líneas 
+                predefinidas para probar el seguimiento del progreso y la gestión de eventos.
+                """
                 self._lines = lines
                 self.status_code = 200
 
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de una respuesta de streaming HTTP asincrónica de Ollama, devolviendo el objeto de respuesta 
+                para su uso en el bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de una respuesta de streaming HTTP asincrónica de Ollama, permitiendo la limpieza de recursos 
+                si es necesario.
+                """
                 return False
 
             def raise_for_status(self):
-                return None
+                """
+                Simula la verificación del estado de una respuesta de streaming HTTP asincrónica de Ollama, no lanzando ninguna excepción 
+                ya que el estado es exitoso.
+                """
 
             async def aread(self):
+                """
+                Simula la lectura asincrónica del cuerpo de una respuesta de streaming HTTP de Ollama, devolviendo un cuerpo vacío 
+                para representar la ausencia de contenido adicional en la respuesta.
+                """
                 await asyncio.sleep(0)
                 return b""
 
             async def aiter_lines(self):
+                """
+                Simula la iteración asincrónica sobre las líneas de una respuesta de streaming HTTP de Ollama, devolviendo las líneas 
+                predefinidas para probar el seguimiento del progreso y la gestión de eventos durante la descarga de un modelo.
+                """
                 for line in self._lines:
                     yield line
 
         class _PullFail(_PullOK):
             def __init__(self, body: bytes):
+                """
+                Simula una respuesta de streaming HTTP asincrónica de Ollama que falla durante la descarga de un modelo, proporcionando un cuerpo
+                predefinido para representar el error y probar la gestión de errores durante la descarga.
+                """
                 super().__init__(lines=[])
                 self._body = body
 
             def raise_for_status(self):
+                """
+                Simula la verificación del estado de una respuesta de streaming HTTP asincrónica de Ollama que falla, l
+                anzando una excepción con el cuerpo predefinido para representar el error.
+                """
                 req = module.httpx.Request("POST", "http://ollama/api/pull")
                 resp = module.httpx.Response(404, request=req, content=b"")
                 raise module.httpx.HTTPStatusError("error", request=req, response=resp)
 
             async def aread(self):
+                """
+                Simula la lectura asincrónica del cuerpo de una respuesta de streaming HTTP de Ollama que falla, 
+                devolviendo el cuerpo predefinido para representar el error.
+                """
                 await asyncio.sleep(0)
                 return self._body
 
         class _Client:
             def __init__(self, show_resp, pull_resp=None):
+                """
+                Simula un cliente HTTP asincrónico para interactuar con Ollama, proporcionando respuestas predefinidas para las solicitudes 
+                de verificación y descarga de modelos para probar la verificación y descarga automática de modelos.
+                """
                 self._show = show_resp
                 self._pull = pull_resp
 
             async def post(self, *_args, **_kwargs):
+                """
+                Simula la realización de una solicitud POST asincrónica a Ollama, devolviendo una respuesta predefinida para la verificación 
+                de la disponibilidad del modelo.
+                """
                 await asyncio.sleep(0)
                 return self._show
 
             def stream(self, *_args, **_kwargs):
+                """
+                Simula la realización de una solicitud de streaming asincrónica a Ollama para la descarga de un modelo, devolviendo 
+                una respuesta predefinida para probar el seguimiento del progreso y la gestión de eventos durante la descarga.
+                """
                 return self._pull
 
         original_total = module.settings.OLLAMA_PULL_TIMEOUT_SECONDS
@@ -1086,38 +1490,75 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             module.settings.OLLAMA_PULL_LOG_INTERVAL_SECONDS = original_interval
 
     def test_ensure_ollama_model_available_total_timeout_expires(self):
+        """
+        Verifica la gestión de tiempos máximos de espera durante la descarga de modelos.
+        """
         module = self.m
 
         class _ShowResp:
+            """ 
+            Simula una respuesta HTTP asincrónica de Ollama para la verificación de la disponibilidad de un modelo, devolviendo un 
+            código de estado 404 para representar que el modelo no está disponible localmente. 
+            """
             status_code = 404
             text = ""
 
         class _PullResp:
+            """
+            Simula una respuesta de streaming HTTP asincrónica de Ollama durante la descarga de un modelo, proporcionando líneas que 
+            indican progreso pero sin completar la descarga para probar la gestión de tiempos máximos de espera.
+            """
             status_code = 200
 
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de una respuesta de streaming HTTP asincrónica de Ollama, devolviendo el objeto de respuesta 
+                para su uso en el bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de una respuesta de streaming HTTP asincrónica de Ollama, permitiendo la limpieza de recursos 
+                si es necesario.
+                """
                 return False
 
             def raise_for_status(self):
-                return None
+                """
+                Simula la verificación del estado de una respuesta de streaming HTTP asincrónica de Ollama, no lanzando ninguna excepción
+                """
 
             async def aread(self):
+                """
+                Simula la lectura asincrónica del cuerpo de una respuesta de streaming HTTP de Ollama, devolviendo un cuerpo vacío para 
+                representar la ausencia de contenido adicional en la respuesta.
+                """
                 await asyncio.sleep(0)
                 return b""
 
             async def aiter_lines(self):
+                """
+                Simula la iteración asincrónica sobre las líneas de una respuesta de streaming HTTP de Ollama, devolviendo líneas que indican
+                progreso pero sin completar la descarga para probar la gestión de tiempos máximos de espera.
+                """
                 while True:
                     yield '{"status":"pulling","completed":0,"total":100}'
 
         class _Client:
             async def post(self, *_args, **_kwargs):
+                """
+                Simula la realización de una solicitud POST asincrónica a Ollama para la verificación de la disponibilidad de un modelo,
+                devolviendo una respuesta con código de estado 404 para representar que el modelo no está disponible localmente.
+                """
                 await asyncio.sleep(0)
                 return _ShowResp()
 
             def stream(self, *_args, **_kwargs):
+                """
+                Simula la realización de una solicitud de streaming asincrónica a Ollama para la descarga de un modelo, devolviendo 
+                una respuesta que indica progreso pero sin completar la descarga para probar la gestión de tiempos máximos de espera.
+                """
                 return _PullResp()
 
         original_total = module.settings.OLLAMA_PULL_TIMEOUT_SECONDS
@@ -1126,24 +1567,37 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             module.settings.OLLAMA_PULL_TIMEOUT_SECONDS = 1
             module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = 0
             mono = iter([0.0, 2.0, 2.0, 2.0])
-            with patch.object(module, "time", SimpleNamespace(monotonic=lambda: next(mono))):
-                with self.assertRaises(module.OllamaTimeoutError):
-                    asyncio.run(module.ensure_ollama_model_available(_Client(), "m"))
+            with patch.object(module, "time", SimpleNamespace(monotonic=lambda: next(mono))
+            ), self.assertRaises(module.OllamaTimeoutError):
+                asyncio.run(module.ensure_ollama_model_available(_Client(), "m"))
         finally:
             module.settings.OLLAMA_PULL_TIMEOUT_SECONDS = original_total
             module.settings.OLLAMA_PULL_IDLE_TIMEOUT_SECONDS = original_idle
 
     def test_ensure_ollama_model_ready_opens_client_and_delegates(self):
+        """
+        Comprueba la preparación previa de modelos Ollama antes de ejecutar consultas.
+        """
         module = self.m
 
         class _Client:
             def __init__(self, **kwargs):
+                """
+                Simula un cliente HTTP asincrónico para interactuar con Ollama, almacenando los argumentos proporcionados para verificar 
+                la apertura del cliente durante la preparación de modelos.
+                """
                 self.kwargs = kwargs
 
             async def __aenter__(self):
+                """
+                Simula la entrada al contexto de un cliente HTTP asincrónico, devolviendo el objeto de cliente para su uso en el bloque with.
+                """
                 return self
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida del contexto de un cliente HTTP asincrónico, permitiendo la limpieza de recursos si es necesario.
+                """
                 return False
 
         with (
@@ -1154,10 +1608,17 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         mock_ensure.assert_awaited_once()
 
     def test_chunk_text_skips_bad_token_lines_and_overlaps(self):
+        """
+        Verifica la fragmentación de texto y la gestión de errores durante la tokenización.
+        """
         module = self.m
 
         class _Tok:
             def tokenize(self, text):
+                """
+                Simula un tokenizador que divide el texto en tokens, pero lanza un error si encuentra una línea específica para 
+                probar la gestión de errores durante la fragmentación de texto.
+                """
                 if text == "BAD":
                     raise RuntimeError("token error")
                 return text.split()
@@ -1170,6 +1631,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertTrue(all("BAD" not in c for c in chunks))
 
     def test_recuperacion_chunk_con_scores_filters_by_similarity(self):
+        """
+        Comprueba la recuperación de fragmentos relevantes aplicando filtros de similitud.
+        """
         qdrant = MagicMock()
         module = self.m
         module.qdrant = qdrant
@@ -1179,12 +1643,20 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         qdrant.query_points.return_value = SimpleNamespace(points=[good, bad])
 
         class _Embed:
+            """
+            Simula un modelo de embedding que devuelve vectores de tamaño fijo para probar la recuperación de fragmentos relevantes 
+            aplicando filtros de similitud.
+            """
             embedding_size = 3
             model_id = "m"
             max_input_length = 8
             tokenizer = SimpleNamespace(tokenize=lambda s: s.split())
 
             def __call__(self, _text, to_list=True):
+                """
+                Simula la generación de embeddings para un texto dado, devolviendo un vector de tamaño fijo para probar la 
+                recuperación de fragmentos relevantes aplicando filtros de similitud.
+                """
                 return [0.0, 0.0, 0.0]
 
         module.embedding_model = _Embed()
@@ -1194,9 +1666,17 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(out, [good])
 
     def test_obtener_mejor_chunk_does_not_import_flask_package_for_resource_priority(self):
+        """
+        Verifica la obtención de respuestas RAG utilizando fragmentos recuperados y mecanismos de prioridad de recursos.
+        """
         qpoint = SimpleNamespace(id=uuid4(), score=0.75, payload={"content": "ctx", "metadata": {}})
 
         async def fake_ask(_prompt, **_kwargs):
+            """
+            Simula la función de consulta a Ollama para probar la obtención de respuestas RAG utilizando fragmentos recuperados y
+            mecanismos de prioridad de recursos, devolviendo una respuesta predefinida después de una breve espera para representar 
+            el procesamiento de la consulta.
+            """
             await asyncio.sleep(0)
             return "respuesta"
 
@@ -1204,9 +1684,17 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
 
         class _AsyncNullContext:
             async def __aenter__(self):
-                return None
+                """
+                Simula un contexto asincrónico nulo para probar la obtención de respuestas RAG utilizando fragmentos recuperados y 
+                mecanismos de prioridad de recursos, devolviendo None para representar la ausencia de acciones específicas durante el contexto.
+                """
 
             async def __aexit__(self, *_args):
+                """
+                Simula la salida de un contexto asincrónico nulo para probar la obtención de respuestas RAG utilizando fragmentos recuperados 
+                y mecanismos de prioridad de recursos, devolviendo False para indicar que no se ha manejado ninguna excepción durante la salida 
+                del contexto.
+                """
                 return False
 
         resource_priority.rag_priority_async = lambda *_args, **_kwargs: _AsyncNullContext()
@@ -1226,6 +1714,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertTrue(statuses)
 
     def test_raise_helpers_cover_all_raise_paths(self):
+        """
+        Comprueba los distintos mecanismos auxiliares de generación de excepciones del sistema.
+        """
         module = self.m
 
         with self.assertRaises(module.QueryCancelledError):
@@ -1249,6 +1740,10 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertIn("HTTP 500", str(ctx.exception))
 
         async def run_chat_status(resp):
+            """ 
+            Simula la ejecución de la función de verificación de estado de chat de Ollama para probar los distintos caminos de generación 
+            de excepciones, devolviendo el resultado de la función para una respuesta dada. 
+            """
             return await module._raise_for_ollama_chat_status(resp, "m")
 
         # _raise_for_ollama_chat_status
@@ -1269,6 +1764,9 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
             asyncio.run(run_chat_status(module.httpx.Response(500, request=req, content=b"")))
 
     def test_exceptions_query_cancel_timeout_and_model_not_found(self):
+        """
+        Verifica la gestión de cancelaciones, tiempos de espera y modelos inexistentes.
+        """
         module = self.m
 
         # _ollama_pull_read_timeout(total_timeout, idle_timeout, elapsed)
@@ -1282,9 +1780,16 @@ class PrototipoRAGSmokeUnitTest(unittest.TestCase):
         self.assertEqual(module._ollama_pull_read_timeout(total_timeout=10, idle_timeout=20, elapsed=3), 7)
 
     def test_timed_block_logs_elapsed_seconds(self):
+        """
+        Comprueba el registro de tiempos de ejecución mediante bloques temporizados.
+        """
         values = iter([10.0, 10.125])
 
         def fake_perf_counter():
+            """
+            Simula la función time.perf_counter para probar el registro de tiempos de ejecución mediante bloques temporizados, 
+            devolviendo valores predefinidos para representar el tiempo transcurrido durante la ejecución del bloque.
+            """
             return next(values)
 
         with (
