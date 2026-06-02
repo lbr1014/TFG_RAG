@@ -2659,17 +2659,32 @@ def index_pliegos_dir(pliegos_dir: Path) -> dict:
 
 
 
-if __name__ == "__main__":
+def cli_main(pliegos_dir: Path | None = None) -> dict:
     """
-    Construye la base de datos vectorial a partir de los PDFs de ./pliegos y sus embeddings.
+    Entrada CLI para indexar PDFs en Qdrant.
+
+    Args:
+        pliegos_dir: Directorio opcional con PDFs; por defecto `./pliegos`.
+
+    Returns:
+        dict: Resumen de indexación.
     """
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    base_dir = Path(__file__).parent
-    pliegos_dir = base_dir / "pliegos"
+    if os.environ.get("PYTHIA_TESTING") == "1":
+        return {}
+
+    if pliegos_dir is None:
+        base_dir = Path(__file__).parent
+        pliegos_dir = base_dir / "pliegos"
 
     summary = index_pliegos_dir(pliegos_dir)
     logger.info("Resumen indexado: %s", summary)
+    return summary
+
+
+if __name__ == "__main__":
+    cli_main()
