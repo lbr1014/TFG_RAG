@@ -1,12 +1,14 @@
 """
 Autora: Lydia Blanco Ruiz
-Pruebas de integración del pipeline de evaluación RAG (sin depender de Ollama/RAGAS reales).
+Script de pruebas de integración del pipeline de evaluación RAG (sin depender de Ollama/RAGAS reales). Su objetivo es verificar la 
+construcción de los datos de evaluación, la generación de contextos recuperados, la ejecución del flujo principal de evaluación y 
+la creación de los artefactos de salida. Las pruebas validan además los mecanismos de recuperación ante errores cuando la evaluación 
+mediante RAGAS falla, garantizando que se generan correctamente los resultados y diagnósticos necesarios para el análisis posterior.
 """
 
 import importlib
 import json
 import os
-from pathlib import Path
 from unittest.mock import patch
 
 from app.test.support import BaseAppTestCase
@@ -14,10 +16,17 @@ from app.test.support import BaseAppTestCase
 
 class _FakeEmbeddings:
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa una implementación simulada del modelo de embeddings utilizada para ejecutar las pruebas sin depender de modelos reales.
+        """
         self.model_name = kwargs.get("model_name", "fake")
         self.model_kwargs = kwargs.get("model_kwargs", {})
 
     def embed_documents(self, texts):
+        """
+        Genera embeddings simplificados a partir de la longitud de los textos recibidos para simular el comportamiento de un 
+        modelo de embeddings real durante las pruebas.
+        """
         vectors = []
         for text in texts:
             text = (text or "").strip()
@@ -27,6 +36,9 @@ class _FakeEmbeddings:
 
 class EvaluacionRAGASPipelineIntegrationTest(BaseAppTestCase):
     def _import_with_env(self, **env):
+        """
+        Importa dinámicamente el módulo evaluacion_RAGAS aplicando variables de entorno específicas para configurar distintos escenarios de prueba.
+        """
         for key, value in env.items():
             os.environ[key] = str(value)
         from app.main.code.services.evaluation import evaluacion_RAGAS
@@ -34,6 +46,10 @@ class EvaluacionRAGASPipelineIntegrationTest(BaseAppTestCase):
         return importlib.reload(evaluacion_RAGAS)
 
     def test_build_ragas_rows_uses_stubbed_rag_and_k_contexts(self):
+        """
+        Verifica la construcción de los registros de evaluación RAGAS utilizando respuestas simuladas del sistema RAG y comprobando que se respetan 
+        los límites configurados para el número de contextos recuperados.
+        """
         m = self._import_with_env()
         questions = [
             {"question": "Pregunta 1", "ground_truth": "GT", "evidence": "EV"},
@@ -55,6 +71,10 @@ class EvaluacionRAGASPipelineIntegrationTest(BaseAppTestCase):
         self.assertEqual(rows[0]["reference_contexts"], ["EV"])
 
     def test_main_writes_outputs_and_handles_ragas_exception(self):
+        """
+        Comprueba la ejecución del flujo principal de evaluación cuando la evaluación RAGAS produce una excepción, verificando que se generan 
+        correctamente los archivos de resultados, configuraciones y diagnósticos de error.
+        """
         tmp = self._tmpdir
         questions_path = tmp / "questions.json"
         results_path = tmp / "results.json"
@@ -85,6 +105,10 @@ class EvaluacionRAGASPipelineIntegrationTest(BaseAppTestCase):
         )
 
         def fake_rag_rows(_questions, k_contexts=3):
+            """
+            Simula la construcción de registros de evaluación RAGAS devolviendo un conjunto mínimo de datos con pregunta, respuesta,
+            contexto y referencias asociadas.
+            """
             return [
                 {
                     "question": "Pregunta",

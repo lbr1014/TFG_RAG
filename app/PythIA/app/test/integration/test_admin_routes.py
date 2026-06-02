@@ -1,6 +1,12 @@
 """
 Autora: Lydia Blanco Ruiz
-Script con pruebas de integración de las rutas de la aplicación.
+Script con pruebas de integración de las rutas de administración de la aplicación. Su objetivo es verificar 
+el correcto funcionamiento de las operaciones de gestión de usuarios, documentos y tareas asíncronas disponibles 
+para los administradores. Las pruebas cubren la administración de usuarios, la subida y eliminación de documentos, 
+la visualización y descarga de contenidos PDF y Markdown, así como la creación, consulta y cancelación de tareas
+de actualización de la base de datos vectorial, conversión a Markdown, web scraping y evaluación RAG. 
+Además, se validan distintos escenarios de error y control de acceso para garantizar el correcto comportamiento 
+de la interfaz administrativa.
 """
 
 import os
@@ -22,12 +28,18 @@ ADMIN_FORM_PASSWORD_FIELD = "pass" + "word"
 class AdminRoutesIntegrationTest(BaseAppTestCase):
 
     def setUp(self):
+        """
+        Inicializa el entorno de pruebas creando un usuario administrador autenticado para ejecutar las operaciones de administración.
+        """
         super().setUp()
         self.admin = self.create_user(email="admin@example.com", is_admin=True)
         self.login(self.admin.email)
 
 
     def test_admin_can_toggle_and_delete_users(self):
+        """
+        Verifica que un administrador puede modificar los privilegios de un usuario y eliminarlo correctamente del sistema.
+        """
         user = self.create_user(email="user@example.com", is_admin=False)
 
         toggle = self.client.post(f"/admin/users/{user.id}", follow_redirects=False)
@@ -40,6 +52,10 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertIsNone(db.session.get(User, user.id))
 
     def test_admin_users_page_and_rejected_user_actions(self):
+        """
+        Comprueba el acceso a la página de gestión de usuarios y valida el tratamiento de operaciones inválidas, como actuar sobre 
+        usuarios inexistentes o sobre el propio administrador.
+        """
         users_page = self.client.get("/admin/users")
         self.assertEqual(users_page.status_code, 200)
         self.assertIn(b"admin@example.com", users_page.data)
@@ -55,6 +71,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(self_delete.status_code, 400)
 
     def test_admin_users_filters_and_bulk_actions(self):
+        """
+        Verifica los filtros de búsqueda de usuarios y las operaciones masivas de promoción y eliminación de cuentas.
+        """
         user_es = self.create_user(nombre="Ana Filtro", email="ana-filtro@example.com", country_code="ES", is_admin=False)
         user_fr = self.create_user(nombre="Luis Filtro", email="luis-filtro@example.com", country_code="FR", is_admin=False)
         self.create_user(nombre="Eva Admin", email="eva-admin@example.com", country_code="FR", is_admin=True)
@@ -104,6 +123,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(self_delete.status_code, 400)
 
     def test_admin_documents_list_uses_service_pagination(self):
+        """
+        Comprueba que el listado de documentos utiliza correctamente los servicios de sincronización, limpieza y paginación documental.
+        """
         fake_service = MagicMock()
         fake_service.list_documents_paginated.return_value = SimpleNamespace(items=[], page=1, pages=1, total=0)
         fake_service.get_markdown_status_map.return_value = {}
@@ -118,6 +140,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         fake_service.list_documents_paginated.assert_called_once_with(1, 10)
 
     def test_admin_upload_documents_delegates_to_service(self):
+        """
+        Verifica que la subida de documentos delega correctamente el almacenamiento en el servicio documental correspondiente.
+        """
         fake_service = MagicMock()
 
         with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
@@ -132,6 +157,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         fake_service.save_uploads.assert_called_once()
 
     def test_admin_upload_documents_redirects_on_invalid_form_or_no_valid_pdf(self):
+        """
+        Comprueba el comportamiento de la subida de documentos cuando el formulario es inválido o no contiene archivos PDF válidos.
+        """
         invalid = self.client.post("/admin/documents/upload", data={}, follow_redirects=False)
         self.assertEqual(invalid.status_code, 302)
 
@@ -168,6 +196,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
     @patch("app.main.code.controllers.admin.routes.executor.submit")
 
     def test_admin_vector_update_creates_queued_job(self, mock_submit):
+        """
+        Verifica la creación de una tarea asíncrona en cola para la actualización de la base de datos vectorial.
+        """
         response = self.client.post("/admin/vector-db/update")
 
         self.assertEqual(response.status_code, 202)
@@ -179,6 +210,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
 
     @patch("app.main.code.controllers.admin.routes.executor.submit")
     def test_admin_rag_evaluation_creates_queued_job(self, mock_submit):
+        """
+        Comprueba la creación de una tarea asíncrona en cola para la ejecución de una evaluación RAG.
+        """
         response = self.client.post("/admin/rag/evaluation/run", headers={"Accept": "application/json"})
 
         self.assertEqual(response.status_code, 202)
@@ -189,6 +223,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         mock_submit.assert_called_once()
 
     def test_admin_can_view_and_download_markdown_from_document_row(self):
+        """
+        Verifica la visualización y descarga del contenido Markdown asociado a un documento almacenado.
+        """
         doc = self.create_document(nombre="pliego.pdf")
         doc.markdown_content = "# Markdown"
         db.session.commit()
@@ -209,6 +246,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertIn('filename="pliego.md"', download_response.headers["Content-Disposition"])
 
     def test_admin_can_create_user_from_admin_form(self):
+        """
+        Comprueba la creación de nuevos usuarios mediante el formulario de administración.
+        """
         response = self.client.post(
             "/admin/users/add",
             data={
@@ -226,6 +266,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertTrue(created.is_admin)
 
     def test_admin_create_user_get_and_duplicate_email(self):
+        """
+        Verifica la carga del formulario de creación de usuarios y la validación de correos electrónicos duplicados.
+        """
         existing = self.create_user(email="duplicado@example.com")
 
         get_response = self.client.get("/admin/users/add")
@@ -244,6 +287,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
 
     @patch("app.main.code.controllers.admin.routes.markdown_executor.submit")
     def test_admin_markdown_convert_creates_queued_job(self, mock_submit):
+        """
+        Comprueba la creación de una tarea asíncrona para la conversión masiva de documentos a Markdown.
+        """
         response = self.client.post("/admin/documents/markdown/convert")
 
         self.assertEqual(response.status_code, 202)
@@ -254,6 +300,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         mock_submit.assert_called_once()
 
     def test_admin_async_post_routes_return_invalid_response_when_validation_fails(self):
+        """
+        Verifica que las rutas asíncronas devuelven respuestas de error cuando fallan las validaciones previas a la ejecución.
+        """
         invalid_response = ({"error": "bad"}, 400)
 
         with patch("app.main.code.controllers.admin.routes._validate_post_action", return_value=invalid_response):
@@ -268,6 +317,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
             self.assertEqual(response.status_code, 400)
 
     def test_admin_markdown_status_and_cancel_queued_job(self):
+        """
+        Comprueba la consulta de estado y la cancelación de una tarea de conversión Markdown en cola.
+        """
         job = MarkdownConversionState(status="queued", progress=10, message="En cola", cancel_requested=False)
         db.session.add(job)
         db.session.commit()
@@ -283,6 +335,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(job.status, "cancelled")
 
     def test_admin_markdown_cancel_finished_and_status_missing(self):
+        """
+        Verifica el comportamiento de cancelación sobre tareas finalizadas y la consulta de tareas inexistentes.
+        """
         job = MarkdownConversionState(status="done", progress=100, message="Listo", cancel_requested=False)
         db.session.add(job)
         db.session.commit()
@@ -295,6 +350,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(missing.status_code, 404)
 
     def test_admin_vector_status_and_cancel_queued_job(self):
+        """
+        Comprueba la consulta de estado y la cancelación de tareas de actualización de la base de datos vectorial.
+        """
         job = VectorUpdateState(status="queued", progress=5, current_doc="uno.pdf", cancel_requested=False)
         db.session.add(job)
         db.session.commit()
@@ -310,6 +368,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(job.status, "cancelled")
 
     def test_admin_vector_cancel_finished_and_status_missing(self):
+        """
+        Verifica la gestión de cancelaciones y consultas sobre tareas vectoriales inexistentes o ya finalizadas.
+        """
         job = VectorUpdateState(status="failed", progress=10, error="boom", cancel_requested=False)
         db.session.add(job)
         db.session.commit()
@@ -323,6 +384,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
 
     @patch("app.main.code.controllers.admin.routes.executor.submit")
     def test_admin_web_scraping_creates_queued_job(self, mock_submit):
+        """
+        Comprueba la creación de una tarea asíncrona para la ejecución de procesos de web scraping.
+        """
         response = self.client.post("/admin/documents/web_scraping")
 
         self.assertEqual(response.status_code, 202)
@@ -332,6 +396,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         mock_submit.assert_called_once()
 
     def test_admin_web_scraping_status_and_cancel_queued_job(self):
+        """
+        Verifica la consulta de estado y la cancelación de tareas de web scraping en ejecución o pendientes.
+        """
         job = WebScrapingSate(status="queued", progress=20, message="En cola", cancel_requested=False)
         db.session.add(job)
         db.session.commit()
@@ -347,6 +414,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(job.status, "cancelled")
 
     def test_admin_web_scraping_cancel_finished_and_status_missing(self):
+        """
+        Comprueba el tratamiento de cancelaciones sobre tareas de scraping ya finalizadas y consultas de tareas inexistentes.
+        """
         job = WebScrapingSate(status="cancelled", progress=0, message="Cancelado", cancel_requested=True)
         db.session.add(job)
         db.session.commit()
@@ -359,6 +429,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(missing.status_code, 404)
 
     def test_admin_delete_document_delegates_to_service(self):
+        """
+        Verifica que la eliminación de documentos se delega correctamente en el servicio documental correspondiente.
+        """
         fake_service = MagicMock()
 
         with patch("app.main.code.controllers.admin.routes.documentos_service", return_value=fake_service):
@@ -368,6 +441,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         fake_service.delete_document.assert_called_once_with(123)
 
     def test_admin_delete_document_returns_500_when_service_fails(self):
+        """
+        Comprueba la gestión de errores cuando el servicio documental falla durante la eliminación de un documento.
+        """
         fake_service = MagicMock()
         fake_service.delete_document.side_effect = RuntimeError("boom")
 
@@ -383,6 +459,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.status_code, 500)
 
     def test_admin_can_view_and_download_pdf_from_document_row(self):
+        """
+        Verifica la visualización y descarga de documentos PDF almacenados en el sistema.
+        """
         doc = self.create_document(nombre="pliego-original.pdf")
 
         view_response = self.client.get(f"/admin/documents/{doc.id}/view")
@@ -396,6 +475,9 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         download_response.close()
 
     def test_admin_document_view_and_download_return_404_when_content_missing(self):
+        """
+        Comprueba que la visualización y descarga de documentos devuelve un error cuando el contenido solicitado no existe o no está disponible.
+        """
         doc = self.create_document(nombre="missing-content.pdf")
         path = doc.path
         doc.markdown_content = None
