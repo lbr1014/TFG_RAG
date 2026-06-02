@@ -77,5 +77,5 @@ Flask-Mail
 itsdangerous
 
 # Dependencias de evaluación RAG (ARES/RAGAS)
--r /app/requirements_evaluation.txt
+-r ../app/main/code/services/evaluation/requirements.txt
 

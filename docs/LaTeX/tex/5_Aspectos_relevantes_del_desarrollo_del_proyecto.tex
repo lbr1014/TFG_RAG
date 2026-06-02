@@ -125,6 +125,14 @@ La arquitectura implementada combina distintos enfoques de evaluación con la ge
 
 Respecto a la evaluación, por un lado, se utiliza \eng{RAGAS} para calcular métricas semánticas relacionadas con la calidad de la recuperación y de la generación utilizando un enfoque \eng{LLM-as-a-judge}. Las métricas utilizadas son \eng{Faithfulness}, \eng{Answer relevance}, \eng{Answer correctness}, \eng{Context precision y recall} y \eng{Context relevance}. Las cuales permiten analizar si la respuesta realmente está fundamentada en el contexto recuperado y si dicho contexto es adecuado para responder la consulta. Esta evaluación se combina con métricas de respaldo basadas en \eng{embeddings} y similitud coseno. Estas métricas permiten calcular automáticamente el grado de similitud semántica entre preguntas, respuestas, contexto recuperado y \eng{ground truth} utilizando representaciones vectoriales. Finalmente, ambas métricas se combinan mediante medias ponderadas. Consiguiendo una evaluación híbrida más robusta y estable. Esta combinación permitió reducir la variabilidad típica de los sistemas basados únicamente en \eng{LLM-as-a-judge} y mejorar la reproducibilidad de los resultados.
 
+
+\section{Tareas asíncronas}
+
+Para que se realicen las tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el \textit{Web Scraping}, la conversión de documentos \texttt{PDF} a \texttt{Markdown}, la actualización de la base de datos vectorial y la evaluación del \textit{RAG}. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \textit{web}.
+
+Para llevarlo a cabo se han implementado ejecutores basados en \texttt{ThreadPoolExecutor}. Se ha separado el ejecutor de las tareas de \texttt{Markdown} del resto de tareas del sistema. Esta separación permite controlar de forma independiente 
+el número máximo de tareas concurrentes y evitar que procesos intensivos consuman todos los recursos disponibles.
+
 \section{Desarrollo \eng{web}}
 
 Tras realizar un primer prototipo \eng{RAG} se comenzó el diseño de una aplicación \eng{web} para permitir a los usuarios interactuar con el sistema de manera sencilla y visual. Para ello se decidió utilizar \file{Flask} como \eng{framework} de desarrollo \eng{web}. 
