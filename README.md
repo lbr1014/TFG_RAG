@@ -118,8 +118,8 @@ NOTA:
 
 ### 🗝️ Acceso a la aplicaicón local
 Una vez desplegada la aplicación en local utilizando un contenedor *Docker* levantado en *Gunicorn* y usando *Nginx* como *proxy* inverso se puede **acceder** a tarves del **navegador** ***web*** poniendo cualquiera de estas direcciones:
-- [http://127.0.0.1:8080/](http://127.0.0.1:7000/)
-- [http://localhost:8080/](http://localhost:7000/)
+- [http://127.0.0.1:7000/](http://127.0.0.1:7000/)
+- [http://localhost:7000/](http://localhost:7000/)
 - `http://IP_del_dispositivo:7000`
 
 NOTA:
