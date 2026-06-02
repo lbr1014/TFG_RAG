@@ -1,6 +1,9 @@
 """
 Autora: Lydia Blanco Ruiz
-Pruebas unitarias para la lógica de evaluación RAG (RAGAS + coseno).
+Script con pruebas unitarias para la lógica de evaluación RAG basado en RAGAS y métricas de similitud coseno. Su objetivo es verificar el cálculo, 
+combinación y agregación de métricas de evaluación utilizadas para medir la calidad de las respuestas generadas por el sistema. Las pruebas cubren la normalización de 
+configuraciones, el cálculo de puntuaciones híbridas, la generación de métricas de respaldo mediante embeddings, la fusión de resultados procedentes de RAGAS y similitud coseno, 
+así como la carga y procesamiento de conjuntos de preguntas de evaluación.
 """
 
 import math
@@ -10,7 +13,14 @@ from app.test.support import BaseAppTestCase
 
 
 class _FakeEmbeddings:
+    """
+    Implementa un generador simplificado de embeddings utilizado para simular el cálculo de vectores durante las pruebas de métricas basadas en similitud coseno.
+    """
     def embed_documents(self, texts):
+        """
+        Genera vectores de características simples a partir de una colección de textos. Cada embedding se construye utilizando atributos básicos del
+        texto, permitiendo realizar pruebas deterministas sin depender de modelos reales de embeddings.
+        """
         vectors = []
         for text in texts:
             text = text or ""
@@ -22,12 +32,18 @@ class _FakeEmbeddings:
 
 class EvaluacionRAGASUnitTest(BaseAppTestCase):
     def _module(self):
+        """
+        Carga dinámicamente el módulo de evaluación RAGAS utilizando el entorno de pruebas configurado para la aplicación.
+        """
         # Importa siempre con el stub de PrototipoRAG ya instalado por app.test.support.
         from app.main.code.services.evaluation import evaluacion_RAGAS
 
         return evaluacion_RAGAS
 
     def test_normalize_base_url_adds_scheme_and_rejects_insecure_remote_http(self):
+        """
+        Verifica la normalización de URL de servicios externos, añadiendo automáticamente esquemas de conexión y rechazando configuraciones inseguras.
+        """
         m = self._module()
 
         self.assertEqual(m._normalize_base_url(""), "")
@@ -39,6 +55,9 @@ class EvaluacionRAGASUnitTest(BaseAppTestCase):
             m._normalize_base_url("http://example.com:11434")
 
     def test_combine_scores_weighted_and_fallback(self):
+        """
+        Comprueba la combinación ponderada de puntuaciones procedentes de RAGAS y de métricas de respaldo, incluyendo escenarios con valores ausentes o pesos inválidos.
+        """
         m = self._module()
 
         with patch.object(m, "FINAL_RAGAS_WEIGHT", 0.7), patch.object(m, "FINAL_FALLBACK_WEIGHT", 0.3):
@@ -48,10 +67,13 @@ class EvaluacionRAGASUnitTest(BaseAppTestCase):
             self.assertIsNone(m.combine_scores(None, None))
 
         with patch.object(m, "FINAL_RAGAS_WEIGHT", 0.0), patch.object(m, "FINAL_FALLBACK_WEIGHT", 0.0):
-            # Peso total inválido: conserva RAGAS cuando existe.
+            # Peso total inválido (conserva RAGAS cuando existe).
             self.assertEqual(m.combine_scores(0.25, 0.75), 0.25)
 
     def test_summarize_metric_values_ignores_nones_and_nans(self):
+        """
+        Verifica el cálculo de estadísticas agregadas ignorando métricas inexistentes o valores no numéricos.
+        """
         m = self._module()
 
         rows = [
@@ -67,6 +89,9 @@ class EvaluacionRAGASUnitTest(BaseAppTestCase):
         self.assertAlmostEqual(summary["answer_relevancy"], 0.5, places=6)
 
     def test_build_source_counts_unknown_source_maps_to_missing(self):
+        """
+        Comprueba la contabilización de las distintas fuentes de puntuación utilizadas para cada métrica y el tratamiento de fuentes desconocidas.
+        """
         m = self._module()
 
         rows = [
@@ -82,6 +107,9 @@ class EvaluacionRAGASUnitTest(BaseAppTestCase):
         self.assertEqual(counts["answer_relevancy"], {"weighted": 0, "ragas": 1, "coseno": 0, "missing": 2})
 
     def test_compute_coseno_metrics_populates_expected_fields(self):
+        """
+        Verifica el cálculo de métricas basadas en similitud coseno y la generación de todos los indicadores esperados para la evaluación de respuestas RAG.
+        """
         m = self._module()
         embeddings = _FakeEmbeddings()
 
@@ -113,6 +141,9 @@ class EvaluacionRAGASUnitTest(BaseAppTestCase):
             self.assertFalse(math.isnan(value))
 
     def test_merge_metrics_combines_ragas_and_coseno_and_tracks_source(self):
+        """
+        Comprueba la fusión de métricas procedentes de RAGAS y similitud coseno, registrando además la procedencia de cada puntuación final calculada.
+        """
         m = self._module()
 
         rows = [
@@ -152,6 +183,9 @@ class EvaluacionRAGASUnitTest(BaseAppTestCase):
         self.assertIn("answer_relevancy", summary)
 
     def test_load_questions_normalizes_string_items(self):
+        """
+        Verifica la carga de preguntas de evaluación desde archivos JSON y la normalización de los distintos formatos de entrada admitidos.
+        """
         m = self._module()
         path = self._tmpdir / "q.json"
         path.write_text("[{\"question\": \"uno\"}, \"dos\"]", encoding="utf-8")
