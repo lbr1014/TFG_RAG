@@ -1147,6 +1147,46 @@ def merge_metrics(rows: list[dict], ragas_rows: list[dict]) -> tuple[dict, list[
 
     return final_summary, final_rows
 
+def build_ragas_llm():
+    """
+    Construye la instancia LLM utilizada por RAGAS.
+    """
+    if RAGAS_USE_CHAT:
+        chat_cls = CommunityChatOllama or OllamaChatOllama
+
+        if chat_cls is None:
+            raise RuntimeError(
+                "No hay implementación ChatOllama disponible "
+                "(langchain-community/langchain-ollama)."
+            )
+
+        try:
+            return chat_cls(
+                model=RAGAS_JUDGE_MODEL,
+                base_url=OLLAMA_BASE_URL,
+                client_kwargs={"timeout": RAGAS_REQUEST_TIMEOUT},
+            )
+        except TypeError:
+            return chat_cls(
+                model=RAGAS_JUDGE_MODEL,
+                base_url=OLLAMA_BASE_URL,
+            )
+
+    if OllamaLLM is None:
+        raise RuntimeError(
+            "No se pudo importar langchain_community.llms.Ollama."
+        )
+
+    try:
+        return OllamaLLM(
+            model=RAGAS_JUDGE_MODEL,
+            base_url=OLLAMA_BASE_URL,
+        )
+    except TypeError:
+        return OllamaLLM(
+            model=RAGAS_JUDGE_MODEL,
+            base_url=OLLAMA_BASE_URL,
+        )
 
 def main():
     """
@@ -1183,34 +1223,11 @@ def main():
         model_kwargs={"device": embeddings_device},
     )
     rows = compute_coseno_metrics(rows, embeddings)
-    llm = None
-    if RAGAS_USE_CHAT:
-        chat_cls = CommunityChatOllama or OllamaChatOllama
-        if chat_cls is None:
-            raise RuntimeError(
-                "No hay implementación ChatOllama disponible (langchain-community/langchain-ollama)."
-            )
-        try:
-            llm = chat_cls(
-                model=RAGAS_JUDGE_MODEL,
-                base_url=OLLAMA_BASE_URL,
-                client_kwargs={"timeout": RAGAS_REQUEST_TIMEOUT},
-            )
-        except TypeError:
-            llm = chat_cls(model=RAGAS_JUDGE_MODEL, base_url=OLLAMA_BASE_URL)
-    else:
-        if OllamaLLM is None:
-            raise RuntimeError("No se pudo importar langchain_community.llms.Ollama.")
-        # Usa /api/generate (más compatible que /api/chat en instalaciones antiguas).
-        try:
-            llm = OllamaLLM(model=RAGAS_JUDGE_MODEL, base_url=OLLAMA_BASE_URL)
-        except TypeError:
-            llm = OllamaLLM(model=RAGAS_JUDGE_MODEL, base_url=OLLAMA_BASE_URL)
-
+    llm = build_ragas_llm()
     ragas_diagnostics = {}
     try:
         ragas_summary, ragas_rows, ragas_diagnostics = run_ragas(rows, embeddings, llm)
-    except Exception as exc:
+    except (RuntimeError, TypeError, ValueError, OSError) as exc:
         error_message = str(exc) or type(exc).__name__
         ragas_summary = {"ragas_error": error_message}
         ragas_rows = []

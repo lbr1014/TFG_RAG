@@ -292,6 +292,40 @@ def resolve_numero_expediente(question: str) -> str | None:
 
     return candidate
 
+DOC_TYPE_MARKERS = {
+    "[doc_type=administrativo]": "administrativo",
+    "[doc_type = administrativo]": "administrativo",
+    "[doc_type=tecnico]": "tecnico",
+    "[doc_type = tecnico]": "tecnico",
+}
+
+
+def extract_doc_type_override(text: str) -> tuple[str, str | None]:
+    """
+    Extrae una posible selección de tipo de documento desde la pregunta.
+    Permite que el usuario indique explícitamente el tipo de documento (administrativo o técnico)
+
+    Args:
+        text (str): texto de la pregunta que puede contener un marcador de tipo de documento.
+
+    Returns:
+        tuple[str, str | None]: Una tupla con el texto de la pregunta limpio de marcadores y el tipo de documento indicado ("administrativo" o "tecnico") o None si no se indicó ningún tipo.
+    """
+
+    cleaned = (text or "").strip()
+    lower_text = cleaned.lower()
+
+    for marker, doc_type in DOC_TYPE_MARKERS.items():
+        pos = lower_text.find(marker)
+        if pos >= 0:
+            cleaned = (
+                cleaned[:pos]
+                + " "
+                + cleaned[pos + len(marker):]
+            ).strip()
+            return cleaned, doc_type
+
+    return cleaned, None
 
 async def rag_answer(
     question: str,
@@ -328,35 +362,8 @@ async def rag_answer(
         QueryCancelledError: Si should_cancel retorna True durante el procesamiento.
     """
 
-    def _extract_doc_type_override(text: str) -> tuple[str, str | None]:
-        """
-        Extrae una posible selección de tipo de documento desde la pregunta.
-        Permite que el usuario indique explícitamente el tipo de documento (administrativo o técnico)
-
-        Args:
-            text (str): texto de la pregunta que puede contener un marcador de tipo de documento.
-
-        Returns:
-            tuple[str, str | None]: Una tupla con el texto de la pregunta limpio de marcadores y el tipo de documento indicado ("administrativo" o "tecnico") o None si no se indicó ningún tipo.
-        """
-        cleaned = (text or "").strip()
-        marker_local = re.search(
-            r"\[doc_type\s*=\s*(administrativo|tecnico)\s*\]",
-            cleaned,
-            re.IGNORECASE,
-        )
-        if not marker_local:
-            return cleaned, None
-        override = marker_local.group(1).strip().lower()
-        cleaned = re.sub(
-            r"\s*\[doc_type\s*=\s*(administrativo|tecnico)\s*\]\s*",
-            " ",
-            cleaned,
-            flags=re.IGNORECASE,
-        ).strip()
-        return cleaned, override
-
-    question, tipo_override = _extract_doc_type_override(question)
+    
+    question, tipo_override = extract_doc_type_override(question)
     invalid = validate_question(question, lang=lang)
 
     if invalid:
