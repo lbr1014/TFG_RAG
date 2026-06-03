@@ -126,11 +126,11 @@
     const narrow = width < 560;
     const height = narrow ? 340 : 360;
     const margin = { top: 18, right: 18, bottom: 104, left: narrow ? 46 : 64 };
-    const deviceKeys = ["cpu", "gpu", "unknown_device"];
+    const deviceKeys = ["cpu", "gpu"];
     const colorScale = d3
       .scaleOrdinal()
       .domain(deviceKeys)
-      .range(["#ec7063", "#48c9b0", "#af7ac5"]);
+      .range(["#ec7063", "#48c9b0"]);
     const x0 = d3.scaleBand().domain(chartData.map((item) => item.model)).range([margin.left, width - margin.right]).padding(0.2);
     const x1 = d3.scaleBand().domain(deviceKeys).range([0, x0.bandwidth()]).padding(0.12);
     const yScale = d3

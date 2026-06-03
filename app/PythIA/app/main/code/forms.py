@@ -3,13 +3,36 @@ Autora: Lydia Blanco Ruiz
 Script con los formularios Flask-WTF usados por autenticación, administración, documentos y consultas RAG.
 """
 
-from flask_wtf import FlaskForm
-from wtforms import BooleanField, HiddenField, MultipleFileField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Optional, ValidationError
+from typing import ClassVar
 
-from .countries import COUNTRY_CHOICES, DEFAULT_COUNTRY_CODE
+from flask import current_app
+from flask_login import current_user
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed, FileField
+from wtforms import (
+    BooleanField,
+    HiddenField,
+    MultipleFileField,
+    PasswordField,
+    SelectField,
+    StringField,
+    SubmitField,
+    TextAreaField,
+)
+from wtforms.validators import (
+    DataRequired,
+    Email,
+    EqualTo,
+    Length,
+    Optional,
+    ValidationError,
+)
+
+from .countries import COUNTRY_CHOICES, DEFAULT_COUNTRY_CODE, country_choices
 from .error_handling import PasswordSecurity
-from .inetrnacionalizacion.tarduccion import localize_form, t
+from .inetrnacionalizacion.tarduccion import get_locale, localize_form, t
+from .services.email_verification import verify_email
+from .services.rag.PrototipoRAG import get_rag_llm_model_choices
 
 # Constantes para claves de traducción de campos comunes
 """str: Clave de traducción para el campo email."""
@@ -43,6 +66,22 @@ MIN_LENGTH_PASSWRD = "validation.min_length_8"
 VALIDATE_PASSWRD_SECURITY = "validation.password_security"
 
 
+def _validate_email_with_emailable(field: StringField) -> None:
+    api_key = current_app.config.get("EMAILABLE_API_KEY")
+    if not api_key:
+        return
+
+    email = (field.data or "").strip().lower()
+    if not email:
+        return
+
+    result = verify_email(email)
+    state = (result or {}).get("state")
+
+    if state in {"undeliverable", "invalid", "disposable"}:
+        raise ValidationError(t("auth.email_undeliverable"))
+
+
 class LocalizedFlaskForm(FlaskForm):
     """
     Formulario base que aplica traducciones a etiquetas y validadores.
@@ -57,9 +96,10 @@ class LocalizedFlaskForm(FlaskForm):
         i18n_validator_messages (dict): Mapa de mensajes de validadores por campo.
     """
 
-    i18n_fields = {}
-    i18n_placeholders = {}
-    i18n_validator_messages = {}
+    i18n_fields: ClassVar[dict[str, str]] = {}
+    i18n_placeholders: ClassVar[dict[str, str]] = {}
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {}
+    i18n_choices: ClassVar[dict[str, list[tuple[str, str]]]] = {}
 
     def __init__(self, *args, **kwargs):
         """
@@ -74,6 +114,14 @@ class LocalizedFlaskForm(FlaskForm):
         """
         super().__init__(*args, **kwargs)
         localize_form(self)
+        if hasattr(self, "country_code"):
+            self.country_code.choices = country_choices(get_locale())
+        if hasattr(self, "i18n_choices"):
+            for field_name, choices in self.i18n_choices.items():
+                field = getattr(self, field_name, None)
+
+                if field is not None:
+                    field.choices = [(value, t(label_key)) for value, label_key in choices]
 
 
 class EmptyForm(FlaskForm):
@@ -115,7 +163,7 @@ class PdfUploadForm(LocalizedFlaskForm):
         submit (SubmitField): Botón de envío del formulario.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "files": "docs.upload_label",
         "submit": "docs.upload_button",
     }
@@ -153,12 +201,12 @@ class LoginForm(LocalizedFlaskForm):
     Incluye validaciones de formato de email y longitud mínima de contraseña.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "email": EMAIL,
         "password": PASSWORD,
         "submit": "auth.login_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "email": {
             "DataRequired": VALIDATION_REQUIRED,
             "Email": VALIDATION_EMAIL,
@@ -182,7 +230,7 @@ class SignupForm(LocalizedFlaskForm):
     de contraseña, confirmación de contraseña y unicidad de email.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "nombre": NAME,
         "email": EMAIL,
         "country_code": COUNTRY,
@@ -190,7 +238,7 @@ class SignupForm(LocalizedFlaskForm):
         "confirm_password": "auth.repeat_password",
         "submit": "auth.signup_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "nombre": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": MIN_LENGTH_NAME,
@@ -220,6 +268,9 @@ class SignupForm(LocalizedFlaskForm):
     )
     submit = SubmitField("Crear cuenta")
 
+    def validate_email(self, field: StringField) -> None:
+        _validate_email_with_emailable(field)
+
 
 class AdminCreateUserForm(LocalizedFlaskForm):
     """
@@ -230,7 +281,7 @@ class AdminCreateUserForm(LocalizedFlaskForm):
     de seguridad aplicables.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "nombre": NAME,
         "email": EMAIL,
         "country_code": COUNTRY,
@@ -238,7 +289,7 @@ class AdminCreateUserForm(LocalizedFlaskForm):
         "is_admin": "admin.is_admin",
         "submit": "admin.create_user_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "nombre": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": MIN_LENGTH_NAME,
@@ -270,17 +321,21 @@ class EditUserForm(LocalizedFlaskForm):
     Los campos son opcionales para permitir actualizaciones parciales.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "nombre": NAME,
         "email": EMAIL,
         "country_code": COUNTRY,
+        "profile_image": "user.profile_image",
         "new_password": "auth.new_password",
+        "theme_mode": "user.theme_mode",
+        "language": "user.language",
+        "preferred_model": "user.preferred_model",
         "submit": "common.save_changes",
     }
-    i18n_placeholders = {
+    i18n_placeholders: ClassVar[dict[str, str]] = {
         "new_password": "user.leave_empty_password",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "nombre": {
             "Length": MIN_LENGTH_NAME,
         },
@@ -292,13 +347,54 @@ class EditUserForm(LocalizedFlaskForm):
             "Length": MIN_LENGTH_PASSWRD,
             "PasswordSecurity": VALIDATE_PASSWRD_SECURITY,
         },
+        "profile_image": {
+            "FileAllowed": "validation.allowed_image_formats",
+        },
+    }
+    i18n_choices: ClassVar[dict[str, list[tuple[str, str]]]] = {
+       "theme_mode": [
+            ("light", "user.theme.light"),
+            ("dark", "user.theme.dark"),
+            ("system", "user.theme.system"),
+        ],
+        "language": [
+            ("es", "user.language.es"),
+            ("en", "user.language.en"),
+        ],
     }
 
     nombre = StringField("Nombre", validators=[Optional(), Length(min=2, max=50)])
     email = StringField("Email", validators=[Optional(), Email(), Length(max=255)])
     country_code = SelectField("Pais", choices=COUNTRY_CHOICES, default=DEFAULT_COUNTRY_CODE, validators=[Optional()])
+    profile_image = FileField("Foto de perfil", validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "validation.allowed_image_formats")])
     new_password = PasswordField("Nueva contraseña", validators=[Optional(), Length(min=8), PasswordSecurity()])
+    theme_mode = SelectField("Modo", choices=[], default="system", validators=[Optional()])
+    preferred_model = SelectField("Modelo de lenguaje", choices=[], default="llama3.1:8b-instruct-q4_K_M", validators=[Optional()], validate_choice=False)
+    language = SelectField("Idioma", choices=[], default="es", validators=[Optional()])
     submit = SubmitField("Guardar cambios")
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.preferred_model.choices = get_rag_llm_model_choices()
+
+    def validate_email(self, field: StringField) -> None:
+        """
+        Valida el email usando Emailable (si hay API key configurada).
+
+        Solo se aplica cuando el usuario proporciona un nuevo email distinto al actual.
+        Si no hay API key o hay un error de red, no bloquea para mantener el
+        comportamiento anterior.
+        """
+        if not field.data:
+            return
+
+        new_email = field.data.lower().strip()
+        current_email = (getattr(current_user, "email", "") or "").lower().strip()
+        if current_email and new_email == current_email:
+            return
+
+        _validate_email_with_emailable(field)
 
 
 class RAGQueryForm(LocalizedFlaskForm):
@@ -309,15 +405,15 @@ class RAGQueryForm(LocalizedFlaskForm):
     Generation, con límite de longitud para optimizar el procesamiento.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "model": "rag.model_label",
         "question": "rag.question_label",
         "submit": "rag.ask_button",
     }
-    i18n_placeholders = {
+    i18n_placeholders: ClassVar[dict[str, str]] = {
         "question": "rag.question_placeholder",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "question": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": "validation.max_length_2000",
@@ -325,6 +421,36 @@ class RAGQueryForm(LocalizedFlaskForm):
     }
 
     question = TextAreaField("Pregunta", validators=[DataRequired(), Length(max=2000)])
+    model = SelectField("Modelo", choices=[], validators=[Optional(), Length(max=255)])
+    submit = SubmitField("Preguntar")
+
+
+class RAGDefaultQueryForm(LocalizedFlaskForm):
+    """
+    Formulario guiado para construir consultas frecuentes al sistema RAG.
+    """
+
+    i18n_fields: ClassVar[dict[str, str]] = {
+        "expediente": "rag_default.expediente_label",
+        "summary": "rag_default.summary_label",
+        "doc_type": "rag_default.doc_type_label",
+        "question_kind": "rag_default.question_kind_label",
+        "model": "rag.model_label",
+        "question": "rag.question_label",
+        "submit": "rag.ask_button",
+    }
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
+        "question": {
+            "DataRequired": VALIDATION_REQUIRED,
+            "Length": "validation.max_length_2000",
+        },
+    }
+
+    expediente = SelectField("Expediente", choices=[], validators=[Optional(), Length(max=255)])
+    summary = BooleanField("Resumen del documento")
+    doc_type = SelectField("Tipo de documento", choices=[], validators=[Optional(), Length(max=30)])
+    question_kind = SelectField("Pregunta tipo", choices=[], validators=[Optional(), Length(max=60)])
+    question = HiddenField("Pregunta", validators=[DataRequired(), Length(max=2000)])
     model = SelectField("Modelo", choices=[], validators=[Optional(), Length(max=255)])
     submit = SubmitField("Preguntar")
 
@@ -337,11 +463,11 @@ class ForgotPasswordForm(LocalizedFlaskForm):
     con un token de restablecimiento al usuario.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "email": EMAIL,
         "submit": "auth.forgot_password_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "email": {
             "DataRequired": VALIDATION_REQUIRED,
             "Email": VALIDATION_EMAIL,
@@ -360,12 +486,12 @@ class ResetPasswordForm(LocalizedFlaskForm):
     establecer una nueva contraseña segura tras verificar el token enviado por email.
     """
 
-    i18n_fields = {
+    i18n_fields: ClassVar[dict[str, str]] = {
         "password": "auth.new_password",
         "confirm_password": "auth.repeat_password",
         "submit": "auth.reset_password_submit",
     }
-    i18n_validator_messages = {
+    i18n_validator_messages: ClassVar[dict[str, dict[str, str]]] = {
         "password": {
             "DataRequired": VALIDATION_REQUIRED,
             "Length": MIN_LENGTH_PASSWRD,

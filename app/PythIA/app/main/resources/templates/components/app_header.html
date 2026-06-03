@@ -2,116 +2,58 @@
 {% set guest_subtitle = header_guest_subtitle if header_guest_subtitle is defined else (autor or "") %}
 {% set show_guest_auth_links = header_guest_show_auth_links if header_guest_show_auth_links is defined else false %}
 {% set force_guest_header = header_force_guest if header_force_guest is defined else false %}
+{% set show_guest_logo = header_guest_show_logo if header_guest_show_logo is defined else true %}
+{% set show_guest_text = header_guest_show_text if header_guest_show_text is defined else true %}
+{% set header_variant = header_variant if header_variant is defined else "" %}
 {% set show_authenticated_header = current_user.is_authenticated and not force_guest_header %}
 
-<header class="main-header shadow-sm">
+<header class="main-header shadow-sm{% if header_variant %} {{ header_variant }}{% endif %}">
   <div class="container-fluid px-3 px-lg-4">
-    <nav class="navbar navbar-expand-lg app-navbar py-2">
+    <nav class="navbar navbar-expand-lg app-navbar py-2{% if show_authenticated_header %} app-navbar-auth{% endif %}">
       {% if show_authenticated_header %}
-        <a class="navbar-brand app-brand me-0" href="{{ url_for('main.pag_principal') }}">
-          <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="Logo PythIA" class="logo-header">
-          <div class="user-info">
-            <div class="user-summary">
-              <p class="welcome mb-0">{{ t("nav.hello", name=current_user.nombre) }}</p>
-              {% if current_user.is_admin %}
-                <span class="app-badge admin">{{ t("nav.admin") }}</span>
-              {% else %}
-                <span class="app-badge user">{{ t("nav.user") }}</span>
-              {% endif %}
-            </div>
-            <p class="last-login mb-0">
-              {{ t("nav.last_login") }}
-              {% if current_user.last_login %}
-                {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-              {% else %}
-                -
-              {% endif %}
-            </p>
+        <div class="user-info">
+          <div class="user-summary">
+            <p class="welcome mb-0">{{ t("nav.hello", name=current_user.nombre) }}</p>
+            {% if current_user.is_admin %}
+              <span class="app-badge admin">{{ t("nav.admin") }}</span>
+            {% else %}
+              <span class="app-badge user">{{ t("nav.user") }}</span>
+            {% endif %}
           </div>
-        </a>
+          <p class="last-login mb-0">
+            {{ t("nav.last_login") }}
+            {% if current_user.last_login %}
+              {{ current_user.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+            {% else %}
+              -
+            {% endif %}
+          </p>
+        </div>
+        <div class="app-header-wordmark" aria-label="PythIA">
+          <a {% if request.endpoint != 'main.pag_principal' %} href="{{ url_for('main.pag_principal') }}"{% endif %}>
+            <img id="nav-logo-home" src="{{ url_for('static', filename='img/PythIA_letras.png') }}" alt="PythIA" class="logo-header logo-header-letters">
+          </a>
+        </div>
       {% else %}
         <div class="navbar-brand app-brand me-0 app-brand-static" aria-current="page">
-          <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="Logo PythIA" class="logo-header">
-          <div class="user-info">
-            <p class="welcome mb-0"><strong>{{ guest_title }}</strong></p>
-            <p class="home-author mb-0">{{ guest_subtitle }}</p>
-          </div>
+          {% if show_guest_logo %}
+            <a {% if request.endpoint != 'main.inicio' %} href="{{ url_for('main.inicio') }}"{% endif %}>
+              <img src="{{ url_for('static', filename='img/PythIA_letras.png') }}" alt="PythIA" class="logo-header logo-header-letters">
+            </a>
+          {% endif %}
+          {% if show_guest_text %}
+            <div class="user-info">
+              <p class="welcome mb-0"><strong>{{ guest_title }}</strong></p>
+              <p class="home-author mb-0">{{ guest_subtitle }}</p>
+            </div>
+          {% endif %}
         </div>
       {% endif %}
 
       {% if show_authenticated_header %}
-        <button class="navbar-toggler border-0 shadow-none app-navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="{{ t('nav.open_menu') }}">
+        <button class="navbar-toggler border-0 shadow-none app-navbar-toggler" id="nav-open-menu" type="button" data-bs-toggle="offcanvas" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="{{ t('nav.open_menu') }}">
           <span class="navbar-toggler-icon"></span>
         </button>
-
-        <div class="collapse navbar-collapse app-navbar-collapse d-none d-lg-flex" id="mainNavbarDesktop">
-          <ul class="navbar-nav app-navbar-nav mx-auto mb-2 mb-lg-0">
-            {% if request.endpoint != 'main.pag_principal' %}
-              <li class="nav-item">
-                <a class="nav-link app-nav-link" href="{{ url_for('main.pag_principal') }}">{{ t("nav.home") }}</a>
-              </li>
-            {% endif %}
-            {% if request.endpoint != 'main.historial' %}
-              <li class="nav-item">
-                <a class="nav-link app-nav-link" href="{{ url_for('main.historial') }}">{{ t("nav.query_history") }}</a>
-              </li>
-            {% endif %}
-            {% if request.endpoint != 'main.edit_user' %}
-              <li class="nav-item">
-                <a class="nav-link app-nav-link" href="{{ url_for('main.edit_user') }}">{{ t("nav.edit_user") }}</a>
-              </li>
-            {% endif %}
-            {% if request.endpoint != 'main.stats_page' %}
-              <li class="nav-item">
-                <a class="nav-link app-nav-link" href="{{ url_for('main.stats_page') }}">{{ t("nav.usage_stats") }}</a>
-              </li>
-            {% endif %}
-            {% if current_user.is_admin and request.endpoint != 'admin.documents_list_page' %}
-              <li class="nav-item">
-                <a class="nav-link app-nav-link" href="{{ url_for('admin.documents_list_page') }}">{{ t("nav.manage_documents") }}</a>
-              </li>
-            {% endif %}
-            {% if current_user.is_admin and request.endpoint != 'admin.users' %}
-              <li class="nav-item">
-                <a class="nav-link app-nav-link" href="{{ url_for('admin.users') }}">{{ t("nav.manage_users") }}</a>
-              </li>
-            {% endif %}
-          </ul>
-
-          <div class="app-navbar-tools">
-            <div class="dropdown">
-              <button class="btn btn-outline-light btn-header dropdown-toggle app-settings-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {{ t("nav.settings") }}
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end mobile-nav-menu">
-                <li><h6 class="dropdown-header">{{ t("nav.appearance") }}</h6></li>
-                <li><button type="button" class="dropdown-item theme-option" data-theme-value="dark">{{ t("nav.dark_mode") }}</button></li>
-                <li><button type="button" class="dropdown-item theme-option" data-theme-value="light">{{ t("nav.light_mode") }}</button></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><h6 class="dropdown-header">{{ t("nav.internationalization") }}</h6></li>
-                {% for lang_code, lang_name in supported_languages.items() %}
-                  <li>
-                    <form method="POST" action="{{ url_for('set_language_route') }}" class="m-0">
-                      {{ language_form.csrf_token }}
-                      {{ language_form.lang(value=lang_code) }}
-                      {{ language_form.next(value=(request.full_path if request.query_string else request.path)) }}
-                      <button type="submit" class="dropdown-item{% if current_locale == lang_code %} active{% endif %}">
-                        {{ t("lang." ~ lang_code) }}
-                      </button>
-                    </form>
-                  </li>
-                {% endfor %}
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                  <form method="POST" action="{{ url_for('auth.logout') }}" class="m-0">
-                    {{ logout_form.hidden_tag() }}
-                    <button type="submit" class="dropdown-item">{{ t("nav.logout") }}</button>
-                  </form>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
       {% elif show_guest_auth_links %}
         <div class="guest-header-actions">
           <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-header">{{ t("landing.login") }}</a>
@@ -123,7 +65,7 @@
 </header>
 
 {% if show_authenticated_header %}
-  <div class="offcanvas offcanvas-end app-navbar-offcanvas d-lg-none" tabindex="-1" id="mainNavbar" aria-labelledby="mainNavbarLabel">
+  <div class="offcanvas offcanvas-end app-navbar-offcanvas" tabindex="-1" id="mainNavbar" aria-labelledby="mainNavbarLabel">
     <div class="offcanvas-header">
       <div>
         <h5 class="offcanvas-title mb-0" id="mainNavbarLabel">{{ t("nav.settings") }}</h5>
@@ -132,35 +74,30 @@
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ t('common.close') }}"></button>
     </div>
     <div class="offcanvas-body">
+      <div class="d-grid mb-3">
+        <button type="button" class="btn btn-outline-light" id="pythia-tour-start">
+          <i class="bi bi-magic me-1" aria-hidden="true"></i>{{ t("nav.tutorial") }}
+        </button>
+      </div>
       <ul class="navbar-nav justify-content-end flex-grow-1 pe-0 app-navbar-nav-mobile">
-        {% if request.endpoint != 'main.pag_principal' %}
+        <li class="nav-item">
+          <a class="nav-link app-nav-link{% if request.endpoint == 'main.pag_principal' %} active{% endif %}" id="nav-home" href="{{ url_for('main.pag_principal') }}"{% if request.endpoint == 'main.pag_principal' %} aria-current="page"{% endif %}>{{ t("nav.home") }}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link app-nav-link{% if request.endpoint == 'main.historial' %} active{% endif %}" id="nav-history" href="{{ url_for('main.historial') }}"{% if request.endpoint == 'main.historial' %} aria-current="page"{% endif %}>{{ t("nav.query_history") }}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link app-nav-link{% if request.endpoint == 'main.edit_user' %} active{% endif %}" id="nav-profile" href="{{ url_for('main.edit_user') }}"{% if request.endpoint == 'main.edit_user' %} aria-current="page"{% endif %}>{{ t("nav.edit_user") }}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link app-nav-link{% if request.endpoint == 'main.stats_page' %} active{% endif %}" id="nav-stats" href="{{ url_for('main.stats_page') }}"{% if request.endpoint == 'main.stats_page' %} aria-current="page"{% endif %}>{{ t("nav.usage_stats") }}</a>
+        </li>
+        {% if current_user.is_admin %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.pag_principal') }}">{{ t("nav.home") }}</a>
+            <a class="nav-link app-nav-link{% if request.endpoint == 'admin.documents_list_page' %} active{% endif %}" id="nav-docs" href="{{ url_for('admin.documents_list_page') }}"{% if request.endpoint == 'admin.documents_list_page' %} aria-current="page"{% endif %}>{{ t("nav.manage_documents") }}</a>
           </li>
-        {% endif %}
-        {% if request.endpoint != 'main.historial' %}
           <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.historial') }}">{{ t("nav.query_history") }}</a>
-          </li>
-        {% endif %}
-        {% if request.endpoint != 'main.edit_user' %}
-          <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.edit_user') }}">{{ t("nav.edit_user") }}</a>
-          </li>
-        {% endif %}
-        {% if request.endpoint != 'main.stats_page' %}
-          <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('main.stats_page') }}">{{ t("nav.usage_stats") }}</a>
-          </li>
-        {% endif %}
-        {% if current_user.is_admin and request.endpoint != 'admin.documents_list_page' %}
-          <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('admin.documents_list_page') }}">{{ t("nav.manage_documents") }}</a>
-          </li>
-        {% endif %}
-        {% if current_user.is_admin and request.endpoint != 'admin.users' %}
-          <li class="nav-item">
-            <a class="nav-link app-nav-link" href="{{ url_for('admin.users') }}">{{ t("nav.manage_users") }}</a>
+            <a class="nav-link app-nav-link{% if request.endpoint == 'admin.users' %} active{% endif %}" id="nav-users" href="{{ url_for('admin.users') }}"{% if request.endpoint == 'admin.users' %} aria-current="page"{% endif %}>{{ t("nav.manage_users") }}</a>
           </li>
         {% endif %}
       </ul>
@@ -168,15 +105,15 @@
       <div class="app-mobile-panel mt-3">
         <div class="mobile-nav-section">
           <div class="offcanvas-section-label">{{ t("nav.appearance") }}</div>
-          <div class="list-group app-offcanvas-group">
-            <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="dark">{{ t("nav.dark_mode") }}</button>
-            <button type="button" class="list-group-item list-group-item-action theme-option" data-theme-value="light">{{ t("nav.light_mode") }}</button>
+          <div class="list-group app-offcanvas-group" id="nav-theme">
+            <button type="button" class="list-group-item list-group-item-action theme-option" id="nav-theme-dark" data-theme-value="dark">{{ t("nav.dark_mode") }}</button>
+            <button type="button" class="list-group-item list-group-item-action theme-option" id="nav-theme-light" data-theme-value="light">{{ t("nav.light_mode") }}</button>
           </div>
         </div>
 
         <div class="mobile-nav-section">
           <div class="offcanvas-section-label">{{ t("nav.internationalization") }}</div>
-          <div class="list-group app-offcanvas-group">
+          <div class="list-group app-offcanvas-group" id="nav-i18n">
             {% for lang_code, lang_name in supported_languages.items() %}
               <form method="POST" action="{{ url_for('set_language_route') }}" class="m-0">
                 {{ language_form.csrf_token }}
@@ -192,7 +129,7 @@
 
         <form method="POST" action="{{ url_for('auth.logout') }}" class="m-0">
           {{ logout_form.hidden_tag() }}
-          <button type="submit" class="btn btn-light btn-header w-100 mt-3">{{ t("nav.logout") }}</button>
+          <button type="submit" class="btn btn-light btn-header w-100 mt-3" id="nav-logout">{{ t("nav.logout") }}</button>
         </form>
       </div>
     </div>

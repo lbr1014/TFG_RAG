@@ -6,6 +6,7 @@ import sys
 import tempfile
 import types
 import unittest
+import asyncio
 from unittest.mock import AsyncMock, MagicMock
 from unittest.mock import patch
 
@@ -102,17 +103,17 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 runpy.run_module("app.main.code.services.markdown.Conversion_markdown", run_name="__main__")
 
-    def test_import_auto_gpu_configuration_uses_cpu_when_cuda_is_unavailable(self):
+    def test_import_auto_gpu_configuration_requests_gpu_when_env_is_missing_even_without_cuda(self):
         imported = _import_conversion_with_torch(cuda_available=False)
 
-        self.assertEqual(imported.DEFAULT_NUM_GPU, 0)
-        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-cpu")
+        self.assertEqual(imported.DEFAULT_NUM_GPU, -1)
+        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
-    def test_import_auto_gpu_configuration_uses_full_offload_when_cuda_is_available(self):
+    def test_import_auto_gpu_configuration_requests_gpu_when_env_is_missing_with_cuda(self):
         imported = _import_conversion_with_torch(cuda_available=True)
 
         self.assertEqual(imported.DEFAULT_NUM_GPU, -1)
-        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-cuda-full-offload")
+        self.assertEqual(imported.OLLAMA_NUM_GPU_SOURCE, "auto-ollama")
 
     def test_build_chat_payload_sets_model_image_and_gpu_options(self):
         payload = conversion._build_chat_payload("contenido", "base64", num_gpu=0)
@@ -121,6 +122,21 @@ class ConversionMarkdownUnitTest(unittest.TestCase):
         self.assertEqual(payload["messages"][0]["images"], ["base64"])
         self.assertFalse(payload["stream"])
         self.assertEqual(payload["options"]["num_gpu"], 0)
+
+    def test_process_pdf_async_runs_pages_with_concurrency_and_preserves_order(self):
+        async def fake_ocr(_client, _img, page, total_pages, model_name=None):
+            await asyncio.sleep(0)
+            return f"page-{page}/{total_pages}"
+
+        with patch.object(conversion, "get_pdf_page_count", return_value=2), patch.object(
+            conversion, "pdf_page_to_image", return_value=Path("fake.png")
+        ), patch.object(conversion, "ocr_page_with_nanonets_async", side_effect=fake_ocr), patch.object(
+            conversion, "OCR_CONCURRENCY", 2
+        ):
+            out = asyncio.run(conversion.process_pdf_async(Path("x.pdf")))
+
+        self.assertEqual(out.splitlines()[0], "page-1/2")
+        self.assertIn("page-2/2", out)
 
     def test_response_error_details_prefers_json_error_fields(self):
         response = MagicMock()

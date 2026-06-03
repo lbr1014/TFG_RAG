@@ -1,5 +1,22 @@
 \documentclass[a4paper,12pt,twoside]{memoir}
 
+%Nuevos paquetes añadidos
+\usepackage{pdflscape}
+\usepackage{textcomp}
+\usepackage{xparse}
+\usepackage{dirtree}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{breakable}
+\usepackage{array}
+\usepackage{longtable}
+
+%Cabeceras
+\copypagestyle{capitulo-en-cab}{headings}
+\makeoddhead{capitulo-en-cab}{\itshape\leftmark}{}{\thepage}
+\makeevenhead{capitulo-en-cab}{\thepage}{}{\itshape\leftmark} 
+\pagestyle{capitulo-en-cab}
+
+
 % Castellano
 \usepackage[spanish,es-tabla]{babel}
 \selectlanguage{spanish}
@@ -8,17 +25,6 @@
 \usepackage{lmodern} % scalable font
 \usepackage{microtype}
 \usepackage{placeins}
-\usepackage{pdflscape}
-\usepackage{textcomp}
-\usepackage{xparse}
-\usepackage{svg}
-
-
-%Cabeceras
-\copypagestyle{capitulo-en-cab}{headings}
-\makeoddhead{capitulo-en-cab}{\itshape\leftmark}{}{\thepage}
-\makeevenhead{capitulo-en-cab}{\thepage}{}{\itshape\leftmark} 
-\pagestyle{capitulo-en-cab}
 
 \RequirePackage{booktabs}
 \RequirePackage[table]{xcolor}
@@ -105,13 +111,6 @@
 	\end{figure}
 }
 
-\newcommand{\imagendiagramsvg}[3]{
-	\begin{figure}
-		\centering
-		\includesvg[width=#3\textwidth]{#1}
-		\caption{#2}\label{fig:#1}
-	\end{figure}
-}
 
 
 % El comando \figura nos permite insertar figuras comodamente, y utilizando
@@ -199,7 +198,7 @@
 \begin{landscape}
   \begin{table}
    \begin{center}
-    \rowcolors {2}{gray!35}{}
+S    \rowcolors {2}{gray!35}{}
     \begin{tabular}{#2}
      \toprule
      #4
@@ -338,7 +337,39 @@
   \end{center}
 }
 
+% Nuevo comando para tabla multipágina con cabecera repetida y filas alternas.
 
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+\newcommand{\tablaMultipaginaColor}[6]{%
+	\rowcolors{2}{gray!20}{white}
+	\small
+	\setlength{\tabcolsep}{4pt}
+	\begin{longtable}{#2}
+		\caption{#1}
+		\label{tabla:#4} \\
+		\toprule #5 \\
+		\midrule
+		\endfirsthead
+		
+		\rowcolor{white}
+		\multicolumn{#3}{l}{\small\slshape Continúa desde la página anterior}\\
+		\toprule #5 \\
+		\midrule
+		\endhead
+
+		\rowcolor{white}
+		\midrule
+		\multicolumn{#3}{r}{\small\slshape Continúa en la página siguiente}\\
+		\endfoot
+
+		\bottomrule
+		\endlastfoot
+		#6
+	\end{longtable}
+}
 
 
 \graphicspath{ {./img/} }

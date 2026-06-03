@@ -2,9 +2,13 @@
 
 \section{Introducción}
 
+En este apartado se recoge la especificación de requisitos del sistema desarrollado. En él se describen los objetivos generales del proyecto (ver sección~\hyperref[req:objgen]{B.2}), así como los requisitos funcionales y no funcionales(ver sección~\hyperref[req:req]{B.3}) que definen el comportamiento esperado de la aplicación y las restricciones que debe cumplir durante su funcionamiento (ver sección~\hyperref[req:esp]{B.4}).
 
+El propósito de esta especificación es servir como guía durante el desarrollo del sistema y como referencia para verificar que la aplicación implementa correctamente las funcionalidades previstas. Además, este documento permite definir de forma clara el alcance del proyecto y establecer una descripción detallada de las capacidades que ofrece la aplicación.
 
-\section{Objetivos generales}
+La organización de este apartado se ha realizado tomando como referencia las recomendaciones del estándar \file{IEEE 830-1998}~\cite{req:ieee} para la elaboración de documentos de especificación de requisitos software (\eng{Software Requirements Specification}, SRS). Dicho estándar establece una serie de características deseables para una correcta especificación de requisitos, indicando que esta debe ser completa, consistente, inequívoca, correcta, trazable, verificable y fácilmente modificable.
+
+\section{Objetivos generales} \label{req:objgen}
 
 Los objetivos generales que se buscan cumplir con este proyecto son:
 \begin{itemize}
@@ -13,9 +17,11 @@ Los objetivos generales que se buscan cumplir con este proyecto son:
 	\item Automatizar la recopilación, procesamiento e indexación de documentos de licitaciones, de forma que puedan ser integrados eficientemente en una base de datos vectorial.
 	\item Facilitar la consulta de la información de las licitaciones mediante una aplicación web intuitiva y accesible para usuarios autentificados.
 	\item Mejorar la comprensión y análisis de la información administrativa y técnica contenida en las licitaciones.
+	\item Proporcionar la trazabilidad de la respuesta del modelo, mostrando la información documental con la que se alimenta al \eng{LLM}. 
+	\item Incorporar mecanismos automáticos de evaluación que permitan analizar la calidad de las respuestas generadas por el sistema \eng{RAG}.
 \end{itemize}
 
-\section{Catálogo de requisitos}
+\section{Catálogo de requisitos} \label{req:req}
 
 A continuación se van a definir los requisitos del proyecto, tanto los funcionales como los no funcionales.
 
@@ -69,10 +75,16 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 	\tightlist
 		\item \req{RF-6.1} Generación de \eng{embedding}: el sistema debe generar el \eng{embedding} de la consulta del usuario.
 		\item \req{RF-6.2} Búsqueda por similitud: el sistema debe realizar una búsqueda por similitud en la base de datos vectorial.
+		\item \req{RF-6.3} Filtrado por metadatos: el sistema debe permitir filtrar al recuperación utilizando los metadatos asociados a los documentos.
 	\end{itemize}
 	\item \req{RF-7} Construcción del \eng{prompt} con contexto: el sistema debe construir un \eng{prompt}, para alimentar al \eng{LLM}, que incluya los \eng{chunks} recuperados, la pregunta del usuario e instrucciones de uso del contexto.
 	\item \req{RF-8} Generación de respuestas mediante un \eng{LLM}: el sistema debe enviar el \eng{prompt} generado a un modelo \eng{LLM} y mostrar la respuesta de dicho modelo al usuario.
-	\item \req{RF-9} Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \eng{chunks} empleados para la generación de la respuesta. 
+	\begin{itemize}
+	\tightlist
+		\item \req{RF-8.1} Selección de modelo: el sistema debe permitir utilizar distintos modelos \eng{LLM}.
+		\item \req{RF-8.2} Control de alucinaciones: el sistema debe indicar cuando no existe suficiente información relevante para responder. 
+	\end{itemize}
+	\item \req{RF-9} Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \eng{chunks} empleados para la generación de la respuesta, así como su similitud. 
 	\item \req{RF-10} Gestión de usuarios: el sistema debe permitir la gestión de usuarios a través de la aplicación web.
 	\begin{itemize}
 	\tightlist
@@ -88,12 +100,19 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 	\tightlist
 		\item \req{RF-11.1} Historial de consultas: los usuarios podrán ver su historial de consultas.
 		\item \req{RF-11.2} Borrar consultas: los usuarios podrán borrar consultas del historial.
+		\item \req{RF-11.3} Consultas guiadas: el sistema debe permitir realizar consultas guiadas especializadas mediante \eng{prompts} predefinidos. Debe incluir resúmenes, importes, solvencia, garantías, criterios de adjudicación y otras preguntas típicas de las licitaciones. 
 	\end{itemize}
 	\item \req{RF-12} Importación automática de licitaciones: el sistema debe permitir al administrador importar de manera automática las licitaciones mediante \eng{web scraping}.
 	\begin{itemize}
 	\tightlist
 		\item \req{RF-12.1} Descarga y almacenamiento: el sistema debe descargar y almacenar los documentos obtenidos, así como sus metadatos.
 		\item \req{RF-12.2} Gestión de errores y duplicados: el sistema debe continuar aunque la descarga de algún documento falle. Debe registrar los errores y evitar duplicados.
+	\end{itemize}
+	\item \req{RF-13} Mostrar estadísticas: el sistema debe permitir ver estadísticas y gráficos de uso y de comparación de modelos.
+	\item \req{RF-14} Evaluación del sistema \eng{RAG}: el sistema debe permitir evaluar automáticamente la calidad de las respuestas generadas. 
+	\begin{itemize}
+	\tightlist
+		\item \req{RF-14.1} Generación de \eng{datasets}: el sistema debe permitir generar \eng{dtasets} de evaluación automáticos.
 	\end{itemize}
 \end{itemize}
 
@@ -122,9 +141,16 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 	\item \req{RNF-9} Recuperación y tolerancia a fallos: el sistema debe disponer de mecanismos que permitan la recuperación de información y la restauración del servicio tras fallos, garantizando la integridad de los datos.
 	\item \req{RNF-10} Evitar alucinaciones: el sistema no debe responder cuando no haya contexto relevante suficiente.
 	\item \req{RNF-11} Calidad de las respuestas del \eng{LLM}: el sistema debe llevar a cabo un control de calidad de las respuestas que da el \eng{LLM} a las consultas del usuario.
+	\item \req{RNF-12} Escalabilidad: el sistema debe permitir incorporar nuevos documentos sin necesidad de reconstruir la aplicación.
+	\item \req{RNF-13} Modularidad: el sistema debe permitir sustituir componentes como el \eng{LLM}, el modelo de \eng{embeddings} o la base de datos vectorial con cambios mínimos.
+	\item \req{RNF-14} Portabilidad: la aplicación debe poder desplegarse en distintos entornos utilizando contenedores \file{Docker}.
+	\item \req{RNF-15} Mantenibilidad: el sistema debe seguir una arquitectura modular y debe estar correctamente documentado para que se facilite su mantenimiento.
+	\item \req{RNF-16} Internacionalización: el sistema debe traducirse de manera automática al inglés.
+	\item \req{RNF-17} Compatibilidad \eng{responsive}: la interfaz debe adaptarse a distintos tamaños de pantalla.
+	\item \req{RFN-18} Obsevabilidad: el sistema debe proporcionar \eng{logs} y métricas para monitorizar el estado del procesamiento y las consultas.
 \end{itemize}
 
-\section{Especificación de requisitos}
+\section{Especificación de requisitos} \label{req:esp}
 
 Los actores del sistema son:
 \begin{itemize}
@@ -163,6 +189,11 @@ Los casos de uso definidos para el proyecto son:
 	\item \textbf{CU-19} Borrar usuario (ver tabla~\ref{req-19}).
 	\item \textbf{CU-20} Modificar rol del usuario (ver tabla~\ref{req-20}).
 	\item \textbf{CU-21} Editar usuario (ver tabla~\ref{req-21}).
+	\item \textbf{CU-22} Realizar consulta guiada (ver tabla~\ref{req-22}).
+	\item \textbf{CU-23} Cambiar idioma (ver tabla~\ref{req-23}).
+	\item \textbf{CU-24} Cambiar tema visual (ver tabla~\ref{req-24}).
+	\item \textbf{CU-25} Visualizar estadísticas (ver tabla~\ref{req-25}).
+	\item \textbf{CU-26} Ejecutar evaluación \eng{RAG} (ver tabla~\ref{req-26}).
 \end{itemize}
 El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/CasosUso}.
 
@@ -928,3 +959,183 @@ a través de un mensaje.
 \end{table}
 
 
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{\textbf{CU-22}}    & \textbf{ Realizar consulta guiada}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & \refreq{RF-11}, \refreq{RF-11.3}, \refreq{RF-6}, \refreq{RF-7}, \refreq{RF-8}, \refreq{RF-9} \\
+		\textbf{Descripción}          & Permite al usuario realizar consultas utilizando un formulario que llama a \eng{prompts} especializados. \\
+		\textbf{Precondición}         & Hay un usuario autentificado y existen documentos indexados en el sistema. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a la interfaz de consulta.
+			\item El usuario selecciona una pregunta del formulario (resumen, importes, solvencia, garantías, criterios de adjudicación, etc.).
+			\item El usuario pulsa el botón <<Preguntar>>.
+			\item El sistema genera el \eng{embedding} de la consulta.
+			\item El sistema recupera los \eng{chunks} más relevantes.
+			\item El sistema construye el \eng{prompt} aumentado según el perfil seleccionado.
+			\item El sistema envía el \eng{prompt} al \eng{LLM}.
+			\item El sistema muestra la respuesta generada junto con la trazabilidad.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & El usuario ve la respuesta y se almacena en el historial. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item No existen documentos indexados $\Rightarrow$ Muestra un mensaje de error.
+			\item La consulta está vacía $\Rightarrow$ Muestra un mensaje indicando que debe introducirse una consulta.
+			\item No se encuentra contexto relevante $\Rightarrow$ El sistema informa de que no dispone de información suficiente.
+			\item El \eng{LLM} no responde o se produce un \eng{timeout} $\Rightarrow$ Muestra un mensaje de error controlado.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Alta.  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CU-22} Realizar consulta guiada.}
+	\label{req-22}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{\textbf{CU-23}}    & \textbf{ Cambiar idioma}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & \refreq{RNF-16} \\
+		\textbf{Descripción}          & Permite al usuario cambiar el idioma de la interfaz de la aplicación. \\
+		\textbf{Precondición}         & Un usuario accede a la aplicación \eng{web}. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a la aplicación \eng{web}.
+			\item El usuario selecciona el idioma deseado
+			\item El sistema recarga la interfaz mostrando los textos traducidos.
+			\item Si el usuario está autenticado el sistema guarda la preferencia de idioma.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & La aplicación se muestra en el idioma seleccionado. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El idioma seleccionado no está disponible $\Rightarrow$ El sistema mantiene el idioma actual.
+			\item Error al guardar la preferencia $\Rightarrow$ Muestra un mensaje de error.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media.  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CU-23} Cambiar idioma.}
+	\label{req-23}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{\textbf{CU-24}}    & \textbf{ Cambiar tema visual}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & \refreq{RNF-6}, \refreq{RNF-17}\\
+		\textbf{Descripción}          & Permite al usuario cambiar entre el modo claro y el modo oscuro. Por defecto se muestra en el modo de l sistema. \\
+		\textbf{Precondición}         & Un usuario accede a la aplicación \eng{web}. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a la aplicación \eng{web}.
+			\item El usuario selecciona el tema deseado.
+			\item El sistema recarga la interfaz mostrando los elementos visuales del tema seleccionado.
+			\item Si el usuario está autenticado el sistema guarda la preferencia de modo.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & La aplicación se muestra utilizando el tema seleccionado (claro/oscuro). \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Error al guardar la preferencia $\Rightarrow$ Muestra un mensaje de error.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media.  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CU-24} Cambiar tema visual.}
+	\label{req-24}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{\textbf{CU-25}}    & \textbf{ Visualizar estadísticas}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & \refreq{RF-13}, \refreq{RNF-6}\\
+		\textbf{Descripción}          & Permite visualizar estadísticas y gráficas relacionadas con el uso de la aplicación por parte de los usuarios y comparativas entre los modelos \eng{LLM} cargados en el sistema. \\
+		\textbf{Precondición}         & Hay un usuario autentificado y existen datos registrados en el sistema. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El usuario accede a la página de estadísticas.
+			\item El sistema recupera los datos almacenados.
+			\item El sistema genera gráficas y métricas mediante \file{D3.js}.
+			\item El usuario ve las gráficas disponibles para su rol.
+		\end{enumerate}\\
+		\textbf{Postcondición}        & La aplicación muestra las gráficas y estadísticas. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item No existen datos suficientes $\Rightarrow$ El sistema muestra un mensaje informativo.
+			\item Error al cargar las estadísticas $\Rightarrow$ Muestra un mensaje de error.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Media.  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CU-25} Visualizar estadísticas.}
+	\label{req-25}
+\end{table}
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{\textbf{CU-26}}    & \textbf{ Ejecutar evaluación \eng{RAG}}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Requisitos asociados} & \refreq{RF-14}, \refreq{RF-14.1}, \refreq{RNF-11} \\
+		\textbf{Descripción}          & Permite al administrador ejecutar evaluaciones automáticas sobre la calidad del \eng{RAG}. \\
+		\textbf{Precondición}         & Hay un administrador autentificado y existen documentos indexados en la base de datos vectorial. \\
+		\textbf{Acciones}             &
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item El administrador accede a la página de evaluación.
+			\item El administrador selecciona el modelo y configuración de evaluación.
+			\item Se ejecuta el \eng{pipeline} de evaluación.		
+			\item El sistema almacena los resultados obtenidos.
+			\item El sistema muestra las métricas y resultados de evaluación.
+			\end{enumerate}\\
+		\textbf{Postcondición}        & Los resultados de la evaluación quedan almacenados y disponibles para su consulta. \\
+		\textbf{Excepciones}          & 
+		\begin{enumerate}
+			\def\labelenumi{\arabic{enumi}.}
+			\tightlist
+			\item Error durante la ejecución de las métricas $\Rightarrow$ El sistema registra el error y detiene la evaluación.
+			\item El modelo \eng{LLM} no responde $\Rightarrow$ Muestra un mensaje de \eng{timeout} o error controlado.
+		\end{enumerate}\\
+		\textbf{Importancia}          & Alta.  \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CU-26} Ejecutar evaluación \eng{RAG}.}
+	\label{req-26}
+\end{table}

@@ -8,10 +8,9 @@ from unittest.mock import MagicMock, patch
 
 from flask_login import login_user
 
-from app.test.support import BaseAppTestCase
-
-from app.main.code.model.rag_query_state import RAGQueryState
 from app.main.code.extensions import db
+from app.main.code.model.rag_query_state import RAGQueryState
+from app.test.support import BaseAppTestCase
 
 
 class RAGRoutesIntegrationTest(BaseAppTestCase):
@@ -92,7 +91,7 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
             login_user(self.user)
             payload = rag_routes.build_model_comparison_payload()
 
-        self.assertEqual(payload["scope"], "user")
+        self.assertEqual(payload["scope"], "global")
         self.assertEqual(payload["summary"]["models"], 0)
         self.assertEqual(payload["models"], [])
 
@@ -120,6 +119,50 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(job.status, "queued")
         mock_submit.assert_called_once()
 
+    @patch("app.main.code.controllers.rag.routes.executor.submit")
+    def test_rag_ask_builds_guided_question_on_server(self, mock_submit):
+        self.create_document(numero_expediente="EXP-55")
+
+        response = self.client.post(
+            "/rag/ask",
+            data={
+                "question": "",
+                "expediente": "EXP-55",
+                "doc_type": "tecnico",
+                "question_kind": "amounts",
+                "model": "fake-model",
+            },
+        )
+
+        self.assertEqual(response.status_code, 202)
+        job = db.session.get(RAGQueryState, response.get_json()["job_id"])
+        self.assertIn("expediente EXP-55", job.question)
+        self.assertIn("doc_type=tecnico", job.question)
+        self.assertIn("cantidades economicas", job.question)
+        self.assertEqual(job.model_name, "fake-model")
+        mock_submit.assert_called_once()
+
+    @patch("app.main.code.controllers.rag.routes.executor.submit")
+    def test_rag_ask_builds_summary_guided_question_and_ignores_locked_fields(self, mock_submit):
+        self.create_document(numero_expediente="EXP-77")
+
+        response = self.client.post(
+            "/rag/ask",
+            data={
+                "question": "",
+                "expediente": "EXP-77",
+                "summary": "y",
+                "model": "fake-model",
+            },
+        )
+
+        self.assertEqual(response.status_code, 202)
+        job = db.session.get(RAGQueryState, response.get_json()["job_id"])
+        self.assertIn("expediente EXP-77", job.question)
+        self.assertIn("resumen general y detallado", job.question)
+        self.assertNotIn("pliego tecnico", job.question)
+        mock_submit.assert_called_once()
+
     def test_rag_ask_rejects_invalid_form(self):
         response = self.client.post("/rag/ask", data={"question": ""})
 
@@ -145,6 +188,24 @@ class RAGRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(response.get_json()["job_id"], active_job.id)
         self.assertTrue(response.get_json()["reused"])
         mock_submit.assert_not_called()
+
+    @patch("app.main.code.controllers.rag.routes.executor.submit")
+    def test_rag_ask_does_not_reuse_active_job_when_cancel_requested(self, mock_submit):
+        active_job = RAGQueryState(
+            user_id=self.user.id,
+            question="Anterior",
+            status="running",
+            cancel_requested=True,
+        )
+        db.session.add(active_job)
+        db.session.commit()
+
+        response = self.client.post("/rag/ask", data={"question": "Nueva pregunta"})
+
+        self.assertEqual(response.status_code, 202)
+        self.assertNotEqual(response.get_json()["job_id"], active_job.id)
+        self.assertNotIn("reused", response.get_json())
+        mock_submit.assert_called_once()
 
     def test_rag_status_only_allows_owner(self):
         owner = self.create_user(email="owner-rag@example.com")

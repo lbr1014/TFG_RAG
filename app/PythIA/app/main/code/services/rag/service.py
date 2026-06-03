@@ -9,13 +9,15 @@ import logging
 import re
 import time
 import unicodedata
-from typing import Any, Dict, Optional
+from typing import Any
 
 from flask_login import current_user
+
 from app.main.code.extensions import db
+from app.main.code.inetrnacionalizacion.tarduccion import translate_for
 from app.main.code.model.chunk import Chunk
 from app.main.code.model.consulta import Consulta
-from app.main.code.inetrnacionalizacion.tarduccion import translate_for
+
 logger = logging.getLogger(__name__)
 
 from .PrototipoRAG import (
@@ -25,16 +27,62 @@ from .PrototipoRAG import (
     get_ollama_execution_device,
     obtener_mejor_chunk,
 )
-from qdrant_client import models as qmodels
 
-
-EMPTY_ANSWER: Dict[str, Any] = {
+EMPTY_ANSWER: dict[str, Any] = {
     "answer": "",
     "title": "",
     "filename": "",
     "segment_index": -1,
     "chunk": "",
 }
+
+QUESTION_MIN_CHUNKS = 5
+QUESTION_MAX_CHUNKS = 20
+
+GUIDED_QUERY_PROFILES = {
+    "summary": {
+        "phrases": ("resumen general y detallado del documento", "resumen detallado del documento"),
+        "retrieval_k": 80,
+    },
+    "amounts": {
+        "phrases": ("cantidades economicas", "importes", "presupuestos", "umbrales"),
+        "retrieval_k": 18,
+    },
+    "deadlines": {
+        "phrases": ("plazos importantes", "fecha limite", "presentacion de ofertas"),
+        "retrieval_k": 18,
+    },
+    "solvency": {
+        "phrases": ("requisitos de solvencia",),
+        "retrieval_k": 14,
+    },
+    "criteria": {
+        "phrases": ("criterios de adjudicacion", "ponderacion"),
+        "retrieval_k": 16,
+    },
+    "guarantees": {
+        "phrases": ("garantias provisionales", "garantias definitivas"),
+        "retrieval_k": 12,
+    },
+    "budget": {
+        "phrases": ("presupuesto base", "valor estimado"),
+        "retrieval_k": 14,
+    },
+    "duration": {
+        "phrases": ("duracion del contrato", "posibles prorrogas"),
+        "retrieval_k": 12,
+    },
+    "penalties": {
+        "phrases": ("penalizaciones", "causas de resolucion", "incumplimientos"),
+        "retrieval_k": 16,
+    },
+    "submission": {
+        "phrases": ("presentar la oferta", "documentacion requerida", "sobres o archivos"),
+        "retrieval_k": 16,
+    },
+}
+
+QUESTION_MIN_SIMILARITY = 0.5
 
 EXPEDIENTE_KEYWORDS = {
     "administrativo",
@@ -82,9 +130,6 @@ def normalize_text(value: str | None) -> str:
     return re.sub(r"\s+", " ", normalized).strip()
 
 
-
-
-
 def detect_tipo_documento(question: str) -> str | None:
     """
     Detecta si la pregunta se refiere a pliegos administrativos o técnicos.
@@ -128,6 +173,37 @@ def detect_tipo_documento(question: str) -> str | None:
         return "tecnico"
 
     return None
+
+def normalize_guided_retrieval_k(profile_name: str, retrieval_k: int | None) -> int:
+    """
+    Normaliza el numero de chunks que se pediran a Qdrant para un perfil.
+
+    Todas las preguntas tienen un minimo de 5. El resumen puede pedir mas
+    contexto; el resto queda limitado a 20 para mantener prompts razonables.
+    """
+    normalized_k = max(QUESTION_MIN_CHUNKS, int(retrieval_k or QUESTION_MAX_CHUNKS))
+    if profile_name != "summary":
+        normalized_k = min(normalized_k, QUESTION_MAX_CHUNKS)
+    return normalized_k
+
+
+def detect_guided_query_profile(question: str) -> tuple[str, int]:
+    """
+    Detecta las preguntas generadas por el formulario guiado y devuelve el
+    perfil de prompt junto con el número de chunks recomendado.
+    
+    Args:
+        question: Texto de la pregunta del usuario.
+
+    Returns:
+        Una tupla con el nombre del perfil y el número de chunks recomendado.
+    """
+    normalized = normalize_text(question)
+    for profile_name, config in GUIDED_QUERY_PROFILES.items():
+        if any(phrase in normalized for phrase in config["phrases"]):
+            return profile_name, normalize_guided_retrieval_k(profile_name, config["retrieval_k"])
+    return "general", normalize_guided_retrieval_k("general", QUESTION_MAX_CHUNKS)
+
 
 def extract_expediente_candidate(question: str) -> str | None:
     """
@@ -224,7 +300,7 @@ async def rag_answer(
     on_status=None,
     user_id: int | None = None,
     lang: str = "es",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Procesa una pregunta usando el sistema RAG y guarda la consulta en BD.
     Valida la pregunta, extrae metadatos (expediente, tipo documento),
@@ -253,15 +329,28 @@ async def rag_answer(
     """
 
     question = (question or "").strip()
+    tipo_override: str | None = None
+    marker = re.search(r"\[doc_type\s*=\s*(administrativo|tecnico)\s*\]", question, re.IGNORECASE)
+    if marker:
+        tipo_override = marker.group(1).strip().lower()
+        # Evita regex con cuantificadores "abiertos" alrededor de un patrón variable:
+        # eliminamos el marcador y su whitespace adyacente de forma determinista.
+        left, right = marker.span()
+        while left > 0 and question[left - 1].isspace():
+            left -= 1
+        while right < len(question) and question[right].isspace():
+            right += 1
+        question = (question[:left] + " " + question[right:]).strip()
     invalid = validate_question(question, lang=lang)
 
     if invalid:
         return invalid
 
     start = time.perf_counter()
-    data: Dict[str, Any]
+    data: dict[str, Any]
     numero_expediente = resolve_numero_expediente(question)
-    tipo_documento = detect_tipo_documento(question)
+    tipo_documento = tipo_override or detect_tipo_documento(question)
+    query_profile, retrieval_k = detect_guided_query_profile(question)
 
     try:
         if on_status:
@@ -274,6 +363,9 @@ async def rag_answer(
             on_status=on_status,
             numero_expediente=numero_expediente,
             tipo_documento=tipo_documento,
+            query_profile=query_profile,
+            retrieval_k=retrieval_k,
+            min_similarity=QUESTION_MIN_SIMILARITY,
         )
 
     except QueryCancelledError:
@@ -284,11 +376,13 @@ async def rag_answer(
     except OllamaModelNotFoundError as e:
         logger.warning("Modelo de Ollama no disponible: %s", e)
         data = message_error(translate_for(lang, "rag.model_not_found_error"))
-    except Exception as e:
-        logger.exception("Error en rag_answer: %s", e)
+    except Exception:
+        logger.exception("Error en rag_answer")
         data = message_error(translate_for(lang, "rag.system_error"))
 
     elapsed = time.perf_counter() - start
+    # `obtener_mejor_chunk` intenta rellenar `execution_device` con el dispositivo real
+    # (vía /api/ps). Solo usamos fallback si faltase.
     data.setdefault("execution_device", get_ollama_execution_device())
 
     # Guardado en BBDD
@@ -305,7 +399,7 @@ async def rag_answer(
     return data
 
 
-def message_error(msg: str) -> Dict[str, Any]:
+def message_error(msg: str) -> dict[str, Any]:
     """
     Crea un diccionario de respuesta de error para el sistema RAG.
 
@@ -321,7 +415,7 @@ def message_error(msg: str) -> Dict[str, Any]:
     out["answer"] = msg
     return out
 
-def validate_question(question: str, lang: str = "es") -> Optional[Dict[str, Any]]:
+def validate_question(question: str, lang: str = "es") -> dict[str, Any] | None:
     """
     Valida una pregunta antes de procesarla en el sistema RAG.
     Verifica que la pregunta no esté vacía y no exceda la longitud máxima permitida.
@@ -343,7 +437,7 @@ def validate_question(question: str, lang: str = "es") -> Optional[Dict[str, Any
 
     return None
 
-def try_persist(question: str, data: Dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
+def try_persist(question: str, data: dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
     """
     Intenta guardar una consulta en la base de datos con manejo de errores.
     Envuelve la función persist_consulta en un try-catch para evitar que
@@ -367,7 +461,7 @@ def try_persist(question: str, data: Dict[str, Any], elapsed: float, user_id: in
         db.session.rollback()
         
 
-def persist_consulta(question: str, data: Dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
+def persist_consulta(question: str, data: dict[str, Any], elapsed: float, user_id: int | None = None) -> None:
     """
     Guarda una consulta completa en la base de datos con todos sus metadatos.
     Crea una entidad Consulta con la pregunta, respuesta, tiempo de procesamiento,
@@ -401,62 +495,3 @@ def persist_consulta(question: str, data: Dict[str, Any], elapsed: float, user_i
             elapsed=elapsed,
         )
         db.session.commit()
-
-def build_fragmento(item: dict[str, Any], chunk_obj: Optional["Chunk"]) -> dict[str, Any]:
-    """
-    Construye un diccionario de fragmento con metadatos completos.
-    Combina la información del item recuperado de Qdrant con los metadatos
-    adicionales del objeto Chunk de la base de datos, creando una estructura
-    completa de fragmento para almacenar en la consulta.
-
-    Args:
-        item: Diccionario con datos del fragmento recuperado de Qdrant.
-        chunk_obj: Objeto Chunk de la base de datos, puede ser None.
-
-    Returns:
-        Diccionario con estructura completa del fragmento:
-        - ranking: Posición en los resultados
-        - similitud: Puntaje de similitud
-        - qdrant_point_id: ID del punto en Qdrant
-        - chunk: Texto del fragmento
-        - metadata: Diccionario con metadatos adicionales
-    """
-    return Chunk.build_fragment_from_retrieved_item(item, chunk_obj)
-        
-
-def find_chunk(item: dict) -> Optional["Chunk"]:
-    """
-    Busca un objeto Chunk en la base de datos usando diferentes estrategias.
-    Primero intenta encontrar el chunk por qdrant_point_id, y si no lo encuentra,
-    usa la combinación de document_id, doc_sha256 y segment_index como fallback.
-
-    Args:
-        item: Diccionario con metadatos del fragmento recuperado.
-
-    Returns:
-        Objeto Chunk si se encuentra en la base de datos, None en caso contrario.
-    """
-
-    return Chunk.find_from_retrieved_item(item)
-
-def qdrant_search_with_scores(qdrant, collection_name: str, query_vector: list[float], limit: int = 10):
-    """
-    Realiza una búsqueda vectorial en Qdrant y retorna puntos con puntuaciones (scores).
-
-    Args:
-        qdrant: Cliente de Qdrant configurado.
-        collection_name: Nombre de la colección en Qdrant.
-        query_vector: Vector de consulta para la búsqueda.
-        limit: Número máximo de resultados a retornar. Defaults to 10.
-
-    Returns:
-        Lista de objetos ScoredPoint con .id, .score y payload incluido.
-    """
-    res = qdrant.query_points(
-        collection_name=collection_name,
-        query=query_vector,
-        limit=limit,
-        with_payload=True,
-        with_vectors=False,
-    )
-    return getattr(res, "points", res) 

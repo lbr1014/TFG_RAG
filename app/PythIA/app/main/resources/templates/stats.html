@@ -8,39 +8,12 @@
 
 {% block content %}
   <section class="py-4 py-lg-5">
-    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-end gap-3 mb-4">
-      <div>
-        <h1 class="display-6 mb-2">{{ stats_scope_title }}</h1>
-        <p class="text-secondary mb-0">{{ t("stats.subtitle") }}</p>
-      </div>
-
-      {% if current_user.is_admin %}
-        <form method="get" class="stats-filter-card card border-0 shadow-sm">
-          <div class="card-body">
-            <label for="user_id" class="form-label fw-semibold mb-2">{{ t("stats.filter_label") }}</label>
-            <select id="user_id" name="user_id" class="form-select" onchange="this.form.submit()">
-              <option value="">{{ t("stats.filter_all_users") }}</option>
-              {% for user in users %}
-                <option value="{{ user.id }}"{% if selected_user_id == user.id %} selected{% endif %}>
-                  {{ user.nombre }} · {{ user.email }}
-                </option>
-              {% endfor %}
-            </select>
-            <div class="form-text">{{ t("stats.filter_help") }}</div>
-          </div>
-        </form>
-      {% endif %}
-    </div>
-
-    {% if stats_payload.summary.total_queries == 0 %}
-      <div class="alert alert-info shadow-sm">{{ t("stats.no_queries") }}</div>
-    {% else %}
-      <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
           <article class="card stats-summary-card border-0 shadow-sm h-100">
             <div class="card-body">
               <span class="stats-summary-label">{{ t("stats.total_queries") }}</span>
-              <strong class="stats-summary-value">{{ stats_payload.summary.total_queries }}</strong>
+              <strong class="stats-summary-value">{{ stats_payload.usage.summary.total_queries }}</strong>
             </div>
           </article>
         </div>
@@ -48,7 +21,7 @@
           <article class="card stats-summary-card border-0 shadow-sm h-100">
             <div class="card-body">
               <span class="stats-summary-label">{{ t("stats.average_time") }}</span>
-              <strong class="stats-summary-value">{{ stats_payload.summary.avg_response_time }} {{ t("stats.metric_seconds") }}</strong>
+              <strong class="stats-summary-value">{{ stats_payload.usage.summary.avg_response_time }} {{ t("stats.metric_seconds") }}</strong>
             </div>
           </article>
         </div>
@@ -56,7 +29,7 @@
           <article class="card stats-summary-card border-0 shadow-sm h-100">
             <div class="card-body">
               <span class="stats-summary-label">{{ t("stats.active_days") }}</span>
-              <strong class="stats-summary-value">{{ stats_payload.summary.active_days }}</strong>
+              <strong class="stats-summary-value">{{ stats_payload.usage.summary.active_days }}</strong>
             </div>
           </article>
         </div>
@@ -64,9 +37,9 @@
           <article class="card stats-summary-card border-0 shadow-sm h-100">
             <div class="card-body">
               <span class="stats-summary-label">{{ t("stats.last_query") }}</span>
-              <strong class="stats-summary-value stats-summary-date" data-stats-last-query{% if stats_payload.summary.last_query_at %} data-value="{{ stats_payload.summary.last_query_at }}"{% endif %}>
-                {% if stats_payload.summary.last_query_at %}
-                  {{ stats_payload.summary.last_query_at[:16].replace('T', ' ') }}
+              <strong class="stats-summary-value stats-summary-date" data-stats-last-query{% if stats_payload.usage.summary.last_query_at %} data-value="{{ stats_payload.usage.summary.last_query_at }}"{% endif %}>
+                {% if stats_payload.usage.summary.last_query_at %}
+                  {{ stats_payload.usage.summary.last_query_at[:16].replace('T', ' ') }}
                 {% else %}
                   {{ t("stats.metric_no_data") }}
                 {% endif %}
@@ -78,83 +51,130 @@
 
       <div class="row g-4">
         <div class="col-12">
-          <article class="card border-0 shadow-sm stats-chart-card h-100">
+          <article class="card border-0 shadow-sm stats-chart-card h-100 stats-global-usage-card">
             <div class="card-body">
-              <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-3 mb-3">
-                <div>
-                  <h2 class="h5 mb-1">{{ t("stats.chart_monthly_queries") }}</h2>
-                  <p class="text-secondary small mb-0">{{ t("stats.chart_monthly_queries_help") }}</p>
-                </div>
-                <div class="stats-view-toggle" role="group" aria-label="{{ t('stats.chart_monthly_toggle_label') }}">
-                  <button type="button" class="stats-view-button is-active" data-monthly-view="bars">
-                    {{ t("stats.chart_monthly_view_bars") }}
-                  </button>
-                  <button type="button" class="stats-view-button" data-monthly-view="calendar">
-                    {{ t("stats.chart_monthly_view_calendar") }}
-                  </button>
-                </div>
+              <div class="stats-scope-title mb-3">
+                {% if current_user.is_admin %}
+                  {% if selected_user_id %}
+                    {{ selected_user.nombre }}
+                  {% else %}
+                    {{ t("stats.scope_global_short") }}
+                  {% endif %}
+                {% else %}
+                  {% if usage_scope == "global" %}
+                    {{ t("stats.scope_global_short") }}
+                  {% else %}
+                    {{ current_user.nombre }}
+                  {% endif %}
+                {% endif %}
               </div>
-              <div id="chart-monthly-queries" class="stats-chart"></div>
-            </div>
-          </article>
-        </div>
+              <form method="get" class="stats-filter-card mb-4">
+                {% for user_id in selected_comparison_user_ids %}
+                  <input type="hidden" name="comparison_user_ids" value="{{ user_id }}">
+                {% endfor %}
+                {% if current_user.is_admin %}
+                  <label for="stats_usage_scope" class="visually-hidden">{{ t("stats.filter_label") }}</label>
+                  <select id="stats_usage_scope" name="user_id" class="form-select" onchange="this.form.submit()" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ t('stats.filter_help') }}">
+                    <option value="">{{ t("stats.scope_global_short") }}</option>
+                    {% for user in users %}
+                      <option value="{{ user.id }}"{% if selected_user_id == user.id %} selected{% endif %}>
+                        {{ user.nombre }} · {{ user.email }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                {% else %}
+                  <label for="stats_usage_scope" class="visually-hidden">{{ t("stats.filter_label") }}</label>
+                  <select id="stats_usage_scope" name="usage_scope" class="form-select" onchange="this.form.submit()" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ t('stats.filter_help') }}">
+                    <option value="user"{% if usage_scope == "user" %} selected{% endif %}>
+                      {{ t("stats.scope_user_short") }}
+                    </option>
+                    <option value="global"{% if usage_scope == "global" %} selected{% endif %}>
+                      {{ t("stats.scope_global_short") }}
+                    </option>
+                  </select>
+                {% endif %}
+              </form>
+              {% if stats_payload.usage.summary.total_queries == 0 %}
+                <div class="alert alert-info shadow-sm mb-0">{{ t("stats.no_queries") }}</div>
+              {% else %}
+              <div class="stats-global-usage-stack">
+                <section class="stats-global-usage-block">
+                  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-3 mb-3">
+                    <div>
+                      <h2 class="h5 mb-1">{{ t("stats.chart_monthly_queries") }}</h2>
+                      <p class="text-secondary small mb-0">{{ t("stats.chart_monthly_queries_help") }}</p>
+                    </div>
+                  </div>
+                  <div class="row g-3 align-items-stretch">
+                    <div class="col-12 col-lg-6">
+                      <div id="chart-monthly-bars" class="stats-chart"></div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                      <div id="chart-monthly-calendar" class="stats-chart stats-calendar-large"></div>
+                    </div>
+                  </div>
+                </section>
 
-        <div class="col-12">
-          <article class="card border-0 shadow-sm stats-chart-card h-100">
-            <div class="card-body">
-              <h2 class="h5 mb-1">{{ t("stats.chart_avg_time") }}</h2>
-              <p class="text-secondary small mb-3">{{ t("stats.chart_avg_time_help") }}</p>
-              <div id="chart-monthly-avg-time" class="stats-chart stats-chart-compact"></div>
-            </div>
-          </article>
-        </div>
+                <section class="stats-global-usage-block">
+                  <h2 class="h5 mb-1">{{ t("stats.chart_avg_time") }}</h2>
+                  <p class="text-secondary small mb-3">{{ t("stats.chart_avg_time_help") }}</p>
+                  <div id="chart-monthly-avg-time" class="stats-chart stats-chart-compact"></div>
+                </section>
 
-        <div class="col-12">
-          <article class="card border-0 shadow-sm stats-chart-card h-100">
-            <div class="card-body">
-              <h2 class="h5 mb-1">{{ t("stats.chart_weekdays") }}</h2>
-              <p class="text-secondary small mb-3">{{ t("stats.chart_weekdays_help") }}</p>
-              <div id="chart-weekdays" class="stats-chart stats-chart-compact"></div>
-            </div>
-          </article>
-        </div>
+                <section class="stats-global-usage-block">
+                  <h2 class="h5 mb-1">{{ t("stats.chart_weekdays") }}</h2>
+                  <p class="text-secondary small mb-3">{{ t("stats.chart_weekdays_help") }}</p>
+                  <div id="chart-weekdays" class="stats-chart stats-chart-compact"></div>
+                </section>
 
-        <div class="col-12">
-          <article class="card border-0 shadow-sm stats-chart-card h-100">
-            <div class="card-body">
-              <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-3 mb-3">
-                <div>
-                  <h2 class="h5 mb-1">{{ t("stats.chart_hours") }}</h2>
-                  <p class="text-secondary small mb-0">{{ t("stats.chart_hours_help") }}</p>
-                </div>
-                <div class="stats-view-toggle" role="group" aria-label="{{ t('stats.chart_hours_toggle_label') }}">
-                  <button type="button" class="stats-view-button is-active" data-hours-view="bars">
-                    {{ t("stats.chart_hours_view_bars") }}
-                  </button>
-                  <button type="button" class="stats-view-button" data-hours-view="heatmap">
-                    {{ t("stats.chart_hours_view_heatmap") }}
-                  </button>
-                </div>
+                <section class="stats-global-usage-block">
+                  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-3 mb-3">
+                    <div>
+                      <h2 class="h5 mb-1">{{ t("stats.chart_hours") }}</h2>
+                      <p class="text-secondary small mb-0">{{ t("stats.chart_hours_help") }}</p>
+                    </div>
+                    <fieldset class="stats-view-toggle">
+                      <legend class="visually-hidden">{{ t('stats.chart_hours_toggle_label') }}</legend>
+                      <button type="button" class="stats-view-button is-active" data-hours-view="bars">
+                        {{ t("stats.chart_hours_view_bars") }}
+                      </button>
+                      <button type="button" class="stats-view-button" id="stats-hours-heatmap" data-hours-view="heatmap">
+                        {{ t("stats.chart_hours_view_heatmap") }}
+                      </button>
+                    </fieldset>
+                  </div>
+                  <div id="chart-hours" class="stats-chart stats-chart-compact"></div>
+                </section>
               </div>
-              <div id="chart-hours" class="stats-chart stats-chart-compact"></div>
+              {% endif %}
             </div>
           </article>
         </div>
 
-        {% if current_user.is_admin and is_global_scope and stats_payload.top_users %}
+        {% if current_user.is_admin and (stats_payload.top_users or stats_payload.top_logins) %}
           <div class="col-12">
             <article class="card border-0 shadow-sm stats-chart-card">
               <div class="card-body">
-                <h2 class="h5 mb-1">{{ t("stats.chart_top_users") }}</h2>
-                <p class="text-secondary small mb-3">{{ t("stats.chart_top_users_help") }}</p>
-                <div id="chart-top-users" class="stats-chart"></div>
+                <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+                  <div class="stats-scope-title mb-0">{{ t("stats.section_ranking") }}</div>
+                  <span class="app-badge admin">{{ t("nav.admin") }}</span>
+                </div>
+                <div class="row g-3 align-items-stretch">
+                  <div class="col-12 col-lg-6">
+                    <p class="text-secondary small mb-2">{{ t("stats.chart_top_users") }}</p>
+                    <div id="chart-top-users" class="stats-chart stats-chart-compact"></div>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <p class="text-secondary small mb-2">{{ t("stats.chart_top_logins") }}</p>
+                    <div id="chart-top-logins" class="stats-chart stats-chart-compact"></div>
+                  </div>
+                </div>
               </div>
             </article>
           </div>
         {% endif %}
 
       </div>
-    {% endif %}
 
     {% if stats_payload.get("user_comparison", {}).get("data") %}
       <div class="row g-4 mt-1">
@@ -163,8 +183,30 @@
             <div class="card-body">
               <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-3 mb-3">
                 <div>
-                  <h2 class="h5 mb-1">{{ t("stats.chart_user_comparison") }}</h2>
-                  <p class="text-secondary small mb-0">{{ t("stats.chart_user_comparison_help") }}</p>
+                  <div class="stats-scope-title mb-2">{{ t("stats.section_comparison") }}</div>
+                  <p class="text-secondary small mb-2">{{ t("stats.chart_user_comparison_help") }}</p>
+                  {% if current_user.is_admin %}
+                    <form method="get" class="stats-comparison-inline mb-0">
+                      {% if selected_user_id %}
+                        <input type="hidden" name="user_id" value="{{ selected_user_id }}">
+                      {% endif %}
+                      <label for="comparison_user_ids" class="form-label fw-semibold mb-2">
+                        {{ t("stats.comparison_filter_label") }}
+                      </label>
+                      <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-start">
+                        <select id="comparison_user_ids" name="comparison_user_ids" class="form-select" multiple size="5" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ t('stats.comparison_filter_help') }}">
+                          {% for user in users %}
+                            <option value="{{ user.id }}"{% if user.id in selected_comparison_user_ids %} selected{% endif %}>
+                              {{ user.nombre }} - {{ user.email }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary stats-comparison-apply" id="stats-comparison-apply">
+                          {{ t("stats.comparison_filter_apply") }}
+                        </button>
+                      </div>
+                    </form>
+                  {% endif %}
                 </div>
                 <div class="stats-comparison-metrics d-flex flex-wrap gap-3">
                   <div class="stats-comparison-item">
@@ -181,26 +223,6 @@
                   </div>
                 </div>
               </div>
-              {% if current_user.is_admin and is_global_scope %}
-                <form method="get" class="stats-comparison-selector mb-3">
-                  <label for="comparison_user_ids" class="form-label fw-semibold mb-2">
-                    {{ t("stats.comparison_filter_label") }}
-                  </label>
-                  <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-start">
-                    <select id="comparison_user_ids" name="comparison_user_ids" class="form-select" multiple size="5">
-                      {% for user in users %}
-                        <option value="{{ user.id }}"{% if user.id in selected_comparison_user_ids %} selected{% endif %}>
-                          {{ user.nombre }} - {{ user.email }}
-                        </option>
-                      {% endfor %}
-                    </select>
-                    <button type="submit" class="btn btn-primary stats-comparison-apply">
-                      {{ t("stats.comparison_filter_apply") }}
-                    </button>
-                  </div>
-                  <div class="form-text">{{ t("stats.comparison_filter_help") }}</div>
-                </form>
-              {% endif %}
               <div id="chart-user-comparison" class="stats-chart"></div>
             </div>
           </article>
@@ -213,8 +235,7 @@
         <div class="col-12">
           <article class="card border-0 shadow-sm stats-chart-card">
             <div class="card-body">
-              <h2 class="h5 mb-1">{{ t("stats.chart_user_locations") }}</h2>
-              <p class="text-secondary small mb-3">{{ t("stats.chart_user_locations_help") }}</p>
+              <div class="stats-scope-title mb-3">{{ t("stats.section_geo") }}</div>
               <div id="chart-user-locations" class="stats-chart stats-map-chart"></div>
             </div>
           </article>
@@ -225,8 +246,8 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
   <script>
     window.PYTHIA_STATS = {
       locale: {{ current_locale|tojson }},
@@ -257,6 +278,9 @@
         months: {{ t("stats.drill_months")|tojson }},
         week: {{ t("stats.drill_week")|tojson }},
         back: {{ t("stats.drill_back")|tojson }}
+        ,
+        unitQueries: {{ t("stats.unit_queries")|tojson }},
+        unitLogins: {{ t("stats.unit_logins")|tojson }}
       }
     };
   </script>

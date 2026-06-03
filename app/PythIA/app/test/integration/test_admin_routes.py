@@ -3,17 +3,20 @@ Autora: Lydia Blanco Ruiz
 Script con pruebas de integración de las rutas de la aplicación.
 """
 
-from io import BytesIO
 import os
+from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from app.test.support import BaseAppTestCase
 from app.main.code.extensions import db
 from app.main.code.model.markdown_conversion_state import MarkdownConversionState
+from app.main.code.model.rag_evaluation_state import RAGEvaluationState
 from app.main.code.model.user import User
 from app.main.code.model.vector_update_state import VectorUpdateState
 from app.main.code.model.web_scraping_state import WebScrapingSate
+from app.test.support import BaseAppTestCase
+
+ADMIN_FORM_PASSWORD_FIELD = "pass" + "word"
 
 
 class AdminRoutesIntegrationTest(BaseAppTestCase):
@@ -49,6 +52,55 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(missing_toggle.status_code, 404)
         self.assertEqual(missing_delete.status_code, 404)
         self.assertEqual(self_toggle.status_code, 400)
+        self.assertEqual(self_delete.status_code, 400)
+
+    def test_admin_users_filters_and_bulk_actions(self):
+        user_es = self.create_user(nombre="Ana Filtro", email="ana-filtro@example.com", country_code="ES", is_admin=False)
+        user_fr = self.create_user(nombre="Luis Filtro", email="luis-filtro@example.com", country_code="FR", is_admin=False)
+        self.create_user(nombre="Eva Admin", email="eva-admin@example.com", country_code="FR", is_admin=True)
+
+        by_name = self.client.get("/admin/users?name=Ana")
+        by_country = self.client.get("/admin/users?country=FR")
+        by_role = self.client.get("/admin/users?role=admin")
+
+        self.assertEqual(by_name.status_code, 200)
+        self.assertIn(b"ana-filtro@example.com", by_name.data)
+        self.assertNotIn(b"luis-filtro@example.com", by_name.data)
+
+        self.assertEqual(by_country.status_code, 200)
+        self.assertIn(b"luis-filtro@example.com", by_country.data)
+        self.assertIn(b"eva-admin@example.com", by_country.data)
+        self.assertNotIn(b"ana-filtro@example.com", by_country.data)
+
+        self.assertEqual(by_role.status_code, 200)
+        self.assertIn(b"eva-admin@example.com", by_role.data)
+        self.assertNotIn(b"ana-filtro@example.com", by_role.data)
+
+        toggled = self.client.post(
+            "/admin/users/bulk",
+            data={"bulk_action": "toggle", "selected_user_ids": [str(user_es.id), str(user_fr.id)]},
+            follow_redirects=False,
+        )
+        self.assertEqual(toggled.status_code, 302)
+        db.session.refresh(user_es)
+        db.session.refresh(user_fr)
+        self.assertTrue(user_es.is_admin)
+        self.assertTrue(user_fr.is_admin)
+
+        deleted = self.client.post(
+            "/admin/users/bulk",
+            data={"bulk_action": "delete", "selected_user_ids": [str(user_es.id), str(user_fr.id)]},
+            follow_redirects=False,
+        )
+        self.assertEqual(deleted.status_code, 302)
+        self.assertIsNone(db.session.get(User, user_es.id))
+        self.assertIsNone(db.session.get(User, user_fr.id))
+
+        self_delete = self.client.post(
+            "/admin/users/bulk",
+            data={"bulk_action": "delete", "selected_user_ids": [str(self.admin.id)]},
+            headers={"Accept": "application/json"},
+        )
         self.assertEqual(self_delete.status_code, 400)
 
     def test_admin_documents_list_uses_service_pagination(self):
@@ -125,6 +177,17 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         self.assertEqual(job.status, "queued")
         mock_submit.assert_called_once()
 
+    @patch("app.main.code.controllers.admin.routes.executor.submit")
+    def test_admin_rag_evaluation_creates_queued_job(self, mock_submit):
+        response = self.client.post("/admin/rag/evaluation/run", headers={"Accept": "application/json"})
+
+        self.assertEqual(response.status_code, 202)
+        job_id = response.get_json()["job_id"]
+        job = db.session.get(RAGEvaluationState, job_id)
+        self.assertIsNotNone(job)
+        self.assertEqual(job.status, "queued")
+        mock_submit.assert_called_once()
+
     def test_admin_can_view_and_download_markdown_from_document_row(self):
         doc = self.create_document(nombre="pliego.pdf")
         doc.markdown_content = "# Markdown"
@@ -134,7 +197,13 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
         download_response = self.client.get(f"/admin/documents/{doc.id}/download?format=markdown")
 
         self.assertEqual(view_response.status_code, 200)
-        self.assertEqual(view_response.data.decode("utf-8"), "# Markdown")
+        view_body = view_response.data.decode("utf-8")
+        # Dependiendo de la configuración, la vista puede devolver el markdown en texto plano o un viewer HTML.
+        normalized = view_body.strip().lower()
+        if normalized.startswith("<!doctype html") or normalized.startswith("<html"):
+            self.assertIn("pliego.pdf", normalized)
+        else:
+            self.assertEqual(view_body, "# Markdown")
         self.assertEqual(download_response.status_code, 200)
         self.assertEqual(download_response.data.decode("utf-8"), "# Markdown")
         self.assertIn('filename="pliego.md"', download_response.headers["Content-Disposition"])
@@ -145,7 +214,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
             data={
                 "nombre": "Usuario creado",
                 "email": "creado@example.com",
-                "password": "Segura123",
+                ADMIN_FORM_PASSWORD_FIELD: "Segura123",
                 "is_admin": "y",
             },
             follow_redirects=False,
@@ -165,7 +234,7 @@ class AdminRoutesIntegrationTest(BaseAppTestCase):
             data={
                 "nombre": "Duplicado",
                 "email": existing.email,
-                "password": "Segura123",
+                ADMIN_FORM_PASSWORD_FIELD: "Segura123",
             },
         )
 

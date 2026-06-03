@@ -35,7 +35,7 @@ class Embedding(db.Model):
     distance = db.Column(db.String(50), nullable=False, default="cosine")
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Inicializa el registro con fecha de creación por defecto.
 

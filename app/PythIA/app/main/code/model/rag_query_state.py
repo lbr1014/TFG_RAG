@@ -46,7 +46,7 @@ class RAGQueryState(JobStateMixin, db.Model):
     started_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
     finished_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Inicializa el estado con fecha de creación por defecto.
 

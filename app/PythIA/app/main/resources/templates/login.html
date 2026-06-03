@@ -2,6 +2,8 @@
 {% from "components/form_errors.html" import render_form_errors with context %}
 {% set header_guest_title = "PythIA" %}
 {% set header_guest_subtitle = "" %}
+{% set header_guest_show_logo = true %}
+{% set header_guest_show_text = false %}
 {% set header_force_guest = true %}
 
 {% block title %}{{ t("auth.login_title") }}{% endblock %}
@@ -9,50 +11,45 @@
 
 {% block content %}
   <div class="auth-page">
-    <div class="auth-container">
-      <h1>{{ t("auth.login_title") }}</h1>
-      <p class="auth-subtitle">{{ t("app.welcome") }}</p>
-
-      <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
-        {{ form.hidden_tag() }}
-        {{ render_form_errors(form) }}
-
-        <div class="mb-3">
-          {{ form.email.label(class="form-label") }}
-          {{ form.email(class="form-control form-control-lg", placeholder="email@example.com") }}
-          {% for error in form.email.errors %}
-            <div class="invalid-feedback d-block">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-3">
-          {{ form.password.label(class="form-label") }}
-          {{ form.password(class="form-control form-control-lg") }}
-          {% for error in form.password.errors %}
-            <div class="invalid-feedback d-block">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        {{ form.submit(class="btn btn-primary btn-lg") }}
-      </form>
-
-      <div class="links">
-        <a href="{{ url_for('auth.singup') }}">{{ t("auth.no_account") }}</a>
-        <a href="{{ url_for('auth.forgot_password') }}">{{ t("auth.forgot_password_link") }}</a>
-        <a href="{{ url_for('main.inicio') }}">{{ t("auth.back_home") }}</a>
+    <div class="auth-layout">
+      <div class="auth-logo-panel" aria-hidden="true">
+        <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="" class="auth-side-logo">
       </div>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="mt-3 d-grid gap-2">
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category }} mb-0">
-                {{ message }}
-              </div>
+      <div class="auth-container">
+        <h1>{{ t("auth.login_title") }}</h1>
+        <p class="auth-subtitle">{{ t("app.welcome") }}</p>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+          {{ form.hidden_tag() }}
+          {{ render_form_errors(form) }}
+
+          <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control form-control-lg", placeholder="email@example.com") }}
+            {% for error in form.email.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
           </div>
-        {% endif %}
-      {% endwith %}
+
+          <div class="mb-3">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control form-control-lg") }}
+            {% for error in form.password.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          {{ form.submit(class="btn btn-primary btn-lg") }}
+        </form>
+
+        <div class="links">
+          <a href="{{ url_for('auth.singup') }}">{{ t("auth.no_account") }}</a>
+          <a href="{{ url_for('auth.forgot_password') }}">{{ t("auth.forgot_password_link") }}</a>
+          <a href="{{ url_for('main.inicio') }}">{{ t("auth.back_home") }}</a>
+        </div>
+
+      </div>
     </div>
   </div>
 {% endblock %}

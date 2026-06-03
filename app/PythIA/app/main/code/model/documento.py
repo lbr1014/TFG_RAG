@@ -5,10 +5,10 @@ Script con la entidad SQLAlchemy que representa los documentos PDF gestionados p
 
 from __future__ import annotations
 
-from datetime import datetime
-from pathlib import Path
 import re
 import unicodedata
+from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from app.main.code.extensions import db
@@ -65,7 +65,7 @@ class Documento(db.Model):
     numero_expediente = db.Column(db.String(255), nullable=True, index=True)
     tipo_documento = db.Column(db.String(30), nullable=True, index=True)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Inicializa un documento y asegura la fecha de modificación.
 
@@ -121,6 +121,12 @@ class Documento(db.Model):
         """
         self.markdown_content = None
 
+    def clear_error(self) -> None:
+        """
+        Elimina el mensaje de error asociado al documento.
+        """
+        self.error_message = None
+
     @staticmethod
     def status_for_markdown(base_status: str, markdown_content: str | None) -> str:
         """
@@ -136,6 +142,35 @@ class Documento(db.Model):
         if markdown_content and base_status != "indexado":
             return STATUS_WITH_MARKDOWN
         return base_status
+
+    @classmethod
+    def from_pdf_path(cls, pdf_path: Path, file_hash: str, modified_at: datetime, status: str = "cargado") -> Documento:
+        """
+        Crea un documento a partir de los metadatos de un PDF en disco.
+
+        Args:
+            pdf_path: Ruta del PDF.
+            file_hash: Hash SHA-256 del archivo.
+            modified_at: Fecha de modificacion del archivo.
+            status: Estado inicial del documento.
+
+        Returns:
+            Documento inicializado con metadatos inferidos.
+        """
+        numero_expediente, tipo_documento = cls.infer_metadata_from_filename(pdf_path.name)
+        return cls(
+            nombre=pdf_path.name,
+            path=str(pdf_path),
+            size_bytes=pdf_path.stat().st_size,
+            modified_at=modified_at,
+            chunks=0,
+            hash=file_hash,
+            markdown_content=None,
+            status=status,
+            error_message=None,
+            numero_expediente=numero_expediente,
+            tipo_documento=tipo_documento,
+        )
 
     def refresh_file_metadata(self, pdf_path: Path, file_hash: str, modified_at: datetime) -> bool:
         """
@@ -158,6 +193,107 @@ class Documento(db.Model):
         self.numero_expediente = numero_expediente
         self.tipo_documento = tipo_documento
         return previous_hash != file_hash
+
+    def sync_from_pdf_path(self, pdf_path: Path, file_hash: str, modified_at: datetime, status: str | None = None) -> bool:
+        """
+        Sincroniza metadatos y estado del documento desde un PDF en disco.
+
+        Args:
+            pdf_path: Ruta del PDF.
+            file_hash: Hash SHA-256 del archivo.
+            modified_at: Fecha de modificacion del archivo.
+            status: Estado base opcional que debe asignarse.
+
+        Returns:
+            ``True`` si el hash del PDF cambio.
+        """
+        hash_changed = self.refresh_file_metadata(pdf_path, file_hash, modified_at)
+        if hash_changed:
+            self.clear_markdown_content()
+
+        if status is not None:
+            self.status = self.status_for_markdown(status, self.markdown_content)
+            self.clear_error()
+        else:
+            self.sync_existing_markdown_status()
+
+        return hash_changed
+
+    def sync_existing_markdown_status(self) -> bool:
+        """
+        Ajusta el estado si el documento ya tiene Markdown y no esta indexado.
+
+        Returns:
+            ``True`` si el documento fue modificado.
+        """
+        if self.markdown_content and self.status != "indexado":
+            self.status = STATUS_WITH_MARKDOWN
+            self.clear_error()
+            return True
+        return False
+
+    def mark_markdown_available(self, markdown_content: str | None = None) -> None:
+        """
+        Guarda o reconoce Markdown disponible y limpia errores previos.
+
+        Args:
+            markdown_content: Nuevo contenido Markdown, si se acaba de generar.
+        """
+        if markdown_content is not None:
+            self.markdown_content = markdown_content
+        self.sync_existing_markdown_status()
+        self.clear_error()
+
+    def mark_vector_processing(self) -> None:
+        """
+        Marca el documento como listo para reindexacion vectorial.
+        """
+        self.status = "procesado"
+        self.clear_error()
+
+    def mark_indexed(self, chunk_count: int) -> None:
+        """
+        Marca el documento como indexado.
+
+        Args:
+            chunk_count: Numero de chunks generados.
+        """
+        self.chunks = int(chunk_count)
+        self.status = "indexado"
+        self.clear_error()
+
+    def mark_failed(self, error: Exception | str) -> None:
+        """
+        Marca el documento como fallido y registra el error.
+
+        Args:
+            error: Excepcion o mensaje del fallo.
+        """
+        self.status = "fallido"
+        self.error_message = str(error)
+
+    def delete_vector_relations(self) -> None:
+        """
+        Elimina las relaciones SQL de indexacion asociadas al documento.
+        """
+        from app.main.code.model.chunk import Chunk
+        from app.main.code.model.consulta_chunk import ConsultaChunk
+        from app.main.code.model.embedding import Embedding
+
+        chunk_ids_subq = db.session.query(Chunk.id).filter(Chunk.document_id == self.id).subquery()
+
+        ConsultaChunk.query.filter(
+            ConsultaChunk.chunk_id.in_(chunk_ids_subq)
+        ).delete(synchronize_session=False)
+        db.session.commit()
+
+        Embedding.query.filter(
+            Embedding.chunk_id.in_(chunk_ids_subq)
+        ).delete(synchronize_session=False)
+        db.session.commit()
+
+        Chunk.query.filter(Chunk.document_id == self.id).delete(synchronize_session=False)
+        db.session.commit()
 
     def sync_vector_metadata(self, vector_docs, embedding_model) -> None:
         """

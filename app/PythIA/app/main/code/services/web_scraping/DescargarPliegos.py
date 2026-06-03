@@ -7,21 +7,86 @@ import asyncio
 import json
 import logging
 import os
-from typing import Any, Awaitable, Iterable, List, Tuple
-import aiofiles
 from collections import defaultdict
+from collections.abc import Awaitable, Iterable
 from pathlib import Path
+from typing import Any
 
+List = list
+Tuple = tuple
+
+import aiofiles
 from playwright.async_api import async_playwright
 
-RUTA_JSON = Path(os.environ.get("PLIEGOS_INPUT_JSON", "resultados_playwright_asincrono_servidor.json"))
+
+def _project_root() -> Path:
+    """
+    Resuelve la raíz del proyecto (carpeta que contiene `app/` y `data/`).
+
+    Returns:
+        Path: Ruta absoluta al directorio raíz del proyecto.
+    """
+    start = Path(__file__).resolve()
+    for candidate in [start.parent, *start.parents]:
+        if (candidate / "app").is_dir() and (candidate / "data").is_dir():
+            return candidate
+    for candidate in [start.parent, *start.parents]:
+        if (candidate / "app").is_dir():
+            return candidate
+    return start.parents[5]
+
+
+WEB_SCRAPING_DATA_DIR = _project_root() / "data" / "web_scraping"
+WEB_SCRAPING_DATA_DIR.mkdir(parents=True, exist_ok=True)
+if os.name != "nt":
+    try:
+        WEB_SCRAPING_DATA_DIR.chmod(0o775)
+    except OSError:
+        pass
+_write_test = WEB_SCRAPING_DATA_DIR / ".write_test.tmp"
+try:
+    with _write_test.open("w", encoding="utf-8") as f:
+        f.write("ok")
+finally:
+    try:
+        _write_test.unlink(missing_ok=True)
+    except OSError:
+        pass
+
+RUTA_JSON = WEB_SCRAPING_DATA_DIR / "resultados_playwright_asincrono.json"
 DEST = Path(os.environ.get("DOCS_DIR") or os.environ.get("PLIEGOS_DEST", "pliegos"))
-JSON_SALIDA = Path(os.environ.get("PLIEGOS_OUTPUT_JSON", "pliegos_pdfs.json"))
-DEST.mkdir(parents=True, exist_ok=True)
+JSON_SALIDA = WEB_SCRAPING_DATA_DIR / "pliegos_pdfs.json"
 
 # Playwright usa milisegundos para los timeouts
 TIMEOUT_MS = 90_000
 logger = logging.getLogger(__name__)
+
+
+def ensure_dest_dir() -> None:
+    """
+    Crea el directorio de destino de forma perezosa.
+
+    Importante: no lo hacemos en tiempo de import para no romper tests que
+    ejecutan el módulo con `runpy.run_module` ni entornos (CI) donde `DOCS_DIR`
+    apunte a rutas no escribibles (p. ej. `/data` en GitHub Actions).
+    """
+    global DEST
+
+    try:
+        DEST.mkdir(parents=True, exist_ok=True)
+        return
+    except PermissionError:
+        configured = os.environ.get("DOCS_DIR") or os.environ.get("PLIEGOS_DEST")
+        if configured and Path(configured).is_absolute():
+            logger.warning(
+                "No hay permisos para crear el directorio DEST=%s. "
+                "Usando fallback local './pliegos'.",
+                DEST,
+            )
+            DEST = Path("pliegos")
+            DEST.mkdir(parents=True, exist_ok=True)
+            return
+        raise
 
 
 def limpiar_expediente(expediente: str) -> str:
@@ -88,6 +153,7 @@ async def descargar_pdf_es(context, url: str, expediente: str, nombre_doc: str, 
     destino = DEST / filename
 
     try:
+        ensure_dest_dir()
         async with aiofiles.open(destino, "wb") as f:
             await f.write(contenido)
         logger.info("Guardado: %s", destino.name)
@@ -97,7 +163,7 @@ async def descargar_pdf_es(context, url: str, expediente: str, nombre_doc: str, 
         return False
 
 
-async def extraer_urls_pliegos_desde_pagina(context, url: str, expediente: str, nombre_doc: str):
+async def extraer_urls_pliegos_desde_pagina(context, url: str, expediente: str, nombre_doc: str) -> List[Tuple[str, str]]:
     """
     Extrae URLs de PDFs desde una página HTML de pliegos.
 
@@ -150,7 +216,7 @@ async def extraer_urls_pliegos_desde_pagina(context, url: str, expediente: str, 
     return encontrados
 
 
-async def procesar_pagina_pliego(context, url: str, expediente: str, nombre_doc: str, dic_urls: dict):
+async def procesar_pagina_pliego(context, url: str, expediente: str, nombre_doc: str, dic_urls: dict) -> None:
     """
     Procesa una página de pliegos y acumula sus URLs de PDF.
 
@@ -168,7 +234,7 @@ async def procesar_pagina_pliego(context, url: str, expediente: str, nombre_doc:
     dic_urls[expediente].extend(urls_encontradas)
 
 
-async def run():
+async def run() -> None:
     """
     Ejecuta el flujo completo de extracción y descarga de pliegos de licitaciones.
 
@@ -185,6 +251,10 @@ async def run():
     Returns:
         None: Los PDFs se guardan en el directorio DEST y los metadatos en JSON_SALIDA.
     """
+    ensure_dest_dir()
+    if not RUTA_JSON.exists():
+        raise FileNotFoundError(
+            f"No se encontró el JSON de entrada en '{RUTA_JSON}'. ")
     items = json.loads(RUTA_JSON.read_text(encoding="utf-8"))
 
     pdfs_por_expediente = defaultdict(list)

@@ -1,0 +1,67 @@
+{% from "components/form_errors.html" import render_form_errors with context %}
+
+<form id="rag-chat-form" method="post" class="rag-form rag-form-chat" novalidate>
+  {{ form.csrf_token }}
+  {{ render_form_errors(form) }}
+
+  <div class="mb-3">
+    <div class="d-flex align-items-center gap-2">
+      {{ form.question.label(class="form-label rag-label mb-0") }}
+      <button type="button"
+              class="btn btn-sm btn-outline-light rounded-circle d-inline-flex align-items-center justify-content-center rag-tooltip-btn"
+              data-bs-toggle="tooltip"
+              data-bs-title="{{ t('rag.chat_question_tooltip') }}">
+        <span aria-hidden="true" class="fw-bold">i</span>
+        <span class="visually-hidden">{{ t("common.info") if false else "Info" }}</span>
+      </button>
+    </div>
+    {{ form.question(class="form-control rag-textarea", rows="5") }}
+  </div>
+
+  <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
+    <button id="rag-chat-ask" class="btn btn-modelo luz" type="submit" data-rag-ask>{{ t("rag.ask_button") }}</button>
+    <button class="btn btn-outline-light btn-header d-none" type="button" data-rag-cancel>{{ t("rag.cancel_button") }}</button>
+    <div class="rag-status d-inline-flex align-items-center gap-2 w-100 justify-content-center" aria-live="polite" data-rag-status></div>
+  </div>
+</form>
+
+<div class="rag-result mt-4">
+  <h3 class="rag-section-title h5 mb-3">{{ t("rag.answer_title") }}</h3>
+  <div class="rag-answer-box">
+    <div class="rag-answer mb-0" aria-live="polite" data-rag-answer></div>
+  </div>
+</div>
+
+<section class="rag-debug mt-4" aria-label="{{ t('rag.fragment_used') }}">
+  <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+    <h3 class="rag-section-title h6 mb-0">{{ t("rag.fragment_used") }}</h3>
+    <button type="button"
+            class="btn btn-outline-light btn-sm"
+            id="rag-view-all-fragments-chat"
+            data-bs-toggle="modal"
+            data-bs-target="#chunksModal"
+            data-consulta-id="rag">
+      {{ t("rag.view_all_fragments") }}
+    </button>
+  </div>
+
+  <div class="rag-debug-body mt-3">
+    <div class="table-card">
+      <div class="p-3 p-md-4">
+        <div class="row g-3 rag-meta small">
+          <div class="col-12 col-md-4">
+            <strong>{{ t("history.file") }}</strong> <span data-rag-filename></span>
+          </div>
+          <div class="col-12 col-md-4">
+            <strong>{{ t("history.title_label") }}</strong> <span data-rag-title></span>
+          </div>
+          <div class="col-12 col-md-4">
+            <strong>{{ t("history.segment") }}</strong> <span data-rag-segment></span>
+          </div>
+        </div>
+
+        <pre class="rag-chunk mb-0 mt-3" data-rag-chunk></pre>
+      </div>
+    </div>
+  </div>
+</section>

@@ -5,11 +5,11 @@ Script con pruebas de integración de las rutas de la aplicación.
 
 from unittest.mock import patch
 
-from app.test.support import BaseAppTestCase
-
 from app.main.code.controllers.auth.routes import generate_reset_token
 from app.main.code.extensions import db
 from app.main.code.model.user import User
+from app.test.support import BaseAppTestCase
+
 
 class AuthRoutesIntegrationTest(BaseAppTestCase):
     def test_signup_creates_user_and_logs_him_in(self):
@@ -17,7 +17,7 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
             "/signup",
             data={
                 "nombre": "Nuevo",
-                "email": "nuevo@example.com",
+                "email": "lydiablanco71@gmail.com",
                 "password": "Segura123",
                 "confirm_password": "Segura123",
             },
@@ -26,7 +26,7 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/pagina_principal", response.headers["Location"])
-        self.assertIsNotNone(User.get_by_email("nuevo@example.com"))
+        self.assertIsNotNone(User.get_by_email("lydiablanco71@gmail.com"))
 
     def test_signup_get_renders_form_and_duplicate_email_stays_on_form(self):
         existing = self.create_user(email="duplicado@example.com")
@@ -111,8 +111,7 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
         )
 
         self.assertEqual(get_response.status_code, 200)
-        self.assertEqual(unknown_response.status_code, 302)
-        self.assertIn("/login", unknown_response.headers["Location"])
+        self.assertEqual(unknown_response.status_code, 200)
         mock_send.assert_not_called()
 
     def test_reset_password_updates_password(self):

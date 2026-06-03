@@ -9,8 +9,11 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from werkzeug.datastructures import FileStorage
-from app.test.support import BaseAppTestCase
 
+from app.main.code.extensions import db
+from app.main.code.model.chunk import Chunk
+from app.main.code.model.documento import Documento
+from app.main.code.model.embedding import Embedding
 from app.main.code.services.documentos import (
     STATUS_WITH_MARKDOWN,
     DocumentosService,
@@ -19,10 +22,7 @@ from app.main.code.services.documentos import (
     infer_document_metadata_from_filename,
     update_sql,
 )
-from app.main.code.model.chunk import Chunk
-from app.main.code.model.documento import Documento
-from app.main.code.model.embedding import Embedding
-from app.main.code.extensions import db
+from app.test.support import BaseAppTestCase
 
 
 class DocumentosServiceUnitTest(BaseAppTestCase):
@@ -55,7 +55,7 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
         with self.assertRaises(ValueError):
             service.resolve_pdf_path("documento.txt")
 
-    def test_is_pdf_upload_rejects_missing_or_non_seekable_streams(self):
+    def test_is_pdf_upload_rejects_missing_stream_but_accepts_non_seekable(self):
         service = self._service()
         no_stream = SimpleNamespace(filename="archivo.pdf")
         non_seekable = MagicMock()
@@ -63,7 +63,7 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
         bad_storage = SimpleNamespace(filename="archivo.pdf", stream=non_seekable)
 
         self.assertFalse(service._is_pdf_upload(no_stream))
-        self.assertFalse(service._is_pdf_upload(bad_storage))
+        self.assertTrue(service._is_pdf_upload(bad_storage))
 
     def test_save_uploads_persists_only_pdf_files(self):
         service = self._service()
@@ -406,6 +406,28 @@ class DocumentosServiceUnitTest(BaseAppTestCase):
         empty_doc = self.create_document(nombre="empty-vector.pdf")
         with self.assertRaises(RuntimeError):
             service._index_vector_document(empty_doc, MagicMock(return_value=[]))
+
+    def test_index_vector_document_uses_markdown_when_available(self):
+        service = self._service()
+        doc = self.create_document(
+            nombre="index-md.pdf",
+            numero_expediente="EXP-2",
+            tipo_documento="administrativo",
+        )
+        doc.markdown_content = "# Hola\n\nContenido"
+        db.session.commit()
+
+        vector_doc = SimpleNamespace(id="qid-md", content="Texto", metadata={"segment_index": 0, "sha256": doc.hash})
+        index_pdf = MagicMock(return_value=[SimpleNamespace(id="qid-pdf", content="PDF", metadata={"segment_index": 0})])
+
+        from app.main.code.services.rag import PrototipoRAG as prototipo_rag
+
+        with patch.object(prototipo_rag, "index_markdown", return_value=[vector_doc]) as mock_index_md:
+            indexed = service._index_vector_document(doc, index_pdf)
+
+        self.assertEqual(indexed, 1)
+        mock_index_md.assert_called_once()
+        index_pdf.assert_not_called()
 
     def test_mark_vector_update_failed_rolls_back_and_stores_error(self):
         service = self._service()

@@ -1,0 +1,8 @@
+## Dependencias de desarrollo (IDE/type-checking)
+##
+## Nota: la imagen Docker usa `docker/requirements_docker.txt`.
+## Este fichero existe para que el entorno local/IDE (Pylance) resuelva imports.
+
+pycountry==26.2.16
+Babel==2.18.0
+

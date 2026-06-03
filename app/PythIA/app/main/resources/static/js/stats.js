@@ -6,6 +6,7 @@
 
   const tooltip = createTooltip();
   const locale = config.locale || "es";
+  const usageData = (config.data && config.data.usage) ? config.data.usage : (config.data || {});
   const formatMonth = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
   const formatDateTime = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
@@ -15,11 +16,14 @@
   const formatDayShort = new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short" });
 
   const monthlyState = {
-    view: "bars",
     level: "months",
     month: null,
     week: null,
     day: null,
+  };
+
+  const monthlyCalendarState = {
+    monthKey: null,
   };
 
   const hourlyState = {
@@ -32,10 +36,20 @@
     week: null,
   };
 
-  setupMonthlyChartToggle();
+  initBootstrapTooltips();
+
+  setupMonthlyBarsDrilldown();
   setupAvgTimeDrilldown();
   setupHourlyChartToggle();
+  setupMonthlyCalendar();
   renderStaticCharts();
+
+  function initBootstrapTooltips() {
+    if (!window.bootstrap?.Tooltip) return;
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+      window.bootstrap.Tooltip.getOrCreateInstance(el);
+    });
+  }
 
   const observedChartWidths = new Map();
   const resizeHandler = debounce((entries) => {
@@ -74,7 +88,8 @@
   }
 
   function redrawCharts() {
-    renderMonthlyChart();
+    renderMonthlyBarsChart();
+    renderMonthlyCalendar();
     renderHourlyChart();
     renderAvgTimeChart();
     renderStaticCharts();
@@ -121,7 +136,7 @@
 
   function renderStaticCharts() {
     clearChartContainer("#chart-weekdays");
-    drawDonutChart("#chart-weekdays", config.data.weekday_queries, {
+    drawDonutChart("#chart-weekdays", usageData.weekday_queries, {
       labelKey: "weekday",
       valueKey: "count",
       colors: ["#58d68d", "#48c9b0", "#5dade2", "#f4d03f", "#eb984e", "#ec7063", "#af7ac5"],
@@ -136,6 +151,18 @@
         labelKey: "user",
         valueKey: "count",
         colors: ["#af7ac5", "#5dade2", "#58d68d", "#f5b041", "#ec7063", "#48c9b0", "#eb984e", "#7fb3d5"],
+        labelFormatter: (value) => value,
+        tooltipFormatter: (item) => `${item.user}: ${item.count}`,
+      });
+    }
+
+    clearChartContainer("#chart-top-logins");
+    if (Array.isArray(config.data.top_logins) && config.data.top_logins.length) {
+      drawDonutChart("#chart-top-logins", config.data.top_logins, {
+        labelKey: "user",
+        valueKey: "count",
+        unitLabel: config.labels.unitLogins || "accesos",
+        colors: ["#f5b041", "#5dade2", "#58d68d", "#af7ac5", "#ec7063", "#48c9b0", "#7fb3d5", "#eb984e"],
         labelFormatter: (value) => value,
         tooltipFormatter: (item) => `${item.user}: ${item.count}`,
       });
@@ -175,7 +202,7 @@
     container.innerHTML = "";
 
     if (hourlyState.view === "heatmap") {
-      drawHeatmapChart("#chart-hours", config.data.hourly_queries, {
+      drawHeatmapChart("#chart-hours", usageData.hourly_queries, {
         xKey: "hour",
         yKey: "count",
         labelFormatter: (value) => `${String(value).padStart(2, "0")}:00`,
@@ -184,12 +211,12 @@
       return;
     }
 
-    drawBarChart("#chart-hours", config.data.hourly_queries, {
+    drawBarChart("#chart-hours", usageData.hourly_queries, {
       xKey: "hour",
       yKey: "count",
       color: "#ec7063",
       xFormatter: (value) => `${String(value).padStart(2, "0")}:00`,
-      tickValues: selectHourTicks(config.data.hourly_queries, container.clientWidth),
+      tickValues: selectHourTicks(usageData.hourly_queries, container.clientWidth),
       tooltipFormatter: (item) => `${String(item.hour).padStart(2, "0")}:00 - ${item.count}`,
       rotateLabels: true,
     });
@@ -218,140 +245,163 @@
     setView(hourlyState.view);
   }
 
-  function renderMonthlyChart() {
-    const container = document.querySelector("#chart-monthly-queries");
+  function renderMonthlyBarsChart() {
+    const container = document.querySelector("#chart-monthly-bars");
     if (!container) return;
     container.innerHTML = "";
 
-    const renderers = {
-      bars: () => {
-        renderDrillHeader(container, monthlyState, {
-          rootLabel: config.labels.months || "Meses",
-          valueLabel: config.labels.queries || "Consultas",
-          onBack: () => {
-            if (monthlyState.level === "days") {
-              monthlyState.level = "weeks";
-              monthlyState.week = null;
-            } else {
-              monthlyState.level = "months";
-              monthlyState.month = null;
-            }
-            renderMonthlyChart();
-          },
-        });
-
-        if (monthlyState.level === "weeks") {
-          const weeklyData = buildWeeklyCountData(config.data.daily_queries, monthlyState.month);
-          drawBarChart("#chart-monthly-queries", weeklyData, {
-            xKey: "id",
-            yKey: "count",
-            color: "#5dade2",
-            xFormatter: (value, item) => (item ? item.label : value),
-            rotateLabels: true,
-            tooltipFormatter: (item) => `${item.label}: ${item.count}`,
-            onClick: (item) => {
-              monthlyState.level = "days";
-              monthlyState.week = item;
-              renderMonthlyChart();
-            },
-          });
-          return;
-        }
-
-        if (monthlyState.level === "days" && monthlyState.week) {
-          drawBarChart("#chart-monthly-queries", monthlyState.week.days, {
-            xKey: "date",
-            yKey: "count",
-            color: "#5dade2",
-            xFormatter: (value) => formatDayShort.format(new Date(`${value}T00:00:00`)),
-            rotateLabels: true,
-            tooltipFormatter: (item) => `${formatDateOnly(item.date)}: ${item.count}`,
-          });
-          return;
-        }
-
-        drawBarChart("#chart-monthly-queries", config.data.monthly_queries, {
-          xKey: "month",
-          yKey: "count",
-          color: "#5dade2",
-          xFormatter: (value) => formatMonth.format(new Date(value)),
-          tooltipFormatter: (item) => `${formatMonth.format(new Date(item.month))}: ${item.count}`,
-          onClick: (item) => {
-            monthlyState.level = "weeks";
-            monthlyState.month = monthKeyFromDate(item.month);
-            renderMonthlyChart();
-          },
-        });
+    renderDrillHeader(container, monthlyState, {
+      rootLabel: config.labels.months || "Meses",
+      valueLabel: config.labels.queries || "Consultas",
+      onBack: () => {
+        monthlyState.level = "months";
+        monthlyState.month = null;
+        monthlyState.week = null;
+        monthlyState.day = null;
+        renderMonthlyBarsChart();
       },
-      calendar: () => {
-        renderDrillHeader(container, monthlyState, {
-          rootLabel: config.labels.calendar || "Calendario",
-          valueLabel: config.labels.queries || "Consultas",
-          onBack: () => {
-            monthlyState.level = "months";
-            monthlyState.month = null;
-            monthlyState.week = null;
-            monthlyState.day = null;
-            renderMonthlyChart();
-          },
-        });
+    });
 
-        if (monthlyState.level === "hours" && monthlyState.day) {
-          drawBarChart("#chart-monthly-queries", hourlyDataForDay(monthlyState.day.date), {
-            xKey: "hour",
-            yKey: "count",
-            color: "#3498db",
-            xFormatter: (value) => `${String(value).padStart(2, "0")}:00`,
-            tickValues: selectHourTicks(config.data.hourly_queries, container.clientWidth),
-            tooltipFormatter: (item) => `${formatDateOnly(monthlyState.day.date)} ${String(item.hour).padStart(2, "0")}:00 - ${item.count}`,
-          });
-          return;
-        }
+    if (monthlyState.level === "hours" && monthlyState.day) {
+      drawBarChart("#chart-monthly-bars", hourlyDataForDay(monthlyState.day.date), {
+        xKey: "hour",
+        yKey: "count",
+        color: "#3498db",
+        xFormatter: (value) => `${String(value).padStart(2, "0")}:00`,
+        tickValues: selectHourTicks(usageData.hourly_queries, container.clientWidth),
+        tooltipFormatter: (item) =>
+          `${formatDateOnly(monthlyState.day.date)} ${String(item.hour).padStart(2, "0")}:00 - ${item.count}`,
+      });
+      return;
+    }
 
-        drawCalendarChart("#chart-monthly-queries", config.data.daily_queries, {
-          colorRange: ["#ebf5fb", "#85c1e9", "#3498db", "#21618c"],
-          tooltipFormatter: (item) => `${formatDateOnly(item.date)}: ${item.count}`,
-          onDayClick: (item) => {
-            monthlyState.level = "hours";
-            monthlyState.day = item;
-            renderMonthlyChart();
-          },
-        });
+    if (monthlyState.level === "weeks") {
+      const weeklyData = buildWeeklyCountData(usageData.daily_queries, monthlyState.month);
+      drawBarChart("#chart-monthly-bars", weeklyData, {
+        xKey: "id",
+        yKey: "count",
+        color: "#5dade2",
+        xFormatter: (value, item) => (item ? item.label : value),
+        rotateLabels: true,
+        tooltipFormatter: (item) => `${item.label}: ${item.count}`,
+        onClick: (item) => {
+          monthlyState.level = "days";
+          monthlyState.week = item;
+          renderMonthlyBarsChart();
+        },
+      });
+      return;
+    }
+
+    if (monthlyState.level === "days" && monthlyState.week) {
+      drawBarChart("#chart-monthly-bars", monthlyState.week.days, {
+        xKey: "date",
+        yKey: "count",
+        color: "#5dade2",
+        xFormatter: (value) => formatDayShort.format(new Date(`${value}T00:00:00`)),
+        rotateLabels: true,
+        tooltipFormatter: (item) => `${formatDateOnly(item.date)}: ${item.count}`,
+        onClick: (item) => {
+          monthlyState.level = "hours";
+          monthlyState.day = item;
+          renderMonthlyBarsChart();
+        },
+      });
+      return;
+    }
+
+    drawBarChart("#chart-monthly-bars", usageData.monthly_queries, {
+      xKey: "month",
+      yKey: "count",
+      color: "#5dade2",
+      xFormatter: (value) => formatMonth.format(new Date(value)),
+      tickValues: compactTickValues(usageData.monthly_queries, "month", container.clientWidth, 6),
+      rotateLabels: true,
+      tooltipFormatter: (item) => `${formatMonth.format(new Date(item.month))}: ${item.count}`,
+      onClick: (item) => {
+        monthlyState.level = "weeks";
+        monthlyState.month = monthKeyFromDate(item.month);
+        monthlyCalendarState.monthKey = monthlyState.month;
+        renderMonthlyCalendar();
+        renderMonthlyBarsChart();
       },
-    };
-
-    (renderers[monthlyState.view] || renderers.bars)();
-    const buttons = Array.from(document.querySelectorAll("[data-monthly-view]"));
-    buttons.forEach((button) => {
-      button.classList.toggle("is-active", button.dataset.monthlyView === monthlyState.view);
     });
   }
 
-  function setupMonthlyChartToggle() {
-    const container = document.querySelector("#chart-monthly-queries");
+  function setupMonthlyBarsDrilldown() {
+    renderMonthlyBarsChart();
+  }
+
+  function renderMonthlyCalendar() {
+    const container = document.querySelector("#chart-monthly-calendar");
     if (!container) return;
+    container.innerHTML = "";
 
-    const buttons = Array.from(document.querySelectorAll("[data-monthly-view]"));
-    const clones = buttons.map((button) => button.cloneNode(true));
-    buttons.forEach((button, index) => button.parentNode.replaceChild(clones[index], button));
+    const monthKey = monthlyCalendarState.monthKey || defaultCalendarMonthKey();
+    if (!monthKey) return renderEmptyState(container);
 
-    const setView = (view) => {
-      monthlyState.view = view;
-      monthlyState.level = "months";
-      monthlyState.month = null;
-      monthlyState.week = null;
-      monthlyState.day = null;
-      renderMonthlyChart();
-      clones.forEach((button) => {
-        button.classList.toggle("is-active", button.dataset.monthlyView === view);
-      });
-    };
+    const header = document.createElement("div");
+    header.className = "stats-monthly-calendar-header";
 
-    clones.forEach((button) => {
-      button.addEventListener("click", () => setView(button.dataset.monthlyView));
+    const prev = document.createElement("button");
+    prev.type = "button";
+    prev.className = "stats-drill-back";
+    prev.textContent = "‹";
+    prev.addEventListener("click", () => {
+      monthlyCalendarState.monthKey = shiftMonthKey(monthKey, -1);
+      renderMonthlyCalendar();
     });
+    header.appendChild(prev);
 
-    setView(monthlyState.view);
+    const title = document.createElement("div");
+    title.className = "stats-drill-title";
+    title.textContent = formatMonth.format(new Date(`${monthKey}-01T00:00:00`));
+    header.appendChild(title);
+
+    const next = document.createElement("button");
+    next.type = "button";
+    next.className = "stats-drill-back";
+    next.textContent = "›";
+    next.addEventListener("click", () => {
+      monthlyCalendarState.monthKey = shiftMonthKey(monthKey, 1);
+      renderMonthlyCalendar();
+    });
+    header.appendChild(next);
+    container.appendChild(header);
+
+    const monthData = (usageData.daily_queries || []).filter((item) => item.date && item.date.slice(0, 7) === monthKey);
+    drawCalendarChart("#chart-monthly-calendar", monthData, {
+      colorRange: ["#ebf5fb", "#85c1e9", "#3498db", "#21618c"],
+      tooltipFormatter: (item) => `${formatDateOnly(item.date)}: ${item.count}`,
+      cellSizeMax: 28,
+      center: true,
+      hideMonthLabel: true,
+      onDayClick: (item) => {
+        monthlyState.level = "hours";
+        monthlyState.day = item;
+        renderMonthlyBarsChart();
+      },
+    });
+  }
+
+  function setupMonthlyCalendar() {
+    monthlyCalendarState.monthKey = defaultCalendarMonthKey();
+    renderMonthlyCalendar();
+  }
+
+  function defaultCalendarMonthKey() {
+    const daily = usageData.daily_queries || [];
+    const lastWithDate = [...daily].reverse().find((item) => item.date);
+    return lastWithDate ? String(lastWithDate.date).slice(0, 7) : null;
+  }
+
+  function shiftMonthKey(monthKey, delta) {
+    const [yearStr, monthStr] = String(monthKey).split("-");
+    const base = new Date(Number(yearStr), Number(monthStr) - 1, 1);
+    base.setMonth(base.getMonth() + delta);
+    const year = base.getFullYear();
+    const month = String(base.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
   }
 
   function renderAvgTimeChart() {
@@ -375,7 +425,7 @@
     });
 
     if (avgTimeState.level === "weeks") {
-      const weeklyData = buildWeeklyAverageData(config.data.daily_avg_time, config.data.daily_queries, avgTimeState.month);
+      const weeklyData = buildWeeklyAverageData(usageData.daily_avg_time, usageData.daily_queries, avgTimeState.month);
       drawLineChart("#chart-monthly-avg-time", weeklyData, {
         xKey: "id",
         yKey: "avg_time",
@@ -404,12 +454,12 @@
       return;
     }
 
-    drawLineChart("#chart-monthly-avg-time", config.data.monthly_avg_time, {
+    drawLineChart("#chart-monthly-avg-time", usageData.monthly_avg_time, {
       xKey: "month",
       yKey: "avg_time",
       color: "#f5b041",
       xFormatter: (value) => formatMonth.format(new Date(value)),
-      tickValues: selectTickValues(config.data.monthly_avg_time, "month", 4),
+      tickValues: selectTickValues(usageData.monthly_avg_time, "month", 4),
       tooltipFormatter: (item) =>
         `${formatMonth.format(new Date(item.month))}: ${item.avg_time} ${config.labels.seconds}`,
       onClick: (item) => {
@@ -851,7 +901,7 @@
       .attr("y", 18)
       .attr("fill", "var(--bs-secondary-color)")
       .attr("font-size", 12)
-      .text("consultas");
+      .text(options.unitLabel || config.labels.unitQueries || "consultas");
 
     const legend = svg
       .append("g")
@@ -1120,9 +1170,12 @@
     }));
     const byMonth = d3.groups(parsedData, (item) => item.date.slice(0, 7));
     const width = chartWidth(container, 860);
-    const columns = width >= 920 ? 4 : width >= 680 ? 3 : width >= 440 ? 2 : 1;
+    let columns = width >= 920 ? 4 : width >= 680 ? 3 : width >= 440 ? 2 : 1;
+    columns = Math.max(1, Math.min(columns, byMonth.length));
     const monthWidth = Math.floor((width - 24 * (columns - 1)) / columns);
-    const cellSize = Math.max(11, Math.min(18, Math.floor((monthWidth - 46) / 7)));
+    const cellMax = Number.isFinite(options.cellSizeMax) ? options.cellSizeMax : 18;
+    const cellMin = Number.isFinite(options.cellSizeMin) ? options.cellSizeMin : 11;
+    const cellSize = Math.max(cellMin, Math.min(cellMax, Math.floor((monthWidth - 46) / 7)));
     const monthHeight = cellSize * 7 + 42;
     const rows = Math.ceil(byMonth.length / columns);
     const height = rows * monthHeight + Math.max(0, rows - 1) * 20;
@@ -1143,25 +1196,32 @@
     byMonth.forEach(([monthKey, values], index) => {
       const column = index % columns;
       const row = Math.floor(index / columns);
-      const offsetX = column * (monthWidth + 24);
+      const baseOffsetX = column * (monthWidth + 24);
+      const contentWidth = 34 + cellSize * 7 + 2;
+      const offsetX =
+        options.center && columns === 1
+          ? Math.max(0, Math.round((width - contentWidth) / 2))
+          : baseOffsetX;
       const offsetY = row * (monthHeight + 20);
       const monthStart = new Date(`${monthKey}-01T00:00:00`);
       const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
       const lastWeek = d3.timeMonday.count(d3.timeMonth(monthStart), monthEnd);
       const monthGroup = svg.append("g").attr("transform", `translate(${offsetX},${offsetY})`);
 
-      monthGroup
-        .append("text")
-        .attr("class", "stats-calendar-month-label")
-        .attr("x", 0)
-        .attr("y", 14)
-        .attr("cursor", options.onMonthClick ? "pointer" : null)
-        .on("click", () => {
-          if (options.onMonthClick) {
-            options.onMonthClick(monthKey);
-          }
-        })
-        .text(formatMonth.format(monthStart));
+      if (!options.hideMonthLabel) {
+        monthGroup
+          .append("text")
+          .attr("class", "stats-calendar-month-label")
+          .attr("x", 0)
+          .attr("y", 14)
+          .attr("cursor", options.onMonthClick ? "pointer" : null)
+          .on("click", () => {
+            if (options.onMonthClick) {
+              options.onMonthClick(monthKey);
+            }
+          })
+          .text(formatMonth.format(monthStart));
+      }
 
       monthGroup
         .selectAll(".stats-calendar-day-label")
@@ -1284,7 +1344,7 @@
   }
 
   function hourlyDataForDay(dateKey) {
-    const dayData = (config.data.daily_hourly_queries || []).find((item) => item.date === dateKey);
+    const dayData = (usageData.daily_hourly_queries || []).find((item) => item.date === dateKey);
     if (dayData && Array.isArray(dayData.hours)) {
       return dayData.hours;
     }

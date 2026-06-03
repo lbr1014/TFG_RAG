@@ -4,8 +4,7 @@ Script con pruebas unitarias del servicio RAG.
 """
 
 import asyncio
-from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from flask_login import login_user
 
@@ -35,6 +34,23 @@ class RAGServiceUnitTest(BaseAppTestCase):
             "tecnico",
         )
         self.assertIsNone(service.detect_tipo_documento("Compara el pliego administrativo y el pliego tecnico"))
+
+    def test_guided_query_profile_retrieval_limits(self):
+        self.assertEqual(
+            service.detect_guided_query_profile("Haz un resumen general y detallado del documento"),
+            ("summary", 80),
+        )
+        self.assertEqual(
+            service.detect_guided_query_profile("Dime los importes y presupuestos"),
+            ("amounts", 18),
+        )
+        self.assertEqual(
+            service.detect_guided_query_profile("Pregunta libre sin perfil"),
+            ("general", 20),
+        )
+        self.assertEqual(service.normalize_guided_retrieval_k("general", 1), 5)
+        self.assertEqual(service.normalize_guided_retrieval_k("criteria", 999), 20)
+        self.assertEqual(service.normalize_guided_retrieval_k("summary", 80), 80)
 
     def test_extract_and_resolve_expediente_edge_cases(self):
         self.assertIsNone(service.extract_expediente_candidate("sin mencion de expediente"))
@@ -73,59 +89,6 @@ class RAGServiceUnitTest(BaseAppTestCase):
         self.assertEqual(result["answer"], "Error controlado")
         self.assertEqual(result["segment_index"], -1)
         self.assertEqual(result["chunk"], "")
-
-    def test_find_chunk_uses_qdrant_id_and_document_fallback(self):
-        doc = self.create_document(nombre="fallback.pdf")
-        chunk = self.create_chunk(document=doc, qdrant_point_id="qid-real", doc_sha256="sha", segment_index=4)
-
-        self.assertEqual(service.find_chunk({"qdrant_point_id": "qid-real"}).id, chunk.id)
-        self.assertEqual(
-            service.find_chunk({"document_id": doc.id, "doc_sha256": "sha", "segment_index": 4}).id,
-            chunk.id,
-        )
-        self.assertIsNone(service.find_chunk({"qdrant_point_id": "missing"}))
-
-    def test_build_fragmento_merges_retrieved_and_database_metadata(self):
-        doc = self.create_document(nombre="meta.pdf", hash="hash-meta")
-        chunk = self.create_chunk(document=doc, qdrant_point_id="qid-meta", doc_sha256="sha-meta", segment_index=2)
-
-        fragmento = service.build_fragmento(
-            {
-                "ranking": 1,
-                "similitud": 0.75,
-                "qdrant_point_id": "qid-meta",
-                "chunk": "Texto recuperado",
-                "metadata": {"filename": "meta.pdf"},
-            },
-            chunk,
-        )
-
-        self.assertEqual(fragmento["ranking"], 1)
-        self.assertEqual(fragmento["metadata"]["document_name"], "meta.pdf")
-        self.assertEqual(fragmento["metadata"]["doc_sha256"], "sha-meta")
-        self.assertEqual(fragmento["chunk"], "Texto recuperado")
-
-    def test_build_fragmento_without_chunk_uses_item_defaults_and_metadata(self):
-        fragmento = service.build_fragmento(
-            {
-                "ranking": "2",
-                "similitud": "0.5",
-                "qdrant_point_id": "qid-item",
-                "chunk": None,
-                "metadata": {"title": "Titulo"},
-                "document_id": 7,
-                "doc_sha256": "sha-item",
-                "segment_index": 3,
-                "filename": "doc.pdf",
-            },
-            None,
-        )
-
-        self.assertEqual(fragmento["ranking"], 2)
-        self.assertEqual(fragmento["similitud"], 0.5)
-        self.assertEqual(fragmento["chunk"], "")
-        self.assertEqual(fragmento["metadata"]["document_id"], 7)
-        self.assertEqual(fragmento["metadata"]["filename"], "doc.pdf")
 
     def test_persist_consulta_saves_fragmentos_and_chunk_links(self):
         user = self.create_user()
@@ -270,23 +233,6 @@ class RAGServiceUnitTest(BaseAppTestCase):
             service.try_persist("Pregunta", {"answer": "Respuesta"}, 0.1, user_id=1)
 
         self.assertEqual(Consulta.query.count(), 0)
-
-    def test_qdrant_search_with_scores_returns_points_or_raw_response(self):
-        qdrant = MagicMock()
-        qdrant.query_points.return_value = SimpleNamespace(points=["p1", "p2"])
-
-        self.assertEqual(service.qdrant_search_with_scores(qdrant, "collection", [0.1], limit=3), ["p1", "p2"])
-        qdrant.query_points.assert_called_once_with(
-            collection_name="collection",
-            query=[0.1],
-            limit=3,
-            with_payload=True,
-            with_vectors=False,
-        )
-
-        raw_response = ["raw"]
-        qdrant.query_points.return_value = raw_response
-        self.assertIs(service.qdrant_search_with_scores(qdrant, "collection", [0.2]), raw_response)
 
 
 class RAGRoutesWorkerUnitTest(BaseAppTestCase):

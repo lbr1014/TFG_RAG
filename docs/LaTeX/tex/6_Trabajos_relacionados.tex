@@ -4,7 +4,7 @@ En este apartado se analizan diferentes trabajos y proyectos que, aunque no cons
 
 \section{TFG relacionados}
 \subsection{\eng{Retrieval-Augmented Generation} para la Extracción de Información de Documentos Inteligente}
-En este TFG~\cite{trabajorelacionado:Daniel} se desarrolla un sistema RAG orientado al ámbito sanitario con el propósito de optimizar la recuperación y generación de información médica. El trabajo plantea una arquitectura basada en la recuperación y generación, que indexa documentación médica, crea \eng{embeddings} y orquesta \eng{prompts} para aportar contexto fiable al modelo generativo. Emplea técnicas de \eng{chunking} con solapamiento y un enfoque \eng{MultiQuery Retriever} para mejorar la cobertura y la precisión de la recuperación previa a la síntesis con un LLM. La solución se implementa sobre la API de \eng{Azure OpenAI}, utilizando \eng{LangChain} y \eng{FAISS} como motor de búsqueda vectorial, e integra una interfaz web en \eng{Flask} para simular consultas clínicas reales. Para la evaluación del sistema se emplea el \eng{framework RAGAS}, valorando métricas de precisión, relevancia y coherencia de las respuestas generadas, demostrando mejoras significativas frente a enfoques puramente generativos. 
+En este TFG~\cite{trabajorelacionado:Daniel} se desarrolla un sistema \eng{RAG} orientado al ámbito sanitario con el propósito de optimizar la recuperación y generación de información médica. El trabajo plantea una arquitectura basada en la recuperación y generación, que indexa documentación médica, crea \eng{embeddings} y orquesta \eng{prompts} para aportar contexto fiable al modelo generativo. Emplea técnicas de \eng{chunking} con solapamiento y un enfoque \file{MultiQuery Retriever} para mejorar la cobertura y la precisión de la recuperación previa a la síntesis con un \eng{LLM}. La solución se implementa sobre la \file{API} de \file{Azure OpenAI}, utilizando \file{LangChain} y \file{FAISS} como motor de búsqueda vectorial, e integra una interfaz web en \file{Flask} para simular consultas clínicas reales. Para la evaluación del sistema se emplea el \eng{framework} \file{RAGAS}, valorando métricas de precisión, relevancia y coherencia de las respuestas generadas, demostrando mejoras significativas frente a enfoques puramente generativos. 
 
 \section{Proyectos relacionados}
 \subsection{\eng{LLM Twin Course: Building Your Production-Ready AI Replica}}
@@ -21,22 +21,45 @@ Este proyecto~\cite{trabajorelacionado:ChatAll} consiste en diseñar una herrami
 
 \section{Análisis de las características de los proyectos}
 En la tabla~\ref{trabajorelacionado-comparativa} se muestra una comparativa entre las características de los distintos proyectos explicados previamente y las del modelo \eng{RAG} desarrollado en el TFG. 
+
+La comparativa realizada permite observar que PythIA adopta una aproximación intermedia entre los sistemas \eng{RAG} clásicos orientados a recuperación documental y las soluciones comerciales más avanzadas. Frente a proyectos como \eng{LLM Twin Course} o \eng{Second Brain AI Assistant}, que están más orientados a asistentes personales y gestión general del conocimiento, PythIA se centra específicamente en la consulta inteligente de licitaciones públicas, incorporando una recuperación semántica especializada y adaptada al dominio jurídico-administrativo. Frente a \eng{ChatAll}, cuyo objetivo principal es comparar respuestas entre distintos modelos sin implementar recuperación documental, PythIA integra un sistema \eng{RAG} completo con recuperación vectorial, uso de metadatos y trazabilidad de las respuestas. En comparación con \eng{NotebookLM}, PythIA comparte características como la contextualización documental y la referencia a fuentes, aunque utiliza una arquitectura abierta y modular basada en tecnologías \eng{open-source}, permitiendo el uso de modelos locales y configuraciones personalizadas.
+
 \begin{landscape}
 \begin{table}[p]
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth}*{5}{>{\centering\arraybackslash}X}}
 		\toprule
-		\textbf{Características}  & \textbf{\eng{LLM Twin Course}} & \textbf{\eng{Second Brain AI Assistant}} & \textbf{\eng{ChatAll}} & \textbf{\eng{NotebookLM}} & \textbf{\eng{RAG} licitaciones}\\
+		\textbf{Características}  & \textbf{\eng{LLM Twin Course}} & \textbf{\eng{Second Brain AI Assistant}} & \textbf{\eng{ChatAll}} & \textbf{\eng{NotebookLM}} & \textbf{PythIA}\\
 		\midrule
-		Uso de \eng{RAG} & \cellcolor{yellow!25} Parcial & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \\
-		Memoria externa & \cellcolor{green!25} {$\checkmark$} & \cellcolor{green!25} {$\checkmark$}  & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \\
-		Multiagente & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$} & \\
-		Comparación de modelos & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \\
-		Orientación documental & \cellcolor{yellow!25} Media & \cellcolor{green!25} Alta & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} Muy alta & \\
-		Enfoque principal & Réplica digital personalizada & Gestión inteligente del conocimiento & Comparación de \eng{LLM} & Consulta documental guiada & \\
+		
+		Enfoque principal & Réplica digital personalizada & Gestión inteligente del conocimiento & Comparación de \eng{LLM} & Consulta documental guiada & Consulta inteligente de licitaciones públicas \\
+		
+		Uso de \eng{RAG} & \cellcolor{green!25} Clásico modular & \cellcolor{green!25} {Híbrido con agentes} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {Propietario integrado} & \cellcolor{green!25} {Clásico modular} \\
+
+		\eng{Chunking} & \cellcolor{green!25} {Tokens} & \cellcolor{green!25} {Semántico} & \cellcolor{red!25} {$\times$} & \cellcolor{yellow!25} Propietario & 	\cellcolor{green!25} {Híbrido (tokens + semántico previo)}\\	
+		
+		Solapamiento & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$} & \cellcolor{yellow!25} No se sabe  &\cellcolor{green!25} {$\checkmark$}\\
+		
+		Recuperación semántica & \cellcolor{green!25} {Similitud vectorial} & \cellcolor{green!25} {Similitud vectorial + agentes} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {Contextual propietaria} & \cellcolor{green!25} {Similitud coseno} \\ 	
+		
+		Metadatos en recuperación & 	\cellcolor{yellow!25} Parcial & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{green!25} {$\checkmark$} \\
+		
+		Soporte multi \eng{LLM} & \cellcolor{yellow!25} {Parcial} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{green!25} {$\checkmark$}   & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$}\\
+		
+		Uso de modelos locales & \cellcolor{green!25} {Opcional} & \cellcolor{yellow!25} {Parcial} & \cellcolor{green!25} {$\checkmark$} &	\cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$}\\
+		
+		Multiagente & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$}\\
+		
+		Trazabilidad respuesta & \cellcolor{yellow!25} {Parcial} & \cellcolor{yellow!25} {Parcial} & \cellcolor{red!25} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{green!25} {$\checkmark$}\\
+		
+		Comparación de modelos & \cellcolor{red!25} {$\times$} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$} & \cellcolor{red!25} {$\times$} & \cellcolor{green!25} {$\checkmark$}\\
+		
+		Evaluación \eng{RAG} & \cellcolor{yellow!25} {Limitada} & \cellcolor{yellow!25} {Limitada} & \cellcolor{red!25} {$\times$} & \cellcolor{yellow!25} {Desconocido} & \cellcolor{green!25} {$\checkmark$} \\
 		\bottomrule
 	\end{tabularx}
 	\caption{Comparativa de las características de los proyectos.}
 	\label{trabajorelacionado-comparativa}
 \end{table}
 \end{landscape}
+
+

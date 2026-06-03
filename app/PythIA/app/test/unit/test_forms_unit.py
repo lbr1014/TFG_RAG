@@ -7,8 +7,6 @@ from types import SimpleNamespace
 
 from wtforms.validators import ValidationError
 
-from app.test.support import BaseAppTestCase
-
 from app.main.code.forms import (
     AdminCreateUserForm,
     EditUserForm,
@@ -17,11 +15,13 @@ from app.main.code.forms import (
     LanguageForm,
     LoginForm,
     PdfUploadForm,
+    RAGDefaultQueryForm,
     RAGQueryForm,
     ResetPasswordForm,
     SignupForm,
 )
 from app.main.code.inetrnacionalizacion.tarduccion import t
+from app.test.support import BaseAppTestCase
 
 
 class FormTestMixin:
@@ -103,12 +103,24 @@ class LoginFormUnitTest(FormTestMixin, BaseAppTestCase):
 
 
 class SignupFormUnitTest(FormTestMixin, BaseAppTestCase):
+    def test_country_choices_follow_active_language(self):
+        with self.app.test_request_context("/", method="GET"):
+            form = SignupForm()
+            self.assertIn(("ES", "España"), form.country_code.choices)
+
+        with self.app.test_request_context("/", method="GET"):
+            from flask import session
+
+            session["lang"] = "en"
+            form = SignupForm()
+            self.assertIn(("ES", "Spain"), form.country_code.choices)
+
     def test_signup_form_validates_secure_matching_passwords(self):
         form = self.assertFormValid(
             SignupForm,
             {
                 "nombre": "Lydia",
-                "email": "lydia@example.com",
+                "email": "lydiablanco71@gmail.com",
                 "password": "Segura123",
                 "confirm_password": "Segura123",
             },
@@ -119,7 +131,7 @@ class SignupFormUnitTest(FormTestMixin, BaseAppTestCase):
             SignupForm,
             {
                 "nombre": "Lydia",
-                "email": "lydia@example.com",
+                "email": "lydiablanco71@gmail.com",
                 "password": "Segura123",
                 "confirm_password": "Distinta123",
             },
@@ -190,6 +202,32 @@ class RAGQueryFormUnitTest(FormTestMixin, BaseAppTestCase):
         too_long = self.assertFormInvalid(RAGQueryForm, {"question": "a" * 2001}, "question")
         self.assertEqual(too_long.question.errors[0], t("validation.max_length_2000"))
         self.assertEqual(too_long.question.render_kw["placeholder"], t("rag.question_placeholder"))
+
+
+class RAGDefaultQueryFormUnitTest(FormTestMixin, BaseAppTestCase):
+    def test_rag_default_query_form_accepts_guided_fields_and_requires_built_question(self):
+        with self.app.test_request_context(
+            "/",
+            method="POST",
+            data={
+                "expediente": "",
+                "doc_type": "administrativo",
+                "question_kind": "amounts",
+                "question": "Para los pliegos disponibles, extrae cantidades.",
+            },
+        ):
+            valid = RAGDefaultQueryForm()
+            valid.expediente.choices = [("", "General")]
+            valid.doc_type.choices = [("", "Cualquiera"), ("administrativo", "Administrativo")]
+            valid.question_kind.choices = [("amounts", "Cantidades")]
+            valid.model.choices = []
+            self.assertTrue(valid.validate(), valid.errors)
+
+        self.assertEqual(valid.doc_type.data, "administrativo")
+        self.assertEqual(valid.question_kind.data, "amounts")
+
+        invalid = self.assertFormInvalid(RAGDefaultQueryForm, {"question": ""}, "question")
+        self.assertEqual(invalid.question.errors[0], t("validation.required"))
 
 
 class ForgotPasswordFormUnitTest(FormTestMixin, BaseAppTestCase):

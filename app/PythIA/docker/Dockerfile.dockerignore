@@ -1,0 +1,72 @@
+# ======================
+# Git / IDE
+# ======================
+.git
+.gitignore
+.vs
+.idea
+.vscode/
+
+# ======================
+# Python
+# ======================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+pytest-cache-files-*/
+**/pytest-cache-files-*/
+.coverage
+.coveragerc
+coverage/
+coverage.xml
+
+# ======================
+# Virtual environments
+# ======================
+venv/
+.env/
+secret.env
+
+
+# ======================
+# Local databases / data
+# ======================
+app.db
+tests/
+*.sqlite
+*.sqlite3
+
+# ======================
+# RAG / Vector DB (MUY IMPORTANTE)
+# ======================
+app/rag/qdrant_data/
+app/rag/pliegos/
+
+# ======================
+# Web scraping outputs
+# ======================
+app/web_scraping/resultados_playwright_*
+app/web_scraping/*.json
+
+# ======================
+# Logs / temp
+# ======================
+*.log
+*.tmp
+
+# ======================
+# OS
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Datos cache
+# ======================
+data/
+**/data/hf/
+**/hf/
+**/.cache/
+**/huggingface/

@@ -3,24 +3,33 @@ Autora: Lydia Blanco Ruiz
 Script para las rutas de autenticación, registro, cierre de sesión y recuperación de contraseña.
 """
 
-from flask import render_template, redirect, url_for, flash, current_app
-from flask_login import login_user, logout_user, login_required
+from flask import current_app, flash, redirect, render_template, url_for
+from flask.typing import ResponseReturnValue
+from flask_login import login_required, login_user, logout_user
 from flask_mail import Message
-from itsdangerous import URLSafeTimedSerializer
-from . import auth_bp
+from itsdangerous import BadData, URLSafeTimedSerializer
+
 from app.main.code import _flask_session_config_name
 from app.main.code.countries import normalize_country_code
-from ...model.user import User
-from app.main.code.forms import EmptyForm, LoginForm, SignupForm, ForgotPasswordForm, ResetPasswordForm
 from app.main.code.extensions import db, mail
+from app.main.code.forms import (
+    EmptyForm,
+    ForgotPasswordForm,
+    LoginForm,
+    ResetPasswordForm,
+    SignupForm,
+)
 from app.main.code.inetrnacionalizacion.tarduccion import t
 
+from ...model.user import User
+from . import auth_bp
 
 MAIN_PAGE_ENDPOINT = "main.pag_principal"
 
 
 def _serializer() -> URLSafeTimedSerializer:
-    """Crea el serializador usado para tokens de recuperación.
+    """
+    Crea el serializador usado para tokens de recuperación.
 
     Returns:
         Serializador configurado con la clave secreta de Flask.
@@ -29,7 +38,8 @@ def _serializer() -> URLSafeTimedSerializer:
 
 
 def generate_reset_token(email: str) -> str:
-    """Genera un token firmado para recuperar una contraseña.
+    """
+    Genera un token firmado para recuperar una contraseña.
 
     Args:
         email: Correo electrónico asociado a la cuenta.
@@ -41,7 +51,8 @@ def generate_reset_token(email: str) -> str:
 
 
 def verify_reset_token(token: str, max_age_seconds: int = 3600) -> str | None:
-    """Valida un token de recuperación de contraseña.
+    """
+    Valida un token de recuperación de contraseña.
 
     Args:
         token: Token recibido desde el enlace de recuperación.
@@ -52,13 +63,14 @@ def verify_reset_token(token: str, max_age_seconds: int = 3600) -> str | None:
     """
     try:
         return _serializer().loads(token, max_age=max_age_seconds)
-    except Exception:
+    except BadData:
         return None
 
 @auth_bp.get("/login")
 @auth_bp.post("/login")
-def login():
-    """Muestra y procesa el formulario de inicio de sesión.
+def login() -> ResponseReturnValue:
+    """
+    Muestra y procesa el formulario de inicio de sesión.
 
     Returns:
         Respuesta HTML del formulario o redirección al área principal.
@@ -83,8 +95,9 @@ def login():
 
 @auth_bp.post("/logout")
 @login_required
-def logout():
-    """Cierra la sesión del usuario autenticado mediante POST con CSRF.
+def logout() -> ResponseReturnValue:
+    """
+    Cierra la sesión del usuario autenticado mediante POST con CSRF.
 
     Returns:
         Redirección a la página de inicio o al área principal si el CSRF no es
@@ -98,8 +111,9 @@ def logout():
 
 @auth_bp.get("/signup")
 @auth_bp.post("/signup")
-def singup():
-    """Muestra y procesa el formulario de registro.
+def singup() -> ResponseReturnValue:
+    """
+    Muestra y procesa el formulario de registro.
 
     Returns:
         Respuesta HTML del formulario o redirección al área principal.
@@ -130,8 +144,9 @@ def singup():
 
 @auth_bp.get("/forgot-password")
 @auth_bp.post("/forgot-password")
-def forgot_password():
-    """Solicita el envío de un enlace de recuperación de contraseña.
+def forgot_password() -> ResponseReturnValue:
+    """
+    Solicita el envío de un enlace de recuperación de contraseña.
 
     Returns:
         Respuesta HTML del formulario o redirección al login.
@@ -142,19 +157,21 @@ def forgot_password():
         email = form.email.data.lower().strip()
         user = User.get_by_email(email)
 
-        if user:
-            token = generate_reset_token(user.email)
-            reset_url = url_for("auth.reset_password", token=token, _external=True)
+        if not user:
+            form.email.errors.append(t("auth.email_not_registered"))
+            return render_template("forgot_password.html", form=form)
 
-            msg = Message(
-                subject=t("auth.recovery_subject"),
-                recipients=[user.email],
-            )
-            msg.body = t("auth.recovery_body", name=user.nombre, reset_url=reset_url)
-            mail.send(msg)
+        token = generate_reset_token(user.email)
+        reset_url = url_for("auth.reset_password", token=token, _external=True)
 
-            flash(t("auth.recovery_sent"), "info")
+        msg = Message(
+            subject=t("auth.recovery_subject"),
+            recipients=[user.email],
+        )
+        msg.body = t("auth.recovery_body", name=user.nombre, reset_url=reset_url)
+        mail.send(msg)
 
+        flash(t("auth.recovery_sent"), "info")
         return redirect(url_for("auth.login"))
 
     return render_template("forgot_password.html", form=form)
@@ -162,8 +179,9 @@ def forgot_password():
 
 @auth_bp.get("/reset-password/<token>")
 @auth_bp.post("/reset-password/<token>")
-def reset_password(token: str):
-    """Restablece la contraseña a partir de un token válido.
+def reset_password(token: str) -> ResponseReturnValue:
+    """
+    Restablece la contraseña a partir de un token válido.
 
     Args:
         token: Token firmado incluido en el enlace de recuperación.

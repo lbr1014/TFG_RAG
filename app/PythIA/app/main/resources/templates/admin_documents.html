@@ -10,68 +10,90 @@
 
 {% block content %}
   <div class="documents-page py-4 py-md-5">
-    <section class="app-surface upload-card">
-      <div class="p-4 p-md-5 text-center">
-        <div class="upload-hero mx-auto">
-          <h1 class="mb-2">{{ t("docs.manage_title") }}</h1>
-          <p class="documents-subtitle mb-0">{{ t("docs.manage_subtitle") }}</p>
+    <div class="admin-users-layout documents-admin-layout">
+      <aside class="upload-card admin-user-form-card documents-upload-panel">
+        <div class="documents-manage-banner">
+          <p class="mb-0">{{ t("docs.manage_subtitle") }}</p>
         </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="mx-auto mt-4 text-start" style="max-width: 860px;">
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }} mb-2" role="alert">
-                  {{ message }}
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
 
         <form id="uploadForm"
               method="POST"
               action="{{ url_for('admin.upload_documents') }}"
               enctype="multipart/form-data"
-              class="upload-panel upload-panel-compact text-start mx-auto mt-4">
+              class="upload-panel text-start">
           {{ upload_form.hidden_tag() }}
 
-          <div class="upload-dropzone mb-4">
-            <label for="files" class="form-label fw-semibold mb-2">{{ upload_form.files.label.text }}</label>
-
-            {{ upload_form.files(
-              id="files",
-              class="form-control form-control-lg upload-input",
-              accept="application/pdf",
-              multiple=True,
-              required=True
-            ) }}
+          <div class="upload-dropzone mb-3">
+            <div class="upload-file-picker">
+              {{ upload_form.files(
+                id="files",
+                class="upload-input",
+                accept="application/pdf",
+                multiple=True,
+                required=True
+              ) }}
+              <label for="files"
+                     id="docs-choose-files"
+                     class="upload-file-picker-label"
+                     data-bs-toggle="tooltip"
+                     data-bs-title="{{ upload_form.files.label.text }}">
+                <span class="upload-file-picker-icon" aria-hidden="true">PDF</span>
+                <span class="upload-file-picker-copy">
+                  <strong>{{ t("docs.choose_files") }}</strong>
+                  <small id="upload-file-summary">{{ t("docs.no_files_selected") }}</small>
+                </span>
+              </label>
+            </div>
 
             <div class="form-text mt-2">{{ t("docs.upload_help") }}</div>
-
-            <div class="row g-2">
-              <div class="col-12 col-md-6 d-grid">
-                <button type="submit" class="btn btn-light btn-header">{{ t("docs.upload_button") }}</button>
-              </div>
-              <div class="col-12 col-md-6 d-grid">
-                <button form="scrapingForm" type="submit" class="btn btn-outline-light btn-header">{{ t("docs.scraping_button") }}</button>
-              </div>
-            </div>
           </div>
 
-          <div class="row g-1">
-            <div class="col-12 col-md-6 d-grid">
-              <button form="markdownForm"
-                      type="submit"
-                      class="btn btn-outline-light btn-header"
-                      {% if pending_markdown == 0 %}disabled{% endif %}>
-                {{ t("docs.markdown_button") }}{% if pending_markdown %} ({{ pending_markdown }}){% endif %}
-              </button>
-            </div>
-            <div class="col-12 col-md-6 d-grid">
-              <button form="vectorForm" type="submit" class="btn btn-primary btn-header">
-                {{ t("docs.vector_button") }}
-              </button>
+          <div class="mb-3">
+            <button type="submit"
+                    id="docs-upload-button"
+                    class="btn btn-primary w-100"
+                    data-bs-toggle="tooltip"
+                    data-bs-title="{{ t('docs.upload_button_tooltip') }}">
+              {{ t("docs.upload_button") }}
+            </button>
+          </div>
+
+          <div class="documents-actions-group">
+            <div class="documents-actions-title">{{ t("docs.actions_title") }}</div>
+            <div class="d-grid gap-2">
+              <div class="documents-action">
+                <button form="scrapingForm"
+                        type="submit"
+                        id="docs-scraping-button"
+                        class="btn btn-outline-light w-100"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="{{ t('docs.scraping_button_tooltip') }}">
+                  {{ t("docs.scraping_button") }}
+                </button>
+              </div>
+
+              <div class="documents-action">
+                <button form="markdownForm"
+                        type="submit"
+                        id="docs-markdown-button"
+                        class="btn btn-outline-light w-100"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="{{ t('docs.markdown_button_tooltip') }}"
+                        {% if pending_markdown == 0 %}disabled{% endif %}>
+                  {{ t("docs.markdown_button") }}{% if pending_markdown %} ({{ pending_markdown }}){% endif %}
+                </button>
+              </div>
+
+              <div class="documents-action">
+                <button form="vectorForm"
+                        type="submit"
+                        id="docs-vector-button"
+                        class="btn btn-primary w-100"
+                        data-bs-toggle="tooltip"
+                        data-bs-title="{{ t('docs.vector_button_tooltip') }}">
+                  {{ t("docs.vector_button") }}
+                </button>
+              </div>
             </div>
           </div>
         </form>
@@ -86,10 +108,11 @@
           {{ post_form.hidden_tag() }}
         </form>
 
-        <div id="scraping-progress" data-finished="false" class="mt-4 d-none">
-          <div class="progress upload-progress" role="progressbar" aria-label="{{ t('docs.progress_aria') }}">
-            <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
+        <div id="scraping-progress" data-finished="false" class="mt-4 d-none" aria-label="{{ t('docs.progress_aria') }}">
+          <div class="progress upload-progress w-100" aria-hidden="true">
+            <div class="progress-bar" style="width: 0%"></div>
           </div>
+          <progress class="visually-hidden" id="scraping-progress-native" max="100" value="0" aria-label="{{ t('docs.progress_aria') }}"></progress>
           <div class="progress-text small text-muted-app mt-2 text-center" aria-live="polite">
             {{ t("docs.running_default") }}
           </div>
@@ -99,149 +122,223 @@
             </button>
           </div>
         </div>
-      </div>
-    </section>
+      </aside>
 
-    <section class="documents-section mt-4 mt-md-5">
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 text-start">
-        <div>
-          <h1 class="mb-1">{{ t("docs.loaded_title") }}</h1>
-          <p class="documents-subtitle mb-0">{{ t("docs.loaded_subtitle") }}</p>
-        </div>
-        <div class="documents-counter">{{ t("docs.count", count=(total_docs if total_docs is defined else docs|length)) }}</div>
-      </div>
+      <section class="admin-users-table-panel documents-section">
+        {% set documents_has_filters = filters.name or filters.type or filters.status or filters.markdown %}
+        <div class="app-sticky-bar app-sticky-surface app-sticky-shell">
+          <div class="app-filter-toolbar">
+            <button class="btn btn-outline-light btn-sm app-filter-toggle"
+                    id="docs-filter-toggle"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#documentsFilterCollapse"
+                    aria-controls="documentsFilterCollapse"
+                    aria-expanded="false"
+                    aria-label="{{ t('common.filter') }}">
+              <i class="bi bi-funnel" aria-hidden="true"></i>
+            </button>
 
-      {% if not docs %}
-        <div class="alert alert-info mt-4">{{ t("docs.empty") }}</div>
-      {% else %}
-        <div class="table-card">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 app-table">
-              <thead>
-                <tr>
-                  <th>{{ t("docs.file") }}</th>
-                  <th class="d-none d-md-table-cell" style="width: 150px;">{{ t("docs.size") }}</th>
-                  <th class="d-none d-lg-table-cell" style="width: 210px;">{{ t("docs.uploaded") }}</th>
-                  <th style="width: 105px;">{{ t("docs.chunks") }}</th>
-                  <th style="width: 140px;">{{ t("docs.status") }}</th>
-                  <th style="width: 140px;">{{ t("docs.markdown_status") }}</th>
-                  <th class="text-center" style="width: 172px;">{{ t("common.actions") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for d in docs %}
-                  <tr>
-                    <td class="text-start">
-                      <div class="fw-semibold doc-name">{{ d.nombre }}</div>
-                      <div class="doc-meta-inline d-md-none mt-1">
-                        <span>{{ (d.size_bytes / 1024) | round(1) }} KB</span>
-                        <span class="doc-meta-separator">&bull;</span>
-                        <span>{{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}</span>
-                      </div>
-                    </td>
+            <div class="app-filter-actions">
+              {% if docs %}
+                <div class="documents-counter">{{ t("docs.count", count=(total_docs if total_docs is defined else docs|length)) }}</div>
+                <button type="button"
+                        class="btn btn-danger btn-sm admin-users-bulk-button"
+                        id="docs-bulk-delete"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteConfirmModal"
+                        data-item-name="{{ t('docs.selected_documents') }}"
+                        data-form-id="bulk-documents-form"
+                        disabled>
+                  {{ t("common.delete") }}
+                </button>
+              {% endif %}
+            </div>
+          </div>
 
-                    <td class="d-none d-md-table-cell">{{ (d.size_bytes / 1024) | round(1) }} KB</td>
-                    <td class="d-none d-lg-table-cell">{{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
-                    <td>{{ d.chunks if d.chunks is not none else 0 }}</td>
-                    <td>
-                      {% if d.status == "indexado" %}
-                        <span class="badge text-bg-success">{{ t("docs.indexed") }}</span>
-                      {% elif d.status == "procesado" %}
-                        <span class="badge text-bg-info">{{ t("docs.processing") }}</span>
-                      {% elif d.status == "fallido" %}
-                        <span class="badge text-bg-danger">{{ t("docs.failed") }}</span>
-                      {% else %}
-                        <span class="badge text-bg-secondary">{{ t("docs.not_indexed") }}</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      <div class="d-flex flex-column gap-1">
-                        {% if markdown_status.get(d.id) %}
-                          <span class="badge text-bg-success">{{ t("docs.with_markdown") }}</span>
-                          <span class="doc-status small">{{ t("docs.markdown_ready") }}</span>
-                        {% else %}
-                          <span class="badge text-bg-secondary">{{ t("docs.without_markdown") }}</span>
-                          <span class="doc-status small">{{ t("docs.markdown_pending") }}</span>
-                        {% endif %}
-                      </div>
-                    </td>
+          <div id="documentsFilterCollapse" class="collapse app-filter-collapse">
+          <form method="GET" action="{{ url_for('admin.documents_list_page') }}" class="admin-users-filter users-filter documents-filter mb-0">
+          <div>
+            <label for="doc-name-filter" class="form-label">{{ t("common.name") }}</label>
+            <input id="doc-name-filter"
+                   type="search"
+                   name="name"
+                   value="{{ filters.name }}"
+                   class="form-control"
+                   placeholder="{{ t('docs.filter_name_placeholder') }}">
+          </div>
 
-                    <td class="text-center">
-                      <div class="table-actions">
-                        <a href="{{ url_for('admin.view_document', doc_id=d.id, format='pdf') }}"
-                           class="btn btn-sm btn-outline-light"
-                           target="_blank"
-                           rel="noopener noreferrer">
-                          {{ t("docs.view_pdf") }}
-                        </a>
+          <div>
+            <label for="doc-type-filter" class="form-label">{{ t("docs.type") }}</label>
+            <select id="doc-type-filter" name="type" class="form-select">
+              <option value="">{{ t("common.all") }}</option>
+              {% for type_value in doc_type_options %}
+                <option value="{{ type_value }}"{% if filters.type == type_value %} selected{% endif %}>
+                  {{ t("docs.type_" ~ type_value) }}
+                </option>
+              {% endfor %}
+              <option value="unknown"{% if filters.type == "unknown" %} selected{% endif %}>{{ t("docs.type_unknown") }}</option>
+            </select>
+          </div>
 
-                        <a href="{{ url_for('admin.download_document', doc_id=d.id, format='pdf') }}"
-                           class="btn btn-sm btn-outline-light">
-                          {{ t("docs.download_pdf") }}
-                        </a>
+          <div>
+            <label for="doc-status-filter" class="form-label">{{ t("docs.status") }}</label>
+            <select id="doc-status-filter" name="status" class="form-select">
+              <option value="">{{ t("common.all") }}</option>
+              {% for status_value in doc_status_options %}
+                <option value="{{ status_value }}"{% if filters.status == status_value %} selected{% endif %}>
+                  {{ t("docs.status_" ~ status_value) }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
 
-                        {% if markdown_status.get(d.id) %}
-                          <a href="{{ url_for('admin.view_document', doc_id=d.id, format='markdown') }}"
-                             class="btn btn-sm btn-outline-light"
-                             target="_blank"
-                             rel="noopener noreferrer">
-                            {{ t("docs.view_markdown") }}
-                          </a>
+          <div>
+            <label for="doc-markdown-filter" class="form-label">{{ t("docs.markdown_status") }}</label>
+            <select id="doc-markdown-filter" name="markdown" class="form-select">
+              <option value="">{{ t("common.all") }}</option>
+              <option value="yes"{% if filters.markdown == "yes" %} selected{% endif %}>{{ t("docs.with_markdown") }}</option>
+              <option value="no"{% if filters.markdown == "no" %} selected{% endif %}>{{ t("docs.without_markdown") }}</option>
+            </select>
+          </div>
 
-                          <a href="{{ url_for('admin.download_document', doc_id=d.id, format='markdown') }}"
-                             class="btn btn-sm btn-outline-light">
-                            {{ t("docs.download_markdown") }}
-                          </a>
-                        {% endif %}
-
-                        <form id="delete-form-{{ d.id }}"
-                              method="POST"
-                              action="{{ url_for('admin.delete_document', doc_id=d.id) }}"
-                              class="d-inline">
-                          {{ post_form.hidden_tag() }}
-                          <button type="button"
-                                  class="btn btn-sm btn-danger"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#deleteConfirmModal"
-                                  data-item-name="{{ d.nombre }}"
-                                  data-form-id="delete-form-{{ d.id }}">
-                            {{ t("common.delete") }}
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+          <div class="admin-users-filter-actions">
+            <button type="submit" class="btn btn-primary" id="docs-filter-apply">{{ t("common.filter") }}</button>
+            <a href="{{ url_for('admin.documents_list_page') }}" class="btn btn-outline-light">{{ t("common.clear") }}</a>
+          </div>
+        </form>
           </div>
         </div>
 
-        {% if total_pages > 1 %}
-          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
-            <p class="page-info mb-0">{{ t("common.page", page=page, total_pages=total_pages, total_items=total_docs, items_label=t("docs.count", count='').strip()) }}</p>
+        {% if not docs %}
+          <div class="alert alert-info mt-4">{{ t("docs.empty") }}</div>
+        {% else %}
+          <form id="bulk-documents-form" method="POST" action="{{ url_for('admin.bulk_delete_documents') }}">
+            {{ post_form.hidden_tag() }}
 
-            <nav aria-label="Paginacion documentos">
-              <ul class="pagination pagination-sm justify-content-center mb-0">
-                <li class="page-item{% if page <= 1 %} disabled{% endif %}">
-                  <a class="page-link" href="{% if page > 1 %}{{ url_for('admin.documents_list_page', page=page-1) }}{% else %}#{% endif %}"{% if page <= 1 %} tabindex="-1" aria-disabled="true"{% endif %}>
-                    {{ t("common.previous") }}
-                  </a>
-                </li>
-                <li class="page-item disabled">
-                  <span class="page-link">{{ page }}/{{ total_pages }}</span>
-                </li>
-                <li class="page-item{% if page >= total_pages %} disabled{% endif %}">
-                  <a class="page-link" href="{% if page < total_pages %}{{ url_for('admin.documents_list_page', page=page+1) }}{% else %}#{% endif %}"{% if page >= total_pages %} tabindex="-1" aria-disabled="true"{% endif %}>
-                    {{ t("common.next") }}
-                  </a>
-                </li>
-              </ul>
-            </nav>
-          </div>
+            <div class="table-card">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 app-table">
+                  <thead>
+                    <tr>
+                      <th class="admin-users-select-cell">
+                        <input class="form-check-input" type="checkbox" id="select-all-users" aria-label="{{ t('users.select_all') }}">
+                      </th>
+                      <th>{{ t("docs.file") }}</th>
+                      <th style="width: 92px;">{{ t("docs.chunks") }}</th>
+                      <th style="width: 170px;">{{ t("docs.status") }}</th>
+                      <th class="text-center" style="width: 152px;">{{ t("common.actions") }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for d in docs %}
+                      <tr>
+                        <td class="admin-users-select-cell">
+                          <input class="form-check-input user-row-checkbox"
+                                 type="checkbox"
+                                 name="selected_doc_ids"
+                                 value="{{ d.id }}"
+                                 aria-label="{{ d.nombre }}">
+                        </td>
+                        <td class="text-start">
+                          <div class="fw-semibold doc-name">{{ d.nombre }}</div>
+                          <div class="doc-meta-inline mt-1">
+                            <span>{{ t("docs.type_" ~ d.tipo_documento) if d.tipo_documento else t("docs.type_unknown") }}</span>
+                            <span class="doc-meta-separator">&bull;</span>
+                            <span>{{ (d.size_bytes / 1024) | round(1) }} KB</span>
+                            <span class="doc-meta-separator">&bull;</span>
+                            <span>{{ d.modified_at.strftime("%Y-%m-%d %H:%M:%S") }}</span>
+                          </div>
+                        </td>
+
+                        <td>{{ d.chunks if d.chunks is not none else 0 }}</td>
+                        <td>
+                          <div class="d-flex flex-column gap-1">
+                            {% if d.status == "indexado" %}
+                              <span class="badge text-bg-success">{{ t("docs.indexed") }}</span>
+                            {% elif d.status == "procesado" %}
+                              <span class="badge text-bg-info">{{ t("docs.processing") }}</span>
+                            {% elif d.status == "fallido" %}
+                              <span class="badge text-bg-danger">{{ t("docs.failed") }}</span>
+                            {% elif d.status == "con markdown" %}
+                              <span class="badge text-bg-primary">{{ t("docs.with_markdown") }}</span>
+                            {% else %}
+                              <span class="badge text-bg-secondary">{{ t("docs.not_indexed") }}</span>
+                            {% endif %}
+
+                            {% if markdown_status.get(d.id) %}
+                              <span class="badge text-bg-success">{{ t("docs.with_markdown") }}</span>
+                              <span class="doc-status small">{{ t("docs.markdown_ready") }}</span>
+                            {% else %}
+                              <span class="badge text-bg-secondary">{{ t("docs.without_markdown") }}</span>
+                              <span class="doc-status small">{{ t("docs.markdown_pending") }}</span>
+                            {% endif %}
+                          </div>
+                        </td>
+
+                        <td class="text-center">
+                          <div class="table-actions">
+                            <a href="{{ url_for('admin.view_document', doc_id=d.id, format='pdf') }}"
+                               class="btn btn-sm btn-outline-light"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                              {{ t("docs.view_pdf") }}
+                            </a>
+
+                            <a href="{{ url_for('admin.download_document', doc_id=d.id, format='pdf') }}"
+                               class="btn btn-sm btn-outline-light">
+                              {{ t("docs.download_pdf") }}
+                            </a>
+
+                            {% if markdown_status.get(d.id) %}
+                              <a href="{{ url_for('admin.view_document', doc_id=d.id, format='markdown', render='html') }}"
+                                 class="btn btn-sm btn-outline-light"
+                                 target="_blank"
+                                 rel="noopener noreferrer">
+                                {{ t("docs.view_markdown") }}
+                              </a>
+
+                              <a href="{{ url_for('admin.download_document', doc_id=d.id, format='markdown') }}"
+                                 class="btn btn-sm btn-outline-light">
+                                {{ t("docs.download_markdown") }}
+                              </a>
+                            {% endif %}
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </form>
+
+          {% if total_pages > 1 %}
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
+              <p class="page-info mb-0">{{ t("common.page", page=page, total_pages=total_pages, total_items=total_docs, items_label=t("docs.count", count='').strip()) }}</p>
+
+              <nav aria-label="Paginacion documentos">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                  <li class="page-item{% if page <= 1 %} disabled{% endif %}">
+                    <a class="page-link" href="{% if page > 1 %}{{ url_for('admin.documents_list_page', page=page-1, name=filters.name, type=filters.type, status=filters.status, markdown=filters.markdown) }}{% else %}#{% endif %}"{% if page <= 1 %} tabindex="-1" aria-disabled="true"{% endif %}>
+                      {{ t("common.previous") }}
+                    </a>
+                  </li>
+                  <li class="page-item disabled">
+                    <span class="page-link">{{ page }}/{{ total_pages }}</span>
+                  </li>
+                  <li class="page-item{% if page >= total_pages %} disabled{% endif %}">
+                    <a class="page-link" href="{% if page < total_pages %}{{ url_for('admin.documents_list_page', page=page+1, name=filters.name, type=filters.type, status=filters.status, markdown=filters.markdown) }}{% else %}#{% endif %}"{% if page >= total_pages %} tabindex="-1" aria-disabled="true"{% endif %}>
+                      {{ t("common.next") }}
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          {% endif %}
         {% endif %}
-      {% endif %}
-    </section>
+      </section>
+    </div>
   </div>
 
   {% include "components/modal_delete.html" %}

@@ -5,11 +5,11 @@ Este documento define cómo se va a gestionar y ejecutar el desarrollo de un pro
 
 Su importancia radica en que reduce la incertidumbre y aumenta la probabilidad de éxito académico y técnico. Permite justificar decisiones, anticipar problemas, y demostrar competencias en gestión de proyectos, ingeniería de requisitos, calidad y comunicación técnica.
 
-En este documento se va a incluir la planificación temporal de las fases y tareas del proyecto. Para cada una se debe establecer una fecha de inicio y se debe estimar la fecha final. Para realizar esto hay que tener en cuenta el peso de cada tarea, los requisitos previos y las dependencias.
+En este documento se va a incluir la planificación temporal de las fases y tareas del proyecto (ver sección~\hyperref[plan:temp]{A.2}). Para cada una se debe establecer una fecha de inicio y se debe estimar la fecha final. Para realizar esto hay que tener en cuenta el peso de cada tarea, los requisitos previos y las dependencias.
 
-También, se va a valorar la viabilidad del proyecto. En concreto, la viabilidad económica y la legal. En la viabilidad económica se estiman los costes y los beneficios del proyecto. Mientras que en la viabilidad legal analizan las leyes y licencias que afecten al desarrollo.  
+También, se va a valorar la viabilidad del proyecto (ver sección~\hyperref[plan:viab]{A.3}). En concreto, la viabilidad económica (ver subsección~\hyperref[viabilidad_economica]{A.3.1}) y la legal (ver subsección~\hyperref[viabilidad_legal]{A.3.2}). En la viabilidad económica se estiman los costes y los beneficios del proyecto. Mientras que en la viabilidad legal analizan las leyes y licencias que afecten al desarrollo.  
 
-\section{Planificación temporal}
+\section{Planificación temporal} \label{plan:temp}
 Para la planificación se utiliza una metodología Scrum, aplicando iteraciones (\eng{sprints}). Al finalizar cada \eng{sprint} se realiza una reunión para la revisión del incremento y la planificación del siguiente. En la planificación se seleccionan y valoran las tareas (\eng{issues}) a realizar en el siguiente \eng{sprint}. Estas tareas se han valorado usando los \eng{story points} de ZenHub. A las tareas que se subdividen en otras se les ha asignado solo puntos extra respecto a sus subtareas, los \eng{story points} no se han considerado acumulativos.
 
 Para simplificar la asignación de los \eng{story points} se les ha asignado una estimación temporal recogida en la tabla~\ref{tabla:storypoints}:
@@ -506,12 +506,168 @@ Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone
 	\item Incluir correcciones en el código de los prototipos.
 \end{itemize}
 
-Para realizar el \eng{sprint} se estimaron 26 horas de trabajo.
+Para realizar el \eng{sprint} se estimaron 26 horas de trabajo. Al final se invirtieron más de 30 horas ya que corregir los fallos de la conversión a \file{Markdown} costó más de lo previsto. A pesar de que se ha mejorado el funcionamiento solventando problemas por \eng{timeout} o páginas no convertidas correctamente, aún presenta algún problema que se solventará en futuros \eng{sprints}. Por ejemplo, no captura bien los títulos y a veces se para en las conversiones largas.
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint22}.
+\imagenflotante{Burndown/Sprint22}{\eng{Burndown chart} del \eng{sprint} 22.}
+
 
 \subsection{\eng{Sprint} 23 (26/03/2026 -- 09/04/2026)}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/23?closed=1}{Sprint 23} se fijó hacer que la conversión a \file{Markdown} se haga con la GPU en lugar de hacerse con la CPU como hasta ahora. Se ha considerado especialmente importante para reducir el tiempo dedicado a la conversión a \file{Markdown} de los \file{PDF} usados como contexto. Además, se decidió implementar gráficas de uso de la aplicación para los usuarios. Estas gráficas deben mostrar datos distintos a los usuarios normales, que solo deben ver su uso de la aplicación, y a los administradores, que deben poder ver el uso de la aplicación de cualquier usuario.  Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 
-\section{Estudio de viabilidad}
-El estudio de viabilidad es un análisis detallado que se realiza antes de iniciar un proyecto. Sirve para determinar la rentabilidad de ese proyecto, es decir, si se pude hacer realidad. Para ello se analiza si es económicamente rentable (ver sección~\hyperref[viabilidad_economica]{A.3.1}) y legalmente viable (ver sección~\hyperref[viabilidad_legal]{A.3.2}). 
+\begin{itemize}
+	\tightlist
+	\item Hacer que la conversión a \file{Markdown} use la GPU.
+	\item Incluir gráficas en la \eng{web}.
+	\begin{itemize}
+	\tightlist
+		\item Diseñar gráficas relevantes para el cliente.
+		\item Estudiar el uso de \file{D3} para generar gráficas
+	\end{itemize}
+	\item Incluir manejo de errores.
+	\begin{itemize}
+	\tightlist
+		\item Hacer \eng{templates} para el manejo de errores.
+	\end{itemize}
+	\item Cambiar los metadatos guardados para el \eng{chunk}.
+	\item Usar los metadatos de los \eng{chunks} mejorar el RAG.
+	\item Arreglar los \eng{test}.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 40 horas de trabajo. Al finalizar el sprint se completaron todas las tareas más o menos en el plazo estimado. Como aspecto destacable cabe mencionar que a pesar de ejecutar la conversión a \file{Markdown} con la GPU sigue siendo muy lenta. Esto conlleva que todavía se paran las conversiones de los PDF más largos. Este problema se solucionará en \eng{sprints} posteriores.
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint23}.
+\imagenflotante{Burndown/Sprint23}{\eng{Burndown chart} del \eng{sprint} 23.}
+
+\subsection{\eng{Sprint} 24 (09/04/2026 -- 16/04/2026)}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/24?closed=1}{Sprint 24} se fijó completar la documentación del código de la aplicación para que sea más entendible lo que hace cada \eng{script} y cada método. Además, se decidió resolver las sugerencias de SonarCloud para que el código sea de mayor calidad, garantizando su calidad. Respecto al propio RAG se decidió permitir que use distintos modelos LLM para responder según cual seleccione el usuario. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+
+\begin{itemize}
+\tightlist
+	\item Resolver las \eng{issues} de SonarCloud.
+	\item Documentar el código de la aplicación.
+	\item Incluir modelos adicionales en la aplicación.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 18 horas de trabajo. Al finalizar el \eng{sprint} si que se finalizaron todas las tareas, pero no se cumplió la estimación temporal. Tanto la documentación como la resolución de las \eng{issues} de SonarCloud llevaron mucho más tiempo del estimado. Finalmente se invirtieron unas 25 horas de trabajo. En la documentación se invirtieron 2 horas más de lo previsto y en resolver las \eng{issues} 5 horas más.  
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint24}.
+\imagenflotante{Burndown/Sprint24}{\eng{Burndown chart} del \eng{sprint} 24.}
+
+\subsection{\eng{Sprint} 25 (16/04/2026 -- 30/04/2026)}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/25?closed=1}{Sprint 25} se decidió incluir un formulario para las interacciones con el modelo que permita seleccionar pliegos concretos y hacer preguntas más específicas, así como resúmenes. Esto va a permitir optimizar las respuestas del modelo a dichas peguntas decidiendo mejor el número de \eng{chunks} recuperados. Además se decidió que incluir gráficas de comparativa de modelos aportaría una ayuda al usuario para elegir el modelo que le responda a las preguntas. También, se decidió mejorar las gráficas de uso de los usuarios haciéndolas interactivas. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+
+\begin{itemize}
+\tightlist
+	\item Incluir un formulario para las interacciones con el modelo.
+	\begin{itemize}
+	\tightlist
+			\item Diseñar el \eng{template} para el formulario de interacción con el modelo.
+		\item Realizar \eng{prompts} específicos para las preguntas del formulario.
+	\end{itemize}
+	\item Realizar gráficas para comparar los modelos.
+	\begin{itemize}
+	\tightlist
+		\item Diseñar gráficas.
+	\end{itemize}
+	\item Nuevo campo en consultas.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 24 horas de trabajo. Al finalizar el \eng{sprint} se finalizaron todas las tareas, sin embargo, la parte de las consultas por defecto con el sistema implicó más cambios de los pensados ampliando el tiempo que costó realizarlo. Además, del diseño de \eng{primpts} específicos se
+decidió cambiar la forma de recuperar los \eng{chunks}. Dependiendo de la pregunta se pasa un número máximo de \eng{chunks} recuperados distintos. Para todas las consultas se ha hecho que se recuperen un mínimo de 5 \eng{chunks} hasta el máximo indicado para ese tipo de pregunta, pero solo recuperará aquellos con una similitud mayor del 0,5 para evitar introducir ruido al modelo. 
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint25}.
+\imagenflotante{Burndown/Sprint25}{\eng{Burndown chart} del \eng{sprint} 25.}
+
+\subsection{\eng{Sprint} 26 (30/04/2026 -- 07/05/2026)}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/26?closed=1}{Sprint 26} se decidió comenzar a explicar algunos de los apartados que faltan de los anexos y la memoria. Concretamente se va a explicar el manual del programador, y se va a comenzar con el manual del usuario. También, se va a seguir redactando la viabilidad y los aspectos importantes durante el desarrollo. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+
+\begin{itemize}
+\tightlist
+	\item Redactar la documentación técnica del programador.
+	\begin{itemize}
+	\tightlist
+		\item Explicar las pruebas del sistema.
+		\item Explicar la forma de ejecutar el sistema en los anexos.
+		\item Redactar el manual del programador.
+	\end{itemize}
+	\item Completar la viabilidad del proyecto.
+	\item Documentación de usuario.
+	\begin{itemize}
+	\tightlist
+		\item Redactar los requisitos de usuario.
+		\item Empezar a explicar el manual de usuarios.
+	\end{itemize}
+	\item Explicar aspectos importantes del desarrollo del proyecto.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 32 horas de trabajo. Tras finalizar el \eng{sprint} se comenzaron a explicar todos los apartados marcados como objetivo. Por cada apartado se decidió como estructurarlo y que aspectos son importantes incluir. Además, se ha investigado sobre las leyes relevantes para desarrollar la viabilidad legal del proyecto. Para realizar estas tareas se invirtió más o menos el tiempo previsto.
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint26}.
+\imagenflotante{Burndown/Sprint26}{\eng{Burndown chart} del \eng{sprint} 26.}
+
+\subsection{\eng{Sprint} 27 (07/05/2026 -- 14/05/2026)}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/27?closed=1}{Sprint 27} se fijó cambiar algunos \eng{tempaltes} y \file{CSS} de la aplicación para introducir la última iteración del diseño de las interfaces. Estos cambios en el diseño tienen como objetivo tanto mejorar el aspecto de la \eng{web} como hacerla más accesible para los usuarios. Además, la conversión a \file{Markdown} sigue presentando algún problema, por ejemplo, cuando lleva mucho tiempo en ejecución satura la \file{GPU} haciendo que se tarde mucho en responder a las consultas. Respecto a la documentación se ha decidido seguir redactando algunos de los apartados que se empezaron a desarrollar en el \eng{sprint} anterior. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+\tightlist
+	\item Mejorar la interfaz gráfica.
+	\item Terminar de redactar la viabilidad legal del proyecto.
+	\item Mejorar la documentación del programador.
+	\item Seguir explicando los aspectos relevantes del sistema.
+	\item Mejorar el funcionamiento de la conversión a \file{Markdown}.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 24 horas de trabajo. Aunque si que se han completado todas las tareas al finalizar el \eng{sprint} el tiempo invertido ha sido mayor, de unas 30 horas. Principalmente se debe a que introducir los cambios en el diseño ha llevado más tiempo del previsto. Además, como aspecto destacable del \eng{sprint} cabría destacar que para evitar que la conversión a \file{Markdown} sature la \file{GPU} ralentizando las repuestas se ha levantado un \file{Ollama} que solo usa la conversión. Esto se debe a que el uso de la \file{GPU} funciona a través de \file{Ollama} al tratarse de modelos \file{OCR} y de \file{LLM}.
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint27}.
+\imagenflotante{Burndown/Sprint27}{\eng{Burndown chart} del \eng{sprint} 27.}
+
+\subsection{\eng{Sprint} 28 (14/05/2026 -- 21/05/2026)}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/28?closed=1}{Sprint 28} se ha fijado dejar casi terminada la memoria del TFG y seguir completando los anexos, concretamente finalizando aquellos apartados que ya estaban empezados. Además, se ha decidido incluir un tutorial de uso de la aplicación utilizando la herramienta \file{driver.js}. La finalidad de este tutorial es hacer la aplicación más accesible para los usuarios. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+
+\begin{itemize}
+\tightlist
+	\item Hacer tutorial para el uso de la aplicación \eng{web}.
+	\begin{itemize}
+	\tightlist
+		\item Estudiar el uso de \file{driver.js}.
+	\end{itemize}
+	\item Redactar apartados de los anexos.
+	\begin{itemize}
+	\tightlist
+		\item Completar el estudio de viabilidad del proyecto.
+		\item Completar los requisitos funcionales.
+		\item Terminar el apartado de diseño de los anexos.
+	\end{itemize}
+	\item Arreglos de los \eng{tests} de integración.
+	\item Redactar apartados de la memoria.
+	\begin{itemize}
+	\tightlist
+		\item Redactar apartados que faltan de la memoria.
+		\item Completar apartados ya empezados en la memoria.
+	\end{itemize}
+	\item Añadir evaluación \eng{RAG}.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 42 horas de trabajo.
+
+%El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint28}.
+%\imagenflotante{Burndown/Sprint28}{\eng{Burndown chart} del \eng{sprint} 28.}
+
+\subsection{\eng{Sprint} 29 (21/05/2026 -- 28/05/2026)}
+%Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/29?closed=1}{Sprint 29}
+
+%Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+
+
+%Para realizar el \eng{sprint} se estimaron horas de trabajo
+
+%El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint29}.
+%\imagenflotante{Burndown/Sprint29}{\eng{Burndown chart} del \eng{sprint} 29.}
+
+
+\section{Estudio de viabilidad} \label{plan:viab}
+El estudio de viabilidad es un análisis detallado que se realiza antes de iniciar un proyecto. Sirve para determinar la rentabilidad de ese proyecto, es decir, si se pude hacer realidad. Para ello se analiza si es económicamente rentable (ver subsección~\hyperref[viabilidad_economica]{A.3.1}) y legalmente viable (ver subsección~\hyperref[viabilidad_legal]{A.3.2}). 
 
 \subsection{Viabilidad económica}\label{viabilidad_economica}
 Para analizar la viabilidad económica se ha seguido el coste total de propiedad (TCO)~\cite{book:TCO_costs}. El TCO consiste en identificar y estimar todos los costes asociados al ciclo de vida de un producto tecnológico, no solo los costes directos de su adquisición, sino también los derivados de su operación, mantenimiento y uso a lo largo del tiempo. De esta forma, se obtiene una visión global y realista del impacto económico del sistema. Los costes considerados vienen recogidos en la tabla~\ref{tabla:explicacion_TCO}.
@@ -539,11 +695,20 @@ Para analizar la viabilidad económica se ha seguido el coste total de propiedad
 	\label{tabla:explicacion_TCO}
 \end{table}
 
-Para llevar a cabo el estudio de la viabilidad económica se va a considerar que el trabajo llevado a cabo por la alumna lo ha realizado un desarrollador contratado durante los 9 meses que ha durado el proyecto. Si se supone un escenario empresarial real en España y se toma como referencia el \myhref{https://www.boe.es/buscar/doc.php?id=BOE-A-2024-2251}{Salario Mínimo Interprofesional (SMI) de 2024}, el salario mínimo anual es de 15\,876\,€, es decir, 1\,134\,€ al mes (se divide en 14 pagas). Además, a este salario hay que añadirle los gastos por la cotización a la \myhref{https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/36537}{Seguridad Social}. Normalmente la cotización es del 28,30\%, de los cuales 23,60\% se corresponden con gastos de la empresa. Por lo cual el gasto por la contratación del desarrollado sería:
+Para llevar a cabo el estudio de la viabilidad económica se va a considerar que el trabajo llevado a cabo por la alumna lo ha realizado un desarrollador contratado durante los 9 meses que ha durado el proyecto. Si se supone un escenario empresarial real en España y se toma como referencia el \myhref{https://www.boe.es/buscar/doc.php?id=BOE-A-2024-2251}{Salario Mínimo Interprofesional (SMI) de 2024}, el salario mínimo anual es de 15\,876\,€, es decir, 1\,134\,€ al mes (se divide en 14 pagas). Además, a este salario hay que añadirle los gastos por la cotización a la \myhref{https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/36537}{Seguridad Social}. Normalmente la cotización es del 28,30\%, de los cuales 23,60\% se corresponden con gastos de la empresa. Este impuesto se conoce como contingencias comunes. Además, debe sumarse la tasa de desempleo, de la cual la empresa debe pagar un 5,5\% (el empleado paga el otro 1,55\% para completar el 7,05\% de la tasa total). Por último debe pagarse un 0,2\% de FOGASA. Por lo cual el gasto mensual final por la contratación del desarrollado sería:
+
 $$
-1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 9\,\text{meses}
-= 12\,614,62\,\text{\texteuro}
+1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 
+= 1\,481,97\,\text{\texteuro}
 $$
+
+El gasto total tras los 9 meses que ha durado el desarrollo sería:
+
+$$
+1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 \cdot 9\,\text{meses}
+= 13\,335,04\,\text{\texteuro}
+$$
+
 
 Respecto a la adquisición de \eng{hardware} no ha sido necesaria la adquisición de \eng{hardware} específico adicional. El sistema \eng{RAG} se ha implementado de forma que se pueda ejecutar en entornos estándares, sin requerir servidores dedicados ni equipamiento especializado. El desarrollo y las pruebas se han realizado utilizando mi equipo personal y servidores ya disponibles en la universidad. El equipo utilizado ha sido un \myhref{https://support.hp.com/es-es/document/ish_7878690-7886844-16}{\eng{Victus by HP Gaming Laptop 16-r0xxx}}. El coste de adquisición del portátil fueron unos 1\,200\,€. Considerando un periodo de amortización de 5 años, el coste amortizado correspondiente al proyecto con una duración de 9 meses (del 11 de septiembre al 11 junio) sería:
 $$
@@ -608,8 +773,9 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
     		>{\raggedright\arraybackslash}p{0.46\linewidth}
     		>{\raggedleft\arraybackslash}p{0.46\linewidth}}
 		\toprule
-		\textbf{Componentes}    & \textbf{Estimación (euros)}\\
+		\textbf{Componentes}    & \textbf{Estimación (\texteuro)}\\
 		\midrule
+		Empleados & 13\,335,04\\
 		Adquisición \eng{hardware} & 180  \\
 		Adquisición \eng{software} & 21,75  \\
 		Instalación & 2\,522,92  \\
@@ -619,7 +785,7 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
 		Infraestructura & 0 \\
 		Tiempo inactivo & 0 \\
 		Espacio y energía & 720 \\
-		Coste total del proyecto & 11\,229 \\
+		Coste total del proyecto & 24\,564,10 \\
 		\bottomrule
 	\end{tabularx}
 	\caption{Coste total del proyecto.}
@@ -628,4 +794,84 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
 
 \subsection{Viabilidad legal}\label{viabilidad_legal}
 
+El desarrollo del proyecto PythIA tiene una viabilidad legal favorable, ya que las tecnologías empleadas, la recopilación de datos y el despliegue del sistema pueden realizarse respetando la normativa vigente. No obstante, debido a que el sistema utiliza técnicas de \eng{Web Scraping}, almacenamiento documental, autenticación de usuarios y modelos de inteligencia artificial, es necesario considerar distintos aspectos legales relacionados con la protección de datos (ver sección~\hyperref[subsec:proctdatos]{A.4.1}), la propiedad intelectual (ver sección~\hyperref[subsec:propiedad]{A.4.2}), el uso ético de la información pública (ver sección~\hyperref[subsec:webScraping]{A.4.3}), la licencias de \eng{software} (ver sección~\hyperref[subsec:IA]{A.4.4}) y la seguridad informática (ver sección~\hyperref[subsec:seg]{A.4.5}).
+
+\textbf{Protección de datos personales}\label{subsec:proctdatos}
+
+La aplicación permite la gestión de usuarios mediante registro, autenticación e historial de consultas. Por ello, el sistema debe cumplir el Reglamento General de Protección de Datos (RGPD)~\cite{legal:procdatos} de la Unión Europea y la legislación española complementaria (LOPDGDD)~\cite{legal:procdatoses}. Concretamente el proyecto debe respetar el principio de minimización de datos, el almacenamiento seguro de contraseñas utilizando \file{hash}, la confidencialidad de las consultas realizadas por los usuarios, la protección de las variables sensibles mediante ficheros de entorno, el uso de conexiones cifradas mediante \file{HTTPS} y certificados \file{SSL/TLS}.
+
+La aplicación cumple estos requisitos debido a que únicamente almacena los datos estrictamente necesarios para el funcionamiento del sistema, como el correo electrónico, el nombre de usuario y las credenciales cifradas. Además, la contraseña no se almacenan en texto plano, sino utilizando funciones hash seguras proporcionadas por Werkzeug. Las claves privadas y secretos de la aplicación se gestionan mediante variables de entorno y archivos externos no incluidos en el repositorio público, reduciendo el riesgo de exposición accidental de información sensible.
+
+Por otra parte, el despliegue de la aplicación utiliza \file{HTTPS} y certificados \file{SSL/TLS}, lo que garantiza el cifrado de las comunicaciones entre el cliente y el servidor. Esto evita ataques de interceptación de tráfico y protege tanto las credenciales de los usuarios como las consultas realizadas al sistema RAG.
+ 
+\textbf{Propiedad intelectual y derechos de autor}\label{subsec:propiedad}
+
+El código fuente desarrollado en el proyecto está protegido por la legislación de propiedad intelectual. Se conservan los derechos sobre el \eng{software} desarrollado, salvo por las condiciones establecidas por la universidad para los Trabajos Fin de Grado, cuya normativa se basa en el Real Decreto Legislativo 1/1996, por el que se aprueba la Ley de Propiedad Intelectual~\cite{legal:propintelect}.
+
+Además, el proyecto utiliza múltiples bibliotecas y herramientas de terceros, como Flask, Docker, Qdrant, Playwright, Selenium y Ollama. Todas estas herramientas emplean licencias de \eng{software} libre y \eng{open source} compatibles con el desarrollo académico y de investigación (ver tabla~\ref{tabla:licencias}). Estas licencias permiten el uso, modificación y redistribución del software siempre que se mantengan las condiciones establecidas por cada autor.
+
+
+\tablaMultipaginaColor
+	{Licencias de las herramientas de la aplicación.}
+	{|L{0.2\columnwidth}|L{0.2\columnwidth}|L{0.6\columnwidth}|}
+	{3}
+	{licencias}
+	{\textbf{Herramienta} & \textbf{Licencia} & \textbf{Uso en el sistema}}
+	{		Flask & BSD-3-Clause & \eng{Framework web} ligero en Python utilizado para desarrollar la aplicación web del sistema PythIA \\
+		Jinja2 & BSD-3-Clause & Motor de plantillas utilizado por Flask para generar HTML dinámico\\
+		Werkzeug & BSD-3-Clause & Biblioteca WSGI utilizada por Flask para routing, peticiones HTTP y utilidades web\\
+		Flask-Loging & MT & Gestión de autenticación, sesiones y control de usuarios autenticados.\\
+		Flask-WTF & BSD-3-Clause & Integración de formularios WTForms con Flask y protección CSRF.\\
+		WTForm & BSD-3-Clause & Biblioteca para validación y gestión de formularios web. \\
+		SQLAlchemy & MIT & ORM utilizado para la interacción con bases de datos relacionales. \\
+		SQLite & Dominio público & Base de datos ligera utilizada en desarrollo y pruebas \\
+		PostgreSQL & PostgreSQL License & Sistema gestor de bases de datos relacional utilizado en producción \\
+		Qdrant & Apache Licence 2.0 & Base de datos vectorial especializada en búsqueda semántica mediante embeddings \\
+		Docker & Apache License 2.0 & Plataforma de contenedores utilizada para despliegue y reproducibilidad del entorno\\
+		Docker Compose & Apache License 2.0 & Herramienta para orquestar múltiples contenedores Docker\\
+		Gunicorn & MIT & Servidor WSGI utilizado para desplegar la aplicación Flask en producción\\
+		Nginx & BSD-2-Clause & Servidor web y proxy inverso utilizado para servir la aplicación y gestionar HTTPS\\
+		Playwright & Apache License 2.0 & Framework de automatización web utilizado para Web Scraping dinámico \\
+		Selenium & Apache License 2.0 & Herramienta de automatización de navegadores utilizada para pruebas y scraping web \\
+		Beautiful Soup & MIT & Biblioteca para parsear y extraer información de documentos HTML/XML \\
+		Requests & Apache License 2.0 & Biblioteca HTTP utilizada para realizar peticiones web \\
+		Transformers (Hugging Face) & Apache License 2.0 & Biblioteca para cargar y utilizar modelos LLM y modelos de \eng{embeddings} \\
+		Sentence Transformers & Apache License 2.0 & Biblioteca especializada en generación de \eng{embeddings} semánticos \\
+	PyTorch & BSD-3-Clause & Framework de aprendizaje profundo utilizado por modelos de IA \\
+	Ollama & MIT & Plataforma para ejecutar modelos LLM localmente \\
+	Poetry & MIT & Herramienta para gestión de dependencias y entornos Python \\
+	Markdownify & MIT & Conversión automática de HTML a Markdown\\
+	PyMuPDF & AGPL-3.0 & Biblioteca para lectura y procesamiento de documentos PDF \\
+	pytest & MIT & Framework de testing utilizado para pruebas unitarias y funcionales \\
+	SonarQube / SonarCloud Scanner & LGPL v3 & Herramienta de análisis estático y calidad del código \\}
+
+La aplicación cumple estos requisitos debido a que todas las dependencias utilizadas se han obtenido desde sus repositorios oficiales y se utilizan respetando las condiciones de sus licencias. Además, el proyecto no redistribuye versiones modificadas de las herramientas utilizadas ni elimina las referencias de autoría originales.
+
+El uso de \eng{software open source} aporta además ventajas importantes al proyecto, como la transparencia del código, la ausencia de costes de licencia y la facilidad para reproducir el entorno de desarrollo y despliegue.
+
+\textbf{Legalidad del \eng{Web Scraping}}\label{subsec:webScraping}
+
+El proyecto incorpora técnicas de \eng{Web Scraping} para recopilar licitaciones públicas desde la Plataforma de \contsec{}~\cite{legal:contratosSecPub}. La información extraída es documentación pública accesible libremente por cualquier ciudadano, por lo que su utilización con fines académicos y de investigación resulta compatible con la normativa vigente.
+
+La aplicación cumple con los requisitos legales del \eng{Web Scraping} debido a que no accede a no accede a información privada, no evade mecanismos de autenticación ni vulnera restricciones de acceso. Además, el sistema solo realiza consultas automatizadas sobre información pública ya accesible manualmente desde la \eng{web} oficial.
+
+También se ha tenido en cuenta el archivo \file{robots.txt}~\cite{legal:robots} de la Plataforma \contsec{}. Este archivo forma parte del estándar Robots Exclusion Protocol y permite a los administradores de una página web indicar qué rutas pueden o no ser rastreadas por \eng{bots} automátizados. Aunque este protocolo no tiene carácter legal vinculante, su cumplimiento se considera una buena práctica ética en el ámbito del \eng{Web Scraping}.
+
+En el caso de la Plataforma de \contsec{}, el archivo \myhref{https://contrataciondelestado.es/robots.txt}{robots.txtx} restringe el uso de \eng{bots} automatizados para rastrear el contenido del sitio \eng{web}. Sin embargo, este mecanismo no constituye una medida de protección técnica ni un sistema de autenticación, sino una directriz ética orientada principalmente a motores de búsqueda y sistemas automáticos de indexación. Por lo cual, la aplicación desarrollada cumple con estas restricciones debido a que el sistema únicamente accede a información pública accesible manualmente desde el navegador por cualquier usuario. Además, el \eng{scraper} implementado en el proyecto evita realizar peticiones masivas agresivas, incorpora esperas entre solicitudes y limita la frecuencia de acceso para no sobrecargar los servidores del portal público. Esto permite que el comportamiento automatizado sea equivalente al de un usuario humano navegando por la página.
+
+\textbf{Uso de modelos de Inteligencia Artificial}\label{subsec:IA}
+
+El sistema usa modelos LLM y sistemas RAG para generar respuestas contextualizadas. Actualmente, la regulación europea sobre inteligencia artificial se encuentra definida por el Reglamento Europeo de Inteligencia Artificial (AI Act)~\cite{legal:IA}, el cual clasifica los sistemas IA según su nivel de riesgo. Dado que el sistema tiene fines académicos, no toma decisiones automatizadas con efectos legales, no realiza perfilado sensible de usuarios y funciona como sistemas de apoyo documental, puede considerarse un sistema de riesgo limitado. 
+
+Asimismo, el proyecto mantiene transparencia respecto al uso de inteligencia artificial, ya que el usuario conoce que las respuestas son generadas por un sistema basado en modelos de lenguaje y recuperación semántica. También se permite consultar las fuentes documentales utilizadas para construir la respuesta, aumentando la explicabilidad del sistema.
+
+Por otro lado, el despliegue local de los modelos de lenguaje mediante Ollama permite reducir la dependencia de servicios externos y limita la transferencia de información a terceros, mejorando así la privacidad y el control sobre los datos procesados.
+
+\textbf{Seguridad Informática}\label{subsec:seg}
+
+La aplicación implementa diversas medidas destinadas a garantizar la seguridad del sistema y de la información almacenada, cumpliendo así con el Esquema Nacional de Seguridad (ENS)~\cite{legal:ENS}. Entre ellas destacan el uso de \file{HTTPS}, la autenticación de usuarios, la separación de secretos mediante variables de entorno, el despliegue mediante Docker, el aislamiento de servicios y el uso de certificados \file{SSL/TLS}.
+
+La aplicación cumple estos requisitos debido a que emplea una arquitectura cliente-servidor multicapa donde los distintos componentes se encuentran separados y encapsulados en contenedores Docker independientes. Además, el uso de Gunicorn y Nginx permite mejorar la seguridad y estabilidad del despliegue en producción.
+
+Por otro lado, el sistema limita el acceso a determinadas funcionalidades mediante roles de usuario, evitando que usuarios no autorizados puedan gestionar documentos o modificar configuraciones críticas del sistema. También se utilizan mecanismos de validación de formularios y protección CSRF proporcionados por Flask-WTF para reducir vulnerabilidades comunes en aplicaciones web.
 

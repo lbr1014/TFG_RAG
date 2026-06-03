@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r app/PythIA/requirements_docker.txt
+          pip install -r app/PythIA/docker/requirements_docker.txt
 
       - name: Run tests with coverage
         working-directory: app/PythIA

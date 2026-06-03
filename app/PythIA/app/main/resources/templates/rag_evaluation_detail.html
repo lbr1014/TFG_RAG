@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t("rag.evaluation.detail_title") }}{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="py-4 py-md-5">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+    <div>
+      <h2 class="mb-1">{{ t("rag.evaluation.detail_title") }}</h2>
+      <div class="text-muted">
+        {% if job.finished_at %}<span>{{ job.finished_at.strftime("%d/%m/%Y %H:%M:%S") }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-light btn-sm" href="{{ back_url }}">{{ t("common.previous") }}</a>
+      {% if job.results_json_path %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.download_rag_evaluation_artifact', job_id=job.id, artifact='results') }}">{{ t("common.download") }} JSON</a>
+      {% endif %}
+      {% if job.row_results_json_path %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.download_rag_evaluation_artifact', job_id=job.id, artifact='rows') }}">{{ t("common.download") }} filas</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% set final_metrics = summary.get("final_metrics") or {} %}
+  {% set ragas_metrics = summary.get("ragas_metrics") or {} %}
+  {% set coseno_metrics = summary.get("coseno_metrics") or {} %}
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">{{ t("rag.evaluation.detail_global") }}</h5>
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="table app-table table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>{{ t("rag.evaluation.detail_metric") }}</th>
+              <th>RAGAS</th>
+              <th>{{ t("rag.evaluation.detail_embeddings") }}</th>
+              <th>{{ t("rag.evaluation.detail_final") }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for key in ["faithfulness","answer_relevancy","answer_correctness","context_precision","context_recall","context_relevancy"] %}
+              <tr>
+                <td>{{ t("rag.evaluation.metric." ~ key) }}</td>
+                <td>{{ ragas_metrics.get(key) }}</td>
+                <td>{{ coseno_metrics.get(key) }}</td>
+                <td>{{ final_metrics.get(key) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          </table>
+        </div>
+      </div>
+      {% if config.get("ragas_error") %}
+        <div class="alert alert-warning mt-3 mb-0">
+          <strong>RAGAS error:</strong> {{ config.get("ragas_error") }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title mb-3">{{ t("rag.evaluation.detail_by_question") }}</h5>
+      {% if not rows %}
+        <p class="text-muted mb-0">{{ t("rag.evaluation.no_results") }}</p>
+      {% else %}
+        <div class="accordion" id="rag-eval-accordion">
+          {% for row in rows %}
+            {% set idx = loop.index0 %}
+            {% set r_final = row.get("final_metrics") or {} %}
+            {% set r_ragas = row.get("ragas_metrics") or {} %}
+            {% set r_cos = row.get("coseno_metrics") or {} %}
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="heading-{{ idx }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ idx }}" aria-expanded="false" aria-controls="collapse-{{ idx }}">
+                  <span class="me-2">#{{ loop.index }}</span>
+                  <span class="text-truncate">{{ row.get("question") }}</span>
+                </button>
+              </h2>
+              <div id="collapse-{{ idx }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ idx }}" data-bs-parent="#rag-eval-accordion">
+                <div class="accordion-body">
+                  <div class="mb-3">
+                    <div class="fw-semibold mb-1">{{ t("rag.evaluation.detail_question") }}</div>
+                    <div class="text-muted">{{ row.get("question") }}</div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="fw-semibold mb-1">{{ t("rag.evaluation.detail_answer") }}</div>
+                    <pre class="mb-0" style="white-space:pre-wrap">{{ row.get("answer") }}</pre>
+                  </div>
+                  {% if row.get("ground_truth") %}
+                    <div class="mb-3">
+                      <div class="fw-semibold mb-1">{{ t("rag.evaluation.detail_ground_truth") }}</div>
+                      <pre class="mb-0" style="white-space:pre-wrap">{{ row.get("ground_truth") }}</pre>
+                    </div>
+                  {% endif %}
+                  {% if row.get("evidence") %}
+                    <div class="mb-3">
+                      <div class="fw-semibold mb-1">{{ t("rag.evaluation.detail_evidence") }}</div>
+                      <pre class="mb-0" style="white-space:pre-wrap">{{ row.get("evidence") }}</pre>
+                    </div>
+                  {% endif %}
+
+                  {% set contexts = row.get("contexts") or [] %}
+                  {% if contexts %}
+                    <div class="mb-3">
+                      <div class="fw-semibold mb-2">{{ t("rag.evaluation.detail_contexts") }} ({{ contexts|length }})</div>
+                      <ol class="mb-0">
+                        {% for ctx in contexts %}
+                          <li class="mb-2"><pre class="mb-0" style="white-space:pre-wrap">{{ ctx }}</pre></li>
+                        {% endfor %}
+                      </ol>
+                    </div>
+                  {% endif %}
+
+                  <div class="table-card">
+                    <div class="table-responsive">
+                      <table class="table app-table table-striped align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ t("rag.evaluation.detail_metric") }}</th>
+                          <th>RAGAS</th>
+                          <th>{{ t("rag.evaluation.detail_embeddings") }}</th>
+                          <th>{{ t("rag.evaluation.detail_final") }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for key in ["faithfulness","answer_relevancy","answer_correctness","context_precision","context_recall","context_relevancy"] %}
+                          <tr>
+                            <td>{{ t("rag.evaluation.metric." ~ key) }}</td>
+                            <td>{{ r_ragas.get(key) }}</td>
+                            <td>{{ r_cos.get(key) }}</td>
+                            <td>{{ r_final.get(key) }}</td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

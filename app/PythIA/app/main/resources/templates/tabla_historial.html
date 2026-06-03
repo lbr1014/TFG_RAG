@@ -1,188 +1,193 @@
-{% macro consultas_historial(consultas, meta_by_consulta, current_user, delete_url_endpoint) %}
+{% macro consultas_historial(consultas, meta_by_consulta, model_by_consulta) %}
 
-  <div class="table-card">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 app-table">
-        <thead>
-          <tr>
-            {% if current_user.is_admin %}
-              <th class="d-none d-lg-table-cell">{{ t("history.user") }}</th>
+  <form id="bulk-history-delete-form" method="POST" action="{{ url_for('main.bulk_delete_consultas') }}">
+    {{ post_form.hidden_tag() }}
+
+    <div class="history-card-list">
+      {% for c in consultas %}
+        {% set qc_best = (meta_by_consulta or {}).get(c.id) or {} %}
+        {% set qm_best = qc_best.get("metadata") or {} %}
+        {% set stored_fragments = (c.fragmentos or [])|sort(attribute="ranking") %}
+        {% set best_fragment = (stored_fragments|first) if (stored_fragments|length > 0) else none %}
+        {% set best_fragment_meta = best_fragment.get("metadata") if best_fragment else {} %}
+        {% set used = (c.consultaChunks or []) %}
+        {% set used_sorted = used|sort(attribute="ranking") %}
+        {% set best_cc = (used_sorted|first) if (used_sorted|length > 0) else none %}
+
+        <article id="consulta-{{ c.id }}"
+                 class="history-query-card">
+          <button type="button"
+                  class="history-card-select-trigger"
+                  data-consulta-id="{{ c.id }}"
+                  data-question="{{ c.pregunta }}">
+            <span class="visually-hidden">Seleccionar</span>
+          </button>
+
+          <div class="history-query-card-top">
+            <span class="history-card-user">{{ c.user.nombre }}</span>
+
+            <label class="history-card-check">
+              <input class="form-check-input user-row-checkbox"
+                     type="checkbox"
+                     name="selected_consulta_ids"
+                     value="{{ c.id }}"
+                     >
+              <span class="visually-hidden">{{ t('history.delete_item', id=c.id) }}</span>
+            </label>
+          </div>
+
+          <p class="history-card-question">{{ c.pregunta }}</p>
+
+          <div class="history-card-meta" aria-label="{{ t('history.date') }}">
+            <span>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</span>
+            <span class="history-card-meta-separator">&middot;</span>
+            <span>{{ "%.3f"|format(c.tiempo_respuestas) }} s</span>
+            <span class="history-card-meta-separator">&middot;</span>
+            <span>{{ model_by_consulta.get(c.id, "-") }}</span>
+            <span class="history-card-meta-separator">&middot;</span>
+            <span>{{ c.execution_device or "-" }}</span>
+          </div>
+
+          <div class="history-card-actions">
+            <button type="button"
+                    class="btn btn-sm history-card-details history-card-answer-button"
+                    data-consulta-id="{{ c.id }}"
+                    data-question="{{ c.pregunta }}"
+                    data-bs-toggle="tooltip"
+                    data-bs-title="{{ t('history.view_answer') }}"
+                    >
+              {{ t("history.view_answer") }}
+            </button>
+            <button type="button"
+                    class="btn btn-sm history-card-details"
+                    data-bs-toggle="modal"
+                    data-bs-target="#chunksModal"
+                    data-consulta-id="{{ c.id }}"
+                    data-bs-tooltip="tooltip"
+                    data-bs-title="Conoce los detalles de los chunks recuperados">
+              {{ t("history.details") }}
+            </button>
+          </div>
+        </article>
+
+        <script type="application/json" id="answer-content-{{ c.id }}">{{ c.respuesta|tojson }}</script>
+
+        <template id="chunks-content-{{ c.id }}">
+          <div>
+            <h3 class="chunks-modal-title">{{ t("history.chunks_details", id=c.id) }}</h3>
+            <p class="chunks-modal-sub">
+              {{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }} &middot; {{ c.pregunta }}
+            </p>
+          </div>
+
+          <div class="chunks-card">
+            <p style="margin:0 0 .4rem 0;"><strong>{{ t("history.best_fragment") }}</strong></p>
+
+            <div class="chunks-meta-grid">
+              <div><b>{{ t("history.file") }}</b> {{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</div>
+              <div><b>{{ t("history.title_label") }}</b> {{ (best_fragment_meta.get("title") if best_fragment else qm_best.get("title")) or "-" }}</div>
+              <div><b>{{ t("history.segment") }}</b> {{ best_fragment_meta.get("segment_index") if best_fragment and best_fragment_meta.get("segment_index") is not none else (qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "-") }}</div>
+              <div><b>{{ t("history.similarity") }}</b>
+                {% if best_fragment %}{{ "%.6f"|format(best_fragment.get("similitud", 0.0)) }}{% elif best_cc %}{{ "%.6f"|format(best_cc.similitud) }}{% else %}-{% endif %}
+              </div>
+            </div>
+
+            {% if best_fragment and best_fragment.get("chunk") %}
+              <pre class="chunks-pre">{{ best_fragment.get("chunk") }}</pre>
+            {% elif qc_best.get("content") %}
+              <pre class="chunks-pre">{{ qc_best.get("content") }}</pre>
+            {% else %}
+              <div class="alert alert-warning" style="margin-top:.6rem;">
+                {{ t("history.best_chunk_missing") }}
+              </div>
             {% endif %}
-            <th>{{ t("history.date") }}</th>
-            <th>{{ t("history.question") }}</th>
-            <th class="d-none d-md-table-cell">{{ t("history.document") }}</th>
-            <th class="d-none d-md-table-cell">{{ t("history.time") }}</th>
-            <th class="text-center" style="width: 172px;">{{ t("common.actions") }}</th>
-          </tr>
-        </thead>
+          </div>
 
-        <tbody>
-          {% for c in consultas %}
-            {% set qc_best = (meta_by_consulta or {}).get(c.id) or {} %}
-            {% set qm_best = qc_best.get("metadata") or {} %}
-            {% set stored_fragments = (c.fragmentos or [])|sort(attribute="ranking") %}
-            {% set best_fragment = (stored_fragments|first) if (stored_fragments|length > 0) else none %}
-            {% set best_fragment_meta = best_fragment.get("metadata") if best_fragment else {} %}
-            {% set used = (c.consultaChunks or []) %}
-            {% set used_sorted = used|sort(attribute="ranking") %}
-            {% set best_cc = (used_sorted|first) if (used_sorted|length > 0) else none %}
+          {% set fragment_count = stored_fragments|length if stored_fragments|length > 0 else used_sorted|length %}
+          <div class="chunks-card">
+            <p style="margin:0 0 .4rem 0;">
+              <strong>{{ t("history.top_chunks", shown=[10, fragment_count]|min, total=fragment_count) }}</strong>
+            </p>
 
-            <tr id="consulta-{{ c.id }}">
-              {% if current_user.is_admin %}
-                <td class="d-none d-lg-table-cell">{{ c.user.nombre }}</td>
-              {% endif %}
-              <td>
-                <div>{{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }}</div>
-                <div class="doc-meta-inline d-md-none mt-1">
-                  <span>{{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</span>
-                  <span class="doc-meta-separator">&bull;</span>
-                  <span>{{ "%.3f"|format(c.tiempo_respuestas) }} s</span>
+            {% if stored_fragments|length > 0 %}
+              <div class="table-card mt-3">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 app-table">
+                    <thead>
+                      <tr>
+                        <th>{{ t("history.ranking") }}</th>
+                        <th>{{ t("history.similarity") }}</th>
+                        <th>{{ t("history.document") }}</th>
+                        <th>{{ t("history.segment") }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for frag in stored_fragments[:10] %}
+                        {% set frag_meta = frag.get("metadata") or {} %}
+                        <tr>
+                          <td>{{ frag.get("ranking", "-") }}</td>
+                          <td>{{ "%.6f"|format(frag.get("similitud", 0.0)) }}</td>
+                          <td>{{ frag_meta.get("document_name") or frag_meta.get("filename") or "-" }}</td>
+                          <td>{{ frag_meta.get("segment_index") if frag_meta.get("segment_index") is not none else "-" }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
                 </div>
-              </td>
-              <td class="cell-question">{{ c.pregunta }}</td>
-              <td class="d-none d-md-table-cell">{{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</td>
-              <td class="d-none d-md-table-cell">{{ "%.3f"|format(c.tiempo_respuestas) }}</td>
-              <td class="text-center">
-                <div class="table-actions">
-                  <button type="button"
-                          class="btn btn-sm btn-outline-light"
-                          data-bs-toggle="modal"
-                          data-bs-target="#chunksModal"
-                          data-consulta-id="{{ c.id }}">
-                    {{ t("history.details") }}
-                  </button>
-
-                  <form id="delete-consulta-form-{{ c.id }}"
-                        method="POST"
-                        action="{{ url_for(delete_url_endpoint, consulta_id=c.id) }}"
-                        class="d-inline">
-                    {{ post_form.hidden_tag() }}
-                    <button type="button"
-                            class="btn btn-sm btn-danger"
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteConfirmModal"
-                            data-item-name="{{ t('history.delete_item', id=c.id) }}"
-                            data-form-id="delete-consulta-form-{{ c.id }}">
-                      {{ t("common.delete") }}
-                    </button>
-                  </form>
+              </div>
+            {% elif used_sorted|length == 0 %}
+              <div class="alert alert-info">{{ t("history.no_chunks") }}</div>
+            {% else %}
+              <div class="table-card mt-3">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 app-table">
+                    <thead>
+                      <tr>
+                        <th>{{ t("history.ranking") }}</th>
+                        <th>{{ t("history.similarity") }}</th>
+                        <th>{{ t("history.document") }}</th>
+                        <th>{{ t("history.segment") }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for cc in used_sorted[:10] %}
+                        {% set ch = cc.chunk %}
+                        <tr>
+                          <td>{{ cc.ranking }}</td>
+                          <td>{{ "%.6f"|format(cc.similitud) }}</td>
+                          <td>{{ ch.document.nombre if ch and ch.document else "-" }}</td>
+                          <td>{{ ch.segment_index if ch else "-" }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
                 </div>
-              </td>
-            </tr>
-
-            <tr class="details-row">
-              <td colspan="{% if current_user.is_admin %}6{% else %}5{% endif %}">
-                <details>
-                  <summary>{{ t("history.view_answer") }}</summary>
-                  <div style="margin-top:.5rem;">
-                    <p><strong>{{ t("history.answer") }}</strong><br>{{ c.respuesta }}</p>
-                  </div>
-                </details>
-              </td>
-            </tr>
-
-            <template id="chunks-content-{{ c.id }}">
-              <div>
-                <h3 class="chunks-modal-title">{{ t("history.chunks_details", id=c.id) }}</h3>
-                <p class="chunks-modal-sub">
-                  {{ c.created_at.strftime("%d/%m/%Y %H:%M:%S") }} · {{ c.pregunta }}
-                </p>
               </div>
+            {% endif %}
+          </div>
+        </template>
+      {% endfor %}
+    </div>
+  </form>
 
-              <div class="chunks-card">
-                <p style="margin:0 0 .4rem 0;"><strong>{{ t("history.best_fragment") }}</strong></p>
-
-                <div class="chunks-meta-grid">
-                  <div><b>{{ t("history.file") }}</b> {{ (best_fragment_meta.get("filename") if best_fragment else qm_best.get("filename")) or "-" }}</div>
-                  <div><b>{{ t("history.title_label") }}</b> {{ (best_fragment_meta.get("title") if best_fragment else qm_best.get("title")) or "-" }}</div>
-                  <div><b>{{ t("history.segment") }}</b> {{ best_fragment_meta.get("segment_index") if best_fragment and best_fragment_meta.get("segment_index") is not none else (qm_best.get("segment_index") if qm_best.get("segment_index") is not none else "-") }}</div>
-                  <div><b>{{ t("history.similarity") }}</b>
-                    {% if best_fragment %}{{ "%.6f"|format(best_fragment.get("similitud", 0.0)) }}{% elif best_cc %}{{ "%.6f"|format(best_cc.similitud) }}{% else %}-{% endif %}
-                  </div>
-                </div>
-
-                {% if best_fragment and best_fragment.get("chunk") %}
-                  <pre class="chunks-pre">{{ best_fragment.get("chunk") }}</pre>
-                {% elif qc_best.get("content") %}
-                  <pre class="chunks-pre">{{ qc_best.get("content") }}</pre>
-                {% else %}
-                  <div class="alert alert-warning" style="margin-top:.6rem;">
-                    {{ t("history.best_chunk_missing") }}
-                  </div>
-                {% endif %}
-              </div>
-
-              {% set fragment_count = stored_fragments|length if stored_fragments|length > 0 else used_sorted|length %}
-              <div class="chunks-card">
-                <p style="margin:0 0 .4rem 0;">
-                  <strong>{{ t("history.top_chunks", shown=[10, fragment_count]|min, total=fragment_count) }}</strong>
-                </p>
-
-                {% if stored_fragments|length > 0 %}
-                  <div class="table-card mt-3">
-                    <div class="table-responsive">
-                      <table class="table table-hover align-middle mb-0 app-table">
-                        <thead>
-                          <tr>
-                            <th>{{ t("history.ranking") }}</th>
-                            <th>{{ t("history.similarity") }}</th>
-                            <th>{{ t("history.document") }}</th>
-                            <th>{{ t("history.segment") }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for frag in stored_fragments[:10] %}
-                            {% set frag_meta = frag.get("metadata") or {} %}
-                            <tr>
-                              <td>{{ frag.get("ranking", "-") }}</td>
-                              <td>{{ "%.6f"|format(frag.get("similitud", 0.0)) }}</td>
-                              <td>{{ frag_meta.get("document_name") or frag_meta.get("filename") or "-" }}</td>
-                              <td>{{ frag_meta.get("segment_index") if frag_meta.get("segment_index") is not none else "-" }}</td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                {% elif used_sorted|length == 0 %}
-                  <div class="alert alert-info">{{ t("history.no_chunks") }}</div>
-                {% else %}
-                  <div class="table-card mt-3">
-                    <div class="table-responsive">
-                      <table class="table table-hover align-middle mb-0 app-table">
-                        <thead>
-                          <tr>
-                            <th>{{ t("history.ranking") }}</th>
-                            <th>{{ t("history.similarity") }}</th>
-                            <th>{{ t("history.document") }}</th>
-                            <th>{{ t("history.segment") }}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for cc in used_sorted[:10] %}
-                            {% set ch = cc.chunk %}
-                            <tr>
-                              <td>{{ cc.ranking }}</td>
-                              <td>{{ "%.6f"|format(cc.similitud) }}</td>
-                              <td>{{ ch.document.nombre if ch and ch.document else "-" }}</td>
-                              <td>{{ ch.segment_index if ch else "-" }}</td>
-                            </tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                {% endif %}
-              </div>
-            </template>
-          {% endfor %}
-        </tbody>
-      </table>
+  <div class="modal fade" id="answerModal" tabindex="-1" aria-labelledby="answerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content chunks-modal-panel history-answer-modal">
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <h2 class="modal-title fs-5 chunks-modal-title" id="answerModalLabel">{{ t("history.answer") }}</h2>
+            <p class="chunks-modal-sub mb-0" id="answer-modal-question"></p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ t('common.close') }}"></button>
+        </div>
+        <div class="modal-body pt-3">
+          <div id="answer-modal-body" class="history-answer-markdown rag-answer"></div>
+        </div>
+      </div>
     </div>
   </div>
 
   {% include "components/modal_chunks.html" %}
   {% include "components/modal_delete.html" %}
-  <script src="{{ url_for('static', filename='js/functionalities.js') }}"></script>
 
 {% endmacro %}

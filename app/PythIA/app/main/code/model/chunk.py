@@ -50,7 +50,7 @@ class Chunk(db.Model):
         {"sqlite_autoincrement": True},
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Inicializa el fragmento con fecha de creación por defecto.
 
@@ -62,7 +62,7 @@ class Chunk(db.Model):
             self.created_at = datetime.now(ZoneInfo("Europe/Madrid"))
             
     @classmethod
-    def find_from_retrieved_item(cls, item: dict) -> "Chunk | None":
+    def find_from_retrieved_item(cls, item: dict) -> Chunk | None:
         """
         Busca el chunk SQL correspondiente a un resultado recuperado.
         
@@ -123,7 +123,7 @@ class Chunk(db.Model):
         return metadata
 
     @staticmethod
-    def build_fragment_from_retrieved_item(item: dict, chunk_obj: "Chunk | None" = None) -> dict:
+    def build_fragment_from_retrieved_item(item: dict, chunk_obj: Chunk | None = None) -> dict:
         """
         Construye el fragmento serializable que se guarda en Consulta.fragmentos.
         

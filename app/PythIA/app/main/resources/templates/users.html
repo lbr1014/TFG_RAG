@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "components/form_errors.html" import render_form_errors with context %}
 
 {% block title %}{{ t("users.title") }}{% endblock %}
 
@@ -8,102 +9,216 @@
 
 {% block content %}
   <div class="py-4 py-md-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-      <h1 class="mb-0">{{ t("users.title") }}</h1>
-      <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary align-self-center align-self-md-auto">{{ t("users.add") }}</a>
-    </div>
+    <div class="admin-users-layout">
+      <aside class="admin-user-form-card app-surface">
+        <h2 class="h4 mb-2">{{ t("admin.create_user_title") }}</h2>
+        <hr class="admin-user-form-divider">
 
-    <div class="table-card">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 app-table">
-          <thead>
-            <tr>
-              <th class="d-none d-md-table-cell">{{ t("users.id") }}</th>
-              <th>{{ t("common.name") }}</th>
-              <th class="d-none d-lg-table-cell">{{ t("common.email") }}</th>
-              <th class="d-none d-lg-table-cell">{{ t("common.country") }}</th>
-              <th class="d-none d-lg-table-cell">{{ t("users.admin_col") }}</th>
-              <th class="d-none d-lg-table-cell">{{ t("users.last_login_col") }}</th>
-              <th class="text-center" style="width: 172px;">{{ t("common.actions") }}</th>
-            </tr>
-          </thead>
+        <form method="POST" action="{{ url_for('admin.create_user') }}" novalidate>
+          {{ form.hidden_tag() }}
+          {{ render_form_errors(form) }}
 
-          <tbody>
-            {% for u in users %}
+          <div class="mb-3">
+            {{ form.nombre.label(class="form-label") }}
+            {{ form.nombre(class="form-control") }}
+            {% for error in form.nombre.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control", placeholder=t("admin.create_user_email_placeholder")) }}
+            {% for error in form.email.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.country_code.label(class="form-label") }}
+            {{ form.country_code(class="form-select") }}
+            {% for error in form.country_code.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control") }}
+            {% for error in form.password.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="form-check mb-4">
+            {{ form.is_admin(class="form-check-input") }}
+            {{ form.is_admin.label(class="form-check-label") }}
+          </div>
+
+          {{ form.submit(class="btn btn-primary w-100") }}
+        </form>
+      </aside>
+
+      <section class="admin-users-table-panel">
+        {% set users_has_filters = filters.name or filters.country or filters.role %}
+        <div class="app-sticky-bar app-sticky-surface app-sticky-shell">
+          <div class="app-filter-toolbar">
+            <button class="btn btn-outline-light btn-sm app-filter-toggle"
+                    id="users-filter-toggle"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#usersFilterCollapse"
+                    aria-controls="usersFilterCollapse"
+                    aria-expanded="false"
+                    >
+              <i class="bi bi-funnel" aria-hidden="true"></i>
+              <span class="visually-hidden">{{ t("common.filter") }}</span>
+            </button>
+
+            <div class="app-filter-actions">
+              <button type="submit"
+                      name="bulk_action"
+                      value="toggle"
+                      class="btn btn-outline-light btn-sm admin-users-bulk-button"
+                      id="users-bulk-toggle"
+                      form="bulk-users-form"
+                      disabled>
+                {{ t("users.bulk_change_type") }}
+              </button>
+              <button type="button"
+                      class="btn btn-danger btn-sm admin-users-bulk-button"
+                      id="users-bulk-delete"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteConfirmModal"
+                      data-item-name="{{ t('users.selected_users') }}"
+                      data-form-id="bulk-users-form"
+                      data-submit-name="bulk_action"
+                      data-submit-value="delete"
+                      disabled>
+                {{ t("common.delete") }}
+              </button>
+            </div>
+          </div>
+
+          <div id="usersFilterCollapse" class="collapse app-filter-collapse">
+          <form method="GET" action="{{ url_for('admin.users') }}" class="admin-users-filter users-filter mb-0">
+          <div>
+            <label for="user-name-filter" class="form-label">{{ t("common.name") }}</label>
+            <input id="user-name-filter"
+                   type="search"
+                   name="name"
+                   value="{{ filters.name }}"
+                   class="form-control"
+                   placeholder="{{ t('users.filter_name_placeholder') }}">
+          </div>
+
+          <div>
+            <label for="user-country-filter" class="form-label">{{ t("common.country") }}</label>
+            <select id="user-country-filter" name="country" class="form-select">
+              <option value="">{{ t("common.all") }}</option>
+              {% for code, name in country_options %}
+                <option value="{{ code }}"{% if filters.country == code %} selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="user-role-filter" class="form-label">{{ t("users.role_filter") }}</label>
+            <select id="user-role-filter" name="role" class="form-select">
+              <option value="">{{ t("common.all") }}</option>
+              <option value="admin"{% if filters.role == "admin" %} selected{% endif %}>{{ t("nav.admin") }}</option>
+              <option value="user"{% if filters.role == "user" %} selected{% endif %}>{{ t("nav.user") }}</option>
+            </select>
+          </div>
+
+          <div class="admin-users-filter-actions">
+            <button type="submit" class="btn btn-primary" id="users-filter-apply">{{ t("common.filter") }}</button>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-light">{{ t("common.clear") }}</a>
+          </div>
+        </form>
+          </div>
+        </div>
+
+        <form id="bulk-users-form" method="POST" action="{{ url_for('admin.bulk_users') }}">
+          {{ post_form.hidden_tag() }}
+          <input type="hidden" name="filter_name" value="{{ filters.name }}">
+          <input type="hidden" name="filter_country" value="{{ filters.country }}">
+          <input type="hidden" name="filter_role" value="{{ filters.role }}">
+
+        <div class="table-card mt-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 app-table">
+              <thead>
               <tr>
-                <td class="d-none d-md-table-cell">{{ u.id }}</td>
-                <td>
-                  <div class="fw-semibold">{{ u.nombre }}</div>
-                  <div class="doc-meta-inline d-lg-none mt-1">
-                    <span>{{ u.email }}</span>
-                    <span class="doc-meta-separator">&bull;</span>
-                    <span>{{ country_name_for_code(u.country_code) }}</span>
-                    <span class="doc-meta-separator">&bull;</span>
-                    <span>{% if u.is_admin %}{{ t("nav.admin") }}{% else %}{{ t("nav.user") }}{% endif %}</span>
-                  </div>
-                  <div class="doc-meta-inline d-lg-none mt-1">
-                    <span>
+                <th class="admin-users-select-cell">
+                  <input class="form-check-input" type="checkbox" id="select-all-users" aria-label="{{ t('users.select_all') }}">
+                </th>
+                <th>{{ t("common.name") }}</th>
+                <th class="d-none d-lg-table-cell">{{ t("common.email") }}</th>
+                <th class="d-none d-lg-table-cell">{{ t("common.country") }}</th>
+                <th class="d-none d-lg-table-cell">{{ t("users.admin_col") }}</th>
+                <th class="d-none d-lg-table-cell">{{ t("users.last_login_col") }}</th>
+              </tr>
+              </thead>
+
+              <tbody>
+              {% for u in users %}
+                <tr>
+                  <td class="admin-users-select-cell">
+                    {% if u.id == current_user.id %}
+                      <input class="form-check-input" type="checkbox" disabled aria-label="{{ t('users.you') }}">
+                    {% else %}
+                      <input class="form-check-input user-row-checkbox"
+                             type="checkbox"
+                             name="selected_user_ids"
+                             value="{{ u.id }}"
+                             aria-label="{{ t('users.select_user', name=u.nombre) }}">
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="fw-semibold">{{ u.nombre }}</div>
+                    <div class="doc-meta-inline d-lg-none mt-1">
+                      <span>{{ u.email }}</span>
+                      <span class="doc-meta-separator">&bull;</span>
+                      <span>{{ country_name_for_code(u.country_code) }}</span>
+                      <span class="doc-meta-separator">&bull;</span>
+                      <span>{% if u.is_admin %}{{ t("nav.admin") }}{% else %}{{ t("nav.user") }}{% endif %}</span>
+                    </div>
+                    <div class="doc-meta-inline d-lg-none mt-1">
+                      <span>
                       {% if u.last_login %}
                         {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
                       {% else %}
                         {{ t("users.no_login") }}
                       {% endif %}
                     </span>
-                  </div>
-                </td>
-
-                <td class="d-none d-lg-table-cell">{{ u.email }}</td>
-                <td class="d-none d-lg-table-cell">{{ country_name_for_code(u.country_code) }}</td>
-                <td class="d-none d-lg-table-cell">{% if u.is_admin %}{{ t("common.yes") }}{% else %}{{ t("common.no") }}{% endif %}</td>
-
-                <td class="d-none d-lg-table-cell">
-                  {% if u.last_login %}
-                    {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
-                  {% else %}
-                    -
-                  {% endif %}
-                </td>
-
-                <td class="text-center">
-                  {% if u.id == current_user.id %}
-                    <em>{{ t("users.you") }}</em>
-                  {% else %}
-                    <div class="table-actions">
-                      <form method="POST"
-                            action="{{ url_for('admin.change_type', user_id=u.id) }}"
-                            class="d-inline">
-                        {{ post_form.hidden_tag() }}
-                        <button type="submit" class="btn btn-outline-light btn-sm">
-                          {% if u.is_admin %}
-                            {{ t("users.remove_admin") }}
-                          {% else %}
-                            {{ t("users.make_admin") }}
-                          {% endif %}
-                        </button>
-                      </form>
-
-                      <form id="delete-user-form-{{ u.id }}"
-                            method="POST"
-                            action="{{ url_for('admin.delete_user', user_id=u.id) }}"
-                            class="d-inline">
-                        {{ post_form.hidden_tag() }}
-                        <button type="button"
-                                class="btn btn-danger btn-sm"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteConfirmModal"
-                                data-item-name="{{ t('users.delete_item', name=u.nombre) }}"
-                                data-form-id="delete-user-form-{{ u.id }}">
-                          {{ t("common.delete") }}
-                        </button>
-                      </form>
                     </div>
-                  {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+                  </td>
+
+                  <td class="d-none d-lg-table-cell">{{ u.email }}</td>
+                  <td class="d-none d-lg-table-cell">{{ country_name_for_code(u.country_code) }}</td>
+                  <td class="d-none d-lg-table-cell">{% if u.is_admin %}{{ t("common.yes") }}{% else %}{{ t("common.no") }}{% endif %}</td>
+
+                  <td class="d-none d-lg-table-cell">
+                    {% if u.last_login %}
+                      {{ u.last_login.strftime("%d/%m/%Y %H:%M:%S") }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center py-4 text-muted-app">{{ t("users.empty_filtered") }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </form>
+      </section>
     </div>
   </div>
   {% include "components/modal_delete.html" %}

@@ -9,13 +9,101 @@
 
 {% block content %}
   <div class="py-4 py-md-5">
-    <h1>{{ t("history.title") }}</h1>
+    {% set history_has_filters = filters.user_id or filters.date or filters.model or filters.device or filters.sort %}
+    <div class="app-sticky-bar app-sticky-surface app-sticky-shell">
+      <div class="app-filter-toolbar">
+        <button class="btn btn-outline-light btn-sm app-filter-toggle"
+                id="history-filter-toggle"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#historyFilterCollapse"
+                aria-controls="historyFilterCollapse"
+                aria-expanded="false"
+                aria-label="{{ t('common.filter') }}">
+          <i class="bi bi-funnel" aria-hidden="true"></i>
+        </button>
+
+        <div class="app-filter-actions">
+          {% if consultas %}
+            <label class="history-select-all mb-0">
+              <input class="form-check-input" type="checkbox" id="select-all-users" aria-label="{{ t('users.select_all') }}">
+              <span>{{ t("users.select_all") }}</span>
+            </label>
+          {% endif %}
+          <button type="button"
+                  class="btn btn-danger btn-sm admin-users-bulk-button"
+                  id="history-bulk-delete"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteConfirmModal"
+                  data-item-name="{{ t('history.title')|lower }}"
+                  data-form-id="bulk-history-delete-form"
+                  disabled>
+            {{ t("common.delete") }}
+          </button>
+        </div>
+      </div>
+
+      <div id="historyFilterCollapse" class="collapse app-filter-collapse">
+      <form method="GET" action="{{ url_for('main.historial') }}" class="admin-users-filter history-filter mb-0">
+      {% if current_user.is_admin %}
+        <div class="history-filter-field">
+          <label for="history-user-filter" class="form-label">{{ t("history.user") }}</label>
+          <select id="history-user-filter" name="user_id" class="form-select">
+            <option value="">{{ t("common.all") }}</option>
+            {% for user in history_users %}
+              <option value="{{ user.id }}"{% if filters.user_id == user.id|string %} selected{% endif %}>{{ user.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      <div class="history-filter-field">
+        <label for="history-date-filter" class="form-label">{{ t("history.date") }}</label>
+        <input id="history-date-filter" type="date" name="date" value="{{ filters.date }}" class="form-control">
+      </div>
+
+      <div class="history-filter-field">
+        <label for="history-model-filter" class="form-label">{{ t("rag.model_label") }}</label>
+        <select id="history-model-filter" name="model" class="form-select">
+          <option value="">{{ t("common.all") }}</option>
+          {% for model in history_models %}
+            <option value="{{ model }}"{% if filters.model == model %} selected{% endif %}>{{ model }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="history-filter-field">
+        <label for="history-device-filter" class="form-label">CPU/GPU</label>
+        <select id="history-device-filter" name="device" class="form-select">
+          <option value="">{{ t("common.all") }}</option>
+          <option value="CPU"{% if filters.device == "CPU" %} selected{% endif %}>CPU</option>
+          <option value="GPU"{% if filters.device == "GPU" %} selected{% endif %}>GPU</option>
+        </select>
+      </div>
+
+      <div class="history-filter-field">
+        <label for="history-sort-filter" class="form-label">{{ t("history.sort_label") }}</label>
+        <select id="history-sort-filter" name="sort" class="form-select">
+          <option value="date_desc"{% if filters.sort == "date_desc" %} selected{% endif %}>{{ t("history.sort_date_desc") }}</option>
+          <option value="date_asc"{% if filters.sort == "date_asc" %} selected{% endif %}>{{ t("history.sort_date_asc") }}</option>
+          <option value="time_desc"{% if filters.sort == "time_desc" %} selected{% endif %}>{{ t("history.sort_time_desc") }}</option>
+          <option value="time_asc"{% if filters.sort == "time_asc" %} selected{% endif %}>{{ t("history.sort_time_asc") }}</option>
+        </select>
+      </div>
+
+      <div class="admin-users-filter-actions">
+        <button type="submit" class="btn btn-primary" id="history-filter-apply">{{ t("common.filter") }}</button>
+        <a href="{{ url_for('main.historial') }}" class="btn btn-outline-light">{{ t("common.clear") }}</a>
+      </div>
+    </form>
+      </div>
+    </div>
 
     {% if not consultas %}
       <div class="alert alert-info">{{ t("history.empty") }}</div>
     {% else %}
       <div>
-        {{ consultas_historial(consultas, meta_by_consulta, current_user, 'main.delete_consulta') }}
+        {{ consultas_historial(consultas, meta_by_consulta, model_by_consulta) }}
 
         {% if total_pages > 1 %}
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
@@ -24,7 +112,7 @@
             <nav aria-label="Paginacion historial">
               <ul class="pagination pagination-sm justify-content-center mb-0">
                 <li class="page-item{% if page <= 1 %} disabled{% endif %}">
-                  <a class="page-link" href="{% if page > 1 %}{{ url_for('main.historial', page=page-1) }}{% else %}#{% endif %}"{% if page <= 1 %} tabindex="-1" aria-disabled="true"{% endif %}>
+                  <a class="page-link" href="{% if page > 1 %}{{ url_for('main.historial', page=page-1, user_id=filters.user_id, date=filters.date, model=filters.model, device=filters.device, sort=filters.sort) }}{% else %}#{% endif %}"{% if page <= 1 %} tabindex="-1" aria-disabled="true"{% endif %}>
                     {{ t("common.previous") }}
                   </a>
                 </li>
@@ -32,7 +120,7 @@
                   <span class="page-link">{{ page }}/{{ total_pages }}</span>
                 </li>
                 <li class="page-item{% if page >= total_pages %} disabled{% endif %}">
-                  <a class="page-link" href="{% if page < total_pages %}{{ url_for('main.historial', page=page+1) }}{% else %}#{% endif %}"{% if page >= total_pages %} tabindex="-1" aria-disabled="true"{% endif %}>
+                  <a class="page-link" href="{% if page < total_pages %}{{ url_for('main.historial', page=page+1, user_id=filters.user_id, date=filters.date, model=filters.model, device=filters.device, sort=filters.sort) }}{% else %}#{% endif %}"{% if page >= total_pages %} tabindex="-1" aria-disabled="true"{% endif %}>
                     {{ t("common.next") }}
                   </a>
                 </li>

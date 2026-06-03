@@ -2,7 +2,17 @@
 
 \section{Introducción}
 
-\section{Diseño de datos}
+Una vez definidos los objetivos y requisitos del sistema, en este apartado, se describe el diseño de la aplicación desarrollada. La especificación de diseño tiene como finalidad definir la estructura, organización e interacción de los distintos componentes que forman el sistema, estableciendo la base técnica necesaria para su implementación.
+
+El objetivo principal de esta fase es trasladar los requisitos funcionales y no funcionales previamente definidos a una solución técnica coherente, modular y escalable, permitiendo garantizar la correcta gestión de la información, la estabilidad del sistema y el adecuado funcionamiento de todos los procesos implicados en la aplicación.
+
+A lo largo de este apéndice se detallan los principales elementos que constituyen la arquitectura de PythIA. Para ello, se describe el diseño de los datos utilizados por la aplicación (ver sección~\hyperref[dis:dtos]{C.2}), la arquitectura general del sistema (ver sección~\hyperref[dis:arc]{C.3}), la organización de sus componentes software y la relación existente entre ellos.
+
+Además, se incluyen aspectos relacionados con el diseño procedimental (ver sección~\hyperref[dis:proc]{C.4}) y el diseño de interfaces (ver sección~\hyperref[dis:int]{C.5}), describiendo las interfaces de usuario y la navegación del sistema.
+
+Este diseño busca facilitar tanto el desarrollo y mantenimiento de la aplicación como su futura evolución, permitiendo incorporar nuevas funcionalidades, modelos y componentes con el menor impacto posible sobre la arquitectura existente.
+
+\section{Diseño de datos} \label{dis:dtos}
 
 Para llevar a cabo la aplicación se han definido las siguientes entidades:
 \begin{itemize}
@@ -34,7 +44,7 @@ El diagrama entidad relación se muestra en la imagen ~\ref{fig:Diagramas/Entida
 \imagendiagram{Diagramas/Relacional}{Diagrama relacional.}{1.1}
 
 
-\section{Diseño arquitectónico}
+\section{Diseño arquitectónico} \label{dis:arc}
 El objetivo del diseño arquitectónico es garantizar la modularidad, la escalabilidad, la mantenibilidad, la portabilidad y la reproducibilidad del sistema desarrollado. Es decir, se busca tener una separación clara de responsabilidades entre la interfaz, la lógica, la persistencia y los servicios de Inteligencia Artificial con una organización del código en componentes cohesivos (\eng{Blueprints}, servicios y modelos), pudiendo replicarse los servicios de manera sencilla. Además, sustituir los componentes debe tener un impacto mínimo en el resto del código. 
 
 Este sistema se basa en una arquitectura cliente–servidor multicapa, combinada con una arquitectura \eng{RAG} (\eng{Retrieval-Augmented Generation}), en la capa de aplicación, estructurada en dos \eng{pipelines} diferenciados, el de indexación y el de generación. El despliegue se lleva a cabo utilizando contenedores \eng{Docker} para almacenar el código junto con sus dependencias.
@@ -99,9 +109,9 @@ El \textbf{\eng{pipeline} de indexación} se ejecuta cuando se cargan los docume
 
 El \textbf{\eng{pipeline} de generación} se ejecuta cuando el usuario hace una consulta. Su objetivo es dar una respuesta contextualizada utilizando los \eng{chunks} ya indexados en el sistema. Para ello va a generar los \eng{embeddings} de la consulta y a recuperar los \eng{chunks} más relevantes para generar la respuesta de \eng{Qdrant}. Los \eng{chunks} más relevantes se calculan por la similitud de sus \eng{embeddings} conlos de la consulta. Los usa para construir el \eng{prompt} aumentado, el cual envía al modelo \eng{LLM} para que responda a la consulta. Finalmente, muestra su respuesta al usuario y registra la consulta en la base de datos relacional. Este \eng{pipeline} combina recuperación semántica y generación de texto, asegurando trazabilidad al devolver los metadatos de los documentos fuente.
 
-\section{Diseño procedimental}
+\section{Diseño procedimental} \label{dis:proc}
 
-\section{Diseño de interfaces}
+\section{Diseño de interfaces} \label{dis:int}
 
 El diseño de las interfaces se ha desarrollado de manera incremental. Inicialmente se hicieron bocetos genéricos para plasmar las principales funcionalidades de la aplicación. Posteriormente se fue iterando sobre esos diseños hasta llegar a las interfaces finales de la \eng{web}.
 

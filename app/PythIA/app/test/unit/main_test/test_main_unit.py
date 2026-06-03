@@ -9,17 +9,16 @@ from zoneinfo import ZoneInfo
 
 from flask_login import login_user
 
-from app.test.support import BaseAppTestCase
-
-from app.main.code.model.consulta import Consulta
 from app.main.code.controllers.main.routes import (
     best_pid_for_consulta,
-    build_selected_user_comparison_payload,
     build_meta_by_consulta,
+    build_selected_user_comparison_payload,
     build_usage_stats_payload,
     build_user_country_map_payload,
     paginate_consultas,
 )
+from app.main.code.model.consulta import Consulta
+from app.test.support import BaseAppTestCase
 
 
 class MainRoutesUnitTest(BaseAppTestCase):
@@ -110,6 +109,7 @@ class MainRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(
             payload["data"],
             [
+                {"user": "Global", "count": 3},
                 {"user": "Luis (luis-selected@example.com)", "count": 1},
                 {"user": "Eva (eva-selected@example.com)", "count": 0},
             ],
@@ -131,7 +131,7 @@ class MainRoutesUnitTest(BaseAppTestCase):
         )
 
         self.assertEqual(payload["selected_user_ids"], [user_1.id, user_2.id, user_3.id])
-        self.assertEqual([item["count"] for item in payload["data"]], [2, 1, 0])
+        self.assertEqual([item["count"] for item in payload["data"]], [3, 2, 1, 0])
         self.assertEqual(payload["stats"]["mean"], 1)
         self.assertEqual(payload["stats"]["median"], 1)
 
@@ -143,7 +143,7 @@ class MainRoutesUnitTest(BaseAppTestCase):
         public_payload = build_user_country_map_payload([user_1, user_2, user_3])
         admin_payload = build_user_country_map_payload([user_1, user_2, user_3], include_user_names=True)
 
-        self.assertIn({"country_code": "ES", "country_id": "724", "country_name": "Espana", "count": 2}, public_payload)
+        self.assertIn({"country_code": "ES", "country_id": "724", "country_name": "España", "count": 2}, public_payload)
         self.assertNotIn("users", public_payload[0])
         spain = next(item for item in admin_payload if item["country_code"] == "ES")
         self.assertEqual(spain["users"], ["Ana", "Luis"])

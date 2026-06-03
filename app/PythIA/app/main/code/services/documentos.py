@@ -5,34 +5,34 @@ Script para gestionar documentos PDF, su sincronización, conversión a Markdown
 
 from __future__ import annotations
 
-from datetime import datetime
 import hashlib
+import logging
+from collections.abc import Iterable
+from datetime import datetime
 from pathlib import Path
-from typing import Iterable, Optional
 from zoneinfo import ZoneInfo
 
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
-from app.main.code.model.chunk import Chunk
-from app.main.code.model.consulta_chunk import ConsultaChunk
-from app.main.code.model.documento import STATUS_WITH_MARKDOWN, Documento
-from app.main.code.model.embedding import Embedding
+
 from app.main.code.extensions import db
+from app.main.code.model.documento import STATUS_WITH_MARKDOWN, Documento
 
 ALLOWED_EXT = {".pdf"}
 MADRID_TZ = ZoneInfo("Europe/Madrid")
+logger = logging.getLogger(__name__)
+DOCUMENTOS_RECOVERABLE_ERRORS = (OSError, RuntimeError, SQLAlchemyError, ValueError)
+REMOTE_CHUNKS_DELETE_ERROR = "No se pudieron eliminar chunks remotos de %s"
+UPLOAD_RESTORE_POSITION_ERROR = "Upload: could not restore stream position (%s): %s"
 
 class JobCancelledError(RuntimeError):
     """
     Excepción lanzada cuando un proceso largo se cancela manualmente.
     """
-    pass
-
-
 
 
 
 def sha256_file(path: Path) -> str:
-
     """
     Calcula el hash SHA-256 de un archivo.
 
@@ -104,7 +104,6 @@ class DocumentosService:
 
 
     def filename(self, filename: str) -> str:
-
         """
         Genera un nombre de archivo seguro.
 
@@ -136,7 +135,43 @@ class DocumentosService:
 
         return self.docs_dir / safe
 
-    def _is_pdf_upload(self, file_storage) -> bool:
+    def _read_stream_window(self, stream, file_storage, size: int) -> bytes:
+        """
+        Lee una ventana del stream de un archivo subido.
+
+        Args:
+            stream (_type_): Stream del archivo subido.
+            file_storage (_type_): Almacenamiento del archivo.
+            size (int): Tamaño del fragmento a leer.
+
+        Returns:
+            bytes: El fragmento de datos leído.
+        """
+        raw_filename = getattr(file_storage, "filename", "-")
+        try:
+            position = stream.tell()
+        except (OSError, ValueError, AttributeError) as exc:
+            logger.debug("Upload: could not tell() stream position (%s): %s", raw_filename, exc)
+            position = None
+
+        try:
+            stream.seek(0)
+            data = stream.read(size)
+        except (OSError, ValueError, AttributeError) as exc:
+            logger.debug("Upload: could not read stream (%s): %s", raw_filename, exc)
+            data = b""
+        finally:
+            if position is not None:
+                try:
+                    stream.seek(position)
+                except (OSError, ValueError, AttributeError) as exc:
+                    logger.debug(UPLOAD_RESTORE_POSITION_ERROR, raw_filename, exc)
+
+        if isinstance(data, str):
+            data = data.encode("utf-8", errors="ignore")
+        return bytes(data or b"")
+
+    def _is_pdf_upload(self, file_storage) -> bool:  # NOSONAR
         """
         Comprueba extensión y firma del archivo subido sin consumir el stream.
 
@@ -149,23 +184,79 @@ class DocumentosService:
         """
         filename = self.filename(getattr(file_storage, "filename", ""))
         if not filename or Path(filename).suffix.lower() not in ALLOWED_EXT:
+            logger.warning("Upload rechazado: extensión no permitida (%s).", getattr(file_storage, "filename", "-"))
             return False
 
         stream = getattr(file_storage, "stream", None)
 
         if stream is None:
+            logger.warning("Upload rechazado: stream ausente (%s).", getattr(file_storage, "filename", "-"))
             return False
 
-        if not hasattr(stream, "seekable") or not stream.seekable():
-            return False
+        # Intentar validar la firma sin consumir el stream.
+        # En algunos flujos el puntero no está al inicio cuando llegamos aquí.
+        if hasattr(stream, "seekable") and stream.seekable():
+            try:
+                position = stream.tell()
+            except (OSError, ValueError, AttributeError) as exc:
+                logger.debug(
+                    "Upload: could not tell() stream position (%s): %s",
+                    getattr(file_storage, "filename", "-"),
+                    exc,
+                )
+                position = None
 
-        position = stream.tell()
-        header = stream.read(5)
-        stream.seek(position)
+            try:
+                stream.seek(0)
+                header = stream.read(5)
+            finally:
+                if position is not None:
+                    try:
+                        stream.seek(position)
+                    except (OSError, ValueError, AttributeError) as exc:
+                        logger.debug(UPLOAD_RESTORE_POSITION_ERROR, getattr(file_storage, "filename", "-"), exc)
 
-        return header == b"%PDF-"
+            if isinstance(header, str):
+                header = header.encode("utf-8", errors="ignore")
 
-    def list_documents_paginated(self, page: int, per_page: int):
+            header_bytes = bytes(header or b"")
+            if header_bytes.startswith(b"%PDF-"):
+                return True
+
+            try:
+                stream.seek(0)
+                probe = stream.read(1024)
+            finally:
+                if position is not None:
+                    try:
+                        stream.seek(position)
+                    except (OSError, ValueError, AttributeError) as exc:
+                        logger.debug(UPLOAD_RESTORE_POSITION_ERROR, getattr(file_storage, "filename", "-"), exc)
+
+            if isinstance(probe, str):
+                probe = probe.encode("utf-8", errors="ignore")
+
+            ok = b"%PDF-" in bytes(probe or b"")
+            if not ok:
+                mimetype = (getattr(file_storage, "mimetype", "") or "").lower()
+                content_type = (getattr(file_storage, "content_type", "") or "").lower()
+                logger.warning(
+                    "Upload: firma PDF no encontrada (%s) mimetype=%s content_type=%s header=%r",
+                    getattr(file_storage, "filename", "-"),
+                    mimetype,
+                    content_type,
+                    header_bytes[:32],
+                )
+                # Último fallback: si el navegador/werkzeug lo marca como PDF, lo aceptamos.
+                if "application/pdf" in (mimetype, content_type):
+                    return True
+            return True
+
+        # Si no es seekable, no podemos comprobar firma sin consumir el stream.
+        logger.warning("Upload: stream no seekable (%s). Se acepta por extensiÃ³n.", getattr(file_storage, "filename", "-"))
+        return True
+
+    def list_documents_paginated(self, page: int, per_page: int) -> object:
         """
         Obtiene documentos paginados ordenados por fecha de modificación.
 
@@ -210,7 +301,6 @@ class DocumentosService:
         return {doc.id: self.has_markdown(doc) for doc in docs}
 
 
-
     def count_pending_markdown(self, docs: Iterable[Documento] | None = None) -> int:
         """
         Cuenta cuantos documentos siguen pendientes de Markdown.
@@ -243,7 +333,9 @@ class DocumentosService:
                 continue
 
             if not self._is_pdf_upload(f):
+                logger.warning("Upload rechazado: no parece PDF valido (%s).", getattr(f, "filename", "-"))
                 continue
+
 
             dest = self.resolve_pdf_path(f.filename)
             f.save(dest)
@@ -269,6 +361,9 @@ class DocumentosService:
 
         Returns:
             El Número de documentos eliminados de la base de datos.
+        
+        Raises:
+            OSError: Si ocurre un error al eliminar un PDF o sus chunks relacionados.
         """
         deleted = 0
         for doc in Documento.query.all():
@@ -278,8 +373,8 @@ class DocumentosService:
             doc.clear_markdown_content()
             try:
                 self.delete_chunks(doc.nombre)
-            except Exception:
-                pass
+            except DOCUMENTOS_RECOVERABLE_ERRORS:
+                logger.exception(REMOTE_CHUNKS_DELETE_ERROR, doc.nombre)
 
             self.delete_document_relations(doc)
             db.session.delete(doc)
@@ -290,7 +385,7 @@ class DocumentosService:
 
         return deleted
 
-    def _upsert_from_path(self, p: Path, status: Optional[str]) -> None:
+    def _upsert_from_path(self, p: Path, status: str | None) -> None:
         """
         Crea o actualiza un documento a partir de un PDF en disco.
 
@@ -302,35 +397,14 @@ class DocumentosService:
         mtime = datetime.fromtimestamp(stat.st_mtime, MADRID_TZ)
         rel_path = str(p)
         file_hash = sha256_file(p)
-        numero_expediente, tipo_documento = Documento.infer_metadata_from_filename(p.name)
         doc = Documento.query.filter_by(path=rel_path).first()
 
         if not doc:
-            doc = Documento(
-                nombre=p.name,
-                path=rel_path,
-                size_bytes=stat.st_size,
-                modified_at=mtime,
-                chunks=0,
-                hash=file_hash,
-                markdown_content=None,
-                status=status or "cargado",
-                error_message=None,
-                numero_expediente=numero_expediente,
-                tipo_documento=tipo_documento,
-            )
+            doc = Documento.from_pdf_path(p, file_hash, mtime, status=status or "cargado")
             db.session.add(doc)
             return
 
-        hash_changed = doc.refresh_file_metadata(p, file_hash, mtime)
-        if hash_changed:
-            doc.clear_markdown_content()
-
-        if status is not None:
-            doc.status = Documento.status_for_markdown(status, doc.markdown_content)
-            doc.error_message = None
-        elif doc.markdown_content and doc.status != "indexado":
-            doc.status = STATUS_WITH_MARKDOWN
+        doc.sync_from_pdf_path(p, file_hash, mtime, status=status)
 
     def delete_document(self, doc_id: int) -> None:
         """
@@ -338,6 +412,10 @@ class DocumentosService:
 
         Args:
             doc_id: Identificador del documento que se va a borrar.
+            
+        Raises:
+            OSError: Si ocurre un error al eliminar el PDF o sus chunks relacionados.
+            RuntimeError: Si no se puede eliminar el documento.
         """
         doc = Documento.query.get(doc_id)
         if not doc:
@@ -345,8 +423,8 @@ class DocumentosService:
 
         try:
             self.delete_chunks(doc.nombre)
-        except Exception:
-            pass
+        except DOCUMENTOS_RECOVERABLE_ERRORS:
+            logger.exception(REMOTE_CHUNKS_DELETE_ERROR, doc.nombre)
 
         self.delete_document_relations(doc)
 
@@ -354,8 +432,8 @@ class DocumentosService:
             pdf_path = Path(doc.path)
             if pdf_path.exists():
                 pdf_path.unlink()
-        except Exception:
-            pass
+        except DOCUMENTOS_RECOVERABLE_ERRORS:
+            logger.exception("No se pudo eliminar el PDF %s", doc.path)
 
         doc.clear_markdown_content()
         db.session.delete(doc)
@@ -393,20 +471,7 @@ class DocumentosService:
         Args:
             doc: Documento cuyas relaciones deben eliminarse.
         """
-        chunk_ids_subq = db.session.query(Chunk.id).filter(Chunk.document_id == doc.id).subquery()
-
-        ConsultaChunk.query.filter(
-            ConsultaChunk.chunk_id.in_(chunk_ids_subq)
-        ).delete(synchronize_session=False)
-        db.session.commit()
-
-        Embedding.query.filter(
-            Embedding.chunk_id.in_(chunk_ids_subq)
-        ).delete(synchronize_session=False)
-        db.session.commit()
-
-        Chunk.query.filter(Chunk.document_id == doc.id).delete(synchronize_session=False)
-        db.session.commit()
+        doc.delete_vector_relations()
 
 
     def convert_document_to_markdown(self, doc: Documento, on_page_start=None) -> bool:
@@ -426,9 +491,7 @@ class DocumentosService:
             FileNotFoundError: Si el PDF no existe en disco.
         """
         if doc.markdown_content:
-            if doc.status != "indexado":
-                doc.status = STATUS_WITH_MARKDOWN
-            doc.error_message = None
+            doc.mark_markdown_available()
             db.session.commit()
             return False
 
@@ -446,12 +509,7 @@ class DocumentosService:
         if not markdown_content:
             raise RuntimeError(f"No se pudo guardar el Markdown generado para {doc.nombre}.")
 
-        doc.markdown_content = markdown_content
-
-        if doc.status != "indexado":
-            doc.status = STATUS_WITH_MARKDOWN
-
-        doc.error_message = None
+        doc.mark_markdown_available(markdown_content)
         db.session.commit()
         return True
 
@@ -470,9 +528,7 @@ class DocumentosService:
 
         for doc in docs:
             if doc.markdown_content:
-                if doc.status not in {"indexado", STATUS_WITH_MARKDOWN}:
-                    doc.status = STATUS_WITH_MARKDOWN
-                    doc.error_message = None
+                if doc.sync_existing_markdown_status():
                     changed_existing = True
                 skipped += 1
                 continue
@@ -484,7 +540,7 @@ class DocumentosService:
 
         return pending_docs, skipped
 
-    def _build_markdown_page_callback(self, on_page_start, doc_index: int, total_docs: int):
+    def _build_markdown_page_callback(self, on_page_start, doc_index: int, total_docs: int) -> callable | None:
         """
         Crea el callback de progreso por página para Markdown.
 
@@ -541,45 +597,31 @@ class DocumentosService:
             return "converted" if converted else "skipped"
         except JobCancelledError:
             raise
-        except Exception:
+        except DOCUMENTOS_RECOVERABLE_ERRORS:
             db.session.rollback()
             return "failed"
 
-    def _prepare_document_for_vector_update(self, doc: Documento) -> Path:
+    def _prepare_document_for_vector_update(self, doc: Documento, *, require_pdf: bool = True) -> Path:
         """
         Prepara un documento para reindexarlo en la base vectorial.
 
         Args:
             doc: Documento que se va a reindexar.
+            require_pdf: Si es ``True``, se lanzará un error si el PDF no existe en disco.
 
         Returns:
             La ruta del PDF listo para ser indexado.
         """
-        doc.status = "procesado"
-        doc.error_message = None
+        doc.mark_vector_processing()
         db.session.commit()
         pdf_path = Path(doc.path)
-
-        if not pdf_path.exists():
+        if require_pdf and not pdf_path.exists():
             raise FileNotFoundError(f"PDF no existe en contenedor: {pdf_path}")
         try:
             self.delete_chunks(doc.nombre)
-        except Exception:
-            pass
-        chunk_ids_subq = db.session.query(Chunk.id).filter(Chunk.document_id == doc.id).subquery()
-
-        ConsultaChunk.query.filter(
-            ConsultaChunk.chunk_id.in_(chunk_ids_subq)
-        ).delete(synchronize_session=False)
-        db.session.commit()
-
-        Embedding.query.filter(
-            Embedding.chunk_id.in_(chunk_ids_subq)
-        ).delete(synchronize_session=False)
-        db.session.commit()
-
-        Chunk.query.filter(Chunk.document_id == doc.id).delete(synchronize_session=False)
-        db.session.commit()
+        except DOCUMENTOS_RECOVERABLE_ERRORS:
+            logger.exception(REMOTE_CHUNKS_DELETE_ERROR, doc.nombre)
+        doc.delete_vector_relations()
         return pdf_path
 
     def _index_vector_document(self, doc: Documento, index_pdf) -> int:
@@ -594,13 +636,28 @@ class DocumentosService:
         Returns:
             El Número de chunks indexados para el documento.
         """
-        pdf_path = self._prepare_document_for_vector_update(doc)
-        vector_docs = index_pdf(
-            pdf_path,
-            document_id=doc.id,
-            numero_expediente=doc.numero_expediente,
-            tipo_documento=doc.tipo_documento,
-        )
+        use_markdown = bool(doc.markdown_content)
+        pdf_path = self._prepare_document_for_vector_update(doc, require_pdf=not use_markdown)
+
+        if use_markdown:
+            from .rag.PrototipoRAG import index_markdown
+
+            vector_docs = index_markdown(
+                doc.markdown_content or "",
+                filename=Path(doc.path).name,
+                title=Path(doc.nombre).stem,
+                sha256=getattr(doc, "hash", "") or "",
+                document_id=doc.id,
+                numero_expediente=doc.numero_expediente,
+                tipo_documento=doc.tipo_documento,
+            )
+        else:
+            vector_docs = index_pdf(
+                pdf_path,
+                document_id=doc.id,
+                numero_expediente=doc.numero_expediente,
+                tipo_documento=doc.tipo_documento,
+            )
 
         if not vector_docs:
             raise RuntimeError("index_pdf devolvió 0 chunks (PDF sin texto o ruta inválida)")
@@ -608,8 +665,7 @@ class DocumentosService:
         update_sql(doc, vector_docs)
         db.session.commit()
 
-        doc.chunks = len(vector_docs)
-        doc.status = "indexado"
+        doc.mark_indexed(len(vector_docs))
         db.session.commit()
         return len(vector_docs)
 
@@ -623,8 +679,7 @@ class DocumentosService:
             error: Excepcion que explica el fallo.
         """
         db.session.rollback()
-        doc.status = "fallido"
-        doc.error_message = str(error)
+        doc.mark_failed(error)
         db.session.commit()
 
     def convert_pending_to_markdown(
@@ -649,6 +704,39 @@ class DocumentosService:
         converted = 0
         failed = 0
         pending_docs, skipped = self._collect_pending_markdown_docs()
+        if pending_docs:
+            from app.main.code.services.markdown.Conversion_markdown import (
+                get_pdf_page_count,
+            )
+            try:
+                from pdf2image.exceptions import (  # type: ignore
+                    PDFInfoNotInstalledError,
+                    PDFPageCountError,
+                    PDFSyntaxError,
+                )
+
+                page_count_errors = (
+                    OSError,
+                    RuntimeError,
+                    ValueError,
+                    PDFInfoNotInstalledError,
+                    PDFPageCountError,
+                    PDFSyntaxError,
+                )
+            except ImportError:  
+                page_count_errors = (OSError, RuntimeError, ValueError)
+
+            docs_with_pages: list[tuple[int, Documento]] = []
+            for doc in pending_docs:
+                pdf_path = Path(doc.path)
+                try:
+                    pages = get_pdf_page_count(pdf_path)
+                except page_count_errors:
+                    pages = 10**9
+                docs_with_pages.append((pages, doc))
+
+            docs_with_pages.sort(key=lambda item: (item[0], str(item[1].nombre or "")))
+            pending_docs = [doc for _, doc in docs_with_pages]
         total = len(pending_docs)
         if on_progress:
             on_progress(0, total)
@@ -713,7 +801,9 @@ class DocumentosService:
                 if on_progress:
                     on_progress(i, total)
 
-            except Exception as ex:
+            except JobCancelledError:
+                raise
+            except DOCUMENTOS_RECOVERABLE_ERRORS as ex:
                 self._mark_vector_update_failed(doc, ex)
                 failed += 1
 

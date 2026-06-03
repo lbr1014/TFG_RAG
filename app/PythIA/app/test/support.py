@@ -43,6 +43,9 @@ def _install_rag_stub() -> None:
         on_status=None,
         numero_expediente=None,
         tipo_documento=None,
+        query_profile="general",
+        retrieval_k=10,
+        min_similarity=None,
     ) -> dict:
         if should_cancel and should_cancel():
             raise QueryCancelledError("Consulta cancelada por el usuario.")
@@ -56,6 +59,9 @@ def _install_rag_stub() -> None:
             "chunk": "",
             "retrieved": [],
             "execution_device": "CPU",
+            "query_profile": query_profile,
+            "retrieval_k": retrieval_k,
+            "min_similarity": min_similarity,
             "applied_filters": {
                 "numero_expediente": numero_expediente,
                 "tipo_documento": tipo_documento,
@@ -77,6 +83,7 @@ def _install_rag_stub() -> None:
     module.qdrant_delete_by_filename = lambda filename: None
     module.index_pliegos_dir = lambda path: {}
     module.index_pdf = lambda *args, **kwargs: []
+    module.index_markdown = lambda *args, **kwargs: []
     module.obtener_mejor_chunk = obtener_mejor_chunk
     sys.modules["app.main.code.services.rag.PrototipoRAG"] = module
 

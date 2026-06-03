@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const progressBox = document.getElementById("scraping-progress");
+  const progressEl = progressBox?.querySelector(".progress");
+  const nativeProgressEl = progressBox?.querySelector("progress");
   const bar = progressBox?.querySelector(".progress-bar");
   const text = progressBox?.querySelector(".progress-text");
   const cancelButton = document.getElementById("cancel-job-button");
@@ -8,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const vectorForm = document.getElementById("vectorForm");
   const markdownForm = document.getElementById("markdownForm");
   const uploadForm = document.getElementById("uploadForm");
+  const uploadInput = document.getElementById("files");
+  const uploadSummary = document.getElementById("upload-file-summary");
 
   let activeJob = null;
 
@@ -26,30 +30,92 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function csrfHeaders(form) {
-    const token = getCsrfToken(form);
+    const token = getCsrfToken(form) || ensureCsrfToken();
     return token ? { "X-CSRFToken": token } : {};
   }
 
   function csrfFormData(form) {
     const data = new FormData();
-    const token = getCsrfToken(form);
+    const token = getCsrfToken(form) || ensureCsrfToken();
     if (token) data.append("csrf_token", token);
     return data;
   }
 
+  function ensureCsrfToken() {
+    return document.querySelector('input[name="csrf_token"]')?.value || "";
+  }
+
+  function updateUploadSummary() {
+    if (!uploadInput || !uploadSummary) return;
+
+    const files = Array.from(uploadInput.files || []);
+    if (files.length === 0) {
+      uploadSummary.textContent = tr("docs.no_files_selected");
+      return;
+    }
+
+    uploadSummary.textContent = files.length === 1
+      ? files[0].name
+      : tr("docs.files_selected", { count: files.length });
+  }
+
   function toggleButtons(disabled) {
-    [uploadForm, vectorForm, markdownForm, scrapingForm].forEach((form) => {
+    // Permite subir PDF aunque haya un job activo, pero deshabilita los botones que inician procesos para evitar conflictos.
+    [vectorForm, markdownForm, scrapingForm].forEach((form) => {
       form?.querySelectorAll("button").forEach((button) => {
         if (button === cancelButton) return;
         button.disabled = disabled;
       });
     });
+
+    // En el panel de subida, deshabilitamos solo los botones que disparan procesos
+    uploadForm?.querySelectorAll("button").forEach((button) => {
+      if (button === cancelButton) return;
+      const isProcessButton = button.form && ["scrapingForm", "markdownForm", "vectorForm"].includes(button.form.id);
+      if (isProcessButton) button.disabled = disabled;
+    });
   }
+
+  uploadInput?.addEventListener("change", updateUploadSummary);
+  updateUploadSummary();
 
   function showProgressBox() {
     if (!progressBox) return;
     progressBox.classList.remove("d-none");
     progressBox.style.display = "block";
+  }
+
+  function hideProgressBox() {
+    if (!progressBox) return;
+    progressBox.classList.add("d-none");
+    progressBox.style.display = "none";
+    if (text) text.textContent = "";
+    if (bar) bar.style.width = "0%";
+    if (progressEl) progressEl.setAttribute("aria-valuenow", "0");
+    if (nativeProgressEl) nativeProgressEl.value = 0;
+  }
+
+  function showToast(title, message, variant = "success") {
+    const container = document.getElementById("pythia-toast-container");
+    if (!container || !window.bootstrap?.Toast) return;
+
+    const toastEl = document.createElement("div");
+    toastEl.className = `toast align-items-center text-bg-${variant} border-0`;
+    toastEl.role = "status";
+    toastEl.ariaLive = "polite";
+    toastEl.ariaAtomic = "true";
+    toastEl.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">
+          <strong class="me-2">${title}</strong>${message || ""}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>`;
+
+    container.appendChild(toastEl);
+    const toast = new window.bootstrap.Toast(toastEl, { delay: 4500 });
+    toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
+    toast.show();
   }
 
   function setCancelVisible(visible) {
@@ -61,14 +127,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function setActiveJob(type, jobId) {
     activeJob = type && jobId ? { type, jobId: String(jobId) } : null;
     if (activeJob) {
-      sessionStorage.setItem("admin_active_job_type", activeJob.type);
-      sessionStorage.setItem("admin_active_job_id", activeJob.jobId);
+      localStorage.setItem("admin_active_job_type", activeJob.type);
+      localStorage.setItem("admin_active_job_id", activeJob.jobId);
       setCancelVisible(true);
       return;
     }
 
-    sessionStorage.removeItem("admin_active_job_type");
-    sessionStorage.removeItem("admin_active_job_id");
+    localStorage.removeItem("admin_active_job_type");
+    localStorage.removeItem("admin_active_job_id");
     setCancelVisible(false);
   }
 
@@ -76,41 +142,69 @@ document.addEventListener("DOMContentLoaded", () => {
     showProgressBox();
     if (text) text.textContent = message;
     if (bar) {
-      bar.style.animation = "none";
+      bar.classList.add("is-indeterminate");
+      bar.classList.add("progress-bar-striped", "progress-bar-animated");
       bar.style.width = "0%";
     }
+    if (progressEl) progressEl.setAttribute("aria-valuenow", "0");
+    if (nativeProgressEl) nativeProgressEl.value = 0;
     toggleButtons(true);
   }
 
   function setUIProgress(percent, message) {
-    if (!progressBox || !bar) return;
+    if (!progressBox) return;
     showProgressBox();
-    bar.style.animation = "none";
-    bar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+    const boundedPercent = Math.max(0, Math.min(100, percent));
+    if (bar) {
+      bar.classList.remove("is-indeterminate");
+      bar.classList.remove("progress-bar-animated");
+      bar.style.width = `${boundedPercent}%`;
+    }
+    if (progressEl) progressEl.setAttribute("aria-valuenow", String(boundedPercent));
+    if (nativeProgressEl) nativeProgressEl.value = boundedPercent;
+    if (text) text.textContent = message;
+  }
+
+  function setUIIndeterminate(message) {
+    showProgressBox();
+    if (bar) {
+      bar.classList.add("is-indeterminate");
+      bar.classList.add("progress-bar-striped", "progress-bar-animated");
+      bar.style.width = "0%";
+    }
+    if (progressEl) progressEl.setAttribute("aria-valuenow", "0");
+    if (nativeProgressEl) nativeProgressEl.value = 0;
     if (text) text.textContent = message;
   }
 
   function setUIDone(message) {
     setUIProgress(100, message);
+    showToast(tr("jobs.done_generic"), message || tr("jobs.done_generic"), "success");
     setActiveJob(null, null);
+    hideProgressBox();
     window.setTimeout(() => window.location.reload(), 600);
   }
 
   function setUICancelled(message) {
     setUIProgress(0, message);
+    showToast(tr("jobs.cancelled_generic"), message || tr("jobs.cancelled_generic"), "secondary");
     setActiveJob(null, null);
     toggleButtons(false);
+    hideProgressBox();
   }
 
   function setUIFailed(message) {
     showProgressBox();
     if (bar) {
-      bar.style.animation = "none";
       bar.style.width = "100%";
     }
+    if (progressEl) progressEl.setAttribute("aria-valuenow", "100");
+    if (nativeProgressEl) nativeProgressEl.value = 100;
     if (text) text.textContent = message;
+    showToast(tr("jobs.failed_generic"), message || tr("jobs.failed_generic"), "danger");
     setActiveJob(null, null);
     toggleButtons(false);
+    hideProgressBox();
   }
 
   async function fetchJson(url, options = {}) {
@@ -145,14 +239,16 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const data = await fetchJson(statusUrl);
         const status = data.status;
-        const progress = Number(data.progress ?? 0);
+        const hasProgress = data.progress !== null && data.progress !== undefined;
+        const progress = hasProgress ? Number(data.progress) : 0;
         const currentDoc = data.current_doc;
 
         if (status === "running" || status === "queued") {
           const message = currentDoc
             ? tr("vector.updating_doc", { progress, name: currentDoc })
             : tr("vector.updating", { progress });
-          setUIProgress(progress, message);
+          if (hasProgress) setUIProgress(progress, message);
+          else setUIIndeterminate(message);
           await new Promise((resolve) => window.setTimeout(resolve, 1000));
           continue;
         }
@@ -212,11 +308,13 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const data = await fetchJson(statusUrl);
         const status = data.status;
-        const progress = Number(data.progress ?? 0);
+        const hasProgress = data.progress !== null && data.progress !== undefined;
+        const progress = hasProgress ? Number(data.progress) : 0;
         const message = data.message || tr("markdown.converting_doc", { name: progress + "%" });
 
         if (status === "running" || status === "queued") {
-          setUIProgress(progress, message);
+          if (hasProgress) setUIProgress(progress, message);
+          else setUIIndeterminate(message);
           await new Promise((resolve) => window.setTimeout(resolve, 1000));
           continue;
         }
@@ -276,11 +374,13 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const data = await fetchJson(statusUrl);
         const status = data.status;
-        const progress = Number(data.progress ?? 0);
+        const hasProgress = data.progress !== null && data.progress !== undefined;
+        const progress = hasProgress ? Number(data.progress) : 0;
         const message = data.message || tr("scraping.starting_ui");
 
         if (status === "running" || status === "queued") {
-          setUIProgress(progress, message);
+          if (hasProgress) setUIProgress(progress, message);
+          else setUIIndeterminate(message);
           await new Promise((resolve) => window.setTimeout(resolve, 1000));
           continue;
         }
@@ -362,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       cancelButton.disabled = false;
-      setUIFailed(error.message || tr("process.cancel_error"));
+      setUIFailed(error?.message || tr("process.cancel_error"));
     }
   }
 
@@ -371,17 +471,37 @@ document.addEventListener("DOMContentLoaded", () => {
   scrapingForm?.addEventListener("submit", startScraping);
   cancelButton?.addEventListener("click", cancelActiveJob);
 
-  const savedType = sessionStorage.getItem("admin_active_job_type");
-  const savedId = sessionStorage.getItem("admin_active_job_id");
-  if (savedType && savedId) {
-    setActiveJob(savedType, savedId);
-    setUIRunning(tr("process.resume_tracking"));
-    if (savedType === "vector") {
-      pollVectorJob(savedId);
-    } else if (savedType === "markdown") {
-      pollMarkdownJob(savedId);
-    } else if (savedType === "scraping") {
-      pollScrapingJob(savedId);
+  async function resumeAnyActiveJob() {
+    const savedType = localStorage.getItem("admin_active_job_type");
+    const savedId = localStorage.getItem("admin_active_job_id");
+    if (savedType && savedId) {
+      setActiveJob(savedType, savedId);
+      setUIRunning(tr("process.resume_tracking"));
+      if (savedType === "vector") return pollVectorJob(savedId);
+      if (savedType === "markdown") return pollMarkdownJob(savedId);
+      if (savedType === "scraping") return pollScrapingJob(savedId);
+    }
+
+    try {
+      const data = await fetchJson("/admin/jobs/active");
+      const active = data?.markdown || data?.vector || data?.scraping;
+      if (!active) return;
+
+      // Prioridad: markdown > vector > scraping
+      const pick = data.markdown || data.vector || data.scraping;
+      const pickedType = data.markdown ? "markdown" : (data.vector ? "vector" : "scraping");
+      const pickedId = pick?.job_id;
+      if (!pickedId) return;
+
+      setActiveJob(pickedType, pickedId);
+      setUIRunning(tr("process.resume_tracking"));
+      if (pickedType === "vector") return pollVectorJob(pickedId);
+      if (pickedType === "markdown") return pollMarkdownJob(pickedId);
+      return pollScrapingJob(pickedId);
+    } catch (error) {
+      // Silencioso: si falla, simplemente no reanudamos
     }
   }
+
+  resumeAnyActiveJob();
 });

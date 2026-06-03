@@ -4,13 +4,16 @@ Script con decoradores de autorización para proteger vistas de administración.
 """
 
 from functools import wraps
+
 from flask import abort
 from flask_login import current_user
+
 from app.main.code.extensions import login_manager
 
 
-def admin_required(view_func):
-    """Exige que el usuario autenticado sea administrador.
+def admin_required(view_func) -> callable:
+    """
+    Exige que el usuario autenticado sea administrador.
 
     Args:
         view_func: Vista Flask que se quiere proteger.
@@ -20,8 +23,9 @@ def admin_required(view_func):
     """
 
     @wraps(view_func)
-    def wrapper(*args, **kwargs):
-        """Comprueba autenticación y permisos antes de ejecutar la vista.
+    def wrapper(*args, **kwargs) -> callable:
+        """
+        Comprueba autenticación y permisos antes de ejecutar la vista.
 
         Args:
             *args: Argumentos posicionales de la vista original.

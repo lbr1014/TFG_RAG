@@ -2,55 +2,158 @@
 {% from "components/form_errors.html" import render_form_errors with context %}
 
 {% block title %}{{ t("user.edit_title") }}{% endblock %}
-{% block body_class %}auth-screen{% endblock %}
+{% block body_class %}profile-screen{% endblock %}
+{% block page_width_class %}profile-page-width{% endblock %}
 
 {% block content %}
-  <div class="auth-page">
-    <div class="auth-container">
-      <h1>{{ t("user.edit_title") }}</h1>
+  <section class="profile-page" aria-labelledby="profile-title">
+    <aside class="profile-summary app-surface">
+      <div class="profile-avatar-wrap">
+        {% if profile_image_url %}
+          <img src="{{ profile_image_url }}" alt="{{ t('user.avatar_alt') }}" class="profile-avatar-img">
+        {% else %}
+          <div class="profile-avatar-initial" aria-hidden="true">{{ profile_initial }}</div>
+        {% endif %}
+      </div>
 
-      <form method="POST" novalidate>
+      <h2>{{ user.nombre }}</h2>
+      <p>{{ user.email }}</p>
+      {% if user.is_admin %}
+        <span class="app-badge admin">{{ t("nav.admin") }}</span>
+      {% else %}
+        <span class="app-badge user">{{ t("nav.user") }}</span>
+      {% endif %}
+      <dl class="profile-meta">
+        <div>
+          <dt>{{ t("common.country") }}</dt>
+          <dd>{{ country_name_for_code(user.country_code) }}</dd>
+        </div>
+        <div>
+          <dt>{{ t("nav.last_login") }}</dt>
+          <dd>
+            {% if user.last_login %}
+              {{ user.last_login.strftime("%d/%m/%Y %H:%M") }}
+            {% else %}
+              -
+            {% endif %}
+          </dd>
+        </div>
+      </dl>
+    </aside>
+
+    <div class="profile-editor app-surface">
+      <p class="profile-kicker">{{ t("nav.settings") }}</p>
+      <h1 id="profile-title">{{ t("user.edit_title") }}</h1>
+
+      <form id="profile-form" method="POST" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
         {{ render_form_errors(form) }}
 
-        <div class="mb-3">
-          {{ form.nombre.label(class="form-label") }}
-          {{ form.nombre(class_="form-control form-control-lg") }}
-          {% for err in form.nombre.errors %}
-            <div class="invalid-feedback d-block">{{ err }}</div>
-          {% endfor %}
+        <div class="profile-photo-field">
+          <div class="profile-photo-preview" id="profile-photo-preview">
+            {% if profile_image_url %}
+              <img src="{{ profile_image_url }}" alt="{{ t('user.avatar_alt') }}">
+            {% else %}
+              <span>{{ profile_initial }}</span>
+            {% endif %}
+          </div>
+          <div>
+            {{ form.profile_image.label(class="form-label") }}
+            {{ form.profile_image(class_="form-control", accept="image/png,image/jpeg,image/webp", data_preview_target="profile-photo-preview", data_fallback_initial=profile_initial) }}
+            <div class="form-text">{{ t("user.profile_image_help") }}</div>
+            {% for err in form.profile_image.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
         </div>
 
-        <div class="mb-3">
-          {{ form.email.label(class="form-label") }}
-          {{ form.email(class_="form-control form-control-lg") }}
-          {% for err in form.email.errors %}
-            <div class="invalid-feedback d-block">{{ err }}</div>
-          {% endfor %}
+        <div class="profile-form-grid">
+          <div>
+            {{ form.nombre.label(class="form-label") }}
+            {{ form.nombre(class_="form-control form-control-lg") }}
+            {% for err in form.nombre.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+
+          <div>
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class_="form-control form-control-lg") }}
+            {% for err in form.email.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+
+          <div>
+            {{ form.country_code.label(class="form-label") }}
+            {{ form.country_code(class_="form-select form-select-lg") }}
+            {% for err in form.country_code.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
+
+          <div>
+            {{ form.new_password.label(class="form-label") }}
+            {{ form.new_password(class_="form-control form-control-lg") }}
+            {% for err in form.new_password.errors %}
+              <div class="invalid-feedback d-block">{{ err }}</div>
+            {% endfor %}
+          </div>
         </div>
 
-        <div class="mb-3">
-          {{ form.country_code.label(class="form-label") }}
-          {{ form.country_code(class_="form-select form-select-lg") }}
-          {% for err in form.country_code.errors %}
-            <div class="invalid-feedback d-block">{{ err }}</div>
-          {% endfor %}
+        <div class="profile-preferences app-surface">
+          <h2 class="profile-section-title">
+            {{ t("user.preferences") }}
+          </h2>
+
+          <div class="profile-form-grid">
+
+            <div>
+              {{ form.theme_mode.label(class="form-label") }}
+              {{ form.theme_mode(class_="form-select form-select-lg") }}
+            </div>
+
+            <div>
+              {{ form.preferred_model.label(class="form-label") }}
+              {{ form.preferred_model(class_="form-select form-select-lg") }}
+            </div>
+
+            <div>
+              {{ form.language.label(class="form-label") }}
+              {{ form.language(class_="form-select form-select-lg") }}
+            </div>
+
+          </div>
         </div>
 
-        <div class="mb-3">
-          {{ form.new_password.label(class="form-label") }}
-          {{ form.new_password(class_="form-control form-control-lg") }}
-          {% for err in form.new_password.errors %}
-            <div class="invalid-feedback d-block">{{ err }}</div>
-          {% endfor %}
-        </div>
-
-        {{ form.submit(class_="btn btn-primary btn-lg") }}
-
-        <div class="links">
-          <a href="{{ url_for('main.pag_principal') }}">{{ t("user.cancel_edit") }}</a>
+        <div class="profile-actions">
+          {{ form.submit(class_="btn btn-primary btn-lg", id="profile-save") }}
+          <a href="{{ url_for('main.pag_principal') }}" class="btn btn-secondary btn-lg app-btn-cancel">{{ t("common.cancel") }}</a>
+          <button type="button"
+                  class="btn btn-danger btn-lg"
+                  id="profile-delete-account"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteConfirmModal"
+                  data-item-name="{{ t('user.account') }}"
+                  data-form-id="delete-account-form">
+            {{ t("user.delete_account") }}
+          </button>
         </div>
       </form>
+
+      <form id="delete-account-form" method="POST" action="{{ url_for('main.delete_own_account') }}" class="d-none">
+        {{ post_form.hidden_tag() }}
+      </form>
     </div>
-  </div>
+  </section>
+
+  <script>
+  window.profilePreferences = {
+    theme: "{{ current_user.theme_mode }}",
+    language: "{{ current_user.language }}",
+    model: "{{ current_user.preferred_model }}"
+  };
+</script>
+
+  {% include "components/modal_delete.html" %}
 {% endblock %}

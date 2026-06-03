@@ -8,13 +8,33 @@
   background-color: #e6e6e6;
   border-radius: 6px;
   overflow: hidden;
+  border: 0;
+  appearance: none;
 }
 
 .progress-bar {
   height: 100%;
-  width: 40%;
   background-color: #3498db;
+}
+
+.progress-bar.is-indeterminate {
+  width: 40%;
   animation: loading 1.2s infinite linear;
+}
+
+progress.progress-bar::-webkit-progress-bar {
+  background-color: #e6e6e6;
+  border-radius: 6px;
+}
+
+progress.progress-bar::-webkit-progress-value {
+  background-color: #3498db;
+  border-radius: 6px;
+}
+
+progress.progress-bar::-moz-progress-bar {
+  background-color: #3498db;
+  border-radius: 6px;
 }
 
 @keyframes loading {

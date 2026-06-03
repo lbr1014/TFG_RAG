@@ -19,7 +19,7 @@
           {% endif %}
         </p>
       </div>
-      <a class="btn btn-outline-light btn-header" href="{{ url_for('rag.rag_page') }}">
+      <a id="model-stats-back" class="btn btn-outline-light btn-header" href="{{ url_for('rag.rag_page') }}">
         {{ t("model_stats.back_to_rag") }}
       </a>
     </div>
@@ -105,7 +105,7 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
   <script>
     window.PYTHIA_MODEL_STATS = {
       data: {{ model_stats_payload|tojson }},

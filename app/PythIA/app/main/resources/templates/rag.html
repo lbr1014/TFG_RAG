@@ -4,286 +4,900 @@
 {% block title %}{{ t("rag.page_title") }}{% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css', v='20260322-theme') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rag.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="py-4 py-md-5">
-      <section class="rag-card app-surface">
-        <div class="mb-4">
-          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
-            <div>
-              <h2 class="rag-title mt-3 mb-2">{{ t("rag.title") }}</h2>
-              <p class="rag-subtitle mb-0">{{ t("rag.subtitle") }}</p>
-            </div>
-            <a class="btn btn-outline-light btn-header rag-model-stats-link" href="{{ url_for('rag.model_comparison_page') }}">
-              {{ t("rag.model_comparison") }}
-            </a>
+  <section class="rag-card rag-card-flat">
+    <div class="card rag-eval-card mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div>
+            <h3 class="mb-1">{{ t("rag.evaluation.title") }}</h3>
+            <p class="mb-0 text-muted">{{ t("rag.evaluation.subtitle") }}</p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if current_user.is_admin %}
+              <form id="rag-eval-run-form" method="POST" action="{{ url_for('admin.run_rag_evaluation_job') }}">
+                {{ post_form.hidden_tag() }}
+                <button id="rag-eval-run-btn" type="submit" class="btn btn-outline-warning btn-sm">
+                  {{ t("rag.evaluation.run_button") }}
+                </button>
+              </form>
+            {% endif %}
           </div>
         </div>
 
-        <form id="rag-form" method="post" class="rag-form" novalidate>
-          {{ form.csrf_token }}
-          {{ render_form_errors(form) }}
-
-          <div class="mb-3">
-            {{ form.question.label(class="form-label rag-label") }}
-            {{ form.question(class="form-control rag-textarea", rows="5") }}
+        <div id="rag-eval-progress" class="mt-3 d-none" aria-live="polite">
+          <div class="d-flex justify-content-between">
+            <small id="rag-eval-progress-text" class="text-muted">{{ t("common.loading") }}</small>
+            <small id="rag-eval-progress-pct" class="text-muted">0%</small>
           </div>
-
-          <div class="mb-3">
-            {{ form.model.label(class="form-label rag-label") }}
-            <div class="rag-model-select-shell">
-              {{ form.model(class="form-select rag-model-select") }}
-            </div>
+          <div class="progress mt-2" role="progressbar" aria-label="{{ t('rag.evaluation.progress_aria') }}">
+            <div id="rag-eval-progress-bar" class="progress-bar" style="width:0%"></div>
           </div>
-
-          <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-3">
-            <button id="ask-button" class="btn btn-modelo luz" type="submit">{{ t("rag.ask_button") }}</button>
-            <button id="cancel-button" class="btn btn-outline-light btn-header d-none" type="button">{{ t("rag.cancel_button") }}</button>
-            <span id="status" class="rag-status" aria-live="polite"></span>
-          </div>
-        </form>
-
-        <div class="rag-result mt-4">
-          <h3 class="rag-section-title h5 mb-3">{{ t("rag.answer_title") }}</h3>
-          <pre id="answer" class="rag-answer mb-0"></pre>
         </div>
 
-        <details class="rag-debug mt-4">
-          <summary>{{ t("rag.fragment_used") }}</summary>
+        <div id="rag-eval-empty" class="alert alert-info mt-3 d-none"></div>
+        <div id="rag-eval-metrics" class="rag-eval-metrics mt-3 d-none"></div>
+      </div>
+    </div>
 
-          <div class="rag-debug-body mt-3">
-            <div class="table-card">
-              <div class="p-3 p-md-4">
-                <div class="row g-3 rag-meta small">
-                  <div class="col-12 col-md-4">
-                    <strong>{{ t("history.file") }}</strong> <span id="filename"></span>
-                  </div>
-                  <div class="col-12 col-md-4">
-                    <strong>{{ t("history.title_label") }}</strong> <span id="title"></span>
-                  </div>
-                  <div class="col-12 col-md-4">
-                    <strong>{{ t("history.segment") }}</strong> <span id="segment_index"></span>
-                  </div>
-                </div>
-
-                <pre id="chunk" class="rag-chunk mb-0 mt-3"></pre>
-              </div>
-            </div>
+    <div class="rag-top-grid">
+      <div class="card rag-model-card">
+        <div class="rag-model-card-media">
+          <img src="{{ url_for('static', filename='img/LLM.png') }}" alt="" class="rag-model-card-img">
+        </div>
+        <div class="card-body rag-model-card-body">
+          <h3 class="rag-model-card-title">{{ t("rag.models_available") }}</h3>
+          <div class="rag-model-select-shell">
+            {{ form.model(class="form-select rag-model-select", id="rag-model-selector") }}
           </div>
-        </details>
-      </section>
+          <a id="rag-compare-models" class="btn btn-outline-light btn-header rag-model-compare-btn" href="{{ url_for('rag.model_comparison_page') }}">
+            {{ t("rag.compare_models_button") }}
+          </a>
+        </div>
+      </div>
+
+      <div class="rag-chart-card">
+        <div class="rag-chart-head">
+          <h3 class="rag-chart-title">{{ t("rag.model_usage_title") }}</h3>
+          <p class="rag-chart-subtitle mb-0">{{ t("rag.model_usage_subtitle") }}</p>
+        </div>
+        <div id="model-usage-chart" class="rag-chart-body" aria-label="{{ t('rag.model_usage_aria') }}"></div>
+      </div>
+    </div>
+
+    <div class="rag-folder mt-4">
+      <ul class="nav nav-tabs rag-folder-tabs" id="ragModeTabs">
+        <li class="nav-item">
+          <button class="nav-link active" id="rag-chat-tab" data-bs-toggle="tab" data-bs-target="#rag-chat-pane" type="button" role="tab" aria-controls="rag-chat-pane" aria-selected="true">
+            {{ t("rag.mode_chat") }}
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="rag-form-tab" data-bs-toggle="tab" data-bs-target="#rag-form-pane" type="button" role="tab" aria-controls="rag-form-pane" aria-selected="false">
+            {{ t("rag.mode_form") }}
+          </button>
+        </li>
+      </ul>
+      <div class="rag-mode-panel">
+        <div class="tab-content rag-folder-body" id="ragModeTabContent">
+          <div class="tab-pane fade show active" id="rag-chat-pane" role="tabpanel" aria-labelledby="rag-chat-tab">
+            {% include "rag/_rag_chat.html" %}
+          </div>
+          <div class="tab-pane fade" id="rag-form-pane" role="tabpanel" aria-labelledby="rag-form-tab">
+            {% set form = default_form %}
+            {% set embed_mode = true %}
+            {% include "rag/_rag_default_query_body.html" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
-<script>
-  const form = document.getElementById("rag-form");
-  const questionEl = form.querySelector("textarea");
-  const modelEl = form.querySelector('select[name="model"]');
-  const askButton = document.getElementById("ask-button");
-  const cancelButton = document.getElementById("cancel-button");
-  const statusEl = document.getElementById("status");
-  const answerEl = document.getElementById("answer");
-  const filenameEl = document.getElementById("filename");
-  const titleEl = document.getElementById("title");
-  const segmentEl = document.getElementById("segment_index");
-  const chunkEl = document.getElementById("chunk");
+<template id="chunks-content-rag"></template>
+{% include "components/modal_chunks.html" %}
+{% endblock %}
 
-  let activeJobId = null;
-  let pollingTimer = null;
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/answer_renderer.js') }}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"
+          integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer"></script>
+  <script>
+  const sharedModelSelector = document.getElementById("rag-model-selector");
 
   function tr(key, params) {
     return window.pythiaTranslate ? window.pythiaTranslate(key, params) : key;
   }
 
-  function clearResult() {
-    answerEl.textContent = "";
-    filenameEl.textContent = "";
-    titleEl.textContent = "";
-    segmentEl.textContent = "";
-    chunkEl.textContent = "";
+  function clamp01(value) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return 0;
+    return Math.max(0, Math.min(1, num));
   }
 
-  function setRunningUI(message) {
-    statusEl.textContent = message;
-    statusEl.classList.remove("is-error");
-    askButton.disabled = true;
-    questionEl.disabled = true;
-    if (modelEl) modelEl.disabled = true;
-    cancelButton.classList.remove("d-none");
-  }
-
-  function setIdleUI() {
-    askButton.disabled = false;
-    questionEl.disabled = false;
-    if (modelEl) modelEl.disabled = false;
-    cancelButton.classList.add("d-none");
-  }
-
-  function setErrorUI(message) {
-    statusEl.textContent = message;
-    statusEl.classList.add("is-error");
-  }
-
-  function validateQuestion() {
-    const value = questionEl.value.trim();
-
-    if (!value) {
-      setErrorUI(tr("rag.empty_question"));
-      questionEl.focus();
-      return false;
-    }
-
-    if (value.length > 2000) {
-      setErrorUI(tr("rag.question_too_long"));
-      questionEl.focus();
-      return false;
-    }
-
-    statusEl.classList.remove("is-error");
-    statusEl.textContent = "";
-    return true;
-  }
-
-  function applyResult(result) {
-    answerEl.textContent = result?.answer || tr("rag.no_answer");
-    filenameEl.textContent = result?.filename || "-";
-    titleEl.textContent = result?.title || "-";
-    segmentEl.textContent = result?.segment_index ?? "-";
-    chunkEl.textContent = result?.chunk || tr("rag.no_chunk");
-  }
-
-  function csrfHeaders() {
-    const token = form.querySelector('input[name="csrf_token"]')?.value;
-    return token ? { "X-CSRFToken": token } : {};
-  }
-
-  async function fetchJson(url, options = {}) {
-    const headers = {
-      Accept: "application/json",
-      ...(options.headers || {}),
+  function metricLabel(key) {
+    const map = {
+      "faithfulness": tr("rag.evaluation.metric.faithfulness"),
+      "answer_relevancy": tr("rag.evaluation.metric.answer_relevancy"),
+      "answer_correctness": tr("rag.evaluation.metric.answer_correctness"),
+      "context_precision": tr("rag.evaluation.metric.context_precision"),
+      "context_recall": tr("rag.evaluation.metric.context_recall"),
+      "context_relevancy": tr("rag.evaluation.metric.context_relevancy"),
     };
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    const rawBody = await response.text();
-    let data = {};
-    if (rawBody) {
-      try {
-        data = JSON.parse(rawBody);
-      } catch (error) {
-        const contentType = response.headers.get("content-type") || "";
-        const isHtml = contentType.includes("text/html") || rawBody.trimStart().startsWith("<");
-        const fallback = isHtml
-          ? tr("rag.unexpected_error")
-          : rawBody.slice(0, 160);
-        throw new Error(fallback || tr("rag.unexpected_error"));
-      }
-    }
-
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP ${response.status}`);
-    }
-    return data;
+    return map[key] || key;
   }
 
-  function stopPolling() {
-    if (pollingTimer) {
-      clearTimeout(pollingTimer);
-      pollingTimer = null;
-    }
+  function renderEvaluationMetrics(container, payload) {
+    const metrics = payload?.final_metrics || {};
+    const jobId = payload?.job_id;
+    const keys = [
+      "faithfulness",
+      "answer_relevancy",
+      "answer_correctness",
+      "context_precision",
+      "context_recall",
+      "context_relevancy",
+    ];
+    const cards = keys.map((key) => {
+      const score = clamp01(metrics[key]);
+      const pct = Math.round(score * 100);
+      const aria = `${metricLabel(key)}: ${pct}%`;
+      return `
+        <div class="rag-eval-metric" role="group" aria-label="${aria}">
+          <div class="rag-eval-ring" style="--rag-eval-pct:${pct}">
+            <div class="rag-eval-ring-inner">
+              <div class="rag-eval-ring-value">${pct}%</div>
+            </div>
+          </div>
+          <div class="rag-eval-metric-label">${metricLabel(key)}</div>
+        </div>`;
+    }).join("");
+
+    const detailUrlTemplate = "{{ url_for('rag.rag_evaluation_detail', job_id=0) }}";
+    const detailUrl = jobId ? detailUrlTemplate.replace("/0", `/${jobId}`) : null;
+    const detailLink = detailUrl
+      ? `<div class="mt-3"><a class="btn btn-outline-secondary btn-sm" href="${detailUrl}">{{ t("rag.evaluation.view_detail") }}</a></div>`
+      : "";
+
+    container.innerHTML = `<div class="rag-eval-metric-grid">${cards}</div>${detailLink}`;
   }
 
-  async function pollJob(jobId) {
-    try {
-      const data = await fetchJson(`{{ url_for('rag.rag_status', job_id=0) }}`.replace("/0", `/${jobId}`));
-      const status = data.status;
-      const message = data.message || "";
-
-      if (status === "queued" || status === "running") {
-        setRunningUI(message || tr("rag.querying"));
-        pollingTimer = window.setTimeout(() => pollJob(jobId), 900);
-        return;
-      }
-
-      activeJobId = null;
-      stopPolling();
-      setIdleUI();
-
-      if (status === "done") {
-        statusEl.textContent = "";
-        applyResult(data.result || {});
-        return;
-      }
-
-      if (status === "cancelled") {
-        statusEl.textContent = tr("rag.cancelled");
-        clearResult();
-        return;
-      }
-
-      statusEl.textContent = data.error || message || tr("rag.failed");
-      statusEl.classList.add("is-error");
-    } catch (error) {
-      activeJobId = null;
-      stopPolling();
-      setIdleUI();
-      statusEl.textContent = error.message || tr("rag.status_error");
-      statusEl.classList.add("is-error");
+  async function fetchLatestEvaluation() {
+    const res = await fetch("{{ url_for('rag.latest_rag_evaluation') }}", { headers: { "Accept": "application/json" } });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const err = data?.error || tr("rag.evaluation.no_results");
+      return { ok: false, error: err };
     }
+    return { ok: true, data: await res.json() };
   }
 
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    stopPolling();
-    clearResult();
+  async function fetchEvalStatus(jobId) {
+    const url = "{{ url_for('admin.rag_evaluation_status', job_id=0) }}".replace("/0", `/${jobId}`);
+    const res = await fetch(url, { headers: { "Accept": "application/json" } });
+    if (!res.ok) return null;
+    return res.json();
+  }
 
-    if (!validateQuestion()) {
+  async function refreshEvaluationUI() {
+    const emptyEl = document.getElementById("rag-eval-empty");
+    const metricsEl = document.getElementById("rag-eval-metrics");
+
+    const latest = await fetchLatestEvaluation();
+    if (!latest.ok) {
+      metricsEl?.classList.add("d-none");
+      if (emptyEl) {
+        emptyEl.textContent = latest.error;
+        emptyEl.classList.remove("d-none");
+      }
       return;
     }
 
-    try {
-      const formData = new FormData(form);
-      setRunningUI(tr("rag.sending"));
-      const data = await fetchJson("{{ url_for('rag.rag_ask') }}", {
-        method: "POST",
-        body: formData,
+    if (emptyEl) emptyEl.classList.add("d-none");
+    if (metricsEl) {
+      renderEvaluationMetrics(metricsEl, latest.data);
+      metricsEl.classList.remove("d-none");
+    }
+  }
+
+  async function startEvaluation() {
+    const form = document.getElementById("rag-eval-run-form");
+    if (!form) return;
+    const runBtn = document.getElementById("rag-eval-run-btn");
+    const progressShell = document.getElementById("rag-eval-progress");
+    const progressText = document.getElementById("rag-eval-progress-text");
+    const progressPct = document.getElementById("rag-eval-progress-pct");
+    const progressBar = document.getElementById("rag-eval-progress-bar");
+    const emptyEl = document.getElementById("rag-eval-empty");
+    const metricsEl = document.getElementById("rag-eval-metrics");
+
+    emptyEl?.classList.add("d-none");
+    metricsEl?.classList.add("d-none");
+
+    runBtn && (runBtn.disabled = true);
+    progressShell?.classList.remove("d-none");
+    progressText && (progressText.textContent = tr("rag.evaluation.running"));
+    progressPct && (progressPct.textContent = "0%");
+    progressBar && (progressBar.style.width = "0%");
+
+    const formData = new FormData(form);
+    const res = await fetch(form.action, { method: "POST", body: formData, headers: { "Accept": "application/json" } });
+    const data = await res.json().catch(() => ({}));
+    const jobId = data?.job_id;
+    if (!res.ok || !jobId) {
+      progressText && (progressText.textContent = tr("rag.evaluation.failed"));
+      runBtn && (runBtn.disabled = false);
+      return;
+    }
+
+    let done = false;
+    while (!done) {
+      await new Promise((r) => setTimeout(r, 1200));
+      const status = await fetchEvalStatus(jobId);
+      if (!status) continue;
+      const pct = Math.max(0, Math.min(100, Number(status.progress ?? 0)));
+      progressPct && (progressPct.textContent = `${pct}%`);
+      progressBar && (progressBar.style.width = `${pct}%`);
+      progressText && (progressText.textContent = status.message || tr("rag.evaluation.running"));
+      if (status.status === "done") done = true;
+      if (status.status === "failed" || status.status === "cancelled") {
+        done = true;
+        progressText && (progressText.textContent = status.error || tr("rag.evaluation.failed"));
+      }
+    }
+
+    runBtn && (runBtn.disabled = false);
+    progressShell?.classList.add("d-none");
+    await refreshEvaluationUI();
+  }
+
+  function initRagWorkspace(root) {
+    const form = root.querySelector("form");
+    if (!form) return;
+
+    const questionEl = form.querySelector("textarea, input[name='question']");
+    const modelEl = sharedModelSelector;
+    const askButton = form.querySelector("[data-rag-ask]");
+    const cancelButton = form.querySelector("[data-rag-cancel]");
+    const statusEl = form.querySelector("[data-rag-status]");
+    const answerEl = root.querySelector("[data-rag-answer]");
+    const filenameEl = root.querySelector("[data-rag-filename]");
+    const titleEl = root.querySelector("[data-rag-title]");
+    const segmentEl = root.querySelector("[data-rag-segment]");
+    const chunkEl = root.querySelector("[data-rag-chunk]");
+    const traceButtons = Array.from(root.querySelectorAll("[data-consulta-id='rag']"));
+    const traceTemplate = document.getElementById("chunks-content-rag");
+
+    let activeJobId = null;
+    let pollingTimer = null;
+    let lastTracePayload = null;
+
+    const isGuided = form.id === "rag-default-form";
+    const expedienteEl = isGuided ? form.querySelector("select[name='expediente']") : null;
+    const docTypeEl = isGuided ? form.querySelector("select[name='doc_type']") : null;
+    const questionKindEl = isGuided ? form.querySelector("select[name='question_kind']") : null;
+    const summaryEl = isGuided ? form.querySelector("input[name='summary']") : null;
+
+    const guidedQuestions = {
+      general: "Indica la informacion principal y las clausulas mas relevantes.",
+      amounts: "Extrae todas las cantidades economicas, importes, presupuestos, garantias y umbrales relevantes.",
+      deadlines: "Resume los plazos importantes: presentacion de ofertas, ejecucion, adjudicacion, garantias y cualquier fecha limite.",
+      solvency: "Identifica los requisitos de solvencia economica, financiera, tecnica y profesional.",
+      criteria: "Resume los criterios de adjudicacion, su ponderacion y como se valoran.",
+      guarantees: "Indica las garantias provisionales o definitivas exigidas y sus importes o porcentajes.",
+      budget: "Explica el presupuesto base, el valor estimado, impuestos incluidos o excluidos y partidas relevantes.",
+      duration: "Indica la duracion del contrato, posibles prorrogas y condiciones de ejecucion temporal.",
+      penalties: "Resume penalizaciones, incumplimientos, causas de resolucion y obligaciones criticas.",
+      submission: "Explica como y donde presentar la oferta, documentacion requerida y sobres o archivos necesarios."
+    };
+
+    function composeGuidedQuestion(mode = "question") {
+      const expediente = (expedienteEl?.value || "").trim();
+      const docType = (docTypeEl?.value || "").trim();
+      const kind = (questionKindEl?.value || "general").trim() || "general";
+      const scope = expediente ? `Para el expediente ${expediente}` : "Para los pliegos disponibles de forma general";
+      const docTypeText = docType === "tecnico" ? "tecnico" : "administrativo";
+      const docScope = mode !== "summary" && docType ? ` en el pliego ${docTypeText}` : "";
+      const task = mode === "summary" ? "elabora un resumen general y detallado del documento completo." : guidedQuestions[kind];
+      return `${scope}${docScope}, ${task}`.trim();
+    }
+
+    function syncGuidedQuestion() {
+      if (!isGuided || !questionEl) return;
+      const mode = summaryEl?.checked ? "summary" : "question";
+      questionEl.value = composeGuidedQuestion(mode);
+    }
+
+    function applyGuidedSummaryMode() {
+      if (!isGuided) return;
+      const locked = Boolean(summaryEl?.checked);
+      const lockedControls = [docTypeEl, questionKindEl].filter(Boolean);
+      lockedControls.forEach((control) => {
+        control.disabled = locked;
+      });
+      Array.from(form.querySelectorAll("[data-summary-lock]")).forEach((node) => {
+        node.classList.toggle("is-summary-locked", locked);
+      });
+      syncGuidedQuestion();
+    }
+
+    function clearResult() {
+      if (answerEl) answerEl.innerHTML = "";
+      if (filenameEl) filenameEl.textContent = "";
+      if (titleEl) titleEl.textContent = "";
+      if (segmentEl) segmentEl.textContent = "";
+      if (chunkEl) chunkEl.textContent = "";
+      lastTracePayload = null;
+      traceButtons.forEach((button) => (button.disabled = true));
+      if (traceTemplate) traceTemplate.innerHTML = "";
+    }
+
+    function setRunningUI(message) {
+      if (statusEl) {
+        const label = message || tr("rag.querying");
+        statusEl.innerHTML = `
+          <span class="d-inline-flex align-items-center gap-2">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="rag-status-text">${label}</span>
+          </span>`;
+      }
+      if (statusEl) statusEl.classList.remove("is-error");
+      if (askButton) askButton.disabled = true;
+      if (questionEl) questionEl.disabled = true;
+      if (modelEl) modelEl.disabled = true;
+      if (cancelButton) cancelButton.classList.remove("d-none");
+    }
+
+    function setIdleUI() {
+      if (askButton) askButton.disabled = false;
+      if (questionEl) questionEl.disabled = false;
+      if (modelEl) modelEl.disabled = false;
+      if (cancelButton) cancelButton.classList.add("d-none");
+    }
+
+    function setErrorUI(message) {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.add("is-error");
+    }
+
+    function validateQuestion() {
+      if (isGuided) {
+        syncGuidedQuestion();
+      }
+
+      const value = (questionEl?.value || "").trim();
+
+      if (!value) {
+        setErrorUI(tr("rag.empty_question"));
+        questionEl?.focus();
+        return false;
+      }
+
+      if (value.length > 2000) {
+        setErrorUI(tr("rag.question_too_long"));
+        questionEl?.focus();
+        return false;
+      }
+
+      if (statusEl) statusEl.classList.remove("is-error");
+      if (statusEl) statusEl.textContent = "";
+      return true;
+    }
+
+    function applyResult(result) {
+      if (answerEl) window.pythiaRenderMarkdown(answerEl, result?.answer || tr("rag.no_answer"));
+      if (filenameEl) filenameEl.textContent = result?.filename || "-";
+      if (titleEl) titleEl.textContent = result?.title || "-";
+      if (segmentEl) segmentEl.textContent = result?.segment_index ?? "-";
+      if (chunkEl) chunkEl.textContent = result?.chunk || tr("rag.no_chunk");
+      lastTracePayload = result?.retrieved || null;
+      const enabled = Array.isArray(lastTracePayload) && lastTracePayload.length > 0;
+      traceButtons.forEach((button) => (button.disabled = !enabled));
+      if (traceTemplate && enabled) {
+        const best = lastTracePayload[0] || {};
+        const bestMeta = best.metadata || {};
+        const bestFilename = best.filename || bestMeta.filename || "-";
+        const bestTitle = best.title || bestMeta.title || "-";
+        const bestSegment = best.segment_index ?? bestMeta.segment_index ?? "-";
+        const bestSimilarity = best.similitud ?? "-";
+        const bestChunk = best.chunk || "";
+
+        const rows = lastTracePayload.slice(0, 10).map((item) => {
+          const meta = item.metadata || {};
+          const similarity = item.similitud ?? "-";
+          const filename = item.filename || meta.filename || "-";
+          const segment = item.segment_index ?? meta.segment_index ?? "-";
+          return `
+            <tr>
+              <td>${escapeHtml(item.ranking ?? "-")}</td>
+              <td>${escapeHtml(typeof similarity === "number" ? similarity.toFixed(6) : similarity)}</td>
+              <td>${escapeHtml(filename)}</td>
+              <td>${escapeHtml(segment)}</td>
+            </tr>`;
+        }).join("");
+
+        traceTemplate.innerHTML = `
+          <div>
+            <h3 class="chunks-modal-title">${escapeHtml(tr("history.chunks_details", { id: "RAG" }))}</h3>
+            <p class="chunks-modal-sub">${escapeHtml(tr("rag.fragment_used"))}</p>
+          </div>
+
+          <div class="chunks-card">
+            <p style="margin:0 0 .4rem 0;"><strong>${escapeHtml(tr("history.best_fragment"))}</strong></p>
+            <div class="chunks-meta-grid">
+              <div><b>${escapeHtml(tr("history.file"))}</b> ${escapeHtml(bestFilename)}</div>
+              <div><b>${escapeHtml(tr("history.title_label"))}</b> ${escapeHtml(bestTitle)}</div>
+              <div><b>${escapeHtml(tr("history.segment"))}</b> ${escapeHtml(bestSegment)}</div>
+              <div><b>${escapeHtml(tr("history.similarity"))}</b> ${escapeHtml(typeof bestSimilarity === "number" ? bestSimilarity.toFixed(6) : bestSimilarity)}</div>
+            </div>
+            <pre class="chunks-pre">${escapeHtml(bestChunk || tr("rag.no_chunk"))}</pre>
+          </div>
+
+          <div class="chunks-card">
+            <p style="margin:0 0 .4rem 0;"><strong>${escapeHtml(tr("history.top_chunks", { shown: Math.min(10, lastTracePayload.length), total: lastTracePayload.length }))}</strong></p>
+            <div class="table-card mt-3">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 app-table">
+                  <thead>
+                    <tr>
+                      <th>${escapeHtml(tr("history.ranking"))}</th>
+                      <th>${escapeHtml(tr("history.similarity"))}</th>
+                      <th>${escapeHtml(tr("history.document"))}</th>
+                      <th>${escapeHtml(tr("history.segment"))}</th>
+                    </tr>
+                  </thead>
+                  <tbody>${rows}</tbody>
+                </table>
+              </div>
+            </div>
+          </div>`;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function csrfHeaders() {
+      const token = form.querySelector('input[name="csrf_token"]')?.value;
+      return token ? { "X-CSRFToken": token } : {};
+    }
+
+    async function fetchJson(url, options = {}) {
+      const headers = {
+        Accept: "application/json",
+        ...(options.headers || {}),
+      };
+
+      const response = await fetch(url, {
+        ...options,
+        headers,
       });
 
-      activeJobId = data.job_id;
-      pollJob(activeJobId);
-    } catch (error) {
-      activeJobId = null;
+      const rawBody = await response.text();
+      let data = {};
+      if (rawBody) {
+        try {
+          data = JSON.parse(rawBody);
+        } catch (error) {
+          const contentType = response.headers.get("content-type") || "";
+          const isHtml = contentType.includes("text/html") || rawBody.trimStart().startsWith("<");
+          const fallback = isHtml ? tr("rag.unexpected_error") : rawBody.slice(0, 160);
+          throw new Error(fallback || tr("rag.unexpected_error"));
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+      return data;
+    }
+
+    function stopPolling() {
+      if (pollingTimer) {
+        clearTimeout(pollingTimer);
+        pollingTimer = null;
+      }
+    }
+
+    function showToast(title, message, variant = "success") {
+      const container = document.getElementById("pythia-toast-container");
+      if (!container || !window.bootstrap?.Toast) return;
+
+      const toastEl = document.createElement("div");
+      toastEl.className = `toast align-items-center text-bg-${variant} border-0`;
+      toastEl.role = "status";
+      toastEl.ariaLive = "polite";
+      toastEl.ariaAtomic = "true";
+      toastEl.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <strong class="me-2">${title}</strong>${message || ""}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>`;
+
+      container.appendChild(toastEl);
+      const toast = new window.bootstrap.Toast(toastEl, { delay: 4500 });
+      toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
+      toast.show();
+    }
+
+    async function pollJob(jobId) {
+      try {
+        const data = await fetchJson(`{{ url_for('rag.rag_status', job_id=0) }}`.replace("/0", `/${jobId}`));
+        const status = data.status;
+        const message = data.message || "";
+
+        if (status === "queued" || status === "running") {
+          setRunningUI(message || tr("rag.querying"));
+          pollingTimer = window.setTimeout(() => pollJob(jobId), 900);
+          return;
+        }
+
+        activeJobId = null;
+        stopPolling();
+        setIdleUI();
+
+        if (status === "done") {
+          if (statusEl) statusEl.textContent = "";
+          applyResult(data.result || {});
+          showToast(tr("rag.done"), tr("rag.done"), "success");
+          return;
+        }
+
+        if (status === "cancelled") {
+          if (statusEl) statusEl.textContent = "";
+          clearResult();
+          showToast(tr("rag.cancelled"), tr("rag.cancelled"), "secondary");
+          return;
+        }
+
+        if (statusEl) statusEl.textContent = data.error || message || tr("rag.failed");
+        if (statusEl) statusEl.classList.add("is-error");
+        showToast(tr("rag.failed"), data.error || message || tr("rag.failed"), "danger");
+      } catch (error) {
+        activeJobId = null;
+        stopPolling();
+        setIdleUI();
+        if (statusEl) statusEl.textContent = error.message || tr("rag.status_error");
+        if (statusEl) statusEl.classList.add("is-error");
+        showToast(tr("rag.failed"), error.message || tr("rag.status_error"), "danger");
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
       stopPolling();
-      setIdleUI();
-      statusEl.textContent = error.message || tr("rag.unexpected_error");
-      statusEl.classList.add("is-error");
-    }
-  });
+      clearResult();
 
-  cancelButton.addEventListener("click", async () => {
-    if (!activeJobId) return;
+      if (!validateQuestion()) {
+        return;
+      }
 
-    try {
-      const data = await fetchJson(`{{ url_for('rag.rag_cancel', job_id=0) }}`.replace("/0", `/${activeJobId}`), {
-        method: "POST",
-        headers: csrfHeaders(),
-        body: new FormData(form),
+      try {
+        const formData = new FormData(form);
+        if (modelEl?.value) {
+          formData.set("model", modelEl.value);
+        }
+        if (isGuided) {
+          syncGuidedQuestion();
+          // Asegura el valor en el FormData incluso si el input es hidden/disabled.
+          formData.set("question", questionEl?.value || "");
+        }
+        setRunningUI(tr("rag.sending"));
+        const data = await fetchJson("{{ url_for('rag.rag_ask') }}", {
+          method: "POST",
+          body: formData,
+        });
+
+        activeJobId = data.job_id;
+        pollJob(activeJobId);
+      } catch (error) {
+        activeJobId = null;
+        stopPolling();
+        setIdleUI();
+        setErrorUI(error.message || tr("rag.unexpected_error"));
+      }
+    });
+
+    cancelButton?.addEventListener("click", async () => {
+      if (!activeJobId) return;
+
+      try {
+        const data = await fetchJson(`{{ url_for('rag.rag_cancel', job_id=0) }}`.replace("/0", `/${activeJobId}`), {
+          method: "POST",
+          headers: csrfHeaders(),
+          body: new FormData(form),
+        });
+        setRunningUI(data.message || tr("rag.cancel_button"));
+      } catch (error) {
+        setErrorUI(error.message || tr("rag.cancel_error"));
+      }
+    });
+
+    questionEl?.addEventListener("input", () => {
+      if (statusEl?.classList.contains("is-error")) {
+        validateQuestion();
+      }
+    });
+
+    if (isGuided) {
+      [expedienteEl, docTypeEl, questionKindEl].filter(Boolean).forEach((control) => {
+        control.addEventListener("input", () => applyGuidedSummaryMode());
+        control.addEventListener("change", () => applyGuidedSummaryMode());
       });
-      setRunningUI(data.message || tr("rag.cancel_button"));
-    } catch (error) {
-      statusEl.textContent = error.message || tr("rag.cancel_error");
-      statusEl.classList.add("is-error");
+      summaryEl?.addEventListener("change", () => applyGuidedSummaryMode());
+      applyGuidedSummaryMode();
     }
+
+    // Reanuda la UI si había un job en ejecución (p. ej. al recargar la página).
+    // Si no hay job activo, limpia cualquier estado residual.
+    (async () => {
+      try {
+        const data = await fetchJson("{{ url_for('rag.rag_active') }}");
+        const jobId = data?.job_id;
+        if (jobId) {
+          activeJobId = jobId;
+          pollJob(activeJobId);
+          return;
+        }
+        activeJobId = null;
+        stopPolling();
+        setIdleUI();
+        if (statusEl) statusEl.textContent = "";
+      } catch {
+        // Si falla el endpoint, no bloqueamos la interacción del usuario.
+      }
+    })();
+  }
+
+  ["rag-chat-pane", "rag-form-pane"].forEach((id) => {
+    const pane = document.getElementById(id);
+    if (pane) initRagWorkspace(pane);
   });
 
-  questionEl.addEventListener("input", () => {
-    if (statusEl.classList.contains("is-error")) {
-      validateQuestion();
-    }
+  document.getElementById("rag-eval-run-form")?.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    startEvaluation();
   });
-</script>
+
+  refreshEvaluationUI();
+
+  // D3 chart (index chart style)
+  window.PYTHIA_MODEL_USAGE = {{ (model_usage_payload or {})|tojson }};
+  window.PYTHIA_EXPEDIENTE_TYPES = {{ (expediente_type_payload or {})|tojson }};
+
+  // Filtra expedientes según el tipo de documento seleccionado.
+  (function initGuidedExpedienteFilter() {
+    const pane = document.getElementById("rag-form-pane");
+    if (!pane) return;
+    const form = pane.querySelector("#rag-default-form");
+    if (!form) return;
+
+    const docTypeEl = form.querySelector("select[name='doc_type']");
+    const expedienteEl = form.querySelector("select[name='expediente']");
+    if (!docTypeEl || !expedienteEl) return;
+
+    const allOptions = Array.from(expedienteEl.options).map((opt) => ({
+      value: opt.value,
+      label: opt.textContent || opt.value,
+    }));
+
+    function applyFilter() {
+      const selectedType = (docTypeEl.value || "").trim();
+      const current = expedienteEl.value;
+      const map = window.PYTHIA_EXPEDIENTE_TYPES || {};
+
+      expedienteEl.innerHTML = "";
+      allOptions.forEach((opt) => {
+        // Mantener siempre el placeholder "cualquiera"
+        if (!opt.value) {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label;
+          expedienteEl.appendChild(o);
+          return;
+        }
+
+        if (!selectedType) {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label;
+          expedienteEl.appendChild(o);
+          return;
+        }
+
+        const types = map[opt.value] || [];
+        if (types.includes(selectedType)) {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label;
+          expedienteEl.appendChild(o);
+        }
+      });
+
+      const stillExists = Array.from(expedienteEl.options).some((o) => o.value === current);
+      expedienteEl.value = stillExists ? current : "";
+    }
+
+    docTypeEl.addEventListener("change", applyFilter);
+    applyFilter();
+  })();
+
+  (function renderModelUsageChart() {
+    const host = document.getElementById("model-usage-chart");
+    const payload = window.PYTHIA_MODEL_USAGE || {};
+    if (!host || !window.d3) return;
+
+    // En caso de que el JS se ejecute antes de hidratar i18n, reintentar una vez.
+    if (!window.PYTHIA_I18N) {
+      window.setTimeout(renderModelUsageChart, 0);
+      return;
+    }
+
+    const labels = payload.labels || [];
+    const series = payload.series || {};
+    const modelNames = Object.keys(series);
+    if (!labels.length || !modelNames.length) {
+      host.innerHTML = `<p class="text-muted mb-0">${tr("rag.model_usage_empty")}</p>`;
+      return;
+    }
+
+    const width = host.clientWidth || 560;
+    const height = 320;
+    const margin = { top: 16, right: 14, bottom: 70, left: 36 };
+
+    const data = labels.map((label, idx) => {
+      const row = { date: label };
+      modelNames.forEach((name) => {
+        row[name] = series[name]?.[idx] || 0;
+      });
+      return row;
+    });
+
+    host.innerHTML = "";
+    const svg = d3
+      .select(host)
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("width", "100%")
+      .attr("height", height);
+
+    const x = d3
+      .scalePoint()
+      .domain(labels)
+      .range([margin.left, width - margin.right])
+      .padding(0.5);
+
+    const yMax = d3.max(modelNames, (m) => d3.max(data, (d) => d[m])) || 1;
+    const y = d3
+      .scaleLinear()
+      .domain([0, yMax])
+      .nice()
+      .range([height - margin.bottom, margin.top]);
+
+    const color = d3
+      .scaleOrdinal()
+      .domain(modelNames)
+      .range(d3.schemeTableau10);
+
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x).tickSizeOuter(0))
+      .call((g) => g.selectAll("text").attr("font-size", 11));
+
+    svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y).ticks(5))
+      .call((g) => g.selectAll("text").attr("font-size", 11));
+
+    svg
+      .append("g")
+      .attr("stroke", "rgba(255,255,255,.10)")
+      .attr("stroke-width", 1)
+      .selectAll("line")
+      .data(y.ticks(5))
+      .join("line")
+      .attr("x1", margin.left)
+      .attr("x2", width - margin.right)
+      .attr("y1", (d) => y(d))
+      .attr("y2", (d) => y(d));
+
+    const line = d3
+      .line()
+      .x((d) => x(d.date))
+      .y((d) => y(d.value));
+
+    modelNames.forEach((modelName) => {
+      const values = data.map((d) => ({ date: d.date, value: d[modelName] }));
+      svg
+        .append("path")
+        .datum(values)
+        .attr("fill", "none")
+        .attr("stroke", color(modelName))
+        .attr("stroke-width", 2.5)
+        .attr("d", line);
+
+      svg
+        .append("g")
+        .selectAll("circle")
+        .data(values)
+        .join("circle")
+        .attr("cx", (d) => x(d.date))
+        .attr("cy", (d) => y(d.value))
+        .attr("r", 3.2)
+        .attr("fill", color(modelName))
+        .attr("opacity", 0.9);
+    });
+
+    const maxLegendWidth = width - margin.left - margin.right;
+    const legendY = height - margin.bottom + 26;
+    const legend = svg.append("g").attr("transform", `translate(${margin.left},${legendY})`);
+    const legendItems = modelNames.slice(0, 8);
+    const legendPaddingX = 10;
+    const legendPaddingY = 8;
+    const itemGapX = 14;
+    const itemGapY = 10;
+    const swatchSize = 10;
+    const textOffsetX = 14;
+    const fontSize = 11;
+    const approxCharWidth = 6.2; 
+
+    let cursorX = 0;
+    let cursorY = 0;
+    let legendHeight = 0;
+
+    const itemGroups = legend
+      .selectAll("g.rag-legend-item")
+      .data(legendItems)
+      .join("g")
+      .attr("class", "rag-legend-item")
+      .each(function (name) {
+        const estimatedTextWidth = Math.min(maxLegendWidth, Math.max(40, name.length * approxCharWidth));
+        const itemWidth = swatchSize + textOffsetX + estimatedTextWidth;
+        const rowHeight = swatchSize;
+
+        if (cursorX > 0 && cursorX + itemWidth > maxLegendWidth) {
+          cursorX = 0;
+          cursorY += rowHeight + itemGapY;
+        }
+
+        d3.select(this).attr("transform", `translate(${cursorX},${cursorY})`);
+        cursorX += itemWidth + itemGapX;
+        legendHeight = Math.max(legendHeight, cursorY + rowHeight);
+      });
+
+    itemGroups.each(function (name) {
+      const g = d3.select(this);
+      g.append("rect").attr("width", swatchSize).attr("height", swatchSize).attr("rx", 2).attr("fill", color(name));
+      g.append("text")
+        .attr("x", textOffsetX)
+        .attr("y", 9)
+        .attr("fill", "rgba(255,255,255,.95)")
+        .attr("font-size", fontSize)
+        .attr("paint-order", "stroke")
+        .attr("stroke", "rgba(0,0,0,.35)")
+        .attr("stroke-width", 3)
+        .attr("stroke-linejoin", "round")
+        .text(name);
+    });
+  })();
+  </script>
 {% endblock %}

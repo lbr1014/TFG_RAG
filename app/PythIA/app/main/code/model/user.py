@@ -3,6 +3,8 @@ Autora: Lydia Blanco Ruiz
 Script con la entidad SQLAlchemy que representa usuarios registrados y sus permisos.
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -21,8 +23,13 @@ class User(db.Model, UserMixin):
         id: Identificador interno del usuario.
         nombre: Nombre visible del usuario.
         email: Correo electrónico único usado para iniciar sesión.
+        country_code: Código ISO del país del usuario, usado para mostrar la bandera.
+        profile_image: Ruta relativa a la imagen de perfil del usuario, si existe.
         password_hash: Contraseña cifrada.
         last_login: Fecha y hora del último inicio de sesión.
+        theme_mode: Modo de tema preferido por el usuario.
+        preferred_model: Modelo de lenguaje preferido por el usuario.
+        language: Idioma preferido por el usuario.
         is_admin: Indica si el usuario tiene permisos de administración.
     """
 
@@ -32,13 +39,19 @@ class User(db.Model, UserMixin):
     nombre = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     country_code = db.Column(db.String(2), nullable=False, default=DEFAULT_COUNTRY_CODE, server_default=DEFAULT_COUNTRY_CODE, index=True)
+    profile_image = db.Column(db.String(255), nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     last_login = db.Column(db.DateTime(timezone=True), nullable=True)
+    login_count = db.Column(db.Integer, nullable=False, default=0, server_default="0")
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
+    theme_mode = db.Column(db.String(20), nullable=False, default="system", server_default="system")  
+    preferred_model = db.Column(db.String(50), nullable=False, default="llama3.1:8b-instruct-q4_K_M", server_default="llama3.1:8b-instruct-q4_K_M")
+    language = db.Column(db.String(20), nullable=False, default="es", server_default="es")
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """
         Inicializa el usuario con Espana como pais por defecto.
+        
         Args:
             **kwargs: Valores iniciales del modelo SQLAlchemy.
         """
@@ -46,7 +59,7 @@ class User(db.Model, UserMixin):
         if not self.country_code:
             self.country_code = DEFAULT_COUNTRY_CODE
 
-    def set_password(self, password_plain: str):
+    def set_password(self, password_plain: str) -> None:
         """
         Guarda la contraseña cifrada del usuario.
 
@@ -68,14 +81,15 @@ class User(db.Model, UserMixin):
         """
         return check_password_hash(self.password_hash, password_plain)
 
-    def update_last_login(self):
+    def update_last_login(self) -> None:
         """
         Actualiza la fecha del último inicio de sesión.
         """
         self.last_login = datetime.now(ZoneInfo("Europe/Madrid"))
+        self.login_count = int(self.login_count or 0) + 1
 
     @staticmethod
-    def get_by_id(user_id: int):
+    def get_by_id(user_id: int) -> User | None:
         """
         Busca un usuario por identificador.
 
@@ -88,7 +102,7 @@ class User(db.Model, UserMixin):
         return db.session.get(User, user_id)
 
     @staticmethod
-    def get_by_email(email: str):
+    def get_by_email(email: str) -> User | None:
         """
         Busca un usuario por correo electrónico.
 
@@ -100,19 +114,19 @@ class User(db.Model, UserMixin):
         """
         return User.query.filter_by(email=email).first()
 
-    def make_admin(self):
+    def make_admin(self) -> None:
         """
         Da permisos de administración al usuario.
         """
         self.is_admin = True
 
-    def make_user(self):
+    def make_user(self) -> None:
         """
         Quita permisos de administración al usuario.
         """
         self.is_admin = False
 
-    def change_is_admin(self):
+    def change_is_admin(self) -> None:
         """
         Cambia el rol de administración del usuario.
         """

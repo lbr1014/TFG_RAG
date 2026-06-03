@@ -14,13 +14,17 @@
   {% set header_guest_title = titulo %}
   {% set header_guest_subtitle = autor %}
   {% set header_guest_show_auth_links = true %}
+  {% set header_guest_show_logo = true %}
+  {% set header_guest_show_text = false %}
   {% set header_force_guest = true %}
+  {% set header_variant = "landing-header" %}
   {% include "components/app_header.html" %}
 
   <main class="app-main-shell">
     <div class="main-content home-hero">
       <div class="container py-5">
         <section class="hero-block mx-auto text-center">
+          <img src="{{ url_for('static', filename='img/PythIA_logo.svg') }}" alt="PythIA" class="hero-logo">
           <span class="hero-badge luz mt-3">{{ t("landing.hero_badge") }}</span>
 
           <h2 class="hero-title mt-3">
@@ -80,6 +84,15 @@
                 </div>
               </div>
             </div>
+
+            <button class="carousel-control-prev info-carousel-control" type="button" data-bs-target="#infoCarousel" data-bs-slide="prev" aria-label="{{ t('common.previous') }}">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">{{ t("common.previous") }}</span>
+            </button>
+            <button class="carousel-control-next info-carousel-control" type="button" data-bs-target="#infoCarousel" data-bs-slide="next" aria-label="{{ t('common.next') }}">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">{{ t("common.next") }}</span>
+            </button>
 
             <div class="carousel-indicators position-static mt-4">
               <button type="button" data-bs-target="#infoCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>

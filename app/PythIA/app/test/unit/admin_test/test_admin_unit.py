@@ -216,7 +216,8 @@ class AdminRoutesUnitTest(BaseAppTestCase):
     def test_scraping_context_finish_and_exception_helpers(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             self.app.config["DOCS_DIR"] = str(Path(tmpdir) / "docs")
-            base, scraper_dir, script_1, script_2, root, env = admin_routes._build_scraping_context()
+            self.app.config["DATA_DIR"] = str(Path(tmpdir) / "data")
+            base, scraper_dir, script_1, script_2, root, env, resultados_json, pliegos_json = admin_routes._build_scraping_context()
 
         self.assertEqual(base.name, "docs")
         self.assertEqual(scraper_dir.name, "web_scraping")
@@ -224,6 +225,8 @@ class AdminRoutesUnitTest(BaseAppTestCase):
         self.assertEqual(script_2.name, "DescargarPliegos.py")
         self.assertEqual(root, Path(self.app.root_path))
         self.assertIn("PLIEGOS_DEST", env)
+        self.assertEqual(resultados_json.name, "resultados_playwright_asincrono_servidor.json")
+        self.assertEqual(pliegos_json.name, "pliegos_pdfs.json")
 
         job = WebScrapingSate(status="running", progress=10)
         db.session.add(job)
@@ -267,6 +270,7 @@ class AdminRoutesUnitTest(BaseAppTestCase):
 
         proc = MagicMock()
         proc.poll.return_value = 7
+        proc.communicate.return_value = ("boom", "traceback")
         with patch("app.main.code.controllers.admin.routes.subprocess.Popen", return_value=proc):
             with self.assertRaises(subprocess.CalledProcessError):
                 admin_routes._execute_subprocess_with_cancellation(Path("bad.py"), Path("."), {}, lambda: False, "es")
@@ -533,9 +537,11 @@ class AdminRoutesUnitTest(BaseAppTestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             base = Path(tmpdir)
+            resultados_json = base / "resultados.json"
+            pliegos_json = base / "pliegos.json"
             with patch(
                 "app.main.code.controllers.admin.routes._build_scraping_context",
-                return_value=(base, Path("."), Path("one.py"), Path("two.py"), Path("."), {}),
+                return_value=(base, Path("."), Path("one.py"), Path("two.py"), Path("."), {}, resultados_json, pliegos_json),
             ), patch("app.main.code.controllers.admin.routes._run_scraping_script") as mock_run, patch(
                 "app.main.code.controllers.admin.routes._sync_scraping_results", return_value=(3, 4)
             ):
@@ -557,7 +563,10 @@ class AdminRoutesUnitTest(BaseAppTestCase):
         cancelled = WebScrapingSate(status="queued", progress=0, cancel_requested=False)
         db.session.add(cancelled)
         db.session.commit()
-        with patch("app.main.code.controllers.admin.routes._build_scraping_context", return_value=(Path("."), Path("."), Path("one.py"), Path("two.py"), Path("."), {})), patch(
+        with patch(
+            "app.main.code.controllers.admin.routes._build_scraping_context",
+            return_value=(Path("."), Path("."), Path("one.py"), Path("two.py"), Path("."), {}, Path("resultados.json"), Path("pliegos.json")),
+        ), patch(
             "app.main.code.controllers.admin.routes._run_scraping_script", side_effect=JobCancelledError("cancelado")
         ):
             admin_routes.scraping_async(self.app, cancelled.id, "admin@example.com", "http://docs.local")
@@ -583,7 +592,7 @@ class AdminRoutesUnitTest(BaseAppTestCase):
 
         with patch(
             "app.main.code.controllers.admin.routes._build_scraping_context",
-            return_value=(Path("."), Path("."), Path("one.py"), Path("two.py"), Path("."), {}),
+            return_value=(Path("."), Path("."), Path("one.py"), Path("two.py"), Path("."), {}, Path("resultados.json"), Path("pliegos.json")),
         ), patch("app.main.code.controllers.admin.routes._run_scraping_script", side_effect=inspect_should_cancel), patch(
             "app.main.code.controllers.admin.routes._sync_scraping_results", return_value=(0, 0)
         ):
