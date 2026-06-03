@@ -127,6 +127,7 @@ Respecto a la evaluación, por un lado, se utiliza \eng{RAGAS} para calcular mé
 
 
 \section{Tareas asíncronas}
+\label{rel:asinc}
 
 Para que se realicen las tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el \file{Web Scraping}, la conversión de documentos \file{PDF} a \file{Markdown}, la actualización de la base de datos vectorial y la evaluación del \eng{RAG}. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \eng{web}.
 
@@ -165,78 +166,21 @@ Por otro lado, conforme el sistema fue incorporando más funcionalidades, se obs
 
 El \eng{backend} de PythIA es el núcleo funcional de la aplicación y el encargado de integrar todas las partes del sistema \eng{RAG}. Durante el desarrollo ha ido evolucionando desde \eng{scripts} independientes hasta una arquitectura modular basada en \file{Flask}  y organizada mediante \eng{blueprints}, servicios y capas desacopladas.
 
-Sus funcionalidades son:
-\begin{itemize}
-\tightlist
-	\item Gestión de usuarios.
-	\item Registro e inicio de sesión.
-	\item Recuperación de contraseñas.
-	\item Gestión documental.
-	\item Importación automática de licitaciones mediante \eng{web scraping}
-	\item Conversión de documentos.
-	\item Generación de \eng{embeddings}
-	\item Indexación vectorial.
-	\item Consultas del sistema \eng{RAG}.
-	\item Historial de consultas
-	\item Estadisticas de uso y de comparación de modelos
-\end{itemize}
-
 La aplicación se organizó utilizando controladores \file{Flask} agrupados mediante \eng{blueprints}. Cada \eng{blueprint} encapsula un conjunto concreto de funcionalidades, como autenticación, administración, consultas \eng{RAG}, gestión documental y páginas principales. Esta organización ha permitido desacoplar las distintas partes del sistema y mejorar la escalabilidad del proyecto.
 
-Por debajo de los controladores se implementó una capa de servicios encargada de la lógica de negocio. Esta separación fue especialmente importante conforme el proyecto fue creciendo, ya que evita sobrecargar los controladores \file{Flask} con lógica de negocio. Permitiendo reutilizar código entre distintas partes de la aplicación y facilitando el mantenimiento. Concretamente se han implementado los siguientes servicios:
-\begin{itemize}
-\tightlist
-	\item Comunicación con los \eng{LLM}.
-	\item Recuperación semántica.
-	\item Generación de \eng{embeddings}.
-	\item Conversión a \file{Markdown}.
-	\item Procesamiento de \file{PDF}.
-	\item \eng{Web scraping}.
-	\item Gestión de tareas asíncronas.
-	\item Gestión de documentos.
-	\item Procesamiento del historial.
-\end{itemize}
+Por debajo de los controladores se implementó una capa de servicios encargada de la lógica de negocio. Esta separación fue especialmente importante conforme el proyecto fue creciendo, ya que evita sobrecargar los controladores \file{Flask} con lógica de negocio. Permitiendo reutilizar código entre distintas partes de la aplicación y facilitando el mantenimiento. 
 
-En cuanto a los modelos de datos, la aplicación utiliza \file{SQLAlchemy} como \file{ORM} principal. Los modelos representan entidades como:
-
-\begin{itemize}
-\tightlist
-	\item Usuarios
-	\item Consultas
-	\item Documentos
-	\item \file{Chunks}
-	\item \file{Embeddings}
-	\item Estados de tareas
-	\item Configuraciones del sistema
-\end{itemize}
+En cuanto a los modelos de datos, la aplicación utiliza \file{SQLAlchemy} como \file{ORM} principal. 
 
 Además de la base de datos relacional utilizada para la gestión general de la aplicación, el \eng{backend} también integra \file{Qdrant} como base de datos vectorial para almacenar los \eng{embeddings} utilizados por el sistema \eng{RAG}.
 
 La comunicación entre las distintas capas de la aplicación sigue una arquitectura multicapa donde el usuario interactúa con el \eng{frontend}. A continuación los controladores reciben las peticiones y los servicios ejecutan la lógica de negocio. Los modelos gestionan el acceso a los datos y los resultados se devuelven al \eng{frontend}.
 
-Otro aspecto importante fue la seguridad y el control de acceso. La aplicación implementa autenticación mediante \file{Flask-Login} y utiliza distintos roles de usuario para restringir determinadas funcionalidades administrativas. Entre las medidas de seguridad implementadas destacan:
-\begin{itemize}
-\tightlist
-	\item \eng{Hash} seguro de contraseñas.
-	\item Protección \file{CSRF} en formularios.
-	\item Variables de entorno para claves privadas.
-	\item Restricción de acceso por roles.
-	\item Validación de formularios.
-	\item Gestión segura de sesiones.
-	\item Protección de rutas mediante decoradores personalizados.
-\end{itemize}
+Otro aspecto importante fue la seguridad y el control de acceso. La aplicación implementa autenticación mediante \file{Flask-Login} y utiliza distintos roles de usuario para restringir determinadas funcionalidades administrativas. 
 
-También se ha desarrollado un sistema centralizado de control de excepciones para evitar errores no controlados dentro de la aplicación. Esto permitió:
+También se ha desarrollado un sistema centralizado de control de excepciones para evitar errores no controlados dentro de la aplicación y evitar así caídas del sistema. Concretamente se registran los errores ( mediante \eng{loggers}) mostrándose mensajes de error amigables.
 
-\begin{itemize}
-\tightlist
-	\item Mostrar mensajes de error amigables.
-	\item Registrar errores mediante \eng{loggers}.
-	\item Facilitar la depuración.
-	\item Evitar caídas completas del sistema.
-\end{itemize}
-
-Finalmente, debido al elevado coste computacional de algunas operaciones, se incorporó soporte para tareas asíncronas. Esto fue especialmente importante en procesos como la conversión de \file{PDF} a \file{Markdown}, el \eng{web scraping}, la generación de \eng{embeddings}, la indexación documental y la generación de la respuesta. Permite evitar bloqueos en la interfaz web, ya que los procesos pesados pueden ejecutarse en segundo plano mientras el usuario continua usando la aplicación. 
+Finalmente, debido al elevado coste computacional de algunas operaciones, se incorporó soporte para tareas asíncronas. Esto fue especialmente importante en procesos como la conversión de \file{PDF} a \file{Markdown}, el \eng{web scraping}, la generación de \eng{embeddings}, la indexación documental y la generación de la respuesta. Permite evitar bloqueos en la interfaz web, ya que los procesos pesados pueden ejecutarse en segundo plano mientras el usuario continua usando la aplicación (ver sección~\ref{rel:asinc}). 
 
 \section{Evaluación de la calidad del código}
 
