@@ -150,6 +150,10 @@ Se ha optado por utilizar \file{Flask} para el desarrollo \eng{web} en lugar de 
 	\item Extensiones: a pesar de que es minimalista, permite incorporar extensiones para bases de datos, autenticación o validación de formularios.
 \end{itemize}  
 
+Además de \file{Flask}, durante el desarrollo de la interfaz \eng{web} se han utilizado diversas bibliotecas y servicios complementarios para ampliar las funcionalidades de la aplicación. Por ejemplo, se ha utilizado \myhref{https://getbootstrap.com/}{\file{Boostrap}} para facilitar el diseño \eng{responsive} y la construcción de una interfaz moderna y consistente mediante componentes reutilizables. También, se ha utilizado \myhref{https://driverjs.com/}{\file{Driver.js}} para implementar tutoriales interactivos que guían al usuario a través de las distintas funcionalidades del sistema y \myhref{https://d3js.org/}{\file{D3.js}} para desarrollar gráficos y estadísticas dinámicas para visualizar información relevante sobre el uso de la aplicación.
+
+Se ha integrado también la \file{API} de \myhref{https://emailable.com/es/}{\file{Emailable}} con el objetivo de validar las direcciones de correo electrónico durante el registro de usuarios, y la edición de perfil. Esto permite garantizar que las cuentas registradas dispongan de una dirección de correo válida para el envío de notificaciones y la recuperación de contraseñas.
+
 \section{Evaluación de la calidad del código}
 
 Para evaluar y mantener la calidad del código desarrollado también se han incorporado herramientas de análisis estático. Concretamente se ha utilizado \myhref{https://www.sonarsource.com/products/sonarqube/cloud/}{\file{SonarCloud}} y \myhref{https://docs.astral.sh/ruff/}{\file{Ruff}}.
