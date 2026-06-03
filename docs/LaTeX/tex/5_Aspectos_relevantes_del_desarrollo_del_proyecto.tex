@@ -101,7 +101,7 @@ Para soportar esta funcionalidad fue necesario desacoplar la lógica de generaci
  Además, se han ajustado parámetros de generación como el número máximo de \eng{tokens} generados, la longitud máxima de entrada, la temperatura, el formato del \eng{prompt} y el número de \eng{chunks} recuperados. Lo que permitió mejorar la calidad de las respuestas, reduciendo alucinaciones y adaptandolas al contexto del sistema.
 
 
-\section{Conversión a \eng{Markdown}}
+\section{Conversión a \file{Markdown}}
 
 La conversión de los documentos \file{PDF} a \file{Markdown} permite transformar documentos administrativos complejos en texto estructurado apto para el proceso de \eng{chunking}, generación de \eng{embeddings} y recuperación semántica. Inicialmente, los documentos \file{PDF} se procesaban extrayendo texto plano. Este enfoque presentaba limitaciones como la pérdida de la estructura del documento, lo que provocaba que el sistema no pudiese diferenciar los títulos, subtítulos, tablas o las secciones. Por este motivo, durante el desarrollo se comenzó a investigar la posibilidad de convertir los \file{PDF} a \file{Markdown} de forma automática.
 
@@ -128,10 +128,14 @@ Respecto a la evaluación, por un lado, se utiliza \eng{RAGAS} para calcular mé
 
 \section{Tareas asíncronas}
 
-Para que se realicen las tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el \textit{Web Scraping}, la conversión de documentos \texttt{PDF} a \texttt{Markdown}, la actualización de la base de datos vectorial y la evaluación del \textit{RAG}. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \textit{web}.
+Para que se realicen las tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el \file{Web Scraping}, la conversión de documentos \file{PDF} a \file{Markdown}, la actualización de la base de datos vectorial y la evaluación del \eng{RAG}. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \eng{web}.
 
-Para llevarlo a cabo se han implementado ejecutores basados en \texttt{ThreadPoolExecutor}. Se ha separado el ejecutor de las tareas de \texttt{Markdown} del resto de tareas del sistema. Esta separación permite controlar de forma independiente 
-el número máximo de tareas concurrentes y evitar que procesos intensivos consuman todos los recursos disponibles.
+Para implementarlo se han usado ejecutores basados en \file{ThreadPoolExecutor}. Se ha separado el ejecutor de las tareas de \file{Markdown} del resto de tareas del sistema. Esta separación permite controlar de forma independiente 
+el número máximo de tareas concurrentes y evitar que procesos intensivos consuman todos los recursos disponibles. Además,se asocia un objeto \file{Future} a cada una de las tareas que se envían al ejecutor, de tal forma que se pueda realizar un seguimiento de su estado, cancelando trabajos que aún no hayan comenzado y liberando los recursos cuando finalizan.
+
+Un reto que se planteó fue que la ejecución de las tareas largas (como la conversión a \file{Markdown}) no aumentasen la latencia en las respuestas del sistema \eng{RAG}. Para solventar este problema se ha implementado un sistema de prioridades basado en un indicador global de actividad del \eng{RAG}. Cuando un usuario realiza una consulta, el sistema activa una marca de prioridad que indica que existe una generación \eng{RAG} en curso. Mientras la marca este activa, el resto de tareas asíncronas que también estén activas esperan antes de lanzar nuevas peticiones al modelo. 
+
+Cuando un proceso largo finaliza se envía por correo electrónico una notificación para evitar que el usuario tenga que estar esperando en la aplicación hasta que el proceso finalice. Por ejemplo, se envía cuando finaliza la conversión a \file{Markdown}, la actualización vectorial o el \eng{web scraping}. En el correo que se envía al usuario se  indica el resultado de la operación, incluyendo el número de documentos convertidos, indexados o extraídos, respectivamente. 
 
 \section{Desarrollo \eng{web}}
 
