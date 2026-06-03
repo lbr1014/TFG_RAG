@@ -2,7 +2,12 @@
 
 \section{Introducción}
 
+En este apartado se proporciona una visión completa de la implementación del sistema. Proporcionando la información necesaria para su comprensión, mantenibilidad, ampliación y despliegue.
+
+A lo largo de este anexo se presenta la organización del proyecto, describiendo la estructura de directorios y la finalidad de cada uno de sus componentes (ver sección~\ref{prog:dir}). También se incluye un manual para que los desarrolladores conozcan los principales módulos de la aplicación, las tecnologías empleadas y el funcionamiento de las partes más relevantes del sistema (ver sección~\ref{prog:manual}). Además, se documentan los procedimientos necesarios para compilar, instalar y ejecutar la aplicación en distintos entornos (ver sección~\ref{prog:comp}), así como el conjunto de pruebas realizadas para verificar el correcto funcionamiento de la aplicación (ver sección~\ref{prog:prueb}).
+
 \section{Estructura de directorios}
+\label{prog:dir}
 
 El proyecto se organiza en tres bloques principales, la aplicación final (PythIA), los prototipos desarrollados durante la fase experimental y la documentación del Trabajo de Fin de Grado.
 
@@ -22,46 +27,61 @@ El proyecto se organiza en tres bloques principales, la aplicación final (PythI
 	.2 README.md $\rightarrow$ archivo principal de documentación del proyecto, explica qué es PythIA y cómo desplegar la aplicación en local.
 }}
 
-El directorio \file{app/PythIA} contiene la versión final de la aplicación. En ella se encuentra la aplicación Flask organizada siguiendo una separación entre controladores, modelos, servicios, recursos estáticos y plantillas \file{HTML}. También incluye la configuración necesaria para ejecutar la aplicación en contenedores Docker, usando Gunicorn como servidor de aplicación y Nginx como \eng{proxy} inverso.
-
-Además, esta carpeta contiene los \eng{tests} unitarios y de integración, que permiten comprobar el correcto funcionamiento de las rutas, modelos, servicios y funcionalidades principales. Las migraciones permiten mantener actualizada la estructura de la base de datos en los distintos entornos.
+El directorio \file{app/PythIA} contiene la versión final de la aplicación. En él se encuentra tanto el código fuente de la aplicación como todos los elementos necesarios para su despliegue y mantenimiento. La estructura principal se divide en cuatro grandes bloques correspondientes a la aplicación Flask (\file{app}), los archivos necesarios para la contenerización mediante Docker (\file{docker}), las migraciones de la base de datos (\file{migrations}) y diversos archivos de configuración y documentación.
 
 {\footnotesize
 \dirtree{%
-	.1 app/PythIA/.
-	.2 app/.
-	.3 main/.
-	.4 code/ $\rightarrow$ código Python principal de la aplicación Flask.
-	.5 controllers/ $\rightarrow$ rutas y controladores organizados por blueprints.
-	.5 model/ $\rightarrow$ modelos de datos de la aplicación.
-	.5 services/ $\rightarrow$ lógica de negocio de la aplicación.
-	.5 internacionalizacion/ $\rightarrow$ textos y funciones para la traducción de la interfaz.
-	.5 forms.py $\rightarrow$ formularios utilizados por la aplicación.
- 	.5 decorators.py $\rightarrow$ decoradores para controlar permisos y acceso a rutas.
-	.5 extensions.py $\rightarrow$ inicialización de extensiones de Flask.
- 	.5 error\_handling.py $\rightarrow$ gestión de errores de la aplicación.
-	.5 run.py $\rightarrow$ punto de entrada de la aplicación Flask.
-	.4 resources/.
-	.5 static/ $\rightarrow$ archivos estáticos CSS, JavaScript e imágenes.
-	.5 templates/ $\rightarrow$ plantillas HTML renderizadas por Flask mediante Jinja2.
-	.3 test/.
-	.4 integration/ $\rightarrow$ pruebas de integración de las rutas y funcionalidades principales.
-	.4 unit/ $\rightarrow$ pruebas unitarias de modelos, servicios, formularios, controladores y funciones auxiliares.
-	.4 support.py $\rightarrow$ utilidades comunes para los tests.
-	.4 run\_tests.sh $\rightarrow$ script para ejecutar las pruebas.
-	.2 docker/.
-	.3 entrypoint.sh $\rightarrow$ script de arranque del contenedor.
-	.3 requirements\_docker.txt $\rightarrow$ dependencias Python necesarias para ejecutar la aplicación en Docker.
-	.3 Dockerfile $\rightarrow$ define la imagen Docker de la aplicación.
-	.3 Dockerfile.dockerignore $\rightarrow$ archivos excluidos al construir la imagen Docker.
-	.3 nginx/.
-	.4 nginx.conf.template $\rightarrow$ plantilla de configuración de Nginx como proxy inverso.
-	.2 migrations/ $\rightarrow$ migraciones de la base de datos gestionadas con Flask-Migrate/Alembic.
-	.2 .env $\rightarrow$ variables de entorno de la aplicación.
-	.2 .gitattributes $\rightarrow$ configuración de atributos de Git.
-	.2 .gitignore $\rightarrow$ archivos ignorados por Git dentro de la carpeta de la aplicación.
-	.2 README.md $\rightarrow$ documentación específica de la aplicación final.
-	.2 docker-compose.yml $\rightarrow$ define los servicios necesarios para ejecutar la aplicación.
+.1 app/PythIA/.
+.2 app/ $\rightarrow$ código fuente de la aplicación.
+.2 docker/ $\rightarrow$ configuración para ejecutar la aplicación mediante Docker.
+.2 migrations/ $\rightarrow$ migraciones de la base de datos usando \(Flask-Migrate/Alembic\).
+.2 .env $\rightarrow$ variables de entorno de la aplicación.
+.2 .gitattributes $\rightarrow$ configuración de atributos de Git.
+.2 .gitignore $\rightarrow$ archivos ignorados por Git.
+.2 README.md $\rightarrow$ documentación específica de la aplicación.
+.2 docker-compose.yml $\rightarrow$ definición de los servicios necesarios para ejecutar la aplicación.
+}}
+
+En el directorio \file{docker} se incluye la configuración necesaria para ejecutar la aplicación en contenedores \file{Docker}, usando \file{Gunicorn} como servidor de aplicación y \file{Nginx} como \eng{proxy} inverso.
+{\footnotesize
+\dirtree{%
+	.1 docker/.
+	.2 entrypoint.sh $\rightarrow$ script de arranque del contenedor.
+	.2 requirements\_docker.txt $\rightarrow$ dependencias Python necesarias para ejecutar la aplicación en Docker.
+	.2 Dockerfile $\rightarrow$ define la imagen Docker de la aplicación.
+	.2 Dockerfile.dockerignore $\rightarrow$ archivos excluidos al construir la imagen Docker.
+	.2 nginx/.
+	.3 nginx.conf.template $\rightarrow$ plantilla de configuración de Nginx como proxy inverso.
+}}
+
+
+La aplicación Flask se organiza implementando una separación entre controladores, modelos, servicios, recursos estáticos y plantillas \file{HTML}. 
+
+Además, esta carpeta contiene los \eng{test} unitarios y de integración, que permiten comprobar el correcto funcionamiento de las rutas, modelos, servicios y funcionalidades principales. Las migraciones permiten mantener actualizada la estructura de la base de datos en los distintos entornos.
+
+{\footnotesize
+\dirtree{%
+	.1 app/PythIA/app/.
+	.2 main/.
+	.3 code/ $\rightarrow$ código Python principal de la aplicación Flask.
+	.4 controllers/ $\rightarrow$ rutas y controladores organizados por blueprints.
+	.4 model/ $\rightarrow$ modelos de datos de la aplicación.
+	.4 services/ $\rightarrow$ lógica de negocio de la aplicación.
+	.4 internacionalizacion/ $\rightarrow$ textos y funciones para la traducción de la interfaz.
+	.4 forms.py $\rightarrow$ formularios utilizados por la aplicación.
+ 	.4 decorators.py $\rightarrow$ decoradores para controlar permisos y acceso a rutas.
+	.4 extensions.py $\rightarrow$ inicialización de extensiones de Flask.
+ 	.4 error\_handling.py $\rightarrow$ gestión de errores de la aplicación.
+ 	.4 countries.py $\rightarrow$ healpers con países.
+	.4 run.py $\rightarrow$ punto de entrada de la aplicación Flask.
+	.3 resources/.
+	.4 static/ $\rightarrow$ archivos estáticos CSS, JavaScript e imágenes.
+	.4 templates/ $\rightarrow$ plantillas HTML renderizadas por Flask mediante Jinja2.
+	.2 test/.
+	.3 integration/ $\rightarrow$ pruebas de integración de las rutas y funcionalidades principales.
+	.3 unit/ $\rightarrow$ pruebas unitarias de modelos, servicios, formularios, controladores y funciones auxiliares.
+	.3 support.py $\rightarrow$ utilidades comunes para los test.
+	.3 run\_tests.sh $\rightarrow$ script para ejecutar las pruebas.
 }}
 
 El directorio \file{controllers} contiene las rutas de Flask, organizadas mediante \eng{Blueprints}. Esta organización permite dividir la aplicación en módulos funcionales independientes, manteniendo alta cohesión dentro de cada módulo y reduciendo el acoplamiento entre funcionalidades.
@@ -115,6 +135,14 @@ El directorio \file{services} agrupa la lógica de negocio de la aplicación. A 
 	.3 PliegosPlaywrightAsincrono.py $\rightarrow$ implementa el web scraping asíncrono mediante Playwright para obtener datos de licitaciones.
 	.3 pliegos\_pdfs.json $\rightarrow$ almacena los enlaces y metadatos de los documentos PDF obtenidos.
 	.3 resultados\_playwright\_asincrono\_servidor.json $\rightarrow$ contiene los resultados del scraping (enlaces, información extraída, etc.).
+	.2 evaluation/.
+	.3 config.env $\rightarrow$ variables para definir la evaluación RAG.
+	.3 evaluacion\_RAGAS.py $\rightarrow$ script para evaluar el sistema RAG (RAGAS + embeddings). 
+	.3 generar\_dataset\_ARES.py $\rightarrow$ script para generar el dataset para ARES.
+	.3 generar\_preguntas\_ARES.py $\rightarrow$ script para generar pares pregunta-respuesta.
+	.3 rag\_evaluation\_service.py $\rightarrow$ script para generar los archivos JSON de salida.
+	.3 requirements.txt $\rightarrow$ dependencias necesarias para ejecutar la evaluación RAG.
+	.2 email\_verification.py $\rightarrow$ verifica los correos electrónicos usando la API Emailable.
 	.2 markdown\_conversion\_state.py $\rightarrow$ control de estado de las tareas de conversión a Markdown.
 	.2 vector\_update\_state.py $\rightarrow$ control de estado de las tareas de actualización de la base de datos vectorial.
 	.2 web\_scraping\_state.py $\rightarrow$ control de estado de las tareas del web scraping.
@@ -126,30 +154,38 @@ Dentro de él se encuentra el directorio \file{tempaltes} y el \file{static}. En
 
 {\footnotesize
 \dirtree{%
-	.1 resources/.
-	.2 templates/.
-	.3 base.html $\rightarrow$ plantilla base que define la estructura común (cabecera, navegación, estilos), reutilizada por el resto mediante herencia de Jinja2.
-	.3 index.html $\rightarrow$ página de inicio pública de la aplicación.
-	.3 login.html $\rightarrow$ interfaz de registro de usuarios.
-	.3 singup.html $\rightarrow$ interfaz de registro de usuarios.
-	.3 forgot\_password.html $\rightarrow$ interfaz para solicitar que se envié un correo cuando se ha olvidado la contraseña.
-	.3 reset\_password.html $\rightarrow$ interfaz para cambiar la contraseña cuando se olvida.
-	.3 pag\_principal.html $\rightarrow$ página principal tras autentificación.
-	.3 rag.html $\rightarrow$ interfaz principal de consulta al sistema RAG.
-	.3 rag\_default\_query.html $\rightarrow$ vista con consultas predefinidas.
-	.3 history.html $\rightarrow$ interfaz para ver el historial de consulta.
-	.3 tabla\_historial.html $\rightarrow$ plantilla con la tabla del historial para que la puedan reutilizar distintas interfaces.
-	.3 admin\_documents.html $\rightarrow$ gestión de documentos por parte del administrador.
-	.3 users.html $\rightarrow$ interfaz para que el administrador pueda ver y gestionar los usuarios del sistema.
-	.3 admin\_create\_user.html $\rightarrow$ página para que el administrador pueda registrar usuarios.
-	.3 edit\_user.html $\rightarrow$ platilla para que el usuario pueda editar su perfil.
-	.3 stats.html $\rightarrow$ visualización de estadísticas del uso de los usuarios.
-	.3 model\_comparison.html $\rightarrow$ comparativa de modelos LLM cargados en el sistema
-	.3 error.html $\rightarrow$ página de errores.
-	.2 static/.
-	.3 css/ $\rightarrow$ hojas de estilo utilizadas para definir el diseño visual de la aplicación.
-	.3 js/ $\rightarrow$ scripts JavaScript que aportan interactividad a la interfaz (gestión de eventos, peticiones asíncronas, validaciones, gráficas, etc.)..
-	.3 img/$\rightarrow$ imágenes utilizadas en la interfaz.
+	.1 templates/.
+	.2 components/ $\rightarrow$ fragmentos reutilizables de interfaz compartidos entre distintas páginas.
+	.2 rag/ $\rightarrow$ chatbot y formulario para consultar al modelo.
+	.2 base.html $\rightarrow$ plantilla base que define la estructura común (cabecera, navegación, estilos), reutilizada por el resto mediante herencia de Jinja2.
+	.2 index.html $\rightarrow$ página de inicio pública de la aplicación.
+	.2 login.html $\rightarrow$ interfaz de registro de usuarios.
+	.2 singup.html $\rightarrow$ interfaz de registro de usuarios.
+	.2 forgot\_password.html $\rightarrow$ interfaz para solicitar que se envié un correo cuando se ha olvidado la contraseña.
+	.2 reset\_password.html $\rightarrow$ interfaz para cambiar la contraseña cuando se olvida.
+	.2 pag\_principal.html $\rightarrow$ página principal tras autentificación.
+	.2 rag.html $\rightarrow$ interfaz principal de consulta al sistema RAG.
+	.2 rag\_default\_query.html $\rightarrow$ vista con consultas predefinidas.
+	.2 rag\_evaluation\_datail.html $\rightarrow$ visualización detallada de los resultados obtenidos durante la evaluación del sistema RAG.	
+	.2 history.html $\rightarrow$ interfaz para ver el historial de consulta.
+	.2 tabla\_historial.html $\rightarrow$ plantilla con la tabla del historial para que la puedan reutilizar distintas interfaces.
+	.2 admin\_documents.html $\rightarrow$ gestión de documentos por parte del administrador.
+	.2 users.html $\rightarrow$ interfaz para que el administrador pueda ver y gestionar los usuarios del sistema.
+	.2 admin\_create\_user.html $\rightarrow$ página para que el administrador pueda registrar usuarios.
+	.2 edit\_user.html $\rightarrow$ platilla para que el usuario pueda editar su perfil.
+	.2 stats.html $\rightarrow$ visualización de estadísticas del uso de los usuarios.
+	.2 model\_comparison.html $\rightarrow$ comparativa de modelos LLM cargados en el sistema
+	.2 error.html $\rightarrow$ página de errores.
+	.2 view\_markdown.html $\rightarrow$ interfaz para visualizar documentos convertidos a formato Markdown.
+}}
+
+
+{\footnotesize
+\dirtree{%
+	.1 static/.
+	.2 css/ $\rightarrow$ hojas de estilo utilizadas para definir el diseño visual de la aplicación.
+	.2 js/ $\rightarrow$ scripts JavaScript que aportan interactividad a la interfaz (gestión de eventos, peticiones asíncronas, validaciones, gráficas, etc.).
+	.2 img/$\rightarrow$ imágenes utilizadas en la interfaz.
 }}
 
 Esta separación de la aplicación permite tener tres módulos separados claramente para facilitar el mantenimiento de la interfaz y permitir cambios en el diseño sin afectar a la lógica del sistema.. El primero contiene la lógica de negocio (\eng{backend}) definida en \file{controllers} y \file{services}, el segundo los datos (modelo) definida en \file{model} y el tercero la interfaz (vista) definida en \file{templates} y \file{static}.
@@ -178,6 +214,7 @@ La carpeta prototipos recoge las pruebas y versiones iniciales desarrolladas ant
 }}
 
 \section{Manual del programador}
+\label{prog:manual}
 Este apartado tiene como objetivo proporcionar a futuros desarrolladores que necesiten desplegar, modificar o ampliar la aplicación.
 
 El proyecto implementa una aplicación basada en una arquitectura RAG (\eng{Retrieval Augmented Generation}. Orientada a la gestión y consulta inteligente de documentación, utilizando tecnologías de procesamiento de lenguaje natural, recuperación semántica y generación de respuestas mediante modelos de inteligencia artificial.
@@ -306,7 +343,7 @@ El \eng{backend} utiliza tecnologías ORM, para mapear las estructuras de la bas
 	\item pydantic: validación y estructuración tipada de datos.
 	\item pydantic-core: motor interno optimizado utilizado por Pydantic.
 	\item typing\_extensions y typing-inspection: librerías auxiliares para anotaciones avanzadas de tipos.
-	\item coverage: herramienta utilizada para medir la cobertura de los tests.
+	\item coverage: herramienta utilizada para medir la cobertura de los test.
 	\item unittest: framework de pruebas unitarias incluido en la librería estándar de Python.
 \end{itemize}
 
@@ -523,6 +560,7 @@ El proyecto incorpora configuración Docker para facilitar el despliegue y la ej
 
 
 \section{Compilación, instalación y ejecución del proyecto}
+\label{prog:comp}
 
 En este apartado se describen los pasos necesarios para compilar, instalar y ejecutar el proyecto PythIA. El proyecto ha sido diseñado para ejecutarse principalmente mediante contenedores Docker, lo que permite reproducir el entorno completo de forma homogénea y transparente al usuario, independientemente del sistema operativo utilizado. La aplicación integra múltiples servicios que gracias a la utilización de Docker Compose se pueden desplegar de manera coordinada. Por ejemplo, la aplicación Flask, la base de datos PostgreSQL, la base de datos vectorial Qdrant, los modelos LLM ejecutado mediante Ollama y el servidor Nginx utilizado como proxy inverso.
 
@@ -678,3 +716,4 @@ Estos comandos van a construir las imágenes Docker, descargando las dependencia
 
 
 \section{Pruebas del sistema}
+\label{prog:prueb}

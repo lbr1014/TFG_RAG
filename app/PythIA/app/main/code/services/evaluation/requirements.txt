@@ -4,12 +4,6 @@ datasets>=2.16,<3.0.0
 ragas>=0.1.0,<0.2.0
 langchain-core>=0.3,<0.4
 langchain-community>=0.3,<0.4
-# `langchain-ollama` 0.2.x puede pasar `temperature` como kwarg directo a `ollama.AsyncClient.chat`,
-# lo que rompe con `ollama` (python) moderno (espera `options`, no `temperature`).
-langchain-ollama>=0.3,<0.4
-# `langchain-ollama` usa el cliente oficial `ollama` (python). Algunas versiones antiguas
-# no aceptan `temperature` en `AsyncClient.chat`, provocando que RAGAS falle con:
-# "AsyncClient.chat() got an unexpected keyword argument 'temperature'".
 ollama>=0.4,<1.0
 qdrant-client>=1.9,<2.0
 sentence-transformers>=5.2,<6.0
