@@ -595,6 +595,8 @@ Para levantar el entorno \file{Docker} hay que ejecutar el siguiente comando:
 
 Durante el despliegue de la aplicación se exponen únicamente los servicios necesarios para la interacción con el exterior. \file{Nginx} publica la interfaz \eng{web} a través de los puertos \file{7000 (HTTP)} y \file{443 (HTTPS)}, actuando como punto de entrada al sistema. \file{PostgreSQL} expone el puerto \file{5432} para la gestión de la base de datos relacional, mientras que las instancias de \file{Ollama} utilizadas para la generación de respuestas y el procesamiento \file{OCR} se encuentran disponibles en los puertos \file{11435} y \file{11437}, respectivamente. El servicio \file{Qdrant} permanece accesible únicamente dentro de la red interna de \file{Docker} mediante el puerto \file{6333}, no siendo expuesto directamente al exterior.
 
+El proyecto incorpora integración con \file{SonarCloud} para realizar análisis estáticos de calidad del código de forma automática. Permitiendo detectar errores potenciales, vulnerabilidades de seguridad, duplicación de código, problemas de mantenibilidad y métricas relacionadas con la cobertura de pruebas. Su configuración está asociada al repositorio \file{GitHub} del proyecto. Cada vez que se realiza una actualización del código, los flujos de ntegración continua ejecutan el análisis correspondiente y envían los resultados a la plataforma.
+
 
 \section{Compilación, instalación y ejecución del proyecto}
 \label{prog:comp}
@@ -827,4 +829,126 @@ Al levantar la aplicación en local se ha creado un usuario por defecto con perm
 \section{Pruebas del sistema}
 \label{prog:prueb}
 
+Con le objetivo de comprobar el correcto funcionamiento de la aplicación \eng{web} se ha desarrollado un conjunto de pruebas automáticas. Concretamente se han realizado pruebas unitarias, de integración y de interfaz que permiten validar tanto el funcionamiento individual de los componentes del sistema como la integración entre ellos.
 
+\subsection{Pruebas unitarias}
+
+Las pruebas unitarias tienen como objetivo verificar de forma aislada el comportamiento de funciones, métodos y componentes individuales de la aplicación. Para su implementación se ha utilizado el \eng{framework} \file{unittest}. Estas pruebas se centran en validar la lógica de negocio de la aplicación, comprobando aspectos como la autenticación de usuarios, la gestión documental, la validación de formularios, la generación de respuestas, la manipulación de datos y las funciones auxiliares utilizadas por el sistema.
+
+Concretamente, se han desarrollado pruebas unitarias para los distintos módulos funcionales de la aplicación. Entre ellas destacan las pruebas asociadas a los modelos de datos, los formularios de autenticación, los servicios de validación de correos electrónicos, los mecanismos de internacionalización, la gestión documental, la conversión de documentos a \file{Markdown}, el sistema de \eng{Web Scraping} y los servicios encargados de la recuperación semántica y generación de respuestas del sistema \eng{RAG}.
+
+También, se han implementado pruebas específicas para los módulos de evaluación automática basados en \file{RAGAS} y \file{ARES}, verificando el correcto funcionamiento de la generación de preguntas, construcción de conjuntos de evaluación, cálculo de métricas y ejecución de los distintos \eng{pipelines} de evaluación. Se han incluido pruebas destinadas a validar la gestión de tareas asíncronas, el sistema de priorización de recursos utilizado para favorecer las consultas \eng{RAG} frente a procesos en segundo plano y los mecanismos de gestión de errores y excepciones.
+
+La ejecución de las pruebas unitarias se puede realizar utilizando:
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas unitarias,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{python -m unittest discover}
+	}
+\end{tcolorbox}
+
+o utilizando el contenedor definido para pruebas dentro del entorno \file{Docker}:
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas mediante Docker,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{docker compose --profile test up}\\
+		\\
+		\texttt{\# Si se desea que la aplicación se pare tras ejecutar los test:}\\
+		\texttt{docker compose --profile test up test}
+	}
+\end{tcolorbox}
+
+\subsection{Pruebas de integración}
+
+Las pruebas de integración verifican que los distintos componentes del sistema funcionen de manera correcta conjuntamente. Su principal diferencia con las pruebas unitarias es que no validan funciones aisladas sino la interacción entre los componentes. Estas pruebas permiten detectar errores derivados de la configuración del entorno, incompatibilidades entre servicios o problemas de comunicación entre componentes.
+
+En el proyecto se han realizado pruebas destinadas a validar la comunicación entre la aplicación \file{Flask}, la base de datos relacional, la base de datos vectorial \file{Qdrant} y los modelos ejecutados mediante \file{Ollama}. También, se ha comprobado el correcto funcionamiento del flujo de indexación documental, recuperación semántica y generación de respuestas.
+
+Cubren los distintos módulos funcionales de la aplicación mediante la ejecución de peticiones reales sobre los \file{Blueprints} de la aplicación. De esta forma se verifica el comportamiento conjunto de las rutas, formularios, servicios, modelos de datos y mecanismos de control de acceso implementados. Se han desarrollado pruebas específicas para validar los \eng{pipelines} de evaluación \eng{RAG} comprobando el correcto funcionamiento de lso distintos puntos de entrada, la generación de preguntas, la construcción de conjuntos de evaluación y la ejecución de los procesos de evaluación. También se han incluido pruebas para verificar el tratamiento de errores, el funcionamiento de los decoradores de autorización y la correcta integración entre los distintos componentes internos de la aplicación.
+
+Para ejecutar estas pruebas se utiliza el contenedor definido para las pruebas dentro del entorno \file{Docker}. De esta manera las pruebas se ejecutan en un entorno equivalente al utilizado durante el despliegue de producción, garantizando que las interacciones entre servicios y dependencias externas se comporten de forma consistente.
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas mediante Docker,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{docker compose --profile test up}\\
+		\\
+		\texttt{\# Si se desea que la aplicación se pare tras ejecutar los test:}\\
+		\texttt{docker compose --profile test up test}
+	}
+\end{tcolorbox}
+
+\subsection{Pruebas de interfaz}
+
+Además, de las pruebas automáticas del \eng{backend} se realizaron pruebas funcionales de la interfaz \eng{web} utilizando la herramienta \file{Katalon Recorder}. Estas pruebas permiten validar los principales flujos de interacción del usuario simulando acciones reales sobre la aplicación.
+
+Para cada caso de prueba se verificó tanto la correcta navegación entre páginas como la aparición de los mensajes de confirmación y error correspondientes. La automatización mediante \file{Katalon Recorder} permite repetir las pruebas de forma sistemática tras la incorporación de nuevas funcionalidades o modificaciones en la interfaz. Los casos de prueba definidos fueron los siguientes:
+\begin{enumerate}
+\tightlist
+	\item CU-01 Registro: Registro de un nuevo usuario verificando la creación correcta de la cuenta.
+	\item CU-02 Inicio de sesión: Inicio de sesión con credenciales válidas y acceso a la página principal.
+	\item CU-03 Recuperación contraseña: Recuperación de contraseña mediante correo electrónico.
+	\item CU-04 Indexación documental: Carga de un documento y comprobación de su incorporación al sistema.
+	\item CU-05 Consulta: Realización de una consulta RAG y verificación de la generación de una respuesta.
+	\item CU-06 Historial: Consulta del historial y visualización de preguntas previamente realizadas.
+	\item CU-07 Administración: Acceso al panel de administración y comprobación de las funcionalidades de gestión disponibles para usuarios administradores.
+\end{enumerate}
+
+\subsection{Ejecución automática de las pruebas}
+
+Con el objetivo de simplificar la validación de sistema se ha desarrollado un \eng{script} (\file{run\_tests.sh}) encargado de ejecutar todas las pruebas de manera secuencial y generar informes de cobertura. 
+
+Este proceso consiste en eliminar los archivos de cobertura de ejecuciones anteriores. Posteriormente se ejecutan las pruebas unitarias, de integración y de interfaz. Estas ejecuciones se hacen utilizando la herramienta \file{coverage}, lo que permite medir la parte del código que está cubierta por las pruebas. Cuando finalizan las pruebas el \eng{script} genera distintos informes:
+\begin{itemize}
+\tightlist
+	\item \file{coverage.xml}: informe en formato \file{XML} utilizado por herramientas externas de análisis de calidad como \file{SonarCloud}.
+	\item Informe por consola: muestra el porcentaje de cobertura alcanzado por cada módulo de la aplicación.
+	\item Directorio \file{coverage/}: informe \file{HTML} navegable que permite visualizar línea por línea el código cubierto por las pruebas.
+\end{itemize}
+
+La ejecución completa de la batería de pruebas puede realizarse mediante el siguiente comando:
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{dsh app/test/run\_tests.sh}\\
+		\\
+		\texttt{\# Si se desea ejecutar desde Docker:}\\
+		\texttt{docker compose --profile test up}\\
+		\texttt{docker compose --profile test up test}
+	}
+\end{tcolorbox}
