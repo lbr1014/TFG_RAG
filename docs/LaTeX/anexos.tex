@@ -9,6 +9,7 @@
 \tcbuselibrary{breakable}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{titlesec}
 
 %Cabeceras
 \copypagestyle{capitulo-en-cab}{headings}
@@ -47,7 +48,11 @@
 %\renewcommand{\req}[1]{\textbf{#1}}
 %\renewcommand{\refreq}[1]{#1}
 
-
+\titleformat{\subsection}
+{\normalfont\large\bfseries}
+{}
+{0pt}
+{}
 
 % Ecuaciones
 \usepackage{amsmath}
@@ -337,40 +342,6 @@ S    \rowcolors {2}{gray!35}{}
   \end{center}
 }
 
-% Nuevo comando para tabla multipágina con cabecera repetida y filas alternas.
-
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
-
-\newcommand{\tablaMultipaginaColor}[6]{%
-	\rowcolors{2}{gray!20}{white}
-	\small
-	\setlength{\tabcolsep}{4pt}
-	\begin{longtable}{#2}
-		\caption{#1}
-		\label{tabla:#4} \\
-		\toprule #5 \\
-		\midrule
-		\endfirsthead
-		
-		\rowcolor{white}
-		\multicolumn{#3}{l}{\small\slshape Continúa desde la página anterior}\\
-		\toprule #5 \\
-		\midrule
-		\endhead
-
-		\rowcolor{white}
-		\midrule
-		\multicolumn{#3}{r}{\small\slshape Continúa en la página siguiente}\\
-		\endfoot
-
-		\bottomrule
-		\endlastfoot
-		#6
-	\end{longtable}
-}
-
 
 \graphicspath{ {./img/} }
 
@@ -441,7 +412,7 @@ S    \rowcolors {2}{gray!35}{}
 
 
 % Datos de portada
-\title{Creación de \textit{RAG} \\Documentación Técnica}
+\title{Creación de \textit{RAG} para pliegos de la Diputación \\Documentación Técnica}
 \author{Lydia Blanco Ruiz}
 \tutor{Álvar Arnaiz González y César Ignacio García Osorio}
 \date{\today}
@@ -481,6 +452,10 @@ S    \rowcolors {2}{gray!35}{}
 \mainmatter
 
 \appendix
+\setsecnumdepth{subsection}
+\renewcommand{\thesection}{\thechapter.\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\counterwithin{subsection}{section}
 
 \include{./tex/A_Plan_proyecto}
 \include{./tex/B_Requisitos}

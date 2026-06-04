@@ -4,7 +4,7 @@ En este apartado se van a explicar los aspectos más importantes del proyecto. S
 
 \section{Inicio del proyecto}
 
-Actualmente la mayor parte de las personas utilizan procesadores del lenguaje, ya bien sea a través de~\myhref{https://chat.openai.com}{\file{ChatGPT}},~\myhref{https://claude.ai}{\file{Claude}},~\myhref{https://gemini.google.com/app}{\file{Gemini}} o~\myhref{https://notebooklm.google.com/}{\file{NotbookLM}}, pero la mayor parte de los usuarios no conocen lo suficiente de su funcionamiento como para sacarle el máximo partido. Generalmente los \eng{prompts} de estos usuarios son escuetos, sin el contexto adecuado, lo que permite que el modelo alucine en sus respuestas dándoles información errónea que generalmente no contrastan. En este contexto surgió la idea del proyecto, generar un \eng{LLM} especializado en licitaciones del estado, concretamente en las de la Junta de Gobierno de la Diputación Provincial de Burgos.
+Actualmente la mayor parte de las personas utilizan grandes modelos de lenguaje, ya bien sea a través de~\myhref{https://chat.openai.com}{\file{ChatGPT}},~\myhref{https://claude.ai}{\file{Claude}},~\myhref{https://gemini.google.com/app}{\file{Gemini}} o~\myhref{https://notebooklm.google.com/}{\file{NotbookLM}}, pero la mayor parte de los usuarios no conocen lo suficiente de su funcionamiento como para sacarle el máximo partido. Generalmente los \eng{prompts} de estos usuarios son escuetos, sin el contexto adecuado, lo que permite que el modelo alucine en sus respuestas dándoles información errónea que generalmente no contrastan. En este contexto surgió la idea del proyecto, generar un \eng{LLM} especializado en licitaciones del estado, concretamente en las de la Junta de Gobierno de la Diputación Provincial de Burgos.
 
 Para evitar que fuese el usuario el que le tuviera que otorgar el contexto al modelo se decidió implementar un \eng{RAG} que contuviera todos las licitaciones de la Junta de Gobierno de la Diputación Provincial de Burgos publicadas en la página de \contsec{}. Además, para evitar alucinaciones del modelo se decidió limitar sus respuestas a la información que le proporciona el \eng{RAG}.
 
@@ -101,7 +101,7 @@ Para soportar esta funcionalidad fue necesario desacoplar la lógica de generaci
  Además, se han ajustado parámetros de generación como el número máximo de \eng{tokens} generados, la longitud máxima de entrada, la temperatura, el formato del \eng{prompt} y el número de \eng{chunks} recuperados. Lo que permitió mejorar la calidad de las respuestas, reduciendo alucinaciones y adaptandolas al contexto del sistema.
 
 
-\section{Conversión a \eng{Markdown}}
+\section{Conversión a \file{Markdown}}
 
 La conversión de los documentos \file{PDF} a \file{Markdown} permite transformar documentos administrativos complejos en texto estructurado apto para el proceso de \eng{chunking}, generación de \eng{embeddings} y recuperación semántica. Inicialmente, los documentos \file{PDF} se procesaban extrayendo texto plano. Este enfoque presentaba limitaciones como la pérdida de la estructura del documento, lo que provocaba que el sistema no pudiese diferenciar los títulos, subtítulos, tablas o las secciones. Por este motivo, durante el desarrollo se comenzó a investigar la posibilidad de convertir los \file{PDF} a \file{Markdown} de forma automática.
 
@@ -127,11 +127,16 @@ Respecto a la evaluación, por un lado, se utiliza \eng{RAGAS} para calcular mé
 
 
 \section{Tareas asíncronas}
+\label{rel:asinc}
 
-Para que se realicen las tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el \textit{Web Scraping}, la conversión de documentos \texttt{PDF} a \texttt{Markdown}, la actualización de la base de datos vectorial y la evaluación del \textit{RAG}. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \textit{web}.
+Para que se realicen las tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el \file{Web Scraping}, la conversión de documentos \file{PDF} a \file{Markdown}, la actualización de la base de datos vectorial y la evaluación del \eng{RAG}. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \eng{web}.
 
-Para llevarlo a cabo se han implementado ejecutores basados en \texttt{ThreadPoolExecutor}. Se ha separado el ejecutor de las tareas de \texttt{Markdown} del resto de tareas del sistema. Esta separación permite controlar de forma independiente 
-el número máximo de tareas concurrentes y evitar que procesos intensivos consuman todos los recursos disponibles.
+Para implementarlo se han usado ejecutores basados en \file{ThreadPoolExecutor}. Se ha separado el ejecutor de las tareas de \file{Markdown} del resto de tareas del sistema. Esta separación permite controlar de forma independiente 
+el número máximo de tareas concurrentes y evitar que procesos intensivos consuman todos los recursos disponibles. Además,se asocia un objeto \file{Future} a cada una de las tareas que se envían al ejecutor, de tal forma que se pueda realizar un seguimiento de su estado, cancelando trabajos que aún no hayan comenzado y liberando los recursos cuando finalizan.
+
+Un reto que se planteó fue que la ejecución de las tareas largas (como la conversión a \file{Markdown}) no aumentasen la latencia en las respuestas del sistema \eng{RAG}. Para solventar este problema se ha implementado un sistema de prioridades basado en un indicador global de actividad del \eng{RAG}. Cuando un usuario realiza una consulta, el sistema activa una marca de prioridad que indica que existe una generación \eng{RAG} en curso. Mientras la marca este activa, el resto de tareas asíncronas que también estén activas esperan antes de lanzar nuevas peticiones al modelo. 
+
+Cuando un proceso largo finaliza se envía por correo electrónico una notificación para evitar que el usuario tenga que estar esperando en la aplicación hasta que el proceso finalice. Por ejemplo, se envía cuando finaliza la conversión a \file{Markdown}, la actualización vectorial o el \eng{web scraping}. En el correo que se envía al usuario se  indica el resultado de la operación, incluyendo el número de documentos convertidos, indexados o extraídos, respectivamente. 
 
 \section{Desarrollo \eng{web}}
 
@@ -161,78 +166,23 @@ Por otro lado, conforme el sistema fue incorporando más funcionalidades, se obs
 
 El \eng{backend} de PythIA es el núcleo funcional de la aplicación y el encargado de integrar todas las partes del sistema \eng{RAG}. Durante el desarrollo ha ido evolucionando desde \eng{scripts} independientes hasta una arquitectura modular basada en \file{Flask}  y organizada mediante \eng{blueprints}, servicios y capas desacopladas.
 
-Sus funcionalidades son:
-\begin{itemize}
-\tightlist
-	\item Gestión de usuarios.
-	\item Registro e inicio de sesión.
-	\item Recuperación de contraseñas.
-	\item Gestión documental.
-	\item Importación automática de licitaciones mediante \eng{web scraping}
-	\item Conversión de documentos.
-	\item Generación de \eng{embeddings}
-	\item Indexación vectorial.
-	\item Consultas del sistema \eng{RAG}.
-	\item Historial de consultas
-	\item Estadisticas de uso y de comparación de modelos
-\end{itemize}
-
 La aplicación se organizó utilizando controladores \file{Flask} agrupados mediante \eng{blueprints}. Cada \eng{blueprint} encapsula un conjunto concreto de funcionalidades, como autenticación, administración, consultas \eng{RAG}, gestión documental y páginas principales. Esta organización ha permitido desacoplar las distintas partes del sistema y mejorar la escalabilidad del proyecto.
 
-Por debajo de los controladores se implementó una capa de servicios encargada de la lógica de negocio. Esta separación fue especialmente importante conforme el proyecto fue creciendo, ya que evita sobrecargar los controladores \file{Flask} con lógica de negocio. Permitiendo reutilizar código entre distintas partes de la aplicación y facilitando el mantenimiento. Concretamente se han implementado los siguientes servicios:
-\begin{itemize}
-\tightlist
-	\item Comunicación con los \eng{LLM}.
-	\item Recuperación semántica.
-	\item Generación de \eng{embeddings}.
-	\item Conversión a \file{Markdown}.
-	\item Procesamiento de \file{PDF}.
-	\item \eng{Web scraping}.
-	\item Gestión de tareas asíncronas.
-	\item Gestión de documentos.
-	\item Procesamiento del historial.
-\end{itemize}
+Por debajo de los controladores se implementó una capa de servicios encargada de la lógica de negocio. Esta separación fue especialmente importante conforme el proyecto fue creciendo, ya que evita sobrecargar los controladores \file{Flask} con lógica de negocio. Permitiendo reutilizar código entre distintas partes de la aplicación y facilitando el mantenimiento. 
 
-En cuanto a los modelos de datos, la aplicación utiliza \file{SQLAlchemy} como \file{ORM} principal. Los modelos representan entidades como:
-
-\begin{itemize}
-\tightlist
-	\item Usuarios
-	\item Consultas
-	\item Documentos
-	\item \file{Chunks}
-	\item \file{Embeddings}
-	\item Estados de tareas
-	\item Configuraciones del sistema
-\end{itemize}
+En cuanto a los modelos de datos, la aplicación utiliza \file{SQLAlchemy} como \file{ORM} principal. 
 
 Además de la base de datos relacional utilizada para la gestión general de la aplicación, el \eng{backend} también integra \file{Qdrant} como base de datos vectorial para almacenar los \eng{embeddings} utilizados por el sistema \eng{RAG}.
 
 La comunicación entre las distintas capas de la aplicación sigue una arquitectura multicapa donde el usuario interactúa con el \eng{frontend}. A continuación los controladores reciben las peticiones y los servicios ejecutan la lógica de negocio. Los modelos gestionan el acceso a los datos y los resultados se devuelven al \eng{frontend}.
 
-Otro aspecto importante fue la seguridad y el control de acceso. La aplicación implementa autenticación mediante \file{Flask-Login} y utiliza distintos roles de usuario para restringir determinadas funcionalidades administrativas. Entre las medidas de seguridad implementadas destacan:
-\begin{itemize}
-\tightlist
-	\item \eng{Hash} seguro de contraseñas.
-	\item Protección \file{CSRF} en formularios.
-	\item Variables de entorno para claves privadas.
-	\item Restricción de acceso por roles.
-	\item Validación de formularios.
-	\item Gestión segura de sesiones.
-	\item Protección de rutas mediante decoradores personalizados.
-\end{itemize}
+Otro aspecto importante fue la seguridad y el control de acceso. La aplicación implementa autenticación mediante \file{Flask-Login} y utiliza distintos roles de usuario para restringir determinadas funcionalidades administrativas. 
 
-También se ha desarrollado un sistema centralizado de control de excepciones para evitar errores no controlados dentro de la aplicación. Esto permitió:
+También se ha desarrollado un sistema centralizado de control de excepciones para evitar errores no controlados dentro de la aplicación y evitar así caídas del sistema. Concretamente se registran los errores ( mediante \eng{loggers}) mostrándose mensajes de error amigables.
 
-\begin{itemize}
-\tightlist
-	\item Mostrar mensajes de error amigables.
-	\item Registrar errores mediante \eng{loggers}.
-	\item Facilitar la depuración.
-	\item Evitar caídas completas del sistema.
-\end{itemize}
+Debido al elevado coste computacional de algunas operaciones, se incorporó soporte para tareas asíncronas. Esto fue especialmente importante en procesos como la conversión de \file{PDF} a \file{Markdown}, el \eng{web scraping}, la generación de \eng{embeddings}, la indexación documental y la generación de la respuesta. Permite evitar bloqueos en la interfaz web, ya que los procesos pesados pueden ejecutarse en segundo plano mientras el usuario continua usando la aplicación (ver sección~\ref{rel:asinc}). 
 
-Finalmente, debido al elevado coste computacional de algunas operaciones, se incorporó soporte para tareas asíncronas. Esto fue especialmente importante en procesos como la conversión de \file{PDF} a \file{Markdown}, el \eng{web scraping}, la generación de \eng{embeddings}, la indexación documental y la generación de la respuesta. Permite evitar bloqueos en la interfaz web, ya que los procesos pesados pueden ejecutarse en segundo plano mientras el usuario continua usando la aplicación. 
+Otro aspecto relevante fue la validación de las direcciones de correo electrónico durante el proceso de registro y edición de usuarios. Inicialmente se valoró realizar comprobaciones de formato mediante expresiones regulares, pero este enfoque no permite detectar direcciones inexistentes o dominios incapaces de recibir mensajes. Para solucionar esta limitación se integró la \file{API} de \file{Emailable}. De tal forma que antes de completar el registro de usuario o la actualización del perfil, el servidor consulta la \file{API} para verificar que la dirección introducida posee una sintaxis válida, un dominio existente y que puede recibir correos electrónicos.
 
 \section{Evaluación de la calidad del código}
 

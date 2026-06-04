@@ -10,7 +10,7 @@ Existe una convención estándar, llamada \eng{Robots Exclusion Protocol} (\text
 \section{\eng{LLM}}
 Los \eng{Large Language Model} (\eng{LLM}), que se traduce como los grades modelos del lenguaje, son modelos de aprendizaje automático que han sido entrenados con grandes conjuntos de datos generados por humanos. Estos datos se usan para encontrar patrones estadísticos y replicar nuestras habilidades lingüísticas. Por lo cual, se puede decir que en esencia son modelos de predicción del siguiente \eng{token} o lo que es lo mismo de la siguiente palabra~\cite{book:RAG_SimpleGuide}.
 
-Algunos ejemplos de \eng{LLM} son~\myhref{https://chat.openai.com}{ChatGPT (OpenAI)},~\myhref{https://claude.ai}{Claude (Anthropic)} o~\myhref{https://ai.meta.com/llama/}{Llama (Meta AI)}.
+Algunos ejemplos de \eng{LLM} son \myhref{https://chat.openai.com}{ChatGPT (OpenAI)},\myhref{https://claude.ai}{Claude (Anthropic)} o \myhref{https://ai.meta.com/llama/}{Ollama (Meta AI)}.
 
 Las principales características de los \eng{LLM} son las siguientes:
 \begin{itemize}
@@ -94,11 +94,11 @@ Los componentes clave del \eng{pipeline} de indexación son:
 	\item Conversión a vectores (\eng{embeddings}): transforma el texto a representaciones numéricas de $n$ dimensiones. Para conocer si los \eng{chunks} se parecen a la consulta, el sistema mide la distancia entre sus vectores, ya que la proximidad refleja similitud semántica. Hay diversas técnicas para medir la distancia entre los vectores, una de las más utilizadas es la similitud coseno que consiste en que si el ángulo entre dos vectores es muy pequeño su similitud es casi uno, pero hay otras como la distancia euclidiana. Hay modelos preentrenados abiertos y propietarios, la elección dependerá de su uso, rendimiento, recuperación y coste.
 	\item Almacenamiento: los \eng{embeddings} se almacenan en bases de datos vectoriales diseñadas para vectores de altas dimensiones. Estas bases de datos vectoriales permiten la búsqueda eficiente sobre \eng{embeddings} y metadatos. Hay diversas opciones:
 	\begin{itemize}
-		\item Índices vectoriales: son bibliotecas mínimas centradas en indexación y búsqueda de alta dimensión, no gestionan datos ni ofrecen consultas ricas o interfaces de bases de datos. Ejemplos:~\myhref{https://faiss.ai/index.html}{FAISS},~\myhref{https://nmslib.github.io/nmslib/}{NMSLIB},~\myhref{https://github.com/spotify/annoy}{ANNOY},~\myhref{https://milvus.io/docs/es/scann.md}{ScaNN}. Son útiles cuando se desea máximo control y rendimiento sin sobrecarga de base de datos.
-		\item Bases de datos vectoriales especializadas: añaden a lo anterior gestión de datos, seguridad, escalado, extensibilidad y metadatos, manteniendo búsqueda/similitud vectorial eficiente. Ejemplos:~\myhref{https://www.pinecone.io/}{Pinecone},~\myhref{https://www.trychroma.com/}{ChromaDB},~\myhref{https://milvus.io/es}{Milvus},~\myhref{https://qdrant.tech/}{\file{Qdrant}}.
-		\item Plataformas de búsqueda: son motores de texto tradicional (~\myhref{https://solr.apache.org/}{Solr},~\myhref{https://www.elastic.co/es/enterprise-search/vector-search}{Elasticsearch},~\myhref{https://opensearch.org/platform/vector-search/}{OpenSearch},~\myhref{https://lucene.apache.org/core/}{Lucene}) que han incorporado similitud vectorial a sus capacidades.
-		\item Motores SQL/NoSQL con capacidad vectorial: son bases de datos ya existentes que añaden tipos y operadores vectoriales. Ejemplos:~\myhref{https://azure.microsoft.com/es-es/products/azure-sql/database}{Azure SQL},~\myhref{https://www.postgresql.org/about/news/pgvector-070-released-2852/}{PostgreSQL/pgvector} o en NoSQL~\myhref{https://www.mongodb.com/}{MongoDB}. Son útiles para consolidar datos, pero son menos especialización que una vector DB dedicada.
-		\item Bases de datos gráficas con funciones vectoriales: grafos como~\myhref{https://neo4j.com/}{Neo4j} que añaden búsqueda vectorial. Permiten combinar relaciones explícitas (grafos) con similitud semántica (vectores). Ejemplos: \eng{path finding} sujeto a similitud.
+		\item Índices vectoriales: son bibliotecas mínimas centradas en indexación y búsqueda de alta dimensión, no gestionan datos ni ofrecen consultas ricas o interfaces de bases de datos. Ejemplos: \myhref{https://faiss.ai/index.html}{FAISS}, \myhref{https://nmslib.github.io/nmslib/}{NMSLIB}, \myhref{https://github.com/spotify/annoy}{ANNOY}, \myhref{https://milvus.io/docs/es/scann.md}{ScaNN}. Son útiles cuando se desea máximo control y rendimiento sin sobrecarga de base de datos.
+		\item Bases de datos vectoriales especializadas: añaden a lo anterior gestión de datos, seguridad, escalado, extensibilidad y metadatos, manteniendo búsqueda/similitud vectorial eficiente. Ejemplos: \myhref{https://www.pinecone.io/}{Pinecone}, \myhref{https://www.trychroma.com/}{ChromaDB}, \myhref{https://milvus.io/es}{Milvus}, \myhref{https://qdrant.tech/}{\file{Qdrant}}.
+		\item Plataformas de búsqueda: son motores de texto tradicional (\myhref{https://solr.apache.org/}{Solr}, \myhref{https://www.elastic.co/es/enterprise-search/vector-search}{\mbox{Elasticsearch}}, \myhref{https://opensearch.org/platform/vector-search/}{OpenSearch}, \myhref{https://lucene.apache.org/core/}{Lucene}) que han incorporado similitud vectorial a sus capacidades.
+		\item Motores SQL/NoSQL con capacidad vectorial: son bases de datos ya existentes que añaden tipos y operadores vectoriales. Ejemplos: \myhref{https://azure.microsoft.com/es-es/products/azure-sql/database}{Azure SQL}, \myhref{https://www.postgresql.org/about/news/pgvector-070-released-2852/}{PostgreSQL/pgvector} o en NoSQL \myhref{https://www.mongodb.com/}{MongoDB}. Son útiles para consolidar datos, pero son menos especialización que una vector DB dedicada.
+		\item Bases de datos gráficas con funciones vectoriales: grafos como \myhref{https://neo4j.com/}{Neo4j} que añaden búsqueda vectorial. Permiten combinar relaciones explícitas (grafos) con similitud semántica (vectores). Ejemplos: \eng{path finding} sujeto a similitud.
 	\end{itemize}
 \end{itemize} 
 
@@ -129,7 +129,7 @@ Los componentes clave del \eng{pipeline} de generación son:
 \end{itemize} 
 
 \subsection{Capas de soporte}
-Además de los dos \eng{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, caché semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \eng{prompt}, envenenamiento de dato\footnote{El envenenamiento de datos es un ciberataque que corrompe los conjuntos de datos de entrenamiento utilizados para la Inteligencia Artificial~\cite{concpteo:envdtos}.} o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \eng{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
+Además de los dos \eng{pipelines}, un sistema en producción requiere orquestación, evaluación y monitorización continua, caché semántico para reducir coste y latencia, controles de seguridad para cumplimiento normativo y seguridad frente a inyecciones en el \eng{prompt}, envenenamiento de dato\footnote{El envenenamiento de datos es un ciberataque que corrompe los conjuntos de datos de entrenamiento utilizados para el proceso de entrenamiento del modelo de Inteligencia Artificial~\cite{concpteo:envdtos}.} o fugas de información. Todo ello se sostiene sobre una infraestructura de servicio y un \eng{RAGOps stack} formado por capas críticas, esenciales y de mejora que aseguran operación, calidad y seguridad extremo a extremo~\cite{book:RAG_SimpleGuide}.
 \begin{enumerate}
 \tightlist
 	\item \textbf{Capas críticas}: son las capas imprescindibles del \eng{RAGOps stack}.
@@ -153,9 +153,9 @@ Además de los dos \eng{pipelines}, un sistema en producción requiere orquestac
 \end{enumerate}
 
 \section{Evaluación de la calidad del \eng{RAG}}
-Se suele hacer mediante la tríada de evaluación propuesta por TruEra~\cite{RAG:triad} (ver imagen de la tríada~\ref{fig:Memoria/Triada}). Estructura la calidad en tres comprobaciones entre consulta (\eng{prompt}), contexto recuperado y respuesta. Complementariamente, se emplean métricas como relevancia, precisión y \eng{recall}, y conjuntos \eng{ground truth} para validación objetiva y monitorización continua en producción~\cite{book:RAG_SimpleGuide}.
+Se suele hacer mediante la tríada de evaluación propuesta por TruEra~\cite{RAG:triad} (ver imagen~\ref{fig:Memoria/Triada}). Estructura la calidad en tres comprobaciones entre consulta (\eng{prompt}), contexto recuperado y respuesta. Complementariamente, se emplean métricas como relevancia, precisión y \eng{recall}, y conjuntos \eng{ground truth} para validación objetiva y monitorización continua en producción~\cite{book:RAG_SimpleGuide}.
 
-\imagenflotante{Memoria/Triada}{Triada de evaluación TruEra.}{1}
+\imagenflotante{Memoria/Triada}{Tríada de evaluación TruEra.}{1}
 
 Las tres dimensiones de la tríada son:
 \begin{itemize}
@@ -177,6 +177,6 @@ Aparte de las dimensiones de la tríada, otros aspectos relevantes que el sistem
 Hay dos herramientas principales de evaluación:
 \begin{itemize}
 \tightlist
-	\item \eng{Retrieval-Augmented Generation Assessment} (~\myhref{https://github.com/vibrantlabsai/ragas}{RAGAs})~\cite{paper:ragas}: es un \eng{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclos rápidos~\cite{ragas:docs}. 
-	\item \eng{Automated RAG Evaluation System} (~\myhref{https://github.com/stanford-futuredata/ARES}{ARES})~\cite{saadfalcon2024ares}: es un \eng{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto.
+	\item \eng{Retrieval-Augmented Generation Assessment} (\myhref{https://github.com/vibrantlabsai/ragas}{RAGAs})~\cite{paper:ragas}: es un \eng{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclos rápidos~\cite{ragas:docs}. 
+	\item \eng{Automated RAG Evaluation System} (\myhref{https://github.com/stanford-futuredata/ARES}{ARES})~\cite{saadfalcon2024ares}: es un \eng{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto.
 \end{itemize}

@@ -2,7 +2,12 @@
 
 \section{Introducción}
 
+En este apartado se proporciona una visión completa de la implementación del sistema. Proporcionando la información necesaria para su comprensión, mantenibilidad, ampliación y despliegue.
+
+A lo largo de este anexo se presenta la organización del proyecto, describiendo la estructura de directorios y la finalidad de cada uno de sus componentes (ver sección~\ref{prog:dir}). También se incluye un manual para que los desarrolladores conozcan los principales módulos de la aplicación, las tecnologías empleadas y el funcionamiento de las partes más relevantes del sistema (ver sección~\ref{prog:manual}). Además, se documentan los procedimientos necesarios para compilar, instalar y ejecutar la aplicación en distintos entornos (ver sección~\ref{prog:comp}), así como el conjunto de pruebas realizadas para verificar el correcto funcionamiento de la aplicación (ver sección~\ref{prog:prueb}).
+
 \section{Estructura de directorios}
+\label{prog:dir}
 
 El proyecto se organiza en tres bloques principales, la aplicación final (PythIA), los prototipos desarrollados durante la fase experimental y la documentación del Trabajo de Fin de Grado.
 
@@ -22,46 +27,62 @@ El proyecto se organiza en tres bloques principales, la aplicación final (PythI
 	.2 README.md $\rightarrow$ archivo principal de documentación del proyecto, explica qué es PythIA y cómo desplegar la aplicación en local.
 }}
 
-El directorio \file{app/PythIA} contiene la versión final de la aplicación. En ella se encuentra la aplicación Flask organizada siguiendo una separación entre controladores, modelos, servicios, recursos estáticos y plantillas \file{HTML}. También incluye la configuración necesaria para ejecutar la aplicación en contenedores Docker, usando Gunicorn como servidor de aplicación y Nginx como \eng{proxy} inverso.
-
-Además, esta carpeta contiene los \eng{tests} unitarios y de integración, que permiten comprobar el correcto funcionamiento de las rutas, modelos, servicios y funcionalidades principales. Las migraciones permiten mantener actualizada la estructura de la base de datos en los distintos entornos.
+El directorio \file{app/PythIA} contiene la versión final de la aplicación. En él se encuentra tanto el código fuente de la aplicación como todos los elementos necesarios para su despliegue y mantenimiento. La estructura principal se divide en cuatro grandes bloques correspondientes a la aplicación Flask (\file{app}), los archivos necesarios para la contenerización mediante Docker (\file{docker}), las migraciones de la base de datos (\file{migrations}) y diversos archivos de configuración y documentación.
 
 {\footnotesize
 \dirtree{%
-	.1 app/PythIA/.
-	.2 app/.
-	.3 main/.
-	.4 code/ $\rightarrow$ código Python principal de la aplicación Flask.
-	.5 controllers/ $\rightarrow$ rutas y controladores organizados por blueprints.
-	.5 model/ $\rightarrow$ modelos de datos de la aplicación.
-	.5 services/ $\rightarrow$ lógica de negocio de la aplicación.
-	.5 internacionalizacion/ $\rightarrow$ textos y funciones para la traducción de la interfaz.
-	.5 forms.py $\rightarrow$ formularios utilizados por la aplicación.
- 	.5 decorators.py $\rightarrow$ decoradores para controlar permisos y acceso a rutas.
-	.5 extensions.py $\rightarrow$ inicialización de extensiones de Flask.
- 	.5 error\_handling.py $\rightarrow$ gestión de errores de la aplicación.
-	.5 run.py $\rightarrow$ punto de entrada de la aplicación Flask.
-	.4 resources/.
-	.5 static/ $\rightarrow$ archivos estáticos CSS, JavaScript e imágenes.
-	.5 templates/ $\rightarrow$ plantillas HTML renderizadas por Flask mediante Jinja2.
-	.3 test/.
-	.4 integration/ $\rightarrow$ pruebas de integración de las rutas y funcionalidades principales.
-	.4 unit/ $\rightarrow$ pruebas unitarias de modelos, servicios, formularios, controladores y funciones auxiliares.
-	.4 support.py $\rightarrow$ utilidades comunes para los tests.
-	.4 run\_tests.sh $\rightarrow$ script para ejecutar las pruebas.
-	.2 docker/.
-	.3 entrypoint.sh $\rightarrow$ script de arranque del contenedor.
-	.3 requirements\_docker.txt $\rightarrow$ dependencias Python necesarias para ejecutar la aplicación en Docker.
-	.3 Dockerfile $\rightarrow$ define la imagen Docker de la aplicación.
-	.3 Dockerfile.dockerignore $\rightarrow$ archivos excluidos al construir la imagen Docker.
-	.3 nginx/.
-	.4 nginx.conf.template $\rightarrow$ plantilla de configuración de Nginx como proxy inverso.
-	.2 migrations/ $\rightarrow$ migraciones de la base de datos gestionadas con Flask-Migrate/Alembic.
-	.2 .env $\rightarrow$ variables de entorno de la aplicación.
-	.2 .gitattributes $\rightarrow$ configuración de atributos de Git.
-	.2 .gitignore $\rightarrow$ archivos ignorados por Git dentro de la carpeta de la aplicación.
-	.2 README.md $\rightarrow$ documentación específica de la aplicación final.
-	.2 docker-compose.yml $\rightarrow$ define los servicios necesarios para ejecutar la aplicación.
+.1 app/PythIA/.
+.2 app/ $\rightarrow$ código fuente de la aplicación.
+.2 docker/ $\rightarrow$ configuración para ejecutar la aplicación mediante Docker.
+.2 migrations/ $\rightarrow$ migraciones de la base de datos usando \(Flask-Migrate/Alembic\).
+.2 .env $\rightarrow$ variables de entorno de la aplicación.
+.2 .gitattributes $\rightarrow$ configuración de atributos de Git.
+.2 .gitignore $\rightarrow$ archivos ignorados por Git.
+.2 README.md $\rightarrow$ documentación específica de la aplicación.
+.2 docker-compose.yml $\rightarrow$ definición de los servicios necesarios para ejecutar la aplicación.
+}}
+
+En el directorio \file{docker} se incluye la configuración necesaria para ejecutar la aplicación en contenedores \file{Docker}, usando \file{Gunicorn} como servidor de aplicación y \file{Nginx} como \eng{proxy} inverso.
+{\footnotesize
+\dirtree{%
+	.1 docker/.
+	.2 entrypoint.sh $\rightarrow$ script de arranque del contenedor.
+	.2 requirements\_docker.txt $\rightarrow$ dependencias Python necesarias para ejecutar la aplicación en Docker.
+	.2 Dockerfile $\rightarrow$ define la imagen Docker de la aplicación.
+	.2 Dockerfile.dockerignore $\rightarrow$ archivos excluidos al construir la imagen Docker.
+	.2 nginx/.
+	.3 nginx.conf.template $\rightarrow$ plantilla de configuración de Nginx como proxy inverso.
+}}
+
+
+La aplicación Flask se organiza implementando una separación entre controladores, modelos, servicios, recursos estáticos y plantillas \file{HTML}. 
+
+Además, esta carpeta contiene los \eng{test} unitarios y de integración, que permiten comprobar el correcto funcionamiento de las rutas, modelos, servicios y funcionalidades principales. Las migraciones permiten mantener actualizada la estructura de la base de datos en los distintos entornos.
+
+{\footnotesize
+\dirtree{%
+	.1 app/PythIA/app/.
+	.2 main/.
+	.3 code/ $\rightarrow$ código Python principal de la aplicación Flask.
+	.4 controllers/ $\rightarrow$ rutas y controladores organizados por blueprints.
+	.4 model/ $\rightarrow$ modelos de datos de la aplicación.
+	.4 services/ $\rightarrow$ lógica de negocio de la aplicación.
+	.4 internacionalizacion/ $\rightarrow$ textos y funciones para la traducción de la interfaz.
+	.4 forms.py $\rightarrow$ formularios utilizados por la aplicación.
+ 	.4 decorators.py $\rightarrow$ decoradores para controlar permisos y acceso a rutas.
+	.4 extensions.py $\rightarrow$ inicialización de extensiones de Flask.
+ 	.4 error\_handling.py $\rightarrow$ gestión de errores de la aplicación.
+ 	.4 countries.py $\rightarrow$ healpers con países.
+	.4 run.py $\rightarrow$ punto de entrada de la aplicación Flask.
+	.3 resources/.
+	.4 static/ $\rightarrow$ archivos estáticos CSS, JavaScript e imágenes.
+	.4 templates/ $\rightarrow$ plantillas HTML renderizadas por Flask mediante Jinja2.
+	.2 test/.
+	.3 integration/ $\rightarrow$ pruebas de integración de las rutas y funcionalidades principales.
+	.3 unit/ $\rightarrow$ pruebas unitarias de modelos, servicios, formularios, controladores y funciones auxiliares.
+	.3 interface/ $\rightarrow$ pruebas de interfaz de la aplicación.
+	.3 support.py $\rightarrow$ utilidades comunes para los test.
+	.3 run\_tests.sh $\rightarrow$ script para ejecutar las pruebas.
 }}
 
 El directorio \file{controllers} contiene las rutas de Flask, organizadas mediante \eng{Blueprints}. Esta organización permite dividir la aplicación en módulos funcionales independientes, manteniendo alta cohesión dentro de cada módulo y reduciendo el acoplamiento entre funcionalidades.
@@ -115,6 +136,14 @@ El directorio \file{services} agrupa la lógica de negocio de la aplicación. A 
 	.3 PliegosPlaywrightAsincrono.py $\rightarrow$ implementa el web scraping asíncrono mediante Playwright para obtener datos de licitaciones.
 	.3 pliegos\_pdfs.json $\rightarrow$ almacena los enlaces y metadatos de los documentos PDF obtenidos.
 	.3 resultados\_playwright\_asincrono\_servidor.json $\rightarrow$ contiene los resultados del scraping (enlaces, información extraída, etc.).
+	.2 evaluation/.
+	.3 config.env $\rightarrow$ variables para definir la evaluación RAG.
+	.3 evaluacion\_RAGAS.py $\rightarrow$ script para evaluar el sistema RAG (RAGAS + embeddings). 
+	.3 generar\_dataset\_ARES.py $\rightarrow$ script para generar el dataset para ARES.
+	.3 generar\_preguntas\_ARES.py $\rightarrow$ script para generar pares pregunta-respuesta.
+	.3 rag\_evaluation\_service.py $\rightarrow$ script para generar los archivos JSON de salida.
+	.3 requirements.txt $\rightarrow$ dependencias necesarias para ejecutar la evaluación RAG.
+	.2 email\_verification.py $\rightarrow$ verifica los correos electrónicos usando la API Emailable.
 	.2 markdown\_conversion\_state.py $\rightarrow$ control de estado de las tareas de conversión a Markdown.
 	.2 vector\_update\_state.py $\rightarrow$ control de estado de las tareas de actualización de la base de datos vectorial.
 	.2 web\_scraping\_state.py $\rightarrow$ control de estado de las tareas del web scraping.
@@ -126,30 +155,38 @@ Dentro de él se encuentra el directorio \file{tempaltes} y el \file{static}. En
 
 {\footnotesize
 \dirtree{%
-	.1 resources/.
-	.2 templates/.
-	.3 base.html $\rightarrow$ plantilla base que define la estructura común (cabecera, navegación, estilos), reutilizada por el resto mediante herencia de Jinja2.
-	.3 index.html $\rightarrow$ página de inicio pública de la aplicación.
-	.3 login.html $\rightarrow$ interfaz de registro de usuarios.
-	.3 singup.html $\rightarrow$ interfaz de registro de usuarios.
-	.3 forgot\_password.html $\rightarrow$ interfaz para solicitar que se envié un correo cuando se ha olvidado la contraseña.
-	.3 reset\_password.html $\rightarrow$ interfaz para cambiar la contraseña cuando se olvida.
-	.3 pag\_principal.html $\rightarrow$ página principal tras autentificación.
-	.3 rag.html $\rightarrow$ interfaz principal de consulta al sistema RAG.
-	.3 rag\_default\_query.html $\rightarrow$ vista con consultas predefinidas.
-	.3 history.html $\rightarrow$ interfaz para ver el historial de consulta.
-	.3 tabla\_historial.html $\rightarrow$ plantilla con la tabla del historial para que la puedan reutilizar distintas interfaces.
-	.3 admin\_documents.html $\rightarrow$ gestión de documentos por parte del administrador.
-	.3 users.html $\rightarrow$ interfaz para que el administrador pueda ver y gestionar los usuarios del sistema.
-	.3 admin\_create\_user.html $\rightarrow$ página para que el administrador pueda registrar usuarios.
-	.3 edit\_user.html $\rightarrow$ platilla para que el usuario pueda editar su perfil.
-	.3 stats.html $\rightarrow$ visualización de estadísticas del uso de los usuarios.
-	.3 model\_comparison.html $\rightarrow$ comparativa de modelos LLM cargados en el sistema
-	.3 error.html $\rightarrow$ página de errores.
-	.2 static/.
-	.3 css/ $\rightarrow$ hojas de estilo utilizadas para definir el diseño visual de la aplicación.
-	.3 js/ $\rightarrow$ scripts JavaScript que aportan interactividad a la interfaz (gestión de eventos, peticiones asíncronas, validaciones, gráficas, etc.)..
-	.3 img/$\rightarrow$ imágenes utilizadas en la interfaz.
+	.1 templates/.
+	.2 components/ $\rightarrow$ fragmentos reutilizables de interfaz compartidos entre distintas páginas.
+	.2 rag/ $\rightarrow$ chatbot y formulario para consultar al modelo.
+	.2 base.html $\rightarrow$ plantilla base que define la estructura común (cabecera, navegación, estilos), reutilizada por el resto mediante herencia de Jinja2.
+	.2 index.html $\rightarrow$ página de inicio pública de la aplicación.
+	.2 login.html $\rightarrow$ interfaz de registro de usuarios.
+	.2 singup.html $\rightarrow$ interfaz de registro de usuarios.
+	.2 forgot\_password.html $\rightarrow$ interfaz para solicitar que se envié un correo cuando se ha olvidado la contraseña.
+	.2 reset\_password.html $\rightarrow$ interfaz para cambiar la contraseña cuando se olvida.
+	.2 pag\_principal.html $\rightarrow$ página principal tras autentificación.
+	.2 rag.html $\rightarrow$ interfaz principal de consulta al sistema RAG.
+	.2 rag\_default\_query.html $\rightarrow$ vista con consultas predefinidas.
+	.2 rag\_evaluation\_datail.html $\rightarrow$ visualización detallada de los resultados obtenidos durante la evaluación del sistema RAG.	
+	.2 history.html $\rightarrow$ interfaz para ver el historial de consulta.
+	.2 tabla\_historial.html $\rightarrow$ plantilla con la tabla del historial para que la puedan reutilizar distintas interfaces.
+	.2 admin\_documents.html $\rightarrow$ gestión de documentos por parte del administrador.
+	.2 users.html $\rightarrow$ interfaz para que el administrador pueda ver y gestionar los usuarios del sistema.
+	.2 admin\_create\_user.html $\rightarrow$ página para que el administrador pueda registrar usuarios.
+	.2 edit\_user.html $\rightarrow$ platilla para que el usuario pueda editar su perfil.
+	.2 stats.html $\rightarrow$ visualización de estadísticas del uso de los usuarios.
+	.2 model\_comparison.html $\rightarrow$ comparativa de modelos LLM cargados en el sistema
+	.2 error.html $\rightarrow$ página de errores.
+	.2 view\_markdown.html $\rightarrow$ interfaz para visualizar documentos convertidos a formato Markdown.
+}}
+
+
+{\footnotesize
+\dirtree{%
+	.1 static/.
+	.2 css/ $\rightarrow$ hojas de estilo utilizadas para definir el diseño visual de la aplicación.
+	.2 js/ $\rightarrow$ scripts JavaScript que aportan interactividad a la interfaz (gestión de eventos, peticiones asíncronas, validaciones, gráficas, etc.).
+	.2 img/$\rightarrow$ imágenes utilizadas en la interfaz.
 }}
 
 Esta separación de la aplicación permite tener tres módulos separados claramente para facilitar el mantenimiento de la interfaz y permitir cambios en el diseño sin afectar a la lógica del sistema.. El primero contiene la lógica de negocio (\eng{backend}) definida en \file{controllers} y \file{services}, el segundo los datos (modelo) definida en \file{model} y el tercero la interfaz (vista) definida en \file{templates} y \file{static}.
@@ -178,33 +215,35 @@ La carpeta prototipos recoge las pruebas y versiones iniciales desarrolladas ant
 }}
 
 \section{Manual del programador}
+\label{prog:manual}
 Este apartado tiene como objetivo proporcionar a futuros desarrolladores que necesiten desplegar, modificar o ampliar la aplicación.
 
 El proyecto implementa una aplicación basada en una arquitectura RAG (\eng{Retrieval Augmented Generation}. Orientada a la gestión y consulta inteligente de documentación, utilizando tecnologías de procesamiento de lenguaje natural, recuperación semántica y generación de respuestas mediante modelos de inteligencia artificial.
 
-El sistema ha sido desarrollado principalmente en Python utilizando el framework Flask para la capa web y diferentes librerías relacionadas con embeddings, recuperación documental y modelos de lenguaje. Además, se emplea Docker para facilitar la ejecución del entorno y garantizar la reproducibilidad del sistema.
+El sistema ha sido desarrollado principalmente en \file{Python} utilizando el \eng{framework} \file{Flask} para la capa \eng{web} y diferentes librerías relacionadas con \eng{embeddings}, recuperación documental y modelos de lenguaje. Además, se emplea \file{Docker} para facilitar la ejecución del entorno y garantizar la reproducibilidad del sistema.
 
-%%%%%%%%%%%%%%%
 El desarrollo del proyecto se ha realizado utilizando las siguientes herramientas y tecnologías:
 \begin{itemize}
-	\item Lenguaje de programación: Python 3.
-	\item Framework \eng{backend}: Flask.
-	\item Base de datos relacional: SQLite/MySQL según entorno.
-	\item Sistema de migraciones: Flask-Migrate.
-	\item Sistema de plantillas: Jinja2.
-	\item Gestión de dependencias: pip.
-	\item Contenedores: Docker y Docker Compose.
-	\item Control de versiones: Git y GitHub.
-	\item Entorno de desarrollo: Visual Studio Code.
-	\item Librerías de IA y recuperación semántica: LangChain, modelos de embeddings y Qdrant.
+\tightlist
+	\item Lenguaje de programación: \file{Python 3}.
+	\item \eng{Framework} \eng{backend}: \file{Flask}.
+	\item Base de datos relacional: \file{SQLite/MySQL} según entorno.
+	\item Sistema de migraciones: \file{Flask-Migrate}.
+	\item Sistema de plantillas: \file{Jinja2}.
+	\item Gestión de dependencias: \file{pip}.
+	\item Contenedores: \file{Docker} y \file{Docker Compose}.
+	\item Control de versiones: \file{Git} y \file{GitHub}.
+	\item Entorno de desarrollo: \file{Visual Studio Code}.
+	\item Librerías de IA y recuperación semántica: \file{LangChain}, modelos de \eng{embeddings} y \file{Qdrant}.
 \end{itemize}
 
-La estructura general del proyecto se encuentra organizada siguiendo una arquitectura modular que separa la lógica de negocio, las rutas, los formularios y las funcionalidades relacionadas con el sistema RAG. Concretamente la aplicación sigue una arquitectura cliente-servidor multicapa. La capa de presentación está formada por las plantillas HTML renderizadas mediante Flask y Jinja2, mientras que la lógica de negocio se implementa en los controladores y servicios internos. El componente principal del proyecto es el sistema RAG. Este sistema combina recuperación semántica de información y generación de respuestas utilizando modelos de lenguaje.
+La estructura general del proyecto se encuentra organizada siguiendo una arquitectura modular que separa la lógica de negocio, las rutas, los formularios y las funcionalidades relacionadas con el sistema \eng{RAG}. Concretamente la aplicación sigue una arquitectura cliente-servidor multicapa. La capa de presentación está formada por las plantillas \file{HTML} renderizadas mediante \file{Flask} y \file{Jinja2}, mientras que la lógica de negocio se implementa en los controladores y servicios internos. El componente principal del proyecto es el sistema \eng{RAG}. Este sistema combina recuperación semántica de información y generación de respuestas utilizando modelos de lenguaje.
 
-El núcleo del sistema se basa en un flujo RAG compuesto por las siguientes etapas:
+El núcleo del sistema se basa en un flujo \eng{RAG} compuesto por las siguientes etapas:
 \begin{enumerate}
+\tightlist
 	\item Carga y procesamiento de documentos.
-	\item Conversión de documentos a formato Markdown.
+	\item Conversión de documentos a formato \file{Markdown}.
 	\item Fragmentación del contenido textual.
 	\item Generación de \eng{embeddings} semánticos.
 	\item Indexación de fragmentos en la base vectorial.
@@ -212,31 +251,38 @@ El núcleo del sistema se basa en un flujo RAG compuesto por las siguientes etap
 	\item Generación de respuesta mediante un modelo de lenguaje.
 \end{enumerate}
 
-Por otra parte, la aplicación implementa un sistema de Blueprints de Flask para dividir las distintas áreas funcionales del sistema.
+Por otra parte, la aplicación implementa un sistema de \file{Blueprints} de \file{Flask} para dividir las distintas áreas funcionales del sistema.
 
 \begin{enumerate}
+\tightlist
 	 \item Módulo de autenticación (\file{auth}): es el encargado de registrar usuarios, el inicio y cierre de sesión, la recuperación de contraseña, la gestión de sesiones y la validación de credenciales.
 	 \item Módulo principal (\file{main}): se encarga de la página principal, así como de la navegación general. Gestiona el historial de las consultas y permite la visualización de la información del usuario.
-	 \item Módulo RAG (\file{rag}): contiene la lógica para subir documentos, convertirlos a Markdown, procesar semánticamente, recuperar el contexto para la consulta del usuario y generar las respuestas llamando a un LLM.
+	 \item Módulo RAG (\file{rag}): contiene la lógica para subir documentos, convertirlos a \file{Markdown}, procesar semánticamente, recuperar el contexto para la consulta del usuario y generar las respuestas llamando a un \eng{LLM}.
 	 \item Módulo de administración (\file{admin}): permite gestionar a los usuarios, asignarles permisos y administrar el sistema (carga de documentos, actualización de la base de datos vectorial, etc).
 \end{enumerate}
 
+En la figura~\ref{fig:Diagramas/manual_programador_organizacion_codigo.pdf} se muestra la organización general de los principales componentes \eng{software} de la aplicación y las relaciones existentes entre ellos. El hecho de que se implemente una arquitectura modular permite añadir nuevas funcionalidades de manera sencilla. Para añadir una nueva funcionalidad se recomienda crear un nuevo \file{Blueprint} encargado de gestionar las rutas y peticiones \file{HTTP} asociadas. La lógica de negocio debe implementarse en la capa de servicios, manteniendo desacoplados los controladores de la funcionalidad interna. Si la nueva funcionalidad requiere persistencia, se pueden incorporar nuevos modelos \file{SQLAlchemy} y generar las migraciones correspondientes mediante \file{Flask-Migrate}. Del mismo modo, es posible integrar nuevos servicios externos, modelos de lenguaje, sistemas de procesamiento documental o mecanismos de recuperación de información reutilizando la estructura existente.
+
+\imagendiagram{Diagramas/manual_programador_organizacion_codigo.pdf}{Diagrama de organización del sistema.}{1.2}
+
 El flujo de datos del procesamiento documental tras la carga de un documento por parte de un usuario en el sistema es:
 
-\begin{itemize}
+\begin{enumerate}
+\tightlist
 	\item Validación del archivo.	
-	\item Conversión del documento a texto Markdown.
+	\item Conversión del documento a texto \file{Markdown}.
 	\item Limpieza y normalización del contenido.
 	\item División en fragmentos de tamaño controlado.
 	\item Generación de \eng{embeddings} para cada fragmento.
 	\item Almacenamiento de \eng{embeddings} en la base vectorial.
-\end{itemize}
+\end{enumerate}
 
 El sistema mantiene la trazabilidad entre los fragmentos indexados y el documento original.
 
-El flujo de datos de la recuperación semántica ante una consulta del usuario (ver imagen ~\ref{fig:Diagramas/diagrama_flujo} ):
+El flujo de datos de la recuperación semántica ante una consulta del usuario (ver imagen~\ref{fig:Diagramas/diagrama_flujo}):
 
 \begin{itemize}
+\tightlist
 	\item Se genera un \eng{embedding} de la pregunta.
 	\item Se realiza una búsqueda vectorial.
 	\item Se recuperan los fragmentos más relevantes.
@@ -246,12 +292,12 @@ El flujo de datos de la recuperación semántica ante una consulta del usuario (
 
 Este enfoque permite reducir alucinaciones y mejorar la precisión de las respuestas generadas.
 
-	\imagendiagram{Diagramas/diagrama_flujo}{Diagrama de flujo de la recuperación semántica tras una petición al sistema.}{0.9}
+\imagendiagram{Diagramas/diagrama_flujo}{Diagrama de flujo de la recuperación semántica tras una petición al sistema.}{0.9}
 
-
-El sistema utiliza una base de datos relacional para almacenar:
+El sistema utiliza una base de datos relacional (\file{PostgreSQL}) para almacenar:
 
 \begin{itemize}
+\tightlist
 	\item Usuarios.
 	\item Roles.
 	\item Historial de consultas.
@@ -259,134 +305,164 @@ El sistema utiliza una base de datos relacional para almacenar:
 	\item Información de indexación.
 \end{itemize}
 
-Las migraciones de la base de datos se gestionan mediante Flask-Migrate y Alembic.
+Las migraciones de la base de datos se gestionan mediante \file{Flask-Migrate} y \file{Alembic}.
 
 Para crear una nueva migración se utiliza:
 
-\texttt{flask db migrate -m "descripcion"}
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
+	fonttitle=\bfseries,
+	breakable
+]
+	{\footnotesize
+		\noindent
+		\texttt{flask db migrate -m "descripcion"}
+	}
+\end{tcolorbox}
 
 Y para aplicarla:
 
-\texttt{flask db upgrade}
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
+	fonttitle=\bfseries,
+	breakable
+]
+	{\footnotesize
+		\noindent
+		\texttt{flask db upgrade}
+	}
+\end{tcolorbox}
 
-La persistencia vectorial se realiza mediante Qdrant, donde se almacenan los \eng{embeddings} generados durante la indexación.
+La persistencia vectorial se realiza mediante \file{Qdrant}, donde se almacenan los \eng{embeddings} generados durante la indexación.
 
-El proyecto utiliza un amplio conjunto de dependencias organizadas por módulos funcionales. Estas librerías permiten implementar la aplicación web, la lógica del sistema RAG, la gestión documental, el procesamiento semántico y el despliegue completo del entorno.
+El proyecto utiliza un amplio conjunto de dependencias organizadas por módulos funcionales. Estas librerías permiten implementar la aplicación \eng{web}, la lógica del sistema \eng{RAG}, la gestión documental, el procesamiento semántico y el despliegue completo del entorno.
 
-Las dependencias del proyecto se encuentran definidas principalmente en el archivo \file{requirements.txt}.Para instalar todas las dependencias necesarias:
-
-\texttt{pip install -r requirements.txt}
-
-El núcleo de la aplicación se ha desarrollado utilizando Flask y diferentes extensiones asociadas.
-
-\begin{itemize}
-	\item Flask: \eng{framework} k principal utilizado para construir la aplicación web y gestionar rutas, peticiones HTTP y renderizado de plantillas.
-	\item Jinja2: motor de plantillas utilizado por Flask para generar páginas HTML dinámicas.
-	\item Werkzeug: conjunto de utilidades internas de Flask relacionadas con seguridad, subida de archivos, gestión de peticiones y servidor WSGI.
-	\item itsdangerous: librería utilizada para la generación de \eng{tokens} seguros empleados en validaciones y recuperación de contraseñas.
-	\item Flask-Login: extensión encargada de gestionar sesiones de usuario, autenticación y control de usuarios autenticados.
-	\item Flask-WTF: integración de WTForms con Flask para facilitar la gestión de formularios.
-	\item WTForms: librería para definición y validación de formularios web.
-	\item Flask-Mail: extensión utilizada para el envío de correos electrónicos desde la aplicación.
-	\item email-validator: validación de direcciones de correo electrónico introducidas por el usuario.
-	\item python-dotenv: carga automática de variables de entorno definidas en archivos \file{.env}.
-	\item gunicorn: servidor WSGI utilizado para ejecutar Flask en entornos de producción.
-\end{itemize}
-
-
-El \eng{backend} utiliza tecnologías ORM, para mapear las estructuras de la base de datos relacional, y herramientas de migración para facilitar el acceso y gestión de la base de datos.
-
-\begin{itemize}
-	\item SQLAlchemy: ORM utilizado para trabajar con la base de datos mediante clases Python.
-	\item Flask-SQLAlchemy: integración de SQLAlchemy dentro del ecosistema Flask.
-	\item Flask-Migrate: extensión que integra migraciones de base de datos con Flask.
-	\item psycopg2: conector de Python para PostgreSQL.
-	\item PostgreSQL: sistema gestor de base de datos relacional utilizado en producción.
-	\item SQLite: base de datos ligera utilizada durante pruebas.
-	\item pydantic: validación y estructuración tipada de datos.
-	\item pydantic-core: motor interno optimizado utilizado por Pydantic.
-	\item typing\_extensions y typing-inspection: librerías auxiliares para anotaciones avanzadas de tipos.
-	\item coverage: herramienta utilizada para medir la cobertura de los tests.
-	\item unittest: framework de pruebas unitarias incluido en la librería estándar de Python.
-\end{itemize}
-
-La interfaz web se desarrolla mediante tecnologías estándar integradas con Flask.
-
-\begin{itemize}
-	\item HTML: estructura principal de las páginas web.
-	\item CSS: estilos visuales de la aplicación.
-	\item JavaScript: implementación de interactividad en cliente.
-	\item Jinja2: renderizado dinámico de contenido HTML.
-	\item Static files de Flask: mecanismo utilizado para servir archivos CSS, JavaScript, imágenes, favicon y recursos estáticos.
-	\item Plantillas Flask: páginas HTML dinámicas.
-\end{itemize}
-
-El sistema incorpora funcionalidades de extracción automática de documentación (\eng{web Scraping}) desde páginas web de licitaciones.
-
-\begin{itemize}
-	\item playwright: automatización de navegadores web para navegar y descargar documentación automáticamente.
-	\item aiofiles: lectura y escritura asíncrona de archivos.
-	\item asyncio: ejecución concurrente de tareas asíncronas.
-	\item requests: realización de peticiones HTTP tradicionales.
-	\item httpx: cliente HTTP moderno compatible con operaciones síncronas y asíncronas.
-	\item urllib3: capa de comunicación HTTP utilizada internamente por otras librerías.
-	\item certifi: certificados raíz para conexiones HTTPS seguras.
-	\item idna: soporte para dominios internacionalizados.
-	\item charset-normalizer: detección y normalización de codificaciones de texto.
-\end{itemize}
-
-El proyecto incorpora herramientas específicas para el tratamiento documental (procesamiento de \file{PDF, Markdown y OCR}.
-
-\begin{itemize}
-	\item pypdf: extracción de texto desde documentos PDF.
-	\item pdf2image: conversión de páginas PDF a imágenes.
-	\item poppler-utils: herramientas del sistema necesarias para procesar PDF e imágenes.
-	\item Pillow (PIL): procesamiento y manipulación de imágenes.
-	\item base64: codificación de imágenes y archivos para intercambio con servicios externos.
-	\item Nanonets OCR: sistema OCR utilizado para extraer texto desde documentos escaneados.
-	\item Ollama: ejecución local de modelos OCR y modelos de lenguaje configurados en el despliegue.
-\end{itemize}
-
-El sistema RAG constituye el núcleo funcional del proyecto y requiere herramientas de procesamiento semántico y recuperación vectorial.
-
-\begin{itemize}
-	\item qdrant-client: cliente Python utilizado para comunicarse con la base vectorial Qdrant.
-	\item Qdrant: base de datos vectorial utilizada para almacenar \eng{embeddings} y realizar búsquedas semánticas.
-	\item sentence-transformers: generación de \eng{embeddings} semánticos.
-	\item transformers: utilización de modelos de Hugging Face.
-	\item torch: \eng{backend} de \eng{deep learning} utilizado por los modelos de IA.
-	\item huggingface-hub: descarga y gestión de modelos alojados en Hugging Face.
-	\item tokenizers: tokenización eficiente de texto para modelos de lenguaje.
-	\item safetensors: formato seguro y eficiente para almacenamiento de pesos de modelos.
-	\item scikit-learn: utilidades de machine learning empleadas en diferentes procesos auxiliares.
-	\item numpy y scipy: librerías de cálculo numérico y procesamiento matricial.
-	\item Ollama: ejecución local de modelos LLM para generación de respuestas.
-\end{itemize}
-
-El entorno de ejecución completo del sistema se encuentra desacoplado mediante contenedores Docker.
-
-\begin{itemize}
-	\item Docker: plataforma utilizada para empaquetar la aplicación y sus dependencias en contenedores.
-	\item Docker Compose: orquestación de múltiples servicios del sistema.
-	\item Nginx: proxy inverso encargado de gestionar conexiones HTTP y redirigir peticiones hacia Gunicorn.
-	\item Gunicorn: servidor WSGI utilizado para ejecutar Flask en producción.
-	\item PostgreSQL Docker image: contenedor de la base de datos relacional.
-	\item Qdrant Docker image: contenedor de la base de datos vectorial.
-	\item Ollama Docker image: contenedor encargado de ejecutar modelos LLM locales.
-	\item Playwright Python Docker image: imagen base utilizada para las tareas de \eng{webs craping} automatizado.
-\end{itemize}
-
-La configuración del sistema se realiza mediante variables de entorno, permitiendo desacoplar los parámetros sensibles y específicos del entorno de ejecución respecto al código fuente de la aplicación. Esto permite separar la configuración y lógica de negocio, adaptar fácilmente el sistema a distintos entornos, evitar exponer credenciales privadas en el repositorio, simplificar el despliegue medianet \file{Docker Compose} y mantener configuraciones reutilizables entre desarrollo y producción. En el proyecto se utilizan dos archivos de configuración el \file{.env} y el \file{secret.env}.
-
-El archivo \file{.env} contiene variables de configuración general del sistema que no comprometen la seguridad de la aplicación, por lo cual, este archivo sí se incluye en el repositorio. Esto facilita la reproducción del entorno. En este archivo se definen las siguiente variables:
+Las dependencias del proyecto se encuentran definidas principalmente en el archivo \file{requirements\_docker.txt}, ubicado en el directorio \file{app/PythIA/docker/}. Este archivo recoge las librerías necesarias para ejecutar la aplicación dentro del entorno \file{Docker} utilizado en producción. Para instalar dichas dependencias manualmente puede utilizarse el siguiente comando:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
+	fonttitle=\bfseries,
+	breakable
+]
+	{\footnotesize
+		\noindent	
+	\texttt{pip install -r app/PythIA/docker/requirements\_docker.txt}\\
+	\texttt{\#  Si se ejecuta desde el propio directorio}\\
+	\texttt{pip install -r requirements\_docker.txt}
+	}
+\end{tcolorbox}
+
+El núcleo de la aplicación se ha desarrollado utilizando \file{Flask} y diversas extensiones que facilitan la implementación de funcionalidades habituales en aplicaciones \eng{web}.
+
+\begin{itemize}
+\tightlist
+	\item \file{Flask}: \eng{framework web} utilizado para gestionar rutas, peticiones \file{HTTP} y el renderizado de contenido dinámico.
+	\item \file{Flask-Login}: gestión de autenticación, sesiones de usuario y control de acceso.
+	\item \file{Flask-WTF} y \file{WTForms}: definición, validación y procesamiento de formularios \eng{web}.
+	\item \file{Flask-Mail}: envío de correos electrónicos desde la aplicación.
+	\item \file{email-validator}: validación de direcciones de correo electrónico.
+	\item \file{python-dotenv}: carga automática de variables de entorno desde archivos de configuración.
+	\item \file{Babel}: internacionalización y localización de la interfaz.
+	\item \file{pycountry}: obtención de información normalizada sobre países e idiomas.
+\end{itemize}
+
+El backend utiliza tecnologías \file{ORM} y herramientas de migración para abstraer el acceso a la base de datos y facilitar la evolución del esquema de persistencia.
+
+\begin{itemize}
+\tightlist
+	\item \file{SQLAlchemy}: \file{ORM} utilizado para mapear entidades \file{Python} sobre tablas relacionales.
+	\item \file{Flask-SQLAlchemy}: integración de \file{SQLAlchemy} con \file{Flask}.
+	\item \file{Flask-Migrate}: gestión de migraciones mediante \file{Alembic}.
+	\item \file{psycopg2}: controlador de acceso a \file{PostgreSQL}.
+	\item \file{PostgreSQL}: sistema gestor de bases de datos utilizado en producción.
+	\item \file{SQLite}: base de datos ligera utilizada durante las pruebas del sistema.
+\end{itemize}
+
+Para la validación y estructuración de datos se utilizan las siguientes bibliotecas:
+
+\begin{itemize}
+\tightlist
+	\item \file{Pydantic}: validación, serialización y tipado de estructuras de datos utilizadas por diferentes componentes del sistema.
+	\item \file{typing\_extensions} y bibliotecas asociadas: soporte para anotaciones avanzadas de tipos en \file{Python}.
+\end{itemize}
+
+La interfaz \eng{web} se ha desarrollado mediante tecnologías estándar integradas con \file{Flask}.
+
+\begin{itemize}
+\tightlist
+	\item \file{HTML}: estructura de las páginas \eng{web}.
+	\item \file{CSS}: definición de estilos y presentación visual.
+	\item \file{JavaScript}: implementación de la lógica ejecutada en el navegador.
+	\item \file{Jinja2}: motor de plantillas utilizado para generar contenido \file{HTML} dinámico desde el servidor.
+	\item \file{Bootstrap}: diseño \eng{responsive} y componentes visuales reutilizables.
+	\item \file{D3.js}: generación de gráficos interactivos y visualización de estadísticas.
+	\item \file{Driver.js}: creación de tutoriales y recorridos guiados dentro de la aplicación.
+\end{itemize}
+
+El sistema incorpora funcionalidades de extracción automática de documentación mediante técnicas de \eng{Web Scraping}.
+
+\begin{itemize}
+\tightlist
+	\item \file{Playwright}: automatización de navegadores \eng{web} para la obtención automática de documentación y metadatos de licitaciones.
+	\item \file{asyncio} y \file{aiofiles}: ejecución de tareas asíncronas y acceso concurrente a archivos.
+	\item \file{requests} y \file{httpx}: realización de peticiones \file{HTTP} a servicios externos.
+\end{itemize}
+
+Para el procesamiento documental se emplean herramientas especializadas en el tratamiento de documentos \file{PDF}, imágenes y \file{OCR}.
+
+\begin{itemize}
+\tightlist
+	\item \file{pypdf}: extracción de texto desde documentos \file{PDF}.
+	\item \file{pdf2image}: conversión de páginas \file{PDF} a imágenes.
+	\item \file{Poppler}: utilidades necesarias para el procesamiento de documentos \file{PDF}.
+	\item \file{Pillow}: manipulación y procesamiento de imágenes.
+	\item \file{Nanonets OCR}: extracción de texto desde documentos escaneados.
+	\item \file{MarkItDown}: conversión de documentos a formato Markdown.
+	\item \file{Ollama}: ejecución local de modelos \file{OCR} y modelos de lenguaje.
+\end{itemize}
+
+El sistema \eng{RAG} constituye el núcleo funcional del proyecto y se apoya en herramientas de recuperación semántica, procesamiento del lenguaje natural y generación de respuestas.
+
+\begin{itemize}
+\tightlist
+	\item \file{Qdrant}: base de datos vectorial utilizada para almacenar \eng{embeddings} y realizar búsquedas semánticas.
+	\item \file{qdrant-client}: cliente de acceso a la base de datos vectorial.
+	\item \file{sentence-transformers}: generación de \eng{embeddings} semánticos.
+\item \file{Transformers}: utilización de modelos de \file{Hugging Face}.
+	\item \file{PyTorch}: infraestructura de ejecución para los modelos de inteligencia artificial.
+	\item \file{huggingface-hub}: descarga y gestión de modelos preentrenados.
+	\item \file{scikit-learn}: utilidades auxiliares de aprendizaje automático.
+	\item \file{NumPy} y \file{SciPy}: cálculo numérico y procesamiento matricial.
+	\item \file{Ollama}: ejecución local de modelos \eng{LLM} utilizados durante la generación de respuestas.
+\end{itemize}
+
+El entorno de ejecución completo del sistema se encuentra desacoplado mediante contenedores \file{Docker}. Lo que permite aislar los componentes de la aplicación simplificando el despliegue y garantizando al reproducibilidad del entorno. . La coordinación de los servicios se realiza mediante \file{Docker Compose}, que automatiza la creación de la red interna, la gestión de las dependencias y la configuración a través de las variables de entorno. La aplicación \eng{web} se ejecuta en un contenedor \file{Flask} servido mediante \file{Gunicorn}, mientras que \file{Nginx} actúa como \file{proxy inverso} y punto de entrada para las conexiones externas. La persistencia de los datos relacionales se realiza mediante \file{PostgreSQL} y la información vectorial utilizada por el sistema \eng{RAG} se almacena en \file{Qdrant}. Los modelos de lenguaje y \file{OCR} se ejecutan en instancias independientes de \file{Ollama}, permitiendo separar las cargas de trabajo asociadas a la generación de respuestas y al procesamiento documental. Tambié,, se ha configurado un entorno específico para la ejecución de tareas de \eng{Web Scraping} y de un contenedor destinado a la ejecución de pruebas (Ver imagen~\ref{fig:Diagramas/entorno_ejecucion.pdf}).
+
+\imagendiagram{Diagramas/entorno_ejecucion.pdf}{Diagrama del entorno de ejecución configurado desde el archivo \file{Docker-compose}.}{0.9}
+
+La configuración del sistema se realiza mediante variables de entorno, permitiendo desacoplar los parámetros sensibles y específicos del entorno de ejecución respecto al código fuente de la aplicación. Esto permite separar la configuración y lógica de negocio, adaptar fácilmente el sistema a distintos entornos, evitar exponer credenciales privadas en el repositorio, simplificar el despliegue mediante \file{Docker Compose} y mantener configuraciones reutilizables entre desarrollo y producción. En el proyecto se utilizan dos archivos de configuración el \file{.env} y el \file{secret.env}.
+
+El archivo \file{.env} contiene variables de configuración general del sistema que no comprometen la seguridad de la aplicación, por lo cual, este archivo se incluye en el repositorio. Esto facilita la reproducción del entorno. En este archivo se definen las siguiente variables:
+
+\begin{tcolorbox}[
+	colback=yellow!8,
+	colframe=orange!60!black,
 	title=.env,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{FLASK\_APP=app.main.code:create\_app}\\
@@ -429,17 +505,17 @@ El archivo \file{.env} contiene variables de configuración general del sistema 
 	}
 \end{tcolorbox}
 
-Estas variables permiten configurar el nombre de la aplicación Flask, el entorno de ejecución, los parámetros generales de la base de datos, la dirección de los servicios Docker, la configuración de Qdrant, la configuración de Ollama, el puerto y las rutas internas.
+Estas variables permiten configurar el nombre de la aplicación \file{Flask}, el entorno de ejecución, los parámetros generales de la base de datos, la dirección de los servicios \file{Docker}, la configuración de \file{Qdrant}, la configuración de \file{Ollama}, el puerto y las rutas internas.
 
-El archivo \file{secret.env} contiene información sensible y credenciales privadas necesarias para el funcionamiento del sistema, por lo cual este archivo no se sube al repositorio GitHub del proyecto. esta separación de variables se ha realizado para mejorar la seguridad del sistema. Las variables que se definen en este archivo son:
+El archivo \file{secret.env} contiene información sensible y credenciales privadas necesarias para el funcionamiento del sistema, por lo cual este archivo no se sube al repositorio \file{GitHub} del proyecto. Esta separación de variables se ha realizado para mejorar la seguridad del sistema. Las variables que se definen en este archivo son:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
+	colback=yellow!8,
+	colframe=orange!60!black,
 	title=secret.env,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{SECRET\_KEY}\\
@@ -447,42 +523,36 @@ El archivo \file{secret.env} contiene información sensible y credenciales priva
 		\texttt{POSTGRES\_PASSWORD}\\
 		\\
 		\texttt{MAIL\_SERVER}\\
-		\textit{MAIL\_PORT}\\
+		\texttt{MAIL\_PORT}\\
 		\texttt{MAIL\_USE\_TLS}\\
 		\texttt{MAIL\_USE\_SSL}\\
 		\texttt{MAIL\_USERNAME}\\
 		\texttt{MAIL\_PASSWORD}\\
-		\texttt{MAIL\_DEFAULT\_SENDER}
+		\texttt{MAIL\_DEFAULT\_SENDER}\\
+		\texttt{EMAILABLE\_API\_KEY}
 	}
 \end{tcolorbox}
 
-Estas variables sirven para definir la clave secreta de Flask, la contraseña de Postgres, las credenciales SMTP, los \eng{tokens} de las API externas y las claves privadas utilizadas por los servicios OCR y modelos externos.
+Estas variables sirven para definir la clave secreta de \file{Flask}, la contraseña de \file{PostgreSQL}, las credenciales \file{SMTP}, los \eng{tokens} de las \file{API} externas y las claves privadas utilizadas por los servicios \file{OCR} y modelos externos.
 
-Las variables de entorno definidas en ambos archivos se cargan automáticamente en la aplicación durante el arranque. esto permite tener la configuración desacoplada del código fuente.
+Las variables de entorno definidas en ambos archivos se cargan automáticamente en la aplicación durante el arranque. Esto permite tener la configuración desacoplada del código fuente.
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Importar variables de entorno,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
+		\texttt{\# Importar variables de entorno}\\
 		\texttt{from dotenv import load\_dotenv}\\
-		\texttt{load\_dotenv()}
-	}
-\end{tcolorbox}
-
-\begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Recuperar variables de entorno,
-	fonttitle=\bfseries,
-	breakable 
-	]
-	{\footnotesize
-		\noindent
+		\texttt{load\_dotenv()} \\
+		\\
+		\texttt{\# Recuperar variables de entorno}
 		\texttt{import os}\\
 		\texttt{SECRET\_KEY = os.getenv("SECRET\_KEY")}
 	}
@@ -491,118 +561,139 @@ Las variables de entorno definidas en ambos archivos se cargan automáticamente 
 Estas variables también se utilizan en el archivo \file{docker-compose.yml} para que cada contenedor reciba automáticamente las variables necesarias durante su inicialización. 
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
+	colback=cyan!5,
+	colframe=cyan!50!black,
 	title=docker-compose.yml,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{env\_file:}\\
-		\texttt{		- .env}\\
-		\texttt{		- secret.env}
+		\texttt{	    - .env}\\
+		\texttt{	    - secret.env}
 	}
 \end{tcolorbox}
 
 
-El proyecto incorpora configuración Docker para facilitar el despliegue y la ejecución homogénea del entorno. Esto permite aislar la aplicaicón Flask, la base de datos relacional (postgres), la base de datos vectorial (qdrant) y las dependencias externas. El uso de docker simplifica la portabilidad y evita problemas derivados de diferencias entre sistemas operativos o versiones de dependencias. Para levantar el entorno hay que ejecutar el siguiente comando:
+Para levantar el entorno \file{Docker} hay que ejecutar el siguiente comando:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{docker-compose up --build}
 	}
 \end{tcolorbox}
 
+Durante el despliegue de la aplicación se exponen únicamente los servicios necesarios para la interacción con el exterior. \file{Nginx} publica la interfaz \eng{web} a través de los puertos \file{7000 (HTTP)} y \file{443 (HTTPS)}, actuando como punto de entrada al sistema. \file{PostgreSQL} expone el puerto \file{5432} para la gestión de la base de datos relacional, mientras que las instancias de \file{Ollama} utilizadas para la generación de respuestas y el procesamiento \file{OCR} se encuentran disponibles en los puertos \file{11435} y \file{11437}, respectivamente. El servicio \file{Qdrant} permanece accesible únicamente dentro de la red interna de \file{Docker} mediante el puerto \file{6333}, no siendo expuesto directamente al exterior.
+
+El proyecto incorpora integración con \file{SonarCloud} para realizar análisis estáticos de calidad del código de forma automática. Permitiendo detectar errores potenciales, vulnerabilidades de seguridad, duplicación de código, problemas de mantenibilidad y métricas relacionadas con la cobertura de pruebas. Su configuración está asociada al repositorio \file{GitHub} del proyecto. Cada vez que se realiza una actualización del código, los flujos de ntegración continua ejecutan el análisis correspondiente y envían los resultados a la plataforma.
+
 
 \section{Compilación, instalación y ejecución del proyecto}
+\label{prog:comp}
 
-En este apartado se describen los pasos necesarios para compilar, instalar y ejecutar el proyecto PythIA. El proyecto ha sido diseñado para ejecutarse principalmente mediante contenedores Docker, lo que permite reproducir el entorno completo de forma homogénea y transparente al usuario, independientemente del sistema operativo utilizado. La aplicación integra múltiples servicios que gracias a la utilización de Docker Compose se pueden desplegar de manera coordinada. Por ejemplo, la aplicación Flask, la base de datos PostgreSQL, la base de datos vectorial Qdrant, los modelos LLM ejecutado mediante Ollama y el servidor Nginx utilizado como proxy inverso.
+En este apartado se describen los pasos necesarios para compilar, instalar y ejecutar el proyecto PythIA. El proyecto ha sido diseñado para ejecutarse principalmente mediante contenedores \file{Docker}, lo que permite reproducir el entorno completo de forma homogénea y transparente al usuario, independientemente del sistema operativo utilizado. La aplicación integra múltiples servicios que gracias a la utilización de \file{Docker Compose} se pueden desplegar de manera coordinada. Por ejemplo, la aplicación \file{Flask}, la base de datos \file{PostgreSQL}, la base de datos vectorial \file{Qdrant}, los modelos \eng{LLM} ejecutado mediante \file{Ollama} y el servidor \file{Nginx} utilizado como \file{proxy} inverso.
 
-Antes de ejecutar el sistema es necesario tener instalados Docker, Docker Compose, Git, Python (este último solo para ejecutarlo sin usar Docker). Debido al uso de modelos LLM y de OCR se recomienda que la aplicación se despliegue en una máquina que tenga procesador multinúcleo con al menos 16GB de memeoria RAM y espacio suficiente para cargar los modelos y almacenar los documentos. Es recomendable que tenga GPU para acelerar los procesos.
+Antes de ejecutar el sistema es necesario tener instalados \file{Docker}, \file{Docker Compose}, \file{Git}, \file{Python} (este último solo para ejecutarlo sin usar \file{Docker}). Debido al uso de modelos \eng{LLM} y de \file{OCR} se recomienda que la aplicación se despliegue en una máquina que tenga procesador multinúcleo con al menos 16 GB de memeoria RAM y espacio suficiente para cargar los modelos y almacenar los documentos. Es recomendable que tenga \file{GPU} para acelerar los procesos.
 
-Para instalar Docker en Ubuntu se deben ejecutar los siguientes comandos:
+Para instalar \file{Docker} en \file{Ubuntu} se deben ejecutar los siguientes comandos:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{sudo apt install ca-certificates curl gnupg lsb-release -y}\\
-		\textit{sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y} \\
-		\textit{\# Una vez instalado, se puede comprobar que Docker funciona correctamente usando:} \\
+		\\
+		\texttt{sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y} \\
+		\\
+		\texttt{\# Una vez instalado, se puede comprobar que Docker funciona}\\
+		\texttt{\# correctamente usando:} \\
 		\texttt{docker --version}
 	}
 \end{tcolorbox}
 
-Para instalar Docker en Windows se puede instalar descargando Docker Desktop desde la \myhref{https://www.docker.com/products/docker-desktop/}{página oficial}.
+Para instalar \file{Docker} en \file{Windows} se puede instalar descargando \file{Docker Desktop} desde la \myhref{https://www.docker.com/products/docker-desktop/}{página oficial}.
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
-		\textit{\# Una vez instalado, se puede comprobar que Docker funciona correctamente usando:} \\
+		\texttt{\# Una vez instalado, se puede comprobar que Docker funciona}\\
+		\texttt{\# correctamente usando:} \\
 		\texttt{docker --version}
 	}
 \end{tcolorbox}
 
-Para instalar Git en Ubuntu se usa el comando:
+Para instalar \file{Git} en \file{Ubuntu} se usa el comando:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
-		\textit{sudo apt install git -y}
+		\texttt{sudo apt install git -y}
 	}
 \end{tcolorbox}
 
-En Windows se puede descargar desde la siguiente \myhref{https://git-scm.com/}{página}.
+En \file{Windows} se puede descargar desde la siguiente \myhref{https://git-scm.com/}{página}.
 
 En ambos casos para comprobar la instalación se usa:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
-		\textit{git --version}
+		\texttt{git --version}
 	}
 \end{tcolorbox}
 
-El código fuente del proyecto se encuentra disponible en el repositorio \myhref{https://github.com/lbr1014/TFG_RAG}{GitHub} del proyecto. Por lo cual, el primer paso para la ejecución es clonar el repositorio desde GitHub. 
+El código fuente del proyecto se encuentra disponible en el repositorio \myhref{https://github.com/lbr1014/TFG_RAG}{\file{GitHub}} del proyecto. Por lo cual, el primer paso para la ejecución es clonar el repositorio desde \file{GitHub}. 
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{git clone https://github.com/lbr1014/TFG\_RAG.git}
@@ -612,29 +703,31 @@ El código fuente del proyecto se encuentra disponible en el repositorio \myhref
 Posteriormente se debe acceder al directorio del proyecto.
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{cd TFG\_RAG/app/PythIA}
 	}
 \end{tcolorbox}
 
-La aplicación utiliza variables de entorno para almacenar información sensible y parámetros de configuración, como claves secretas, credenciales de correo, URLs de conexión o modelos LLM configurados.
+La aplicación utiliza variables de entorno para almacenar información sensible y parámetros de configuración, como claves secretas, credenciales de correo, \file{URL} de conexión o modelos \eng{LLM} configurados.
 
 Estas variables se definen mediante archivos \texttt{.env} y \texttt{secret.env}. El archivo \texttt{secret.env} no se incluye en el repositorio debido a que contiene información privada y credenciales sensibles, pero debe generarse para ejecutarlo, las variables que deben configurarse en dicho archivo son:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
+	colback=yellow!8,
+	colframe=orange!60!black,
 	title=secret.env,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{SECRET\_KEY}\\
@@ -642,39 +735,491 @@ Estas variables se definen mediante archivos \texttt{.env} y \texttt{secret.env}
 		\texttt{POSTGRES\_PASSWORD}\\
 		\\
 		\texttt{MAIL\_SERVER}\\
-		\textit{MAIL\_PORT}\\
+		\texttt{MAIL\_PORT}\\
 		\texttt{MAIL\_USE\_TLS}\\
 		\texttt{MAIL\_USE\_SSL}\\
 		\texttt{MAIL\_USERNAME}\\
 		\texttt{MAIL\_PASSWORD}\\
-		\texttt{MAIL\_DEFAULT\_SENDER}
+		\texttt{MAIL\_DEFAULT\_SENDER}\\
+		\texttt{EMAILABLE\_API\_KEY}
 	}
 \end{tcolorbox}
 
-Una vez instalado Docker y Git, descargado el repositorio y generado el archivo \file{sencret.env} se puede ejecutar la aplicación. Para ello deben generarse las imágenes Docker. Esta construcción es automática gracias a los archivos \file{docker-compose.yml} y \file{Dockerfile}.
+Una vez instalado \file{Docker} y \file{Git}, descargado el repositorio y generado el archivo \file{sencret.env} se puede ejecutar la aplicación. Para ello deben generarse las imágenes \file{Docker}. Esta construcción es automática gracias a los archivos \file{docker-compose.yml} y \file{Dockerfile}.
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
 	breakable 
-	]
+]
 	{\footnotesize
 		\noindent
-		\texttt{\# Para construir todas las imágenes y levantar el sistema completo por primera vez se debe ejecutar: }\\
+		\texttt{\# Para construir todas las imágenes y levantar el sistema completo} \\
+		\texttt{\# por primera vez se debe ejecutar: }\\
 		\texttt{docker compose up --build}\\
 		\\
-		\texttt{\# Si se desea reconstruir las imágenes sin reutilizar la caché de Docker se puede usar:}\\
+		\texttt{\# Si se desea reconstruir las imagenes ejecutando los comandos en segundo plano:}\\
+		\texttt{docker compose up -d --build}\\
+		\\
+		\texttt{\# Si se desea reconstruir las imágenes sin reutilizar la caché}\\
+		\texttt{\# de Docker se puede usar:}\\
 		\texttt{docker compose build --no-cache}\\
 		\\
-		\texttt{\# Para reconstruir únicamente las imágenes sin ejecutar los contenedores:}\\
+		\texttt{\# Para reconstruir únicamente las imágenes sin ejecutar los}\\
+		\texttt{\# contenedores:}\\
 		\texttt{docker compose build}
 	}
 \end{tcolorbox}
 
-Estos comandos van a construir las imágenes Docker, descargando las dependencias necesarias, levantando PostgreSQL, Qdrant, Ollama, inicializando la aplicación Flask y configurando Nginx y Gunicorn.
+Estos comandos van a construir las imágenes \file{Docker}, descargando las dependencias necesarias, levantando \file{PostgreSQL}, \file{Qdrant}, \file{Ollama}, inicializando la aplicación \file{Flask} y configurando \file{Nginx} y \file{Gunicorn}.
 
+Si solo se desea levantar la aplicación sin reconstruir el código, es decir, si se desea desplegar utilizando las imágenes construidas previamente se usa el comando:
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{docker compose up}\\
+	}
+\end{tcolorbox}
 
+Una vez desplegada la aplicación en local se puede acceder a la \eng{web} a través del navegador \eng{web} escribiendo cualquiera de las siguientes direcciones:
+
+\begin{tcolorbox}[
+	colback=cyan!5,
+	colframe=cyan!50!black,
+	title=navegador web,
+	fonttitle=\bfseries,
+	breakable
+]
+	{\footnotesize
+		\noindent
+		\texttt{\href{http://127.0.0.1:7000}{http://127.0.0.1:7000}}\\
+		\texttt{\href{http://localhost:7000/}{http://localhost:7000}}\\
+		\texttt{	http://IP\_del\_dispositivo:7000}
+	}
+\end{tcolorbox}
+
+Al levantar la aplicación en local se ha creado un usuario por defecto con permisos de administración para poder acceder a sus funcionalidades completas, las credenciales de dicho usuario son: 
+
+\begin{tcolorbox}[
+	colback=yellow!8,
+	colframe=orange!60!black,
+	title=Credenciales por defecto,
+	fonttitle=\bfseries,
+	breakable
+]
+	{\footnotesize
+		\noindent
+		\texttt{email: admin@gmail.com}\\
+		\texttt{contraseña: contraseña}
+	}
+\end{tcolorbox}
 
 \section{Pruebas del sistema}
+\label{prog:prueb}
+
+Con le objetivo de comprobar el correcto funcionamiento de la aplicación \eng{web} se ha desarrollado un conjunto de pruebas automáticas. Concretamente se han realizado pruebas unitarias, de integración y de interfaz que permiten validar tanto el funcionamiento individual de los componentes del sistema como la integración entre ellos.
+
+\subsection{Pruebas unitarias}
+
+Las pruebas unitarias tienen como objetivo verificar de forma aislada el comportamiento de funciones, métodos y componentes individuales de la aplicación. Para su implementación se ha utilizado el \eng{framework} \file{unittest}. Estas pruebas se centran en validar la lógica de negocio de la aplicación, comprobando aspectos como la autenticación de usuarios, la gestión documental, la validación de formularios, la generación de respuestas, la manipulación de datos y las funciones auxiliares utilizadas por el sistema.
+
+Concretamente, se han desarrollado pruebas unitarias para los distintos módulos funcionales de la aplicación. Entre ellas destacan las pruebas asociadas a los modelos de datos, los formularios de autenticación, los servicios de validación de correos electrónicos, los mecanismos de internacionalización, la gestión documental, la conversión de documentos a \file{Markdown}, el sistema de \eng{Web Scraping} y los servicios encargados de la recuperación semántica y generación de respuestas del sistema \eng{RAG}.
+
+También, se han implementado pruebas específicas para los módulos de evaluación automática basados en \file{RAGAS} y \file{ARES}, verificando el correcto funcionamiento de la generación de preguntas, construcción de conjuntos de evaluación, cálculo de métricas y ejecución de los distintos \eng{pipelines} de evaluación. Se han incluido pruebas destinadas a validar la gestión de tareas asíncronas, el sistema de priorización de recursos utilizado para favorecer las consultas \eng{RAG} frente a procesos en segundo plano y los mecanismos de gestión de errores y excepciones.
+
+La ejecución de las pruebas unitarias se puede realizar utilizando:
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas unitarias,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{python -m unittest discover}
+	}
+\end{tcolorbox}
+
+o utilizando el contenedor definido para pruebas dentro del entorno \file{Docker}:
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas mediante Docker,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{docker compose --profile test up}\\
+		\\
+		\texttt{\# Si se desea que la aplicación se pare tras ejecutar los test:}\\
+		\texttt{docker compose --profile test up test}
+	}
+\end{tcolorbox}
+
+\subsection{Pruebas de integración}
+
+Las pruebas de integración verifican que los distintos componentes del sistema funcionen de manera correcta conjuntamente. Su principal diferencia con las pruebas unitarias es que no validan funciones aisladas sino la interacción entre los componentes. Estas pruebas permiten detectar errores derivados de la configuración del entorno, incompatibilidades entre servicios o problemas de comunicación entre componentes.
+
+En el proyecto se han realizado pruebas destinadas a validar la comunicación entre la aplicación \file{Flask}, la base de datos relacional, la base de datos vectorial \file{Qdrant} y los modelos ejecutados mediante \file{Ollama}. También, se ha comprobado el correcto funcionamiento del flujo de indexación documental, recuperación semántica y generación de respuestas.
+
+Cubren los distintos módulos funcionales de la aplicación mediante la ejecución de peticiones reales sobre los \file{Blueprints} de la aplicación. De esta forma se verifica el comportamiento conjunto de las rutas, formularios, servicios, modelos de datos y mecanismos de control de acceso implementados. Se han desarrollado pruebas específicas para validar los \eng{pipelines} de evaluación \eng{RAG} comprobando el correcto funcionamiento de lso distintos puntos de entrada, la generación de preguntas, la construcción de conjuntos de evaluación y la ejecución de los procesos de evaluación. También se han incluido pruebas para verificar el tratamiento de errores, el funcionamiento de los decoradores de autorización y la correcta integración entre los distintos componentes internos de la aplicación.
+
+Para ejecutar estas pruebas se utiliza el contenedor definido para las pruebas dentro del entorno \file{Docker}. De esta manera las pruebas se ejecutan en un entorno equivalente al utilizado durante el despliegue de producción, garantizando que las interacciones entre servicios y dependencias externas se comporten de forma consistente.
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas mediante Docker,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{docker compose --profile test up}\\
+		\\
+		\texttt{\# Si se desea que la aplicación se pare tras ejecutar los test:}\\
+		\texttt{docker compose --profile test up test}
+	}
+\end{tcolorbox}
+
+\subsection{Pruebas de interfaz}
+
+Además, de las pruebas automáticas del \eng{backend} se realizaron pruebas funcionales de la interfaz \eng{web} utilizando la herramienta \file{Katalon Recorder}. Estas pruebas permiten validar los principales flujos de interacción del usuario simulando acciones reales sobre la aplicación.
+
+Para cada caso de prueba se verificó tanto la correcta navegación entre páginas como la aparición de los mensajes de confirmación y error correspondientes. La automatización mediante \file{Katalon Recorder} permite repetir las pruebas de forma sistemática tras la incorporación de nuevas funcionalidades o modificaciones en la interfaz. Los casos de prueba definidos fueron los siguientes:
+\begin{enumerate}
+\tightlist
+	\item \textbf{CP-01} Registro: registro de un nuevo usuario verificando la creación correcta de la cuenta~\ref{prueb-01}. 
+	\item \textbf{CP-02} Inicio de sesión: inicio de sesión con credenciales válidas y acceso a la página principal~\ref{prueb-02}.
+	\item \textbf{CP-03} Recuperación contraseña: recuperación de contraseña mediante correo electrónico~\ref{prueb-03}.
+	\item \textbf{CP-04} Indexación documental: carga de un documento y comprobación de su incorporación al sistema~\ref{prueb-04}.
+	\item \textbf{CP-05} Consulta: realización de una consulta RAG y verificación de la generación de una respuesta~\ref{prueb-05}.
+	\item \textbf{CP-06} Historial: consulta del historial y visualización de preguntas previamente realizadas~\ref{prueb-06}.
+	\item \textbf{CP-07} Navegación por la aplicación: acceso a las distintas páginas de la aplicación~\ref{prueb-07}.
+\end{enumerate}
+
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CP-01}    & \textbf{Registro de usuario}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Objetivo}			 & Verificar que un nuevo usuario puede registrarse correctamente en la aplicación.\\
+		\textbf{Caso de uso asociado} &  CU-01 Registro de usuarios~\ref{req-01}\\
+		\textbf{Prioridad}          & Alta. \\
+		\textbf{\mbox{Tipo de} \mbox{prueba}}         & Prueba funcional de interfaz. \\
+		\textbf{\mbox{Nivel de} \mbox{prueba}}        & Sistema\\
+		\textbf{Precondición}        & El usuario no debe estar registrado previamente. \\
+		\textbf{\mbox{Datos de} \mbox{entrada}} 		& 
+		\begin{itemize}
+		\tightlist
+			\item Nombre de usaurio válido, correo electrónico válido y contraseña válida.
+			\item Campos incompletos.
+			\item \eng{Email} erroneo.
+			\item Contraseñas no coinciden.
+		\end{itemize}				
+		\\
+		\textbf{\mbox{Pasos de} \mbox{ejecución}}		&
+		\begin{enumerate}
+		\tightlist
+			\item Acceder a la aplicación \eng{web} PythIA.
+			\item Acceder a la página de registro.
+			\item Introducir los datos solicitados.
+			\item Pulsar el botón <<Crear cuenta>>.
+			\item Verificar que la cuenta se crea correctamente.
+			\item Comprobar que se redirige a la página principal.
+		\end{enumerate} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CP-01} Registro de usuario.}
+	\label{prueb-01}
+\end{table}
+
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CP-02}    & \textbf{Inicio de sesión}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Objetivo}			 & Verificar que un usuario registrado puede iniciar sesión y acceder a la página principal.\\
+		\textbf{Caso de uso asociado} &  CU-02 Iniciar sesión~\ref{req-02}\\
+		\textbf{Prioridad}          & Alta. \\
+		\textbf{\mbox{Tipo de} \mbox{prueba}}         & Prueba funcional de interfaz. \\
+		\textbf{\mbox{Nivel de} \mbox{prueba}}        & Sistema\\
+		\textbf{Precondición}        & Existencia de una cuenta de usuario válida. \\
+		\textbf{\mbox{Datos de} \mbox{entrada}} 		& 
+		\begin{itemize}
+		\tightlist
+			\item Correo electrónico válido y contraseña válida.
+			\item Campos incompletos.
+			\item \eng{Email} erroneo.
+			\item Contraseñas no coincide con la almacenada para el usuario.
+		\end{itemize}				
+		\\
+		\textbf{\mbox{Pasos de} \mbox{ejecución}}		&
+		\begin{enumerate}
+		\tightlist
+			\item Acceder a la aplicación \eng{web} PythIA.
+			\item Acceder a la página de inicio de sesión.
+			\item Introducir los datos solicitados.
+			\item Pulsar el botón <<Iniciar sesión>>.
+			\item Verificar la autenticación.
+			\item Comprobar que se redirige a la página principal.
+		\end{enumerate} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CP-02} Inicio de sesión.}
+	\label{prueb-02}
+\end{table}
+
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CP-03}    & \textbf{Recuperación de contraseña}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Objetivo}			 & Verificar que un usuario puede solicitar el restablecimiento de su contraseña mediante correo electrónico.\\
+		\textbf{Caso de uso asociado} &  CU-04 Recuperar contraseña~\ref{req-04}\\
+		\textbf{Prioridad}          & Media. \\
+		\textbf{\mbox{Tipo de} \mbox{prueba}}         & Prueba funcional de interfaz. \\
+		\textbf{\mbox{Nivel de} \mbox{prueba}}        & Sistema\\
+		\textbf{Precondición}        & Existencia de una cuenta registrada con correo electrónico válido. \\
+		\textbf{\mbox{Datos de} \mbox{entrada}} 		& 
+		\begin{itemize}
+		\tightlist
+			\item Dirección de correo registrada
+			\item Dirección de correo sin registrar.
+		\end{itemize}				
+		\\
+		\textbf{\mbox{Pasos de} \mbox{ejecución}}		&
+		\begin{enumerate}
+		\tightlist
+			\item Acceder a la aplicación \eng{web} PythIA.
+			\item Acceder a la página de inicio de sesión.
+			\item Pulsar en <<¿Olvidaste tu contraseña?>>
+			\item Introducir el correo electrónico.
+			\item Pulsar el botón <<Recuperar contraseña>>.
+			\item Verificar que se muestra el mensaje del sistema.
+		\end{enumerate} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CP-03} Recuperación de contraseña.}
+	\label{prueb-03}
+\end{table}
+
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CP-04}    & \textbf{Indexación documental}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Objetivo}			 & Verificar que un documento puede cargarse e incorporarse correctamente al sistema \eng{RAG}.\\
+		\textbf{Caso de uso asociado} &  CU-08 Gestión de documentos~\ref{req-08}, CU-12 Indexar documentos~\ref{req-12}\\
+		\textbf{Prioridad}          & Alta. \\
+		\textbf{\mbox{Tipo de} \mbox{prueba}}         & Prueba funcional. \\
+		\textbf{\mbox{Nivel de} \mbox{prueba}}        & Sistema\\
+		\textbf{Precondición}        & Usuario autenticado con permisos para gestionar documentos. \\
+		\textbf{\mbox{Datos de} \mbox{entrada}} 		& 
+		\begin{itemize}
+		\tightlist
+			\item Documento \file{PDF} válido.
+			\item Documento con formato inválido.
+		\end{itemize}				
+		\\
+		\textbf{\mbox{Pasos de} \mbox{ejecución}}		&
+		\begin{enumerate}
+		\tightlist
+			\item Acceder a la aplicación \eng{web} PythIA.
+			\item Iniciar sesión en la aplicación.
+			\item Acceder a la gestión documental.
+			\item Subir un documento.
+			\item Iniciar el proceso de indexación.
+			\item Consultar el estado del documento.
+		\end{enumerate} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CP-04} Indexación documental.}
+	\label{prueb-04}
+\end{table}
+
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CP-05}    & \textbf{Consulta \eng{RAG}}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Objetivo}			 & Verificar que el sistema recupera información relevante y genera una respuesta contextualizada.\\
+		\textbf{Caso de uso asociado} &  CU-05 Realizar consulta al \eng{RAG}~\ref{req-05}\\
+		\textbf{Prioridad}          & Alta. \\
+		\textbf{\mbox{Tipo de} \mbox{prueba}}         & Prueba funcional. \\
+		\textbf{\mbox{Nivel de} \mbox{prueba}}        & Sistema\\
+		\textbf{Precondición}        & Existencia de documentos previamente indexados. \\
+		\textbf{\mbox{Datos de} \mbox{entrada}} 		& 
+		\begin{itemize}
+		\tightlist
+			\item Pregunta relacionada con los documentos previamente indexados
+			\item Pregunta sin relación con los documentos.
+		\end{itemize}				
+		\\
+		\textbf{\mbox{Pasos de} \mbox{ejecución}}		&
+		\begin{enumerate}
+		\tightlist
+			\item Acceder a la aplicación \eng{web} PythIA.
+			\item Iniciar sesión en la aplicación.
+			\item Acceder a la página de las consultas.
+			\item Ejecutar una consulta.
+			\item Verificar la obtención de una respuesta.
+		\end{enumerate} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CP-05} Consulta \eng{RAG}.}
+	\label{prueb-05}
+\end{table}
+
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CP-06}    & \textbf{Consulta de historial}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Objetivo}			 & Verificar que las consultas realizadas se almacenan y pueden visualizarse posteriormente.\\
+		\textbf{Caso de uso asociado} &  CU-06 Consultar historial de consulta~\ref{req-06}\\
+		\textbf{Prioridad}          & Media. \\
+		\textbf{\mbox{Tipo de} \mbox{prueba}}         & Prueba funcional. \\
+		\textbf{\mbox{Nivel de} \mbox{prueba}}        & Sistema\\
+		\textbf{Precondición}        & Existencia de consultas previas realizadas por un usuario. \\
+		\textbf{\mbox{Datos de} \mbox{entrada}} 		& 
+		\begin{itemize}
+		\tightlist
+			\item Ninguno
+		\end{itemize}				
+		\\
+		\textbf{\mbox{Pasos de} \mbox{ejecución}}		&
+		\begin{enumerate}
+		\tightlist
+			\item Acceder a la aplicación \eng{web} PythIA.
+			\item Iniciar sesión en la aplicación.
+			\item Acceder al historial de consultas.
+			\item Seleccionar una consulta anterior.
+		\end{enumerate} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CP-06} Consulta de historial.}
+	\label{prueb-06}
+\end{table}
+
+
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
+		\toprule
+		\textbf{CP-07}    & \textbf{Navegación por la aplicación}\\
+		\toprule
+		\textbf{Versión}              & 1.0    \\
+		\textbf{Autor}                & Lydia Blanco Ruiz \\
+		\textbf{Objetivo}			 & Verificar que el usuario puede desplazarse correctamente entre las principales páginas y funcionalidades de la aplicación mediante los elementos de navegación disponibles.\\
+		\textbf{Caso de uso asociado} &  CU-05 Realizar consulta al RAG~\ref{req-05}, CU-06 Consultar historial de consultas~\ref{req-06}, CU-08 Gestión de documentos~\ref{req-08}, CU-23 Cambiar idioma~\ref{req-23}, CU-24 Cambiar tema visual~\ref{req-24}\\
+		\textbf{Prioridad}          & Alta. \\
+		\textbf{\mbox{Tipo de} \mbox{prueba}}         & Prueba de navegación. \\
+		\textbf{\mbox{Nivel de} \mbox{prueba}}        & Sistema\\
+		\textbf{Precondición}        & Usuario autenticado en la aplicación. \\
+		\textbf{\mbox{Datos de} \mbox{entrada}} 		& 
+		\begin{itemize}
+		\tightlist
+			\item Ninguno.
+		\end{itemize}				
+		\\
+		\textbf{\mbox{Pasos de} \mbox{ejecución}}		&
+		\begin{enumerate}
+		\tightlist
+			\item Acceder a la aplicación \eng{web} PythIA.
+			\item Iniciar sesión en la aplicación.
+			\item Desplegar el menú lateral.
+			\item Acceder a las distintas páginas disponibles desde el menú.
+			\item Cambiar el idioma de la interfaz.
+			\item Cambiar el tema visual.
+			\item Volver a la página principal pulsando sobre el logo de la cabecera.
+			\item Acceder a la página de consulta.
+		\end{enumerate} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{\textbf{CP-07} Navegación por la aplicación.}
+	\label{prueb-07}
+\end{table}
+
+\subsection{Ejecución automática de las pruebas}
+
+Con el objetivo de simplificar la validación de sistema se ha desarrollado un \eng{script} (\file{run\_tests.sh}) encargado de ejecutar todas las pruebas de manera secuencial y generar informes de cobertura. 
+
+Este proceso consiste en eliminar los archivos de cobertura de ejecuciones anteriores. Posteriormente se ejecutan las pruebas unitarias, de integración y de interfaz. Estas ejecuciones se hacen utilizando la herramienta \file{coverage}, lo que permite medir la parte del código que está cubierta por las pruebas. Cuando finalizan las pruebas el \eng{script} genera distintos informes:
+\begin{itemize}
+\tightlist
+	\item \file{coverage.xml}: informe en formato \file{XML} utilizado por herramientas externas de análisis de calidad como \file{SonarCloud}.
+	\item Informe por consola: muestra el porcentaje de cobertura alcanzado por cada módulo de la aplicación.
+	\item Directorio \file{coverage/}: informe \file{HTML} navegable que permite visualizar línea por línea el código cubierto por las pruebas.
+\end{itemize}
+
+La ejecución completa de la batería de pruebas puede realizarse mediante el siguiente comando:
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal - Ejecución de pruebas,
+	fonttitle=\bfseries,
+	breakable 
+]
+	{\footnotesize
+		\noindent
+		\texttt{dsh app/test/run\_tests.sh}\\
+		\\
+		\texttt{\# Si se desea ejecutar desde Docker:}\\
+		\texttt{docker compose --profile test up}\\
+		\texttt{docker compose --profile test up test}
+	}
+\end{tcolorbox}
+
+En la imagen~\ref{img:Anexos/informe_coverage_terminal} se puede observar el resultado de ejecutar el comando \file{docker compose --profile test up test}.
+
+\imagendiagram{Anexos/informe_coverage_terminal}{Informe de \eng{coverage} de la aplicación mostrado en la terminal tras ejecución de los \eng{test}.}{1.2}

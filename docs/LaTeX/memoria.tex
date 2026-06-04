@@ -12,6 +12,7 @@
 \usepackage{pdflscape}
 \usepackage{amssymb}
 \usepackage{multirow}
+\usepackage{titlesec}
 
 %Cabeceras
 \copypagestyle{capitulo-en-cab}{headings}
@@ -26,6 +27,7 @@
 
 % Bibliography management
 \usepackage[numbers,sort]{natbib}
+
 
 % Links
 \PassOptionsToPackage{hyphens}{url}\usepackage[colorlinks]{hyperref}
@@ -47,9 +49,7 @@
 \clubpenalty100000
 
 % Hipervínculos
-\NewDocumentCommand{\myhref}{m m O{#1}}{%
-  \href{#1}{#2}\footnote{\url{#3}}%
-}
+\NewDocumentCommand{\myhref}{m m O{#1}}{\href{#1}{#2}\footnote{\url{#3}}}
 
 \newcommand{\contsec}{\myhref{https://contrataciondelestado.es/wps/portal/plataforma/inicio/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zinYItLBydDB0NDIxDLQwczQIDnS1dDIwMLI31wwkpiAJKG-AAjgZA_VFgJabGziZhXmEBZsGe7gYGnh5uLj6hhqYG7kZmUAV4zCjIjTDIdFRUBAD_nKPx/dz/d5/L2dBISEvZ0FBIS9nQSEh/}{Contratación del Sector Público}[https://tinyurl.com/48ay5679]}
 
@@ -61,6 +61,14 @@
 
 %Palabras en ingles
 \newcommand{\eng}[1]{\textit{#1}}
+
+% Subsecciones
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\titleformat{\subsection}
+{\normalfont\large\bfseries}
+{}     % <- no imprime el número
+{0pt}
+{}
 
 % Imágenes
 
@@ -387,7 +395,7 @@
 \newcommand{\nombre}{Lydia Blanco Ruiz} %%% cambio de comando
 \newcommand{\nombreTutor}{Álvar Arnaiz González}
 \newcommand{\nombreCoTutor}{César Ignacio García Osorio}
-\newcommand{\tituloTFG}{Creación de \textit{RAG}}
+\newcommand{\tituloTFG}{Creación de \textit{RAG} para pliegos de la Diputación}
 \newcommand{\nombreArea}{Lenguajes y Sistemas Informáticos}
 
 % Datos de portada
@@ -397,6 +405,7 @@
 \date{\today}
 
 \errorcontextlines=999
+\setsecnumdepth{subsection}
 \begin{document}
 
 \maketitle
