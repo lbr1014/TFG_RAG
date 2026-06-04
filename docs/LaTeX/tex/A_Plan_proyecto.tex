@@ -810,40 +810,84 @@ El código fuente desarrollado en el proyecto está protegido por la legislació
 
 Además, el proyecto utiliza múltiples bibliotecas y herramientas de terceros, como Flask, Docker, Qdrant, Playwright, Selenium y Ollama. Todas estas herramientas emplean licencias de \eng{software} libre y \eng{open source} compatibles con el desarrollo académico y de investigación (ver tabla~\ref{tabla:licencias}). Estas licencias permiten el uso, modificación y redistribución del software siempre que se mantengan las condiciones establecidas por cada autor.
 
+\begin{longtable}{p{0.20\linewidth} p{0.20\linewidth} p{0.55\linewidth}}
+\caption{Licencias de las herramientas utilizadas en la aplicación.}
+\label{tab:licencias}\\
 
-\tablaMultipaginaColor
-	{Licencias de las herramientas de la aplicación.}
-	{|L{0.2\columnwidth}|L{0.2\columnwidth}|L{0.6\columnwidth}|}
-	{3}
-	{licencias}
-	{\textbf{Herramienta} & \textbf{Licencia} & \textbf{Uso en el sistema}}
-	{		Flask & BSD-3-Clause & \eng{Framework web} ligero en Python utilizado para desarrollar la aplicación web del sistema PythIA \\
-		Jinja2 & BSD-3-Clause & Motor de plantillas utilizado por Flask para generar HTML dinámico\\
-		Werkzeug & BSD-3-Clause & Biblioteca WSGI utilizada por Flask para routing, peticiones HTTP y utilidades web\\
-		Flask-Loging & MT & Gestión de autenticación, sesiones y control de usuarios autenticados.\\
-		Flask-WTF & BSD-3-Clause & Integración de formularios WTForms con Flask y protección CSRF.\\
-		WTForm & BSD-3-Clause & Biblioteca para validación y gestión de formularios web. \\
-		SQLAlchemy & MIT & ORM utilizado para la interacción con bases de datos relacionales. \\
-		SQLite & Dominio público & Base de datos ligera utilizada en desarrollo y pruebas \\
-		PostgreSQL & PostgreSQL License & Sistema gestor de bases de datos relacional utilizado en producción \\
-		Qdrant & Apache Licence 2.0 & Base de datos vectorial especializada en búsqueda semántica mediante embeddings \\
-		Docker & Apache License 2.0 & Plataforma de contenedores utilizada para despliegue y reproducibilidad del entorno\\
-		Docker Compose & Apache License 2.0 & Herramienta para orquestar múltiples contenedores Docker\\
-		Gunicorn & MIT & Servidor WSGI utilizado para desplegar la aplicación Flask en producción\\
-		Nginx & BSD-2-Clause & Servidor web y proxy inverso utilizado para servir la aplicación y gestionar HTTPS\\
-		Playwright & Apache License 2.0 & Framework de automatización web utilizado para Web Scraping dinámico \\
-		Selenium & Apache License 2.0 & Herramienta de automatización de navegadores utilizada para pruebas y scraping web \\
-		Beautiful Soup & MIT & Biblioteca para parsear y extraer información de documentos HTML/XML \\
-		Requests & Apache License 2.0 & Biblioteca HTTP utilizada para realizar peticiones web \\
-		Transformers (Hugging Face) & Apache License 2.0 & Biblioteca para cargar y utilizar modelos LLM y modelos de \eng{embeddings} \\
-		Sentence Transformers & Apache License 2.0 & Biblioteca especializada en generación de \eng{embeddings} semánticos \\
-	PyTorch & BSD-3-Clause & Framework de aprendizaje profundo utilizado por modelos de IA \\
-	Ollama & MIT & Plataforma para ejecutar modelos LLM localmente \\
-	Poetry & MIT & Herramienta para gestión de dependencias y entornos Python \\
-	Markdownify & MIT & Conversión automática de HTML a Markdown\\
-	PyMuPDF & AGPL-3.0 & Biblioteca para lectura y procesamiento de documentos PDF \\
-	pytest & MIT & Framework de testing utilizado para pruebas unitarias y funcionales \\
-	SonarQube / SonarCloud Scanner & LGPL v3 & Herramienta de análisis estático y calidad del código \\}
+\toprule
+\textbf{Herramienta} & \textbf{Licencia} & \textbf{Uso en el sistema} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{l}{Continúa desde la página anterior}\\
+\toprule
+\textbf{Herramienta} & \textbf{Licencia} & \textbf{Uso en el sistema} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{3}{r}{Continúa en la siguiente página}\\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+Flask & BSD-3-Clause & Framework web ligero en Python utilizado para desarrollar la aplicación web del sistema PythIA. \\
+
+Jinja2 & BSD-3-Clause & Motor de plantillas utilizado por Flask para generar HTML dinámico. \\
+
+Werkzeug & BSD-3-Clause & Biblioteca WSGI utilizada por Flask para \emph{routing}, peticiones HTTP y utilidades web. \\
+
+Flask-Login & MIT & Gestión de autenticación, sesiones y control de usuarios autenticados. \\
+
+Flask-WTF & BSD-3-Clause & Integración de formularios WTForms con Flask y protección CSRF. \\
+
+WTForms & BSD-3-Clause & Biblioteca para validación y gestión de formularios web. \\
+
+SQLAlchemy & MIT & ORM utilizado para la interacción con bases de datos relacionales. \\
+
+SQLite & Dominio público & Base de datos ligera utilizada en desarrollo y pruebas. \\
+
+PostgreSQL & PostgreSQL License & Sistema gestor de bases de datos relacional utilizado en producción. \\
+
+Qdrant & Apache License 2.0 & Base de datos vectorial especializada en búsqueda semántica mediante \emph{embeddings}. \\
+
+Docker & Apache License 2.0 & Plataforma de contenedores utilizada para despliegue y reproducibilidad del entorno. \\
+
+Docker Compose & Apache License 2.0 & Herramienta para orquestar múltiples contenedores Docker. \\
+
+Gunicorn & MIT & Servidor WSGI utilizado para desplegar la aplicación Flask en producción. \\
+
+Nginx & BSD-2-Clause & Servidor web y proxy inverso utilizado para servir la aplicación y gestionar HTTPS. \\
+
+Playwright & Apache License 2.0 & Framework de automatización web utilizado para \emph{web scraping} dinámico. \\
+
+Selenium & Apache License 2.0 & Herramienta de automatización de navegadores utilizada para pruebas y \emph{scraping} web. \\
+
+Beautiful Soup & MIT & Biblioteca para analizar y extraer información de documentos HTML/XML. \\
+
+Requests & Apache License 2.0 & Biblioteca HTTP utilizada para realizar peticiones web. \\
+
+Transformers (Hugging Face) & Apache License 2.0 & Biblioteca para cargar y utilizar modelos LLM y modelos de \emph{embeddings}. \\
+
+Sentence Transformers & Apache License 2.0 & Biblioteca especializada en generación de \emph{embeddings} semánticos. \\
+
+PyTorch & BSD-3-Clause & Framework de aprendizaje profundo utilizado por modelos de IA. \\
+
+Ollama & MIT & Plataforma para ejecutar modelos LLM localmente. \\
+
+Poetry & MIT & Herramienta para gestión de dependencias y entornos Python. \\
+
+Markdownify & MIT & Conversión automática de HTML a Markdown. \\
+
+PyMuPDF & AGPL-3.0 & Biblioteca para lectura y procesamiento de documentos PDF. \\
+
+pytest & MIT & Framework de \emph{testing} utilizado para pruebas unitarias y funcionales. \\
+
+SonarQube / SonarCloud Scanner & LGPL v3 & Herramienta de análisis estático y calidad del código. \\
+\label{tabla:licencias}
+\end{longtable}
+
 
 La aplicación cumple estos requisitos debido a que todas las dependencias utilizadas se han obtenido desde sus repositorios oficiales y se utilizan respetando las condiciones de sus licencias. Además, el proyecto no redistribuye versiones modificadas de las herramientas utilizadas ni elimina las referencias de autoría originales.
 
@@ -857,7 +901,7 @@ La aplicación cumple con los requisitos legales del \eng{Web Scraping} debido a
 
 También se ha tenido en cuenta el archivo \file{robots.txt}~\cite{legal:robots} de la Plataforma \contsec{}. Este archivo forma parte del estándar Robots Exclusion Protocol y permite a los administradores de una página web indicar qué rutas pueden o no ser rastreadas por \eng{bots} automátizados. Aunque este protocolo no tiene carácter legal vinculante, su cumplimiento se considera una buena práctica ética en el ámbito del \eng{Web Scraping}.
 
-En el caso de la Plataforma de \contsec{}, el archivo \myhref{https://contrataciondelestado.es/robots.txt}{robots.txtx} restringe el uso de \eng{bots} automatizados para rastrear el contenido del sitio \eng{web}. Sin embargo, este mecanismo no constituye una medida de protección técnica ni un sistema de autenticación, sino una directriz ética orientada principalmente a motores de búsqueda y sistemas automáticos de indexación. Por lo cual, la aplicación desarrollada cumple con estas restricciones debido a que el sistema únicamente accede a información pública accesible manualmente desde el navegador por cualquier usuario. Además, el \eng{scraper} implementado en el proyecto evita realizar peticiones masivas agresivas, incorpora esperas entre solicitudes y limita la frecuencia de acceso para no sobrecargar los servidores del portal público. Esto permite que el comportamiento automatizado sea equivalente al de un usuario humano navegando por la página.
+En el caso de la Plataforma de \contsec{}, el archivo \myhref{https://contrataciondelestado.es/robots.txt}{robots.txt} restringe el uso de \eng{bots} automatizados para rastrear el contenido del sitio \eng{web}. Sin embargo, este mecanismo no constituye una medida de protección técnica ni un sistema de autenticación, sino una directriz ética orientada principalmente a motores de búsqueda y sistemas automáticos de indexación. Por lo cual, la aplicación desarrollada cumple con estas restricciones debido a que el sistema únicamente accede a información pública accesible manualmente desde el navegador por cualquier usuario. Además, el \eng{scraper} implementado en el proyecto evita realizar peticiones masivas agresivas, incorpora esperas entre solicitudes y limita la frecuencia de acceso para no sobrecargar los servidores del portal público. Esto permite que el comportamiento automatizado sea equivalente al de un usuario humano navegando por la página.
 
 \textbf{Uso de modelos de Inteligencia Artificial}\label{subsec:IA}
 

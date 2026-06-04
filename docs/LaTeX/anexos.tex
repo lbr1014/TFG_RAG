@@ -342,40 +342,6 @@ S    \rowcolors {2}{gray!35}{}
   \end{center}
 }
 
-% Nuevo comando para tabla multipágina con cabecera repetida y filas alternas.
-
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
-
-\newcommand{\tablaMultipaginaColor}[6]{%
-	\rowcolors{2}{gray!20}{white}
-	\small
-	\setlength{\tabcolsep}{4pt}
-	\begin{longtable}{#2}
-		\caption{#1}
-		\label{tabla:#4} \\
-		\toprule #5 \\
-		\midrule
-		\endfirsthead
-		
-		\rowcolor{white}
-		\multicolumn{#3}{l}{\small\slshape Continúa desde la página anterior}\\
-		\toprule #5 \\
-		\midrule
-		\endhead
-
-		\rowcolor{white}
-		\midrule
-		\multicolumn{#3}{r}{\small\slshape Continúa en la página siguiente}\\
-		\endfoot
-
-		\bottomrule
-		\endlastfoot
-		#6
-	\end{longtable}
-}
-
 
 \graphicspath{ {./img/} }
 
