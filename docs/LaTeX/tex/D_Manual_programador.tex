@@ -570,8 +570,8 @@ Estas variables también se utilizan en el archivo \file{docker-compose.yml} par
 	{\footnotesize
 		\noindent
 		\texttt{env\_file:}\\
-		\texttt{		- .env}\\
-		\texttt{		- secret.env}
+		\texttt{	    - .env}\\
+		\texttt{	    - secret.env}
 	}
 \end{tcolorbox}
 
@@ -597,85 +597,99 @@ Para levantar el entorno \file{Docker} hay que ejecutar el siguiente comando:
 \section{Compilación, instalación y ejecución del proyecto}
 \label{prog:comp}
 
-En este apartado se describen los pasos necesarios para compilar, instalar y ejecutar el proyecto PythIA. El proyecto ha sido diseñado para ejecutarse principalmente mediante contenedores Docker, lo que permite reproducir el entorno completo de forma homogénea y transparente al usuario, independientemente del sistema operativo utilizado. La aplicación integra múltiples servicios que gracias a la utilización de Docker Compose se pueden desplegar de manera coordinada. Por ejemplo, la aplicación Flask, la base de datos PostgreSQL, la base de datos vectorial Qdrant, los modelos LLM ejecutado mediante Ollama y el servidor Nginx utilizado como proxy inverso.
+En este apartado se describen los pasos necesarios para compilar, instalar y ejecutar el proyecto PythIA. El proyecto ha sido diseñado para ejecutarse principalmente mediante contenedores \file{Docker}, lo que permite reproducir el entorno completo de forma homogénea y transparente al usuario, independientemente del sistema operativo utilizado. La aplicación integra múltiples servicios que gracias a la utilización de \file{Docker Compose} se pueden desplegar de manera coordinada. Por ejemplo, la aplicación \file{Flask}, la base de datos \file{PostgreSQL}, la base de datos vectorial \file{Qdrant}, los modelos \eng{LLM} ejecutado mediante \file{Ollama} y el servidor \file{Nginx} utilizado como \file{proxy} inverso.
 
-Antes de ejecutar el sistema es necesario tener instalados Docker, Docker Compose, Git, Python (este último solo para ejecutarlo sin usar Docker). Debido al uso de modelos LLM y de OCR se recomienda que la aplicación se despliegue en una máquina que tenga procesador multinúcleo con al menos 16GB de memeoria RAM y espacio suficiente para cargar los modelos y almacenar los documentos. Es recomendable que tenga GPU para acelerar los procesos.
+Antes de ejecutar el sistema es necesario tener instalados \file{Docker}, \file{Docker Compose}, \file{Git}, \file{Python} (este último solo para ejecutarlo sin usar \file{Docker}). Debido al uso de modelos \eng{LLM} y de \file{OCR} se recomienda que la aplicación se despliegue en una máquina que tenga procesador multinúcleo con al menos 16 GB de memeoria RAM y espacio suficiente para cargar los modelos y almacenar los documentos. Es recomendable que tenga \file{GPU} para acelerar los procesos.
 
-Para instalar Docker en Ubuntu se deben ejecutar los siguientes comandos:
+Para instalar \file{Docker} en \file{Ubuntu} se deben ejecutar los siguientes comandos:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{sudo apt install ca-certificates curl gnupg lsb-release -y}\\
+		\\
 		\texttt{sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y} \\
-		\texttt{\# Una vez instalado, se puede comprobar que Docker funciona correctamente usando:} \\
+		\\
+		\texttt{\# Una vez instalado, se puede comprobar que Docker funciona}\\
+		\texttt{\# correctamente usando:} \\
 		\texttt{docker --version}
 	}
 \end{tcolorbox}
 
-Para instalar Docker en Windows se puede instalar descargando Docker Desktop desde la \myhref{https://www.docker.com/products/docker-desktop/}{página oficial}.
+Para instalar \file{Docker} en \file{Windows} se puede instalar descargando \file{Docker Desktop} desde la \myhref{https://www.docker.com/products/docker-desktop/}{página oficial}.
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
-		\texttt{\# Una vez instalado, se puede comprobar que Docker funciona correctamente usando:} \\
+		\texttt{\# Una vez instalado, se puede comprobar que Docker funciona}\\
+		\texttt{\# correctamente usando:} \\
 		\texttt{docker --version}
 	}
 \end{tcolorbox}
 
-Para instalar Git en Ubuntu se usa el comando:
+Para instalar \file{Git} en \file{Ubuntu} se usa el comando:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{sudo apt install git -y}
 	}
 \end{tcolorbox}
 
-En Windows se puede descargar desde la siguiente \myhref{https://git-scm.com/}{página}.
+En \file{Windows} se puede descargar desde la siguiente \myhref{https://git-scm.com/}{página}.
 
 En ambos casos para comprobar la instalación se usa:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{git --version}
 	}
 \end{tcolorbox}
 
-El código fuente del proyecto se encuentra disponible en el repositorio \myhref{https://github.com/lbr1014/TFG_RAG}{GitHub} del proyecto. Por lo cual, el primer paso para la ejecución es clonar el repositorio desde GitHub. 
+El código fuente del proyecto se encuentra disponible en el repositorio \myhref{https://github.com/lbr1014/TFG_RAG}{\file{GitHub}} del proyecto. Por lo cual, el primer paso para la ejecución es clonar el repositorio desde \file{GitHub}. 
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{git clone https://github.com/lbr1014/TFG\_RAG.git}
@@ -685,29 +699,31 @@ El código fuente del proyecto se encuentra disponible en el repositorio \myhref
 Posteriormente se debe acceder al directorio del proyecto.
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{cd TFG\_RAG/app/PythIA}
 	}
 \end{tcolorbox}
 
-La aplicación utiliza variables de entorno para almacenar información sensible y parámetros de configuración, como claves secretas, credenciales de correo, URLs de conexión o modelos LLM configurados.
+La aplicación utiliza variables de entorno para almacenar información sensible y parámetros de configuración, como claves secretas, credenciales de correo, \file{URL} de conexión o modelos \eng{LLM} configurados.
 
 Estas variables se definen mediante archivos \texttt{.env} y \texttt{secret.env}. El archivo \texttt{secret.env} no se incluye en el repositorio debido a que contiene información privada y credenciales sensibles, pero debe generarse para ejecutarlo, las variables que deben configurarse en dicho archivo son:
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
+	colback=yellow!8,
+	colframe=orange!60!black,
 	title=secret.env,
 	fonttitle=\bfseries,
-	breakable 
-	]
+	breakable
+]
 	{\footnotesize
 		\noindent
 		\texttt{SECRET\_KEY}\\
@@ -720,33 +736,39 @@ Estas variables se definen mediante archivos \texttt{.env} y \texttt{secret.env}
 		\texttt{MAIL\_USE\_SSL}\\
 		\texttt{MAIL\_USERNAME}\\
 		\texttt{MAIL\_PASSWORD}\\
-		\texttt{MAIL\_DEFAULT\_SENDER}
+		\texttt{MAIL\_DEFAULT\_SENDER}\\
+		\texttt{EMAILABLE\_API\_KEY}
 	}
 \end{tcolorbox}
 
-Una vez instalado Docker y Git, descargado el repositorio y generado el archivo \file{sencret.env} se puede ejecutar la aplicación. Para ello deben generarse las imágenes Docker. Esta construcción es automática gracias a los archivos \file{docker-compose.yml} y \file{Dockerfile}.
+Una vez instalado \file{Docker} y \file{Git}, descargado el repositorio y generado el archivo \file{sencret.env} se puede ejecutar la aplicación. Para ello deben generarse las imágenes \file{Docker}. Esta construcción es automática gracias a los archivos \file{docker-compose.yml} y \file{Dockerfile}.
 
 \begin{tcolorbox}[
-	colback=blue!4, 
-	colframe=blue!40, 
-	title=Terminal,
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title= Terminal,
 	fonttitle=\bfseries,
 	breakable 
-	]
+]
 	{\footnotesize
 		\noindent
-		\texttt{\# Para construir todas las imágenes y levantar el sistema completo por primera vez se debe ejecutar: }\\
+		\texttt{\# Para construir todas las imágenes y levantar el sistema completo} \\
+		\texttt{\# por primera vez se debe ejecutar: }\\
 		\texttt{docker compose up --build}\\
 		\\
-		\texttt{\# Si se desea reconstruir las imágenes sin reutilizar la caché de Docker se puede usar:}\\
+		\texttt{\# Si se desea reconstruir las imágenes sin reutilizar la caché}\\
+		\texttt{\# de Docker se puede usar:}\\
 		\texttt{docker compose build --no-cache}\\
 		\\
-		\texttt{\# Para reconstruir únicamente las imágenes sin ejecutar los contenedores:}\\
+		\texttt{\# Para reconstruir únicamente las imágenes sin ejecutar los}\\
+		\texttt{\# contenedores:}\\
 		\texttt{docker compose build}
 	}
 \end{tcolorbox}
 
-Estos comandos van a construir las imágenes Docker, descargando las dependencias necesarias, levantando PostgreSQL, Qdrant, Ollama, inicializando la aplicación Flask y configurando Nginx y Gunicorn.
+Estos comandos van a construir las imágenes \file{Docker}, descargando las dependencias necesarias, levantando \file{PostgreSQL}, \file{Qdrant}, \file{Ollama}, inicializando la aplicación \file{Flask} y configurando \file{Nginx} y \file{Gunicorn}.
 
 
 \section{Pruebas del sistema}
