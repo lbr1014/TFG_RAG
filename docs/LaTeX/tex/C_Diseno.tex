@@ -17,11 +17,11 @@ Este diseño busca facilitar tanto el desarrollo y mantenimiento de la aplicaci�
 Para llevar a cabo la aplicación se han definido las siguientes entidades principales (ver figura~\ref{fig:Diagramas/Entidades})\footnote{Esta figura se ha generado utilizando la aplicación DBeaver (\href{https://dbeaver.io/}{https://dbeaver.io/})}
 \begin{itemize}
 	\item \textbf{Usuario}: esta entidad representa a cada persona registrada en la aplicación. Distingue entre usuario normal y administrador, al cual se le permite realizar la gestión de documentos y usuarios. Esta entidad maneja un identificador (id) que es la clave primaria, un nombre, un \eng{email} que debe ser único, una contraseña que se almacena cifrada, el último inicio de sesión, el rol, el número de inicios de sesión realizados, el país, el idioma preferido, el modelo de lenguaje seleccionado por defecto y el modo visual de la interfaz.
-	\item \textbf{Consulta}: esta entidad guarda las preguntas que realizan los usuarios, así como las respuestas que da el \eng{LLM} alimentado por el \textit{RAG}. Es la base para el historial de consultas. Cada consulta registra la pregunta formulada, la respuesta obtenida, los fragmentos documentales utilizados como contexto, el tiempo de respuesta, el dispositivo empleado para la ejecución y la fecha de realización de la consulta.
+	\item \textbf{Consulta}: esta entidad guarda las preguntas que realizan los usuarios, así como las respuestas que da el \eng{LLM} alimentado por el \eng{RAG}. Es la base para el historial de consultas. Cada consulta registra la pregunta formulada, la respuesta obtenida, los fragmentos documentales utilizados como contexto, el tiempo de respuesta, el dispositivo empleado para la ejecución y la fecha de realización de la consulta.
 	\item \textbf{Documento}: esta entidad representa un PDF cargado en la aplicación. Su función es mantener la trazabilidad completa del ciclo de vida documental, desde su carga inicial hasta su conversión e indexación. Además de almacenar el nombre del fichero, la ruta y el tamaño, registra el \eng{hash}, el estado de procesamiento, el contenido Markdown generado y diversos metadatos asociados como el número de expediente o el tipo documental. En caso de que sucedan, también almacena los errores ocurridos durante el procesamiento. 
-	\item \textbf{Chunk}: esta entidad representa cada trozo de texto en el que se dividen los documentos para poder generar los \textit{embeddings}. Cada fragmento almacena información sobre el documento al que pertenece, su posición dentro del mismo, el identificador asociado en la base de datos vectorial, el \eng{hash} de la versión del documento, el número de expediente, el tipo documental y otros metadatos necesarios para la recuperación semántica de información.
+	\item \textbf{Chunk}: esta entidad representa cada trozo de texto en el que se dividen los documentos para poder generar los \eng{embeddings}. Cada fragmento almacena información sobre el documento al que pertenece, su posición dentro del mismo, el identificador asociado en la base de datos vectorial, el \eng{hash} de la versión del documento, el número de expediente, el tipo documental y otros metadatos necesarios para la recuperación semántica de información.
 	\item \textbf{Embedding}: esta entidad almacena los metadatos asociados a la respresentación vectorial de un fragmento (\eng{chunks}). A diferencia del vector numérico propiamente dicho, que se almacena en Qdrant, esta entidad conserva información de trazabilidad necesaria para gestionar el proceso de indexación. Concretamente almacena el modelo utilizado para generar el \eng{embedding}, la dimensionalidad del vector, la métrica de similitud empleada y la fecha de creación.
-	\item \textbf{ConsultaChunk}: esta entidad modela la relación entre las consultas y los \textit{chunks} recuperados durante la búsqueda semántica. Permite registrar qué fragmentos fueron utilizados para generar cada respuesta. Además de los identificadores de la consulta y del fragmento, almacena la puntuación de similitud obtenida durante la recuperación y la posición ocupada por cada fragmento dentro del \eng{ranking} de relevancia.
+	\item \textbf{ConsultaChunk}: esta entidad modela la relación entre las consultas y los \eng{chunks} recuperados durante la búsqueda semántica. Permite registrar qué fragmentos fueron utilizados para generar cada respuesta. Además de los identificadores de la consulta y del fragmento, almacena la puntuación de similitud obtenida durante la recuperación y la posición ocupada por cada fragmento dentro del \eng{ranking} de relevancia.
 \end{itemize}
 
 \imagendiagram{Diagramas/Entidades}{Diagrama Entidad/Relación de las entidades principales generado por DBeaver.}{1.1}
@@ -86,7 +86,7 @@ PythIA se ha diseñado como un sistema distribuido basado en servicios (\eng{ser
 	\item \textbf{Capa de aplicación}: aplicación \eng{web} implementada mediante \eng{Flask} y desplegada sobre el servidor WSGI \eng{Gunicorn}. Constituye el núcleo del sistema y coordina la interacción entre los distintos servicios internos.
 	\item \textbf{Base de datos relacional PostgreSQL}: almacena la información persistente de la aplicación, incluyendo usuarios, consultas, documentos y estados de las tareas asíncronas. 
 	\item \textbf{Base de datos vectorial Qdrant}: almacena las representaciones vectoriales (\eng{embeddings}) utilizadas durante la recuperación semántica de información.	
-	\item \textbf{Servicio de modelos \eng{LLM}}: implementado mediante Ollama, proporciona acceso a los modelos de lenguaje empleados para la generación de respuestas y la creación de \textit{embeddings}.
+	\item \textbf{Servicio de modelos \eng{LLM}}: implementado mediante Ollama, proporciona acceso a los modelos de lenguaje empleados para la generación de respuestas y la creación de \eng{embeddings}.
 	\item \textbf{Contenedor de pruebas}: se utiliza para la ejecución automatizada de pruebas funcionales y de cobertura del sistema.
 \end{itemize}
 
@@ -119,7 +119,7 @@ La organización general de estas capas puede observarse en la figura~\ref{fig:A
 
 \begin{itemize}
 	\item \textbf{Capa de presentación}: constituye la interfaz de usuario (IU). Está formada por las plantillas HTML generadas mediante Jinja2 y presentadas en el navegador. La aplicación sigue un enfoque SSR (\eng{Server-Side Rendering}), donde las páginas se renderizan en el servidor antes de enviarse al cliente. Este enfoque reduce la complejidad en el cliente, simplifica el control de acceso, mejora la trazabilidad y simplifica la integración de la lógica del sistema.
-	\item \textbf{Capa de aplicación}: contiene la lógica funcional de la aplicación. Está formada por los controladores organizados mediante \textit{Blueprints}, los servicios de negocio y los procesos asociados al sistema \eng{RAG}. Esta capa recibe las peticiones procedentes de la interfaz, ejecuta las operaciones necesarias y coordina la comunicación con los sistemas de almacenamiento y los servicios de inteligencia artificial.
+	\item \textbf{Capa de aplicación}: contiene la lógica funcional de la aplicación. Está formada por los controladores organizados mediante \eng{Blueprints}, los servicios de negocio y los procesos asociados al sistema \eng{RAG}. Esta capa recibe las peticiones procedentes de la interfaz, ejecuta las operaciones necesarias y coordina la comunicación con los sistemas de almacenamiento y los servicios de inteligencia artificial.
 	\item \textbf{Capa de persistencia}: agrupa los mecanismos encargados del almacenamiento y recuperación de la información. Incluye tanto la base de datos relacional PostgreSQL, utilizada para la persistencia de usuarios, consultas, documentos y estados, como la base de datos vectorial Qdrant, empleada para almacenar los vectores utilizados durante la recuperación semántica. Asimismo, esta capa integra los servicios externos necesarios para el funcionamiento del sistema \eng{RAG}, como los modelos de lenguaje y generación de \eng{embeddings}.	
 \end{itemize}
 
@@ -130,14 +130,15 @@ Aunque la arquitectura cliente-servidor permite comprender la organización gene
 \imagendiagram{Arquitectura/Arquitectura_4capas.pdf}{Arquitectura de 4 capas de la aplicación PythIA detallando la interacción entre los controladores, servicios y entidades.}{1}
 
 \begin{itemize}
-	\item \textbf{Capa de presentación}: es el punto de interacción entre los usuarios y el sistema. Está formada por los controladores implementados mediante \textit{Blueprints} de Flask y por las plantillas HTML generadas mediante Jinja2. Los controladores se encuentran organizados según las funcionalidades de la aplicación. Reciben las peticiones HTTP procedentes del navegador, validan la información recibida y delegan el procesamiento en los servicios correspondientes de la capa de negocio.
-	\item \textbf{Capa de negocio}: implementa la lógica funcional de la aplicación. Está formada por un conjunto de servicios especializados que encapsulan las operaciones principales del sistema. Muchos de los servicios colaboran entre sí. Por ejemplo, el servicio RAG utiliza el servicio de \textit{retrieval} para recuperar los fragmentos relevantes antes de generar una respuesta, mientras que el servicio de gestión documental puede invocar los servicios de Markdown, indexación o \textit{web scraping} durante el procesamiento de documentos.
+	\item \textbf{Capa de presentación}: es el punto de interacción entre los usuarios y el sistema. Está formada por los controladores implementados mediante \eng{Blueprints} de Flask y por las plantillas HTML generadas mediante Jinja2. Los controladores se encuentran organizados según las funcionalidades de la aplicación. Reciben las peticiones HTTP procedentes del navegador, validan la información recibida y delegan el procesamiento en los servicios correspondientes de la capa de negocio.
+	\item \textbf{Capa de negocio}: implementa la lógica funcional de la aplicación. Está formada por un conjunto de servicios especializados que encapsulan las operaciones principales del sistema. Muchos de los servicios colaboran entre sí. Por ejemplo, el servicio RAG utiliza el servicio de \eng{retrieval} para recuperar los fragmentos relevantes antes de generar una respuesta, mientras que el servicio de gestión documental puede invocar los servicios de Markdown, indexación o \eng{web scraping} durante el procesamiento de documentos.
 	\item \textbf{Capa de datos}: proporciona los mecanismos de persistencia empleados por la aplicación. PostgreSQL almacena toda la información relacional del sistema, mientras que Qdrant almacena las representaciones vectoriales utilizadas durante la recuperación semántica.
 	\item \textbf{Servicios externos}: la aplicación integra diversos servicios externos especializados que amplían sus capacidades.
 \end{itemize}
 
 
 \subsection{Arquitectura de la aplicación \eng{web}}
+\label{dis:MVC}
 La aplicación \eng{web} se ha desarrollado utilizando Flask y siguiendo una arquitectura basada en el patrón Modelo--Vista--Controlador (MVC)\footnote{Patrón arquitectónico de software que separa el código en tres capas independientes (modelo, vista y controlador)~\cite{diseño:MVC}} complementado con una capa de servicios. Esta organización permite separar claramente la interfaz de usuario, el control de las peticiones, la lógica de negocio y la persistencia de los datos, facilitando el mantenimiento y la evolución del sistema.
 
 Además la aplicación sigue un enfoque \eng{Server-Side-Rendered} (SSR)~\cite{diseño:SSR}, donde las páginas HTML se generan en el servidor y se envían completamente renderizadas al navegador.
@@ -171,6 +172,257 @@ El \textbf{\eng{pipeline} de generación} se ejecuta cuando el usuario hace una 
 
 \section{Diseño procedimental} \label{dis:proc}
 
+En esta sección se describe el comportamiento dinámico de la aplicación durante su ejecución, complementando el diseño arquitectónico presentado anteriormente. Para ello se presentan los principales patrones de diseño utilizados en la implementación, los mecanismos empleados para garantizar la consistencia de los datos y la lógica de dominio del sistema, así como los procesos más relevantes de la aplicación y la interacción existente entre sus distintos componentes.
+
+Para facilitar su comprensión, se utilizan diagramas de secuencia UML que muestran la comunicación entre usuarios, controladores, servicios de negocio, bases de datos y servicios externos. Los diagramas se han realizado utilizando la herramienta \myhref{https://www.plantuml.com/plantuml/uml/SyfFKj2rKt3CoKnELR1Io4ZDoSa700003}{PlantUML}.
+
+\subsection{Patrones de diseño utilizados}
+
+Durante el desarrollo de PythIA se han utilizado diversos patrones de diseño con el objetivo de mejorar la mantenibilidad, reutilización y escalabilidad del sistema. Estos patrones permiten estructurar el código de forma más modular y facilitan la evolución futura de la aplicación.
+
+\begin{itemize}
+	\item \textbf{Patrón Singleton}: se utiliza para gestionar la conexión con la base de datos vectorial Qdrant. Este patrón garantiza que exista una única instancia del cliente encargada de comunicarse con el servidor vectorial durante toda la ejecución de la aplicación. Gracias a esta aproximación se evita la creación repetida de conexiones, se reduce el consumo de recursos y se centraliza la configuración de acceso a Qdrant. Además, cualquier componente de la aplicación que necesite realizar operaciones de recuperación o indexación utiliza la misma instancia compartida.
+	\item \textbf{Patrón Service Layer}: la lógica de negocio se encuentra encapsulada en una capa de servicios independiente de los controladores \eng{web}. Permite separar las responsabilidades asociadas a la gestión de usuarios, documentos, consultas RAG, indexación documental, evaluación y tareas asíncronas. De esta forma, los controladores se limitan a gestionar las peticiones HTTP y delegan el procesamiento en los servicios correspondientes. Esta separación favorece la reutilización del código y reduce el acoplamiento entre la interfaz \eng{web} y la lógica de negocio.
+	\item \textbf{Herencia para la gestión de tareas asíncronas}: todas las entidades encargadas de monitorizar procesos de larga duración derivan de la clase abstracta \eng{State}, que define los atributos y comportamientos comunes necesarios para gestionar el ciclo de vida de una tarea. De esta clase abstracta heredan las entidades \eng{RAGQueryState}, \eng{MarkdownConversionState}, \eng{VectorUpdateState}, \eng{WebScrapingState} y \eng{RAGEvaluationState}. Permitiendo reducir la duplicación de código y facilita la incorporación de nuevos tipos de tareas asíncronas en el futuro.
+\item \textbf{Patrón MVC}: como se ha explicado anteriormente (ver sección~\ref{dis:MVC}) la aplicación \eng{web} sigue una arquitectura basada en el patrón Modelo--Vista--Controlador (MVC). Las vistas se implementan mediante plantillas HTML renderizadas con Jinja2, los controladores se organizan mediante \eng{Blueprints} de Flask y los modelos representan las entidades persistentes almacenadas en la base de datos.
+\end{itemize}
+
+\subsection{Gestión de la consistencia y lógica de dominio}
+
+La lógica de dominio de PythIA se encuentra centralizada en la capa de servicios, responsable de coordinar las operaciones realizadas sobre los distintos elementos del sistema y de garantizar la consistencia de la información almacenada. Esta aproximación evita que los controladores \eng{web} o las entidades de persistencia incorporen reglas de negocio complejas, favoreciendo una arquitectura más mantenible y desacoplada.
+
+Uno de los principales mecanismos de consistencia implementados es la sincronización entre la base de datos relacional PostgreSQL y la base de datos vectorial Qdrant. Mientras PostgreSQL almacena los documentos, consultas, usuarios y metadatos asociados al sistema, Qdrant mantiene los \eng{embeddings} utilizados durante la recuperación semántica. Para evitar inconsistencias entre ambas fuentes de información, los procesos de indexación y actualización documental verifican continuamente el estado de los documentos mediante identificadores y funciones \eng{hash}, permitiendo detectar documentos nuevos, modificados o eliminados.
+
+Además, la aplicación mantiene la trazabilidad completa de las respuestas generadas por el sistema RAG. Cada consulta realizada por un usuario almacena la pregunta original, la respuesta generada, los fragmentos documentales utilizados durante la recuperación y los metadatos asociados a dichos fragmentos. Gracias a ello es posible identificar posteriormente el origen de la información utilizada para construir cada respuesta.
+
+Otra regla importante de negocio es la gestión de permisos basada en roles. El sistema distingue entre usuarios estándar y administradores. Determinadas operaciones, como la gestión documental, la administración de usuarios, la ejecución de procesos de evaluación o el lanzamiento de tareas de \eng{web scraping}, únicamente pueden ser realizadas por usuarios con privilegios de administrador.
+
+La ejecución de tareas asíncronas incorpora también mecanismos específicos para garantizar la consistencia del sistema. Cada proceso mantiene un estado persistente que registra su progreso, resultado y posibles errores. Esto permite recuperar información sobre tareas interrumpidas y evita que se produzcan inconsistencias cuando varias operaciones se ejecutan simultáneamente.
+
+La aplicación incorpora un mecanismo de priorización de consultas que otorga preferencia a las peticiones realizadas por los usuarios frente a procesos de mantenimiento como la indexación documental, la conversión a Markdown, el \eng{web scraping} o la evaluación automática. De esta forma se garantiza una experiencia de uso fluida sin comprometer la integridad de los datos ni el correcto funcionamiento de los procesos internos.
+
+\subsection{Interacción entre los elementos del sistema}
+
+A continuación se describen se describen los principales procesos implementados en PythIA, mostrando cómo interactúan los distintos componentes de la aplicación para llevar a cabo sus funcionalidades más relevantes.
+
+\subsubsection{Proceso de autenticación de usuarios}
+
+La autenticación permite verificar la identidad de los usuarios antes de acceder a las funcionalidades de la aplicación PythIA, garantizando que solo los usuarios registrados puedan utilizar le sistema. También, permite restringir el acceso por rol.
+
+Los pasos para iniciar sesión son:
+\begin{enumerate}
+	\item Usuario accede a la página de inicio de sesión e introduce sus credenciales. 
+	\item El controlador de autenticación recibe las peticiones y delega la validación en el servicio de autenticación.
+	\item El servicio de autenticación consulta la base de datos relacional (PostgreSQL) para localizar la cuenta asociada al correo electrónico introducido y verifica que la contraseña proporcionada coincide con la almacenada de forma cifrada.
+	\begin{itemize}
+		\item Si las credenciales son válidas:
+		\begin{enumerate}
+			\item Se crea una sesión autenticada.
+			\item Se actualiza la fecha de último inicio de sesión y el número total de accesos.
+			\item El sistema redirige al usuario a la página principal de la aplicación.
+		\end{enumerate} 
+		\item Si las credenciales son inválidas:
+		\begin{enumerate}
+			\item El sistema devuelve un mensaje de error indicando que las credenciales son incorrectas.
+		\end{enumerate}
+	\end{itemize}
+\end{enumerate}
+
+En la figura ~\ref{fig:Diagramas/secuencia/Inicio_sesion} se puede observar el diagrama de secuencia correspondiente al proceso de inicio de sesión en la aplicación.
+
+\imagendiagram{Diagramas/secuencia/Inicio_sesion}{Diagrama de secuencia del proceso inicio de sesión en la aplicación PythIA.}{1}
+
+Además del inicio de sesión, el sistema permite el registro de nuevos usuarios, aplicando la validación del correo electrónico mediante servicios externos (Emailable).
+
+Los pasos para el registro de un nuevo usuario son:
+\begin{enumerate}
+	\item El usuario accede a la página de registro e introduce su nombre, correo electrónico y contraseña.
+	\item El controlador de autenticación recibe la petición y delega el proceso en el servicio de autenticación.
+	\item El servicio de autenticación verifica que los datos introducidos cumplen las validaciones establecidas.
+	\item El servicio de autenticación solicita al servicio de validación de correo electrónico la comprobación de la dirección introducida.
+	\begin{itemize}
+		\item Si el correo electrónico no es válido:
+		\begin{enumerate}
+			\item El sistema muestra un mensaje de error indicando que la dirección de correo no es válida.
+		\end{enumerate}
+		\item Si el correo electrónico es válido:
+		\begin{enumerate}
+			\item El servicio consulta la base de datos para comprobar que no existe otro usuario registrado con la misma dirección de correo.
+			\item Si el correo ya está registrado, el sistema muestra un mensaje de error indicando que la cuenta ya existe.	
+			\item Si el correo no está registrado:
+			\begin{enumerate}
+				\item Se cifra la contraseña utilizando un algoritmo seguro de almacenamiento de contraseñas.
+				\item Se crea el nuevo usuario en la base de datos relacional.	
+				\item Se asigna el rol de usuario estándar y se inicializan las preferencias por defecto de la cuenta.		
+				\item El sistema informa al usuario de que el registro se ha completado correctamente.
+			\end{enumerate}
+		\end{enumerate}
+	\end{itemize}
+\end{enumerate}
+
+En la figura~\ref{fig:Diagramas/secuencia/Registro} se puede observar el diagrama de secuencia correspondiente al proceso de registro de usuarios en la aplicación.
+
+\imagendiagram{Diagramas/secuencia/Registro}{Diagrama de secuencia del proceso de registrar un usuario nuevo en la aplicación PythIA (con validación de correo electrónico).}{1}
+
+\subsubsection{Proceso de consulta RAG}
+
+La consulta mediante el sistema RAG constituye la funcionalidad principal de PythIA. Los pasos pasos que el sistema lleva acabo para dar una respuesta a la consulta del usuario son:
+\begin{enumerate}
+	\item El usuario accede a la página de consultas, selecciona el modelo de lenguaje deseado e introduce una pregunta.
+	\item El controlador RAG recibe la petición y crea una nueva tarea asíncrona para procesar la consulta.
+	\item El servicio RAG genera el \eng{embedding} de la pregunta utilizando el mismo modelo de \eng{embeddings} empleado durante la indexación documental.
+	\item El servicio de \eng{retrieval} consulta la base de datos vectorial Qdrant para recuperar los fragmentos documentales (\eng{chunks}) más relevantes.
+	\item Qdrant devuelve los fragmentos con mayor similitud semántica junto con sus metadatos asociados.
+	\item El servicio RAG construye un \eng{prompt} aumentado incorporando la pregunta del usuario y los fragmentos recuperados.
+	\item El \eng{prompt} generado se envía al modelo de lenguaje a través del servicio Ollama.
+	\item El modelo de lenguaje genera una respuesta contextualizada utilizando la información recuperada.
+	\item El servicio RAG almacena la consulta realizada, la respuesta generada y los fragmentos utilizados en la base de datos relacional.
+	\item El estado de la tarea se actualiza como finalizado y la respuesta se muestra al usuario junto con la información de trazabilidad correspondiente.
+\end{enumerate}
+
+Este procedimiento permite combinar la capacidad de razonamiento y generación de texto de los modelos de lenguaje con información específica contenida en los documentos indexados por la aplicación. Además, la conservación de los fragmentos recuperados y sus metadatos permite proporcionar trazabilidad sobre el origen de la información utilizada para generar cada respuesta.
+
+En la figura~\ref{fig:Diagramas/secuencia/Consulta_rag} se puede observar el diagrama de secuencia correspondiente al proceso de consulta mediante el sistema RAG.
+
+\imagendiagram{Diagramas/secuencia/Consulta_rag}{Diagrama de secuencia del proceso de realizar una consulta en la aplicación PythIA.}{1}
+
+\subsubsection{Proceso de carga e indexación documental}
+
+La carga e indexación documental es el procedimiento encargado de incorporar nuevos documentos a la base de conocimiento de PythIA.
+
+Los pasos para indexar un documento a la aplicación son:
+\begin{enumerate}
+	\item El administrador accede a la página de gestión documental y selecciona los documentos que desea incorporar al sistema.
+	\item El controlador de administración recibe la petición y almacena los archivos en el repositorio documental de la aplicación.
+	\item Se registra cada documento en la base de datos relacional con el estado inicial de procesamiento.
+	\item El sistema crea una tarea asíncrona de indexación documental.
+	\item El servicio Markdown convierte los documentos PDF a formato Markdown. En caso necesario, se aplican técnicas de OCR para extraer el contenido textual.
+	\item El contenido generado se limpia y normaliza para facilitar su posterior procesamiento.
+	\item El servicio de indexación divide el documento en fragmentos (\eng{chunks}) de tamaño adecuado para la recuperación semántica.
+	\item Para cada fragmento se genera su correspondiente \eng{embedding}.
+	\item Los \eng{embeddings} y sus metadatos asociados se almacenan en la base de datos vectorial Qdrant.
+	\item Se actualizan los metadatos del documento y se registra la información de los fragmentos generados.
+	\item El estado de la tarea se actualiza como finalizado y el sistema notifica al administrador la finalización del proceso.
+\end{enumerate}
+
+Una vez completado este procedimiento, los documentos quedan disponibles para ser utilizados durante las consultas realizadas por los usuarios.
+
+En la figura~\ref{fig:Diagramas/secuencia/Indexar} se puede observar el diagrama de secuencia correspondiente al proceso de cargar e indexar un nuevo documento en la base de conocimiento de la aplicación.
+
+\imagendiagram{Diagramas/secuencia/Indexar}{Diagrama de secuencia del proceso de cargar e indexar un nuevo documento en la aplicación PythIA.}{1}
+
+\subsubsection{Proceso de actualización de la base documental}
+
+La actualización de la base de datos documental es el procedimiento encargado de mantener sincronizados los documentos en la aplicación con la base de datos vectorial. 
+
+Los pasos para actualizar la base documental de la aplicación son:
+\begin{enumerate}
+	\item El administrador solicita la actualización de la base documental.
+	\item El controlador de administración crea una tarea asíncrona de actualización documental.
+	\item El servicio de indexación obtiene el listado de documentos almacenados y consulta la información registrada en la base de datos.
+	\item Para cada documento se calcula su \eng{hash} y se compara con la versión previamente indexada.
+	\begin{itemize}
+		\item Si el documento no ha sufrido modificaciones, se mantiene la información existente.
+		\item Si el documento es nuevo o ha sido modificado:
+		\begin{enumerate}
+			\item Se eliminan los fragmentos y vectores asociados a versiones anteriores.
+			\item El documento se convierte a formato Markdown.
+			\item El contenido se segmenta en \eng{chunks}.
+			\item Se generan los nuevos \eng{embeddings}.
+			\item Los vectores resultantes se almacenan en Qdrant.
+			\item Se actualizan los metadatos asociados en PostgreSQL.
+		\end{enumerate}
+	\end{itemize}
+	\item Si un documento ha sido eliminado del repositorio documental, también se eliminan sus vectores y metadatos asociados.
+	\item El sistema actualiza el estado de la tarea y registra el resultado de la sincronización.
+	\item Una vez finalizado el proceso, la base documental queda preparada para ser utilizada por el sistema RAG.
+\end{enumerate}
+
+Este procedimiento garantiza la consistencia entre los documentos almacenados, los metadatos persistidos en PostgreSQL y los vectores indexados en Qdrant, evitando que el sistema utilice información obsoleta durante la recuperación semántica.
+
+En la figura~\ref{fig:Diagramas/secuencia/Actualizar} se puede observar el diagrama de secuencia correspondiente al proceso de actualización de la base documental.
+
+\imagendiagram{Diagramas/secuencia/Actualizar}{Diagrama de secuencia del proceso de actualizar la base documental de la aplicación PythIA.}{1}
+
+\subsubsection{Proceso de web scraping}
+
+El proceso de \eng{web scraping} permite automatizar la obtención de documentación desde la plataforma \contsec{}. Esta funcionalidad facilita la incorporación masiva de expedientes al sistema sin necesidad de realizar cargas manuales.
+
+Los pasos para cargar los documentos de manera automática mediante el \eng{web scraping} son:
+\begin{enumerate}
+	\item El administrador accede a la página de gestión documental e inicia un nuevo proceso de \eng{web scraping}.	
+	\item El controlador de administración crea una tarea asíncrona de descarga y delega su ejecución al servicio de \eng{web scraping}.
+	\item El servicio accede al portal de contratación configurado y obtiene el listado de expedientes disponibles.
+	\item Para cada expediente encontrado se extraen los metadatos disponibles y las referencias a los documentos asociados.
+	\item El sistema descarga los documentos vinculados a cada expediente.
+	\item Los documentos descargados se almacenan en el repositorio documental de la aplicación.
+	\item Se registran los metadatos correspondientes en la base de datos relacional.
+	\item El estado de la tarea se actualiza periódicamente para reflejar el progreso alcanzado.
+	\item Una vez finalizada la descarga, el sistema registra el resultado del proceso y actualiza el estado de la tarea.
+	\item Los documentos descargados quedan disponibles para su posterior indexación y utilización por el sistema RAG.
+\end{enumerate}
+
+Este procedimiento permite mantener actualizada la colección documental de forma automática y constituye una de las principales vías de incorporación de información al sistema. 
+
+En la figura~\ref{fig:Diagramas/secuencia/Web_scraping} se puede observar el diagrama de secuencia correspondiente al proceso de obtención de licitaciones a través de \eng{web scraping}.
+
+\imagendiagram{Diagramas/secuencia/Web_scraping}{Diagrama de secuencia del proceso de \eng{web scraping} de la aplicación PythIA.}{1}
+
+\subsubsection{Proceso de evaluación del sistema RAG}
+
+La evaluación del sistema RAG permite medir de forma objetiva la calidad de las respuestas generadas por la aplicación. 
+
+Los pasos son:
+\begin{enumerate}
+	\item El administrador accede a la página de evaluación e inicia la evaluación.
+	\item El controlador de evaluación crea una tarea asíncrona de evaluación y delega su ejecución al servicio de evaluación.
+	\item El servicio de evaluación selecciona los documentos que formarán parte del conjunto de evaluación.
+	\item Se generan automáticamente preguntas a partir de los documentos seleccionados y se construye el conjunto de datos de evaluación.
+	\item Para cada pregunta generada se ejecuta una consulta completa sobre el sistema RAG.
+	\item El sistema recupera los fragmentos documentales relevantes desde la base de datos vectorial y genera las respuestas correspondientes mediante el modelo de lenguaje seleccionado.
+	\item Las preguntas, respuestas y contextos recuperados se almacenan temporalmente en el conjunto de evaluación.
+	\item Una vez finalizada la generación de respuestas, se calculan las métricas de evaluación configuradas, incluyendo métricas basadas en RAGAS y similitud de \eng{embeddings}.
+	\item Los resultados obtenidos se almacenan en los archivos de salida correspondientes y se registran en el estado de evaluación.
+	\item El sistema actualiza el estado de la tarea como finalizado y pone los resultados a disposición de los usuarios para su consulta.
+\end{enumerate}
+
+Este procedimiento permite evaluar de forma sistemática la calidad del sistema RAG completo, facilitando la comparación entre distintos modelos de lenguaje y configuraciones de recuperación.
+
+En la figura~\ref{fig:Diagramas/secuencia/Evaluacion} se puede observar el diagrama de secuencia correspondiente al proceso de evaluación del sistema RAG.
+
+\imagendiagram{Diagramas/secuencia/Evaluacion}{Diagrama de secuencia del proceso de evaluación del sistema RAG de la aplicación PythIA.}{1}
+
+\subsubsection{Gestión de tareas asíncronas}
+
+Diversos procesos de la aplicación requieren tiempos de ejecución elevados debido al volumen de información procesada o al coste computacional asociado. Para evitar que estas operaciones bloqueen la interfaz de usuario, se implementa un sistema de ejecución asíncrona que permite realizar dichas tareas en segundo plano mientras el usuario continúa utilizando la aplicación con normalidad.
+
+Los pasos para la gestión de tareas asíncronas son:
+\begin{enumerate}
+	\item El usuario o administrador inicia una operación que requiere ejecución asíncrona.
+	\item El controlador correspondiente delega la petición en el servicio de tareas asíncronas.
+	\item El sistema crea una nueva entidad de estado asociada al proceso (\eng{RAGQueryState}, \eng{MarkdownConversionState}, \eng{VectorUpdateState}, \eng{WebScrapingState} o \eng{RAGEvaluationState}).
+	\item Se registra la información inicial de la tarea y se almacena en la base de datos relacional.
+	\item El servicio de tareas asíncronas crea un nuevo hilo de ejecución y lanza el proceso solicitado.
+	\item Durante la ejecución, el proceso actualiza periódicamente su progreso, mensajes informativos y posibles errores.
+	\item El usuario puede consultar en cualquier momento el estado de la tarea desde la interfaz de la aplicación.
+	\item Una vez finalizado el proceso, el sistema registra los resultados obtenidos y actualiza el estado de la tarea como completado o fallido.
+	\item La información permanece almacenada para permitir su posterior consulta.
+\end{enumerate}
+
+Este mecanismo permite mejorar significativamente la experiencia de usuario, evitando tiempos de espera prolongados y proporcionando información detallada sobre el estado de las operaciones de larga duración ejecutadas por el sistema.
+
+En la figura~\ref{fig:Diagramas/secuencia/Asincronas} se puede observar el diagrama de secuencia genérico correspondiente a los procesos de las tareas asíncronas del sistema.
+
+\imagendiagram{Diagramas/secuencia/Asincronas}{Diagrama de secuencia del proceso de las tareas asíncronas de la aplicación PythIA.}{1}
+
+Las consultas realizadas por los usuarios constituyen la funcionalidad principal de la aplicación y, por tanto, tienen prioridad sobre el resto de tareas asíncronas del sistema.Se pretende minimizar el tiempo de espera del usuario hasta obtener una respuesta incluso cuando hay procesos largos en segundo plano. 
+
+Es por ello que cuando se inicia una consulta el sistema comprueba si existen otras tareas asíncronas activas. Si se detectan procesos en ejecución, estos son pausados temporalmente antes de comenzar la consulta. Una vez pausadas estas tareas de menor prioridad, la consulta continúa su ejecución utilizando los recursos disponibles del sistema. Al finalizar la generación de la respuesta, los procesos previamente pausados son reanudados desde el punto en el que fueron interrumpidos, continuando su ejecución normal.
+
+En la figura~\ref{fig:Diagramas/secuencia/Prioridad_consulta} se muestra el diagrama de secuencia correspondiente al mecanismo de priorización de consultas.
+
+\imagendiagram{Diagramas/secuencia/Prioridad_consulta}{Diagrama de secuencia del proceso de consulta cuando existen tareas asíncronas activas.}{1}
+
 \section{Diseño de interfaces} \label{dis:int}
 
 El diseño de las interfaces se ha desarrollado de manera incremental. Inicialmente se hicieron bocetos genéricos para plasmar las principales funcionalidades de la aplicación. Posteriormente se fue iterando sobre esos diseños hasta llegar a las interfaces finales de la \eng{web}.
@@ -189,7 +441,7 @@ Los prototipos iniciales que se crearon se ilustran en las figuras ~\ref{fig:Dis
 \imagenflotante{Diseño_interfaces/prototipos/Edit_user}{Prototipo de la página de edición del usuario.}
 \imagenflotante{Diseño_interfaces/prototipos/Documents}{Prototipo de la página de gestión de documentos.}
 
-Aunque estos prototipos se asemejan mucho a las interfaces finales, se han realizado diversos cambios. Por ejemplo, se ha cambiado la cabecera para aportar más información como el nombre del usuario que inicia sesión, su rol (usuario normal o administrador) y su último inicio de sesión (ver imagen de la cabecera final~\ref{fig:Diseño_interfaces/Cabecera}). Además, se ha añadido a la tabla del historial de consultas y a la de documentos cargados información relevante que no se había valorado inicialmente. En la tabla del historial de consultas se han añadido diversos campos para aportar toda la información relevante sobre la consulta. Añadiendo el documento al que pertenece el \eng{chunk} principal y la fecha en la que el usuario hizo la consulta. Para el administrador, también, se ha añadido una columna en la que se indica el nombre del usuario que hizo la consulta. Además, para mejorar la legibilidad de la tabla se ha decidido ubicar la respuesta debajo de la fila en un desplegable (ver imagen del historial de consulta definitivo~\ref{fig:Diseño_interfaces/Table_asks}). Por su parte, en la tabla donde se muestran los documentos cargados del sistema se han añadido dos columnas, una que indica el tamaño del documento y otra que indica el estado de ese documento en el sistema (cargado, indexado o fallido) (ver imagen del diseño final de la tabla documentos~\ref{fig:Diseño_interfaces/Table_documents}). Otro aspecto relevante es que en la página para realizar la consulta se ha añadido un desplegable para ver los \textit{chunks} utilizados (ver imagen de la página de consultas definitiva~\ref{fig:Diseño_interfaces/RAG_def}).
+Aunque estos prototipos se asemejan mucho a las interfaces finales, se han realizado diversos cambios. Por ejemplo, se ha cambiado la cabecera para aportar más información como el nombre del usuario que inicia sesión, su rol (usuario normal o administrador) y su último inicio de sesión (ver imagen de la cabecera final~\ref{fig:Diseño_interfaces/Cabecera}). Además, se ha añadido a la tabla del historial de consultas y a la de documentos cargados información relevante que no se había valorado inicialmente. En la tabla del historial de consultas se han añadido diversos campos para aportar toda la información relevante sobre la consulta. Añadiendo el documento al que pertenece el \eng{chunk} principal y la fecha en la que el usuario hizo la consulta. Para el administrador, también, se ha añadido una columna en la que se indica el nombre del usuario que hizo la consulta. Además, para mejorar la legibilidad de la tabla se ha decidido ubicar la respuesta debajo de la fila en un desplegable (ver imagen del historial de consulta definitivo~\ref{fig:Diseño_interfaces/Table_asks}). Por su parte, en la tabla donde se muestran los documentos cargados del sistema se han añadido dos columnas, una que indica el tamaño del documento y otra que indica el estado de ese documento en el sistema (cargado, indexado o fallido) (ver imagen del diseño final de la tabla documentos~\ref{fig:Diseño_interfaces/Table_documents}). Otro aspecto relevante es que en la página para realizar la consulta se ha añadido un desplegable para ver los \eng{chunks} utilizados (ver imagen de la página de consultas definitiva~\ref{fig:Diseño_interfaces/RAG_def}).
 
 \imagenflotante{Diseño_interfaces/Cabecera}{Diseño de interfaz -- Cabecera.}
 
