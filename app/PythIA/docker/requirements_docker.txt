@@ -69,12 +69,13 @@ transformers==4.57.6
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3
-urllib3==2.6.3
+urllib3==1.26.18
 Werkzeug==3.1.4
 WTForms==3.2.1
 gunicorn==22.0.0
 Flask-Mail
 itsdangerous
+selenium==3.141.0
 
 # Dependencias de evaluación RAG (ARES/RAGAS)
 -r /app/requirements_evaluation.txt
