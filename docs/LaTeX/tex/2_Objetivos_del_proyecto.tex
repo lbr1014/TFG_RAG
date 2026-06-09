@@ -14,7 +14,7 @@ Los objetivos identificados en el presente trabajo fin de grado son los siguient
 	\item Preprocesar la colección documental.
 	\begin{itemize}
 	\tightlist 
-		\item Convertir la colección documental (recopilada inicialmente en \file{PDF}) a \file{Markdown}.
+		\item Convertir la colección documental (recopilada inicialmente en PDF) a Markdown.
 		\item Normalizar y limpiar el texto eliminando ruido, caracteres no deseados y formatos inconsistentes.
 		\item Segmentar los documentos en fragmentos (\eng{chunks}).
 		\item Generar \eng{embeddings} para representar semánticamente los fragmentos.
@@ -34,17 +34,17 @@ Los objetivos identificados en el presente trabajo fin de grado son los siguient
 	\tightlist
 		\item Transformar la consulta del usuario en su representación vectorial.
 		\item Recuperar los fragmentos más relevantes de la base de datos vectorial.
-		\item Utilizar los fragmentos recuperados para enriquecer el \eng{prompt} del usuario y así construir el \eng{prompt} aumentado que finalmente se pasa al \eng{Large Language Model} (\eng{LLM}).
-		\item Integrar distintos modelos \eng{LLM} y evaluar su comportamiento dentro del sistema RAG.
+		\item Utilizar los fragmentos recuperados para enriquecer el \eng{prompt} del usuario y así construir el \eng{prompt} aumentado que finalmente se pasa al \eng{Large Language Model} (LLM).
+		\item Integrar distintos modelos LLM y evaluar su comportamiento dentro del sistema RAG.
 		\item Mostrar la trazabilidad de la respuesta al usuario.
 		\item Implementar un historial de consultas. 
 	\end{itemize}
 	\item Desarrollar interfaz que facilite al usuario la interacción con el modelo para que el proceso de aumentado del \eng{prompt} le sea transparente.
 	\begin{itemize}
 	\tightlist
-		\item Desarrollar una aplicación \eng{web} con \eng{Flask} para que el usuario pueda interactuar con el modelo.
+		\item Desarrollar una aplicación \eng{web} con Flask para que el usuario pueda interactuar con el modelo.
 		\item Implementar soporte \eng{responsive} para distintos tamaños de pantalla.
-		\item Incorporar modo claro y oscuro.
+		\item Incorporar modo claro y oscuro como apariencias visuales del sistema.
 		\item Implementar internacionalización y soporte multilenguaje.
 		\item Incorporar autenticación, gestión de usuarios, recuperación de contraseña y control de acceso basado en roles.
 		\item Implementar paneles de administración para la gestión de documentos y usuarios.
@@ -54,7 +54,7 @@ Los objetivos identificados en el presente trabajo fin de grado son los siguient
 	\item Desplegar y mantener la aplicación
 	\begin{itemize}
 	\tightlist
-		\item Levantar la aplicación \eng{Flask} con \eng{Docker} para la reproducibilidad y el correcto funcionamiento en distintos entornos.
+		\item Levantar la aplicación Flask con Docker para la reproducibilidad y el correcto funcionamiento en distintos entornos.
 		\item Desplegar la aplicación en un entorno preparado para producción utilizando Gunicorn y Nginx.
 		\item Garantizar la seguridad de las comunicaciones mediante certificados SSL/TLS.
 		\item Asignar un dominio DNS a la aplicación para facilitar el acceso.

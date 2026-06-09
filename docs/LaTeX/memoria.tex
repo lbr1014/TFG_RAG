@@ -72,8 +72,8 @@
 \renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
 \titleformat{\subsection}
 {\normalfont\large\bfseries}
-{}     % <- no imprime el número
-{0pt}
+{\thesubsection.}     % <- muestra el número seguido de punto
+{1em}		% <- espacio entre número y título
 {}
 
 % Imágenes
@@ -477,9 +477,9 @@ Dr. \nombreCoTutor
 \begin{abstract}
 La contratación pública genera una gran cantidad de documentación técnica y administrativa cuya consulta manual resulta compleja debido a su volumen, heterogeneidad y especialización. En este Trabajo Fin de Grado se presenta PythIA, un sistema basado en la técnica \eng{Retrieval-Augmented Generation} (RAG) diseñado para facilitar la consulta inteligente de las licitaciones públicas mediante el uso de modelos de lenguaje de gran tamaño (LLM).
 
-El proyecto integra un \eng{pipeline} completo de recuperación semántica capaz de automatizar la obtención de documentos mediante técnicas de \eng{Web Scraping}, convertir los documentos \file{PDF} extraídos a formato \file{Markdown}, fragmentar el contenido en \eng{chunks}, generar \eng{embeddings} y almacenarlos en una base de datos vectorial \file{Qdrant}. A partir de las consultas realizadas por el usuario, el sistema recupera los fragmentos documentales más relevantes y los incorpora al contexto del modelo generativo para mejorar la precisión, actualidad y fiabilidad de las respuestas. Esto permite analizar la relevancia, fidelidad y precisión de las respuestas generadas mediante la combinación de los \eng{frameworks} \file{RAGAS} y \file{ARES} con métricas de \eng{embeddings}.
+El proyecto integra un \eng{pipeline} completo de recuperación semántica capaz de automatizar la obtención de documentos mediante técnicas de \eng{Web Scraping}, convertir los documentos PDF extraídos a formato Markdown, fragmentar el contenido en \eng{chunks}, generar \eng{embeddings} y almacenarlos en una base de datos vectorial Qdrant. A partir de las consultas realizadas por el usuario, el sistema recupera los fragmentos documentales más relevantes y los incorpora al contexto del modelo generativo para mejorar la precisión, actualidad y fiabilidad de las respuestas. Esto permite analizar la relevancia, fidelidad y precisión de las respuestas generadas mediante la combinación de los \eng{frameworks} RAGAS y ARES con métricas de \eng{embeddings}.
 
-Además del diseño e implementación del sistema RAG, el proyecto desarrolla una aplicación \eng{web} utilizando \file{Flask}, incorporando autenticación de usuarios, historial de consultas, gestión documental, internacionalización, visualización de estadísticas y soporte responsive. Esta aplicación \eng{web} ha sido desplegada mediante \file{Docker}, \file{Gunicorn} y \file{Nginx}. 
+Además del diseño e implementación del sistema RAG, el proyecto desarrolla una aplicación \eng{web} utilizando Flask, incorporando autenticación de usuarios, historial de consultas, gestión documental, internacionalización, visualización de estadísticas y soporte \eng{responsive}. Esta aplicación \eng{web} ha sido desplegada utilizando Docker, Gunicorn y Nginx. 
 
 El proyecto demuestra la viabilidad de aplicar arquitecturas RAG en entornos reales de documentación pública, reduciendo las limitaciones tradicionales de los LLM y facilitando el acceso contextualizado a grandes colecciones documentales.
 \end{abstract}
@@ -494,13 +494,13 @@ Modelos de Lenguaje a Gran Escala, Generación Aumentada por recuperación, eval
 % Abstract en inglés
 \renewcommand*\abstractname{Abstract}
 \begin{abstract}
-Public procurement generates a large amount of technical and administrative documentation whose manual consultation is complex due to its volume, heterogeneity, and specialization. This Bachelor’s Thesis presents PythIA, a system based on the Retrieval-Augmented Generation (RAG) technique designed to facilitate the intelligent consultation of public tenders through the use of Large Language Models (\eng{LLMs}).
+Public procurement generates a large amount of technical and administrative documentation whose manual consultation is complex due to its volume, heterogeneity, and specialization. This Bachelor’s Thesis presents PythIA, a system based on the Retrieval-Augmented Generation (RAG) technique designed to facilitate the intelligent consultation of public tenders through the use of Large Language Models (LLMs).
 
-The project integrates a complete semantic retrieval pipeline capable of automating document acquisition through \eng{Web Scraping} techniques, converting extracted \file{PDF} documents into \file{Markdown} format, splitting the content into \eng{chunks}, generating \eng{embeddings}, and storing them in a \file{Qdrant} vector database. Based on user queries, the system retrieves the most relevant document fragments and incorporates them into the context of the generative model to improve the precision, relevance, and reliability of the generated responses. In addition, the system enables the analysis of the relevance, faithfulness, and accuracy of the generated answers by combining the \file{RAGAS} and \file{ARES} frameworks with embedding-based metrics.
+The project integrates a complete semantic retrieval pipeline capable of automating document acquisition through Web Scraping techniques, converting extracted PDF documents into Markdown format, splitting the content into chunks, generating embeddings, and storing them in a Qdrant vector database. Based on user queries, the system retrieves the most relevant document fragments and incorporates them into the context of the generative model to improve the precision, relevance, and reliability of the generated responses. In addition, the system enables the analysis of the relevance, faithfulness, and accuracy of the generated answers by combining the RAGAS and ARES frameworks with embedding-based metrics.
 
-Besides the design and implementation of the RAG system, the project also develops a web application using \file{Flask}. The application incorporates user authentication, query history, document management, internationalization, statistics visualization, and responsive support. The entire system is deployed using \file{Docker}, \file{Gunicorn}, and \file{Nginx}.
+Besides the design and implementation of the RAG system, the project also develops a web application using Flask. The application incorporates user authentication, query history, document management, internationalization, statistics visualization, and responsive support. The entire system is deployed using Docker, Gunicorn, and Nginx.
 
-The project demonstrates the feasibility of applying RAG architectures in real-world public documentation environments, reducing the traditional limitations of \eng{LLMs} and facilitating contextualized access to large document collections.
+The project demonstrates the feasibility of applying RAG architectures in real-world public documentation environments, reducing the traditional limitations of LLMs and facilitating contextualized access to large document collections.
 \end{abstract}
 
 \renewcommand*\abstractname{Keywords}

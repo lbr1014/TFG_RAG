@@ -1,21 +1,21 @@
 \capitulo{3}{Conceptos teóricos}
 
-En este apartado se van a definir los conceptos más relevantes a tener en cuenta sobre el proyecto, por lo cual se considera importante definir qué es el \eng{Web Scraping}, qué es un RAG y cuáles son sus aportaciones más significativas a los \eng{LLM} que ya existen. Además, se considera importante contextualizar su origen, y para ello se va a comenzar explicando qué son los \eng{LLM} y sus principales limitaciones.
+En este apartado se van a definir los conceptos más relevantes a tener en cuenta sobre el proyecto, por lo cual se considera importante definir qué es el \eng{Web Scraping}, qué es un RAG y cuáles son sus aportaciones más significativas a los LLM que ya existen. Además, se considera importante contextualizar su origen, y para ello se va a comenzar explicando qué son los LLM y sus principales limitaciones.
 
 \section{\eng{Web Scraping}}
-\eng{Web Scraping} es el proceso automático de extraer información expuesta en páginas web y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\eng{crawling}), \eng{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
+\eng{Web Scraping} es el proceso automático de extraer información expuesta en páginas \eng{web} y transformarla en datos estructurados. Se realiza mediante programas que descargan y analizan el código HTML o emulan la navegación de un usuario con un navegador controlado por código. Se apoya en técnicas de rastreo (\eng{crawling}), \eng{parseo} y normalización para preparar el dato para su análisis o integración en sistemas~\cite{webScraping}.
 
-Existe una convención estándar, llamada \eng{Robots Exclusion Protocol} (\texttt{robots.txt}), mediante la cual un servidor web indica qué \eng{URLs} se deben evitar rastrear. En este archivo se especifica qué partes del sistema están permitidas o prohibidas para cada tipo de \eng{bot}. Aunque, el incumplimiento de este protocolo no siempre implica por sí mismo una infracción legal, respetarlo constituye una buena práctica ética y técnica en procesos de \emph{web scraping}~\cite{rfc9309}. 
+Existe una convención estándar, llamada \eng{Robots Exclusion Protocol} (\texttt{robots.txt}), mediante la cual un servidor \eng{web} indica qué URL se deben evitar rastrear. En este archivo se especifica qué partes del sistema están permitidas o prohibidas para cada tipo de \eng{bot}. Aunque, el incumplimiento de este protocolo no siempre implica por sí mismo una infracción legal, respetarlo constituye una buena práctica ética y técnica en procesos de \eng{web scraping}~\cite{rfc9309}. 
 
-\section{\eng{LLM}}
-Los \eng{Large Language Model} (\eng{LLM}), que se traduce como los grandes modelos del lenguaje, son modelos de aprendizaje automático que han sido entrenados con grandes conjuntos de datos generados por humanos. Estos datos se usan para encontrar patrones estadísticos y replicar nuestras habilidades lingüísticas. Por lo cual, se puede decir que en esencia son modelos de predicción del siguiente \eng{token} o lo que es lo mismo de la siguiente palabra~\cite{book:RAG_SimpleGuide}.
+\section{LLM}
+Los \eng{Large Language Model} (LLM), que se traduce como los grandes modelos del lenguaje, son modelos de aprendizaje automático que han sido entrenados con grandes conjuntos de datos generados por humanos. Estos datos se usan para encontrar patrones estadísticos y replicar nuestras habilidades lingüísticas. Por lo cual, se puede decir que en esencia son modelos de predicción del siguiente \eng{token} o lo que es lo mismo de la siguiente palabra~\cite{book:RAG_SimpleGuide}.
 
-Algunos ejemplos de LLM son \myhref{https://chat.openai.com}{GPT}, \myhref{https://claude.ai}{Claude}, \myhref{https://gemini.google.com/app?hl=es}{Gemini}, \myhref{https://ai.meta.com/llama/}{LLaMA}, \myhref{https://mistral.ai/}{Mistral} o \myhref{https://qwen.ai/home}{Qwen}. Herramientas como Ollama permiten ejecutar algunos de estos modelos (o sus versiones de parámetros reducidos) en local.
+Algunos ejemplos de LLM son \myhref{https://chat.openai.com}{GPT}, \myhref{https://claude.ai}{Claude}, \myhref{https://gemini.google.com/app?hl=es}{Gemini}, \myhref{https://ai.meta.com/llama/}{LLaMA}, \myhref{https://mistral.ai/}{Mistral} o \myhref{https://qwen.ai/home}{Qwen}. Herramientas como \myhref{https://ollama.com/}{Ollama} permiten ejecutar algunos de estos modelos (o sus versiones de parámetros reducidos) en local.
 
 Las principales características de los LLM son las siguientes:
 \begin{itemize}
 \tightlist
-	\item Naturaleza de predicción del próximo \eng{token}: como se ha mencionado anteriormente los LLM seleccionan la palabra más probable de una distribución. La elección de esta palabra se basa en los patrones estadísticos que ha aprendido con los datos del entrenamiento.
+	\item Naturaleza de predicción del próximo \eng{token}: como se ha mencionado anteriormente, los LLM seleccionan la palabra más probable de una distribución. La elección de esta palabra se basa en los patrones estadísticos que ha aprendido con los datos del entrenamiento.
 	\item Memoria paramétrica: es el conocimiento interno del LLM. Consiste en la información con la que ha sido entrenado y se basa únicamente en sus parámetros. Por lo cual es una memoria limitada y estática.
 \end{itemize}
 
@@ -23,27 +23,27 @@ Las principales limitaciones de los LLM son las siguientes:
 \begin{itemize}
 \tightlist
 	\item Desactualizado: los LLM solo pueden acceder a la información presente en sus datos de entrenamiento, que tienen una fecha límite específica conocida como «fecha de corte del conocimiento». Cualquier evento, descubrimiento o información posterior a esta fecha no estará disponible para el modelo, lo que puede generar respuestas desactualizadas. Además, el entrenamiento de un LLM es muy costoso y requiere mucho tiempo, por lo que estos modelos no se reentrenan con frecuencia, perpetuando esta limitación temporal. 
-	\item Alucinaciones: a veces los LLM dan respuestas incorrectas con gran confianza de manera que parece que la información que te está proporcionando es verdadera. Esto se debe a su naturaleza de predicción del próximo \eng{token}. 
-	\item Limitación de conocimiento: los LLM se entrenan con datos públicos, lo que limita su conocimiento, ya que no tienen conocimientos de información que no sea pública, como, por ejemplo, documentos internos de una empresa, información de los clientes o de los productos.
+	\item Alucinaciones: a veces los LLM dan respuestas incorrectas con gran confianza de manera que parece que la información que está proporcionando es verdadera. Esto se debe a su naturaleza de predicción del próximo \eng{token}. 
+	\item Limitación de conocimiento: los LLM se entrenan con datos públicos, lo que limita su conocimiento, ya que no tienen acceso a información que no sea pública, como, por ejemplo, documentos internos de una empresa, información de los clientes o de los productos.
 \end{itemize}
 
-Para solventar las limitaciones que se han comentado, la solución es darle al LLM el contexto que le falta. El contexto del LLM es la información no paramétrica que se le proporciona en la consulta o \eng{prompt} para que el modelo genere una respuesta más precisa, actual y fundamentada. Para proporcionarle este contexto se puede expandir la memoria del LLM mediante generación aumentada, es decir, incorporando un RAG.
+La solución para solventar estas limitaciones es darle al LLM el contexto\footnote{El contexto del LLM es la información no paramétrica que se le proporciona en la consulta o \eng{prompt} para que el modelo genere una respuesta más precisa, actual y fundamentada.} que le falta. Para proporcionar dicho contexto se puede expandir la memoria del LLM mediante generación aumentada, es decir, incorporando un RAG.
 
 \section{RAG}
-\eng{Retrieval Augmented Generation} (RAG), o en español, generación aumentada por recuperación, es una técnica que consiste en recuperar la información que sea relevante de una fuente externa. Con dicha información se aumenta la entrada al LLM, lo que permite que el LLM genere una respuesta mucho más precisa, contextual y confiable (ver pasos en la imagen~\ref{fig:Memoria/Funcionamiento_RAG}). Para realizar esto, el RAG usa tres pasos: recuperar, aumentar y generar. 
+\eng{Retrieval Augmented Generation} (RAG), o en español, generación aumentada por recuperación, es una técnica que consiste en recuperar la información más relevante de una fuente externa. Con dicha información se aumenta la entrada al LLM, lo que permite que genere una respuesta mucho más precisa, contextual y confiable (ver pasos en la imagen~\ref{fig:Memoria/Funcionamiento_RAG}). Para ello, el RAG usa tres pasos: recuperar, aumentar y generar. 
 
 \imagenflotante{Memoria/Funcionamiento_RAG}{Diagrama del funcionamiento del RAG.}{1}
 
 El RAG combina dos tipos de memoria:
 \begin{itemize}
 \tightlist
-	\item La memoria paramétrica: es la que típicamente tienen los LLM, que como se ha visto es limitada al conocimiento disponible en el momento del entrenamiento y estática. 
-	\item La memoria no paramétrica: es información externa al LLM que se le puede proporcionar. Es un conocimiento externo y dinámico que se puede extender tanto como se desee y que puede contener documentos propietarios.
+	\item \textbf{La memoria paramétrica}: es la que típicamente tienen los LLM, que como se ha visto es limitada al conocimiento disponible en el momento del entrenamiento y estática. 
+	\item \textbf{La memoria no paramétrica}: es información externa al LLM que se le puede proporcionar. Es un conocimiento externo y dinámico que se puede extender tanto como se desee y que puede contener documentos propietarios.
 \end{itemize}
 
 Por lo cual conociendo esto, se puede decir que la generación aumentada por recuperación (RAG) es una metodología que busca ampliar la memoria paramétrica de un LLM incorporando una memoria no paramétrica explícita. A través de un recuperador, se obtiene información relevante de esta memoria externa, la cual se añade al \eng{prompt} y luego se envía al LLM. De esta forma, el modelo puede producir respuestas más contextuales, confiables y precisas~\cite{book:RAG_SimpleGuide}.
 
-Los objetivos de RAG son:
+Los objetivos de un sistema RAG son:
 \begin{itemize}
 \tightlist
 	\item Hacer que los LLM respondan con información actualizada.
@@ -51,20 +51,19 @@ Los objetivos de RAG son:
 	\item Hacer que los LLM tengan acceso a información propietaria.
 \end{itemize}
 
-Las principales ventajas de RAG son:
+Las principales ventajas de un sistema RAG son:
 \begin{itemize}
 \tightlist
-	\item Conocimiento del contexto profundo: esto se debe a que la información adicional ayuda al LLM a generar respuestas contextualmente apropiadas, ya que, las respuestas se basan en datos específicos. Esto aumenta la confianza del usuario.
-	\item Citar fuentes: como la información se extrae de fuentes conocidas las puede citar en su respuesta. Esto incrementa la fiabilidad percibida y permite a los usuarios comprobar la información obtenida.
-	\item Reduce las alucinaciones: el sistema esta anclado a los hechos, por lo que se reducen las respuestas inexactas o falsas. 
+	\item \textbf{Conocimiento del contexto profundo}: esto se debe a que la información adicional ayuda al LLM a generar respuestas contextualmente apropiadas, ya que, las respuestas se basan en datos específicos. Esto aumenta la confianza del usuario.
+	\item \textbf{Trazabilidad}: como la información se extrae de fuentes conocidas el sistema las puede citar en su respuesta. Esto incrementa la fiabilidad percibida y permite a los usuarios comprobar la información obtenida.
+	\item \textbf{Reduce las alucinaciones}: el sistema está anclado a los hechos, por lo que se reducen las respuestas inexactas o falsas. 
 \end{itemize}
 
 \section{Conexión del LLM con el RAG}
-El primer paso es el de recopilar los documentos externos y convertirlos a vectores numéricos (\eng{embeddings}) y almacenarlos. Cuando llega una consulta (\eng{prompt}), en lugar de buscar coincidencias por palabras, se busca en ese espacio vectorial los fragmentos que son semánticamente más parecidos. A esto se le conoce como búsqueda por significado. Esos fragmentos se incorporan como contexto al LLM, de modo que el RAG combina la capacidad de razonamiento del modelo con una recuperación de información altamente precisa. En la imagen~\ref{fig:Memoria/RAG} se puede ver la diferencia de funcionamiento entre un modelo que emplea RAG y uno que no lo hace~\cite{RAG:image}.
+El primer paso es el de recopilar los documentos externos, convertirlos a vectores numéricos (\eng{embeddings}) y almacenarlos. Cuando llega una consulta (\eng{prompt}), en lugar de buscar coincidencias por palabras, se busca en ese espacio vectorial los fragmentos que son semánticamente más parecidos. Este proceso se conoce como búsqueda por significado. Los fragmentos recuperados se incorporan como contexto al LLM, de modo que el RAG combina la capacidad de razonamiento del modelo con una recuperación de información altamente precisa. En la imagen~\ref{fig:Memoria/RAG} se puede ver la diferencia de funcionamiento entre un modelo que emplea un sistema RAG para generar la respuesta y uno que no lo hace~\cite{RAG:image}.
 
 \imagenflotante{Memoria/RAG}{Funcionamiento de un modelo LLM con RAG y otro sin él~\cite{RAG:image}.}{1}
 
-%Capitulos dos, tres y cuatro del libro
 \section{Diseño del RAG}
 Un sistema RAG se construye en dos \eng{pipelines} complementarios, el de indexación (\eng{offline}/asíncrono), y el de generación (\eng{online}/ tiempo real). El primero crea y mantiene la memoria no paramétrica o base de conocimiento. El segundo gestiona la interacción con el usuario, realizando la recuperación, el aumento del \eng{prompt} y la generación de la respuesta. Esta separación es estructural en el diseño de RAG y permite optimizar la precisión y la latencia del sistema~\cite{book:RAG_SimpleGuide}.
 
@@ -83,19 +82,19 @@ Además de crearlo, este \eng{pipeline} mantiene y actualiza el conocimiento bas
 Los componentes clave del \eng{pipeline} de indexación son:
 \begin{itemize}
 \tightlist
-	\item Carga de datos (\eng{data loading}): consiste en conectarse a las fuentes, por ejemplo, sistemas de ficheros, \eng{data lakes}, CMS o APIs, para la extracción del texto en bruto y el parsing de este en formatos heterogéneos, como pueden ser \file{PDF}, \file{DOCX}, \file{JSON} o \file{HTML}. Luego se le añaden metadatos y finalmente se hace limpieza quitando código, etiquetas raras y enmascarando datos confidenciales.
-	\item División de texto (\eng{chunking}): segmentación en unidades manejables, los \eng{chunks}, para mejorar la recuperación y el alineamiento con las capacidades de contexto LLM. Ayuda a respetar la ventana de contexto, mitiga el problema de perdida en el medio\footnote{El problema de la perdida en el medio ocurre cuando los LLM pierden precisión al procesar mucha información, priorizando el inicio y el final~\cite{concpteo:lostmiddle}.} y facilita la búsqueda eficiente. Para dividir el texto puede usar diversos métodos:
+	\item \textbf{Carga de datos} (\eng{data loading}): consiste en conectarse a las fuentes, por ejemplo, sistemas de ficheros, \eng{data lakes}, CMS o API, para la extracción del texto en bruto y el \eng{parsing} de este en formatos heterogéneos, como pueden ser PDF, DOCX, JSON o HTML. Luego se le añaden metadatos y finalmente se hace limpieza quitando código, etiquetas raras y enmascarando datos confidenciales.
+	\item \textbf{División de texto} (\eng{chunking}): segmentación en unidades manejables, los \eng{chunks}, para mejorar la recuperación y el alineamiento con las capacidades de contexto LLM. Ayuda a respetar la ventana de contexto, mitiga el problema de perdida en el medio\footnote{El problema de la perdida en el medio ocurre cuando los LLM pierden precisión al procesar mucha información, priorizando el inicio y el final~\cite{concpteo:lostmiddle}.} y facilita la búsqueda eficiente. Para dividir el texto puede usar diversos métodos:
 	\begin{itemize}
 		\item Tamaño fijo: divide el texto en longitudes uniformes, como un número de caracteres o \eng{tokens}.
 		\item Especializados: divide el texto basándose en su estructura como encabezados o párrafos. 
 		\item Semántico: divide el texto basándose en su similitud de significado usando \eng{embeddings}, aunque este método aun es experimental.
 	\end{itemize}
 	La estrategia elegida dependerá del tipo de contenido, la longitud y complejidad de la consulta, el caso de uso y el modelo de \eng{embeddings}.
-	\item Conversión a vectores (\eng{embeddings}): transforma el texto a representaciones numéricas de $n$ dimensiones. Para conocer si los \eng{chunks} se parecen a la consulta, el sistema mide la distancia entre sus vectores, ya que la proximidad refleja similitud semántica. Hay diversas técnicas para medir la distancia entre los vectores, una de las más utilizadas es la similitud coseno que consiste en que si el ángulo entre dos vectores es muy pequeño su similitud es casi uno, pero hay otras como la distancia euclidiana. Hay modelos preentrenados abiertos y propietarios, la elección dependerá de su uso, rendimiento, recuperación y coste.
-	\item Almacenamiento: los \eng{embeddings} se almacenan en bases de datos vectoriales diseñadas para vectores de altas dimensiones. Estas bases de datos vectoriales permiten la búsqueda eficiente sobre \eng{embeddings} y metadatos. Hay diversas opciones:
+	\item \textbf{Conversión a vectores} (\eng{embeddings}): transforma el texto a representaciones numéricas de $n$ dimensiones. Para conocer si los \eng{chunks} se parecen a la consulta, el sistema mide la distancia entre sus vectores, ya que la proximidad refleja similitud semántica. Hay diversas técnicas para medir la distancia entre los vectores, una de las más utilizadas es la similitud coseno que consiste en que si el ángulo entre dos vectores es muy pequeño su similitud es casi uno, pero hay otras como la distancia euclidiana. Hay modelos preentrenados abiertos y propietarios, la elección dependerá de su uso, rendimiento, recuperación y coste.
+	\item \textbf{Almacenamiento}: los \eng{embeddings} se almacenan en bases de datos vectoriales diseñadas para vectores de altas dimensiones. Estas bases de datos vectoriales permiten la búsqueda eficiente sobre \eng{embeddings} y metadatos. Hay diversas opciones:
 	\begin{itemize}
 		\item Índices vectoriales: son bibliotecas mínimas centradas en indexación y búsqueda de alta dimensión, no gestionan datos ni ofrecen consultas ricas o interfaces de bases de datos. Ejemplos: \myhref{https://faiss.ai/index.html}{FAISS}, \myhref{https://nmslib.github.io/nmslib/}{NMSLIB}, \myhref{https://github.com/spotify/annoy}{ANNOY}, \myhref{https://milvus.io/docs/es/scann.md}{ScaNN}. Son útiles cuando se desea máximo control y rendimiento sin sobrecarga de base de datos.
-		\item Bases de datos vectoriales especializadas: añaden a lo anterior gestión de datos, seguridad, escalado, extensibilidad y metadatos, manteniendo búsqueda/similitud vectorial eficiente. Ejemplos: \myhref{https://www.pinecone.io/}{Pinecone}, \myhref{https://www.trychroma.com/}{ChromaDB}, \myhref{https://milvus.io/es}{Milvus}, \myhref{https://qdrant.tech/}{\file{Qdrant}}.
+		\item Bases de datos vectoriales especializadas: añaden a lo anterior gestión de datos, seguridad, escalado, extensibilidad y metadatos, manteniendo búsqueda/similitud vectorial eficiente. Ejemplos: \myhref{https://www.pinecone.io/}{Pinecone}, \myhref{https://www.trychroma.com/}{ChromaDB}, \myhref{https://milvus.io/es}{Milvus}, \myhref{https://qdrant.tech/}{Qdrant}.
 		\item Plataformas de búsqueda: son motores de texto tradicional (\myhref{https://solr.apache.org/}{Solr}, \myhref{https://www.elastic.co/es/enterprise-search/vector-search}{\mbox{Elasticsearch}}, \myhref{https://opensearch.org/platform/vector-search/}{OpenSearch}, \myhref{https://lucene.apache.org/core/}{Lucene}) que han incorporado similitud vectorial a sus capacidades.
 		\item Motores SQL/NoSQL con capacidad vectorial: son bases de datos ya existentes que añaden tipos y operadores vectoriales. Ejemplos: \myhref{https://azure.microsoft.com/es-es/products/azure-sql/database}{Azure SQL}, \myhref{https://www.postgresql.org/about/news/pgvector-070-released-2852/}{PostgreSQL/pgvector} o en NoSQL \myhref{https://www.mongodb.com/}{MongoDB}. Son útiles para consolidar datos, aunque suelen estar menos especializados que una base de datos vectorial dedicada.
 		\item Bases de datos gráficas con funciones vectoriales: grafos como \myhref{https://neo4j.com/}{Neo4j} que añaden búsqueda vectorial. Permiten combinar relaciones explícitas (grafos) con similitud semántica (vectores). Ejemplos: \eng{path finding} sujeto a similitud.
@@ -110,8 +109,8 @@ Gestiona la consulta del usuario de extremo a extremo. Este \eng{pipeline} recib
 Los componentes clave del \eng{pipeline} de generación son:
 \begin{itemize}
 \tightlist
-	\item \eng{Retriever}: es el motor de búsqueda sobre la base vectorial, es decir, la base de conocimiento. Devuelve los documentos más relevantes. Es crítico para la precisión del sistema y contribuye a la latencia, su calidad condiciona el rendimiento del RAG. El método más frecuente son los \eng{embeddings} gracias a su capacidad semántica.
-	\item Gestión del \eng{prompt} (\eng{Augmentation}): combina la consulta y el contexto recuperado. Además, aplica estrategias de ingeniería de \eng{prompt} para maximizar la calidad de la respuesta. Las estrategias recomendadas son:
+	\item \textbf{\eng{Retriever}}: es el motor de búsqueda sobre la base de datos vectorial, es decir, la base de conocimiento. Devuelve los documentos más relevantes. Es crítico para la precisión del sistema y contribuye a la latencia, su calidad condiciona el rendimiento del sistema RAG. El método más frecuente son los \eng{embeddings} gracias a su capacidad semántica.
+	\item Gestión del \eng{prompt} -- \textbf{\eng{Augmentation}}: combina la consulta y el contexto recuperado. Además, aplica estrategias de ingeniería de \eng{prompt} para maximizar la calidad de la respuesta. Las estrategias recomendadas son:
 	\begin{itemize}
 	\tightlist
 		\item \eng{Contextual prompting}: consiste en instruir al modelo para que solo responda con el contexto proporcionado.
@@ -119,7 +118,7 @@ Los componentes clave del \eng{pipeline} de generación son:
 		\item \eng{Few-shot prompting}: consiste en incluir ejemplos para forzar el formato de la respuesta.
 		\item \eng{Chain-of-thought}: consiste en pedir pasos intermedios cuando los razonamientos son complejos.
 	\end{itemize}
-	\item Configuración LLM (\eng{Generation}): es la selección del modelo que va a generar la respuesta final. Pueden ser modelos:
+	\item Configuración LLM -- \textbf{\eng{Generation}}: es la selección del modelo que va a generar la respuesta final. Pueden ser modelos:
 	\begin{itemize}
 	\tightlist
 		\item Originales o \eng{fine-tuned}: los originales facilitan un arranque rápido, mientras que los \eng{fine-tuned} mejoran la adaptación de dominio, la integración del contexto y formato de salida.
@@ -136,7 +135,7 @@ Además de los dos \eng{pipelines}, un sistema en producción requiere orquestac
 	\begin{itemize}
 	\tightlist
 		\item Capa de datos: es la encargada de crear la base de conocimiento, para ello recolecta datos desde sistemas origen, los transforma y los almacena.
-		\item Capa de modelos: se incluyen los modelos de embeddings, de los LLM y de las tareas. Incluye el entrenamiento y la optimización de inferencia.
+		\item Capa de modelos: se incluyen los modelos de \eng{embeddings}, de los LLM y de las tareas. Incluye el entrenamiento y la optimización de inferencia.
 		\item Despliegue de modelos: pueden ser servicios gestionados, auto-hospedados o locales.
 		\item Orquestación de la aplicación: se encarga de coordinar la consulta, la recuperación de datos y la generación. Incluye soporte multiagente y automatización de flujos de trabajo. 
 	\end{itemize}
@@ -160,9 +159,9 @@ Se suele hacer mediante la tríada de evaluación propuesta por TruEra~\cite{RAG
 Las tres dimensiones de la tríada son:
 \begin{itemize}
 \tightlist
-	\item Relevancia del contexto: la información que se haya recuperado tiene que ver con la pregunta.
-	\item \eng{Groundedness} o fidelidad: la respuesta que da el LLM se basa de verdad en el contexto que le hemos dado, sin alucinaciones ni omisiones clave.
-	\item Relevancia de la respuesta: la respuesta es útil y adecuada respecto a la intención y el contexto de la consulta original.
+	\item \textbf{Relevancia del contexto}: la información que se haya recuperado tiene que ver con la pregunta.
+	\item \textbf{\eng{Groundedness}} o fidelidad: la respuesta que da el LLM se basa de verdad en el contexto que le hemos dado, sin alucinaciones ni omisiones clave.
+	\item \textbf{Relevancia de la respuesta}: la respuesta es útil y adecuada respecto a la intención y el contexto de la consulta original.
 \end{itemize}
 
 Aparte de las dimensiones de la tríada, otros aspectos relevantes que el sistema debe incorporar son:
@@ -177,6 +176,6 @@ Aparte de las dimensiones de la tríada, otros aspectos relevantes que el sistem
 En este proyecto se han considerado especialmente dos herramientas de evaluación:
 \begin{itemize}
 \tightlist
-	\item \eng{Retrieval-Augmented Generation Assessment} (\myhref{https://github.com/vibrantlabsai/ragas}{RAGAs})~\cite{paper:ragas}: es un \eng{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclos rápidos~\cite{ragas:docs}. 
-	\item \eng{Automated RAG Evaluation System} (\myhref{https://github.com/stanford-futuredata/ARES}{ARES})~\cite{saadfalcon2024ares}: es un \eng{framework} con un funcionamiento similar al RAGAs, pero con mayor complejidad y cantidad de datos generados. Es más robusto.
+	\item \eng{Retrieval-Augmented Generation Assessment} (\myhref{https://github.com/vibrantlabsai/ragas}{RAGAS})~\cite{paper:ragas}: es un \eng{framework} que genera datos sintéticos y calcula métricas de la tríada. Es útil para ciclos rápidos~\cite{ragas:docs}. 
+	\item \eng{Automated RAG Evaluation System} (\myhref{https://github.com/stanford-futuredata/ARES}{ARES})~\cite{saadfalcon2024ares}: es un \eng{framework} con un funcionamiento similar al RAGAS, pero con mayor complejidad y cantidad de datos generados. Es más robusto.
 \end{itemize}
