@@ -7,7 +7,6 @@ Las pruebas validan tanto los flujos de éxito como distintos escenarios de erro
 electrónicos duplicados, credenciales incorrectas, usuarios inexistentes y tokens inválidos.
 """
 
-import secrets
 from unittest.mock import patch
 
 from app.main.code.controllers.auth.routes import generate_reset_token
@@ -15,9 +14,9 @@ from app.main.code.extensions import db
 from app.main.code.model.user import User
 from app.test.support import BaseAppTestCase
 
-DEFAULT_PASSWORD = secrets.token_urlsafe(16)
-INCORRECT_PASSWORD = secrets.token_urlsafe(16)
-NEW_PASSWORD = secrets.token_urlsafe(16)
+DEFAULT_PW = "Segura123"
+INCORRECT_PW = "Incorrecta123"
+NEW_PW = "NuevaSegura123"
 
 
 class AuthRoutesIntegrationTest(BaseAppTestCase):
@@ -31,8 +30,8 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
                 "nombre": "Nuevo",
                 "email": "lydiablanco71@gmail.com",
                 "country_code": "ES",
-                "password": DEFAULT_PASSWORD,
-                "confirm_password": DEFAULT_PASSWORD,
+                "password": DEFAULT_PW,
+                "confirm_password": DEFAULT_PW,
             },
             follow_redirects=False,
         )
@@ -54,8 +53,8 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
                 "nombre": "Duplicado",
                 "email": existing.email,
                 "country_code": "ES",
-                "password": DEFAULT_PASSWORD,
-                "confirm_password": DEFAULT_PASSWORD,
+                "password": DEFAULT_PW,
+                "confirm_password": DEFAULT_PW,
             },
         )
 
@@ -79,12 +78,12 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
         """
         Comprueba la carga del formulario de acceso y el comportamiento del sistema cuando se proporcionan credenciales incorrectas.
         """
-        self.create_user(email="login-invalid@example.com", password=DEFAULT_PASSWORD)
+        self.create_user(email="login-invalid@example.com", password=DEFAULT_PW)
 
         get_response = self.client.get("/login")
         invalid_response = self.client.post(
             "/login",
-            data={"email": "login-invalid@example.com", "password": INCORRECT_PASSWORD},
+            data={"email": "login-invalid@example.com", "password": INCORRECT_PW},
         )
 
         self.assertEqual(get_response.status_code, 200)
@@ -159,13 +158,13 @@ class AuthRoutesIntegrationTest(BaseAppTestCase):
 
         response = self.client.post(
             f"/reset-password/{token}",
-            data={"password": NEW_PASSWORD, "confirm_password": NEW_PASSWORD},
+            data={"password": NEW_PW, "confirm_password": NEW_PW},
             follow_redirects=False,
         )
 
         self.assertEqual(response.status_code, 302)
         db.session.refresh(user)
-        self.assertTrue(user.check_password(NEW_PASSWORD))
+        self.assertTrue(user.check_password(NEW_PW))
 
     def test_reset_password_get_renders_form_for_valid_token(self):
         """
