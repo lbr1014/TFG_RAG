@@ -441,20 +441,140 @@ Los prototipos iniciales que se crearon se ilustran en las figuras ~\ref{fig:Dis
 \imagenflotante{Diseño_interfaces/prototipos/Edit_user}{Prototipo de la página de edición del usuario.}
 \imagenflotante{Diseño_interfaces/prototipos/Documents}{Prototipo de la página de gestión de documentos.}
 
-Aunque estos prototipos se asemejan mucho a las interfaces finales, se han realizado diversos cambios. Por ejemplo, se ha cambiado la cabecera para aportar más información como el nombre del usuario que inicia sesión, su rol (usuario normal o administrador) y su último inicio de sesión (ver imagen de la cabecera final~\ref{fig:Diseño_interfaces/Cabecera}). Además, se ha añadido a la tabla del historial de consultas y a la de documentos cargados información relevante que no se había valorado inicialmente. En la tabla del historial de consultas se han añadido diversos campos para aportar toda la información relevante sobre la consulta. Añadiendo el documento al que pertenece el \eng{chunk} principal y la fecha en la que el usuario hizo la consulta. Para el administrador, también, se ha añadido una columna en la que se indica el nombre del usuario que hizo la consulta. Además, para mejorar la legibilidad de la tabla se ha decidido ubicar la respuesta debajo de la fila en un desplegable (ver imagen del historial de consulta definitivo~\ref{fig:Diseño_interfaces/Table_asks}). Por su parte, en la tabla donde se muestran los documentos cargados del sistema se han añadido dos columnas, una que indica el tamaño del documento y otra que indica el estado de ese documento en el sistema (cargado, indexado o fallido) (ver imagen del diseño final de la tabla documentos~\ref{fig:Diseño_interfaces/Table_documents}). Otro aspecto relevante es que en la página para realizar la consulta se ha añadido un desplegable para ver los \eng{chunks} utilizados (ver imagen de la página de consultas definitiva~\ref{fig:Diseño_interfaces/RAG_def}).
 
-\imagenflotante{Diseño_interfaces/Cabecera}{Diseño de interfaz -- Cabecera.}
+Aunque los prototipos iniciales ya reflejaban gran parte de la funcionalidad final de la aplicación, el diseño de la interfaz ha ido evolucionando de forma iterativa a lo largo del desarrollo. Durante este proceso se han realizado múltiples versiones intermedias en las que se introdujeron mejoras tanto visuales como funcionales, con el objetivo de aumentar la usabilidad, la claridad de la información mostrada y la coherencia estética de la aplicación.
 
-\imagenflotante{Diseño_interfaces/Table_asks}{Diseño de interfaz -- Historial de consultas.}
+Uno de los elementos que experimentó una mayor evolución fue la cabecera principal del sistema. En las primeras versiones únicamente se mostraba información básica de navegación, mientras que en las versiones posteriores se incorporaron datos relevantes para el usuario, como su nombre, el rol asignado dentro de la aplicación (usuario normal o administrador) y la fecha del último inicio de sesión (ver figura~\ref{fig:evolucion_cabecera}).
 
-\imagenflotante{Diseño_interfaces/Table_documents}{Diseño de interfaz -- Tabla de documentos cargados.}
+Otro de los componentes que ha tenido modificaciones significativas ha sido el historial de consultas. Inicialmente se diseñó como una tabla con la información básica de cada consulta. Sin embargo, durante el proceso de diseño se vio la necesidad de incorporar información adicional, como la fecha de realización de la consulta, el documento asociado al fragmento principal recuperado y, en el caso de los administradores, el usuario que realizó la consulta. Además, para mejorar la legibilidad se optó por mostrar la respuesta generada mediante un panel desplegable asociado a cada consulta. Finalmente, se sustituyó la representación en forma de tabla por un sistema de tarjetas que se integra mejor con la estética general de la aplicación y mejora la visualización de la información en diferentes tamaños de pantalla (ver figura~\ref{fig:evolucion_historial}).
 
-\imagenflotante{Diseño_interfaces/RAG_def}{Diseño de interfaz -- Interfaz de consulta al modelo.}
+La interfaz de gestión documental también ha sido objeto de diversas mejoras. En las primeras versiones únicamente se mostraba información básica de los documentos almacenados. Posteriormente se añadieron nuevos atributos, como el tamaño del fichero y el estado de procesamiento dentro del sistema, permitiendo distinguir fácilmente si un documento se encontraba únicamente cargado, convertido a Markdown, indexado correctamente o si había ocurrido algún error durante su procesamiento. Además, la presentación ha evolucionado desde una tabla convencional hacia un diseño más visual basado en tarjetas y etiquetas de estado, facilitando la identificación rápida de la situación de cada documento (ver figura~\ref{fig:evolucion_documentos}).
 
-En estos diagramas  ~\ref{fig:Diagramas/Navegabilidad_admin} y ~\ref{fig:Diagramas/Navegabilidad_normal} se muestra como sería la navegabilidad de los usuario por la aplicación dependiendo del rol que tienen (administrador o usuario normal).
+La página de consultas RAG también ha sido refinada progresivamente. En las primeras versiones únicamente se mostraban la pregunta y la respuesta generada por el modelo. Posteriormente se incorporó la visualización de los fragmentos documentales utilizados durante la generación de la respuesta, proporcionando una mayor trazabilidad de los resultados. Finalmente, se añadió un mecanismo desplegable que permite consultar los \eng{chunks} recuperados y acceder a información adicional sobre los documentos utilizados como contexto, mejorando la transparencia del sistema y facilitando la validación de las respuestas obtenidas (ver figura~\ref{fig:evolucion_rag}).
+
+Se definieron dos paletas cromáticas basadas en tonalidades azules, una orientada al modo oscuro y otra al modo claro, manteniendo una identidad visual homogénea en toda la aplicación. Asimismo, se diseñaron los logotipos utilizados en la interfaz final, reforzando la imagen visual y la personalidad propia de PythIA (ver figuras~\ref{fig:Diseño_interfaces/paleta_colores} y~\ref{fig:logotipos_interfaz}).
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Cabecera}
+        \caption{Diseño preliminar de la cabecera con nueva información de usuario.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Cabecera_final}
+        \caption{Cabecera final de la aplicación PythIA modo oscuro.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Cabecera_final2}
+        \caption{Cabecera final de la aplicación PythIA modo claro.}
+    \end{subfigure}
+\caption{Diseño de interfaz -- Cabecera.}
+\label{fig:evolucion_cabecera}
+\end{figure}
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{0.85\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Table_asks}
+        \caption{Diseño preliminar del historial en formato tabla.}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.85\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Historial}
+        \caption{Tarjeta final de consulta de la aplicación PythIA modo oscuro.}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.85\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Historial2}
+        \caption{Tarjeta final de consulta de la aplicación PythIA modo claro.}
+    \end{subfigure}
+\caption{Diseño de interfaz -- Historial de consultas.}
+\label{fig:evolucion_historial}
+\end{figure}
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Table_documents}
+        \caption{Diseño preliminar de la tabla documentos.}
+    \end{subfigure}
+    \begin{minipage}[c]{0.43\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Table_documents2}
+        \caption{Diseño final de la tabla \mbox{documentos} modo oscuro.}
+    \end{subfigure}
+    \end{minipage}
+    \begin{minipage}[c]{0.43\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/Table_documents3}
+        \caption{Diseño final de la tabla \mbox{documentos} modo claro.}
+    \end{subfigure}
+    \end{minipage}
+\caption{Diseño de interfaz -- Tabla de documentos cargados.}
+\label{fig:evolucion_documentos}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.43\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/RAG_def}
+        \caption{Diseño preliminar de la interfaz de consulta.}
+    \end{subfigure}
+\end{minipage}
+\begin{minipage}[c]{0.43\textwidth}
+    \centering
+	\vspace*{0.2cm}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/RAG_def2}
+        \caption{Diseño final de la interfaz de consulta en modo oscuro.}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/RAG_def3}
+        \caption{Diseño final de la interfaz de consulta en modo claro.}
+    \end{subfigure}
+\end{minipage}
+\caption{Diseño de interfaz -- Interfaz de consulta al modelo.}
+\label{fig:evolucion_rag}
+\end{figure}
+
+\imagendiagram{Diseño_interfaces/paleta_colores}{Paleta de colores configurada para el modo claro y oscuro.}{0.8}
+
+\begin{figure}
+\centering
+   \begin{subfigure}[t]{0.43\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diseño_interfaces/PythIA_letras}
+        \caption{Letrero con el nombre de la palicaicón.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=0.43\textwidth]{Diseño_interfaces/PythIA_logo}
+        \caption{Logotipo completo.}
+    \end{subfigure}
+\caption{Diseño de interfaz -- Logotipos de la aplicación PythIA.}
+\label{fig:logotipos_interfaz}
+\end{figure}
+
+En este diagrama~\ref{fig:Diagramas/Navegabilidad.pdf} se muestra como sería la navegabilidad de los usuario por la aplicación dependiendo del rol que tienen (administrador o usuario normal) y de si están o no autenticados.
+
 \begin{landscape}
-	\imagendiagram{Diagramas/Navegabilidad_admin}{Diagrama de navegabilidad por la aplicación para el administrador.}{1.2}
-	\imagendiagram{Diagramas/Navegabilidad_normal}{Diagrama de navegabilidad por la aplicación para el usuario normal.}{1.2}
+	\imagendiagram{Diagramas/Navegabilidad.pdf}{Diagrama de navegabilidad de los usuarios por la aplicación PythIA dependiendo de sus permisos.}{1.4}
+
 \end{landscape}
 
 
