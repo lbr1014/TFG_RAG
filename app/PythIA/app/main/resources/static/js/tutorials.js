@@ -442,6 +442,70 @@
           popover: { title: t("tutorial.users.bulk_delete.title"), description: t("tutorial.users.bulk_delete.desc"), side: "bottom", align: "start" },
         },
       ],
+      "auth.login": [
+        {
+          element: "#auth-login-email",
+          popover: { title: t("tutorial.auth.email.title"), description: t("tutorial.auth.login.email.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-login-password",
+          popover: { title: t("tutorial.auth.password.title"), description: t("tutorial.auth.login.password.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-login-submit",
+          popover: { title: t("tutorial.auth.submit.title"), description: t("tutorial.auth.login.submit.desc"), side: "top", align: "start" },
+        },
+      ],
+      "auth.singup": [
+        {
+          element: "#auth-signup-name",
+          popover: { title: t("tutorial.auth.name.title"), description: t("tutorial.auth.signup.name.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-signup-email",
+          popover: { title: t("tutorial.auth.email.title"), description: t("tutorial.auth.signup.email.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-signup-country",
+          popover: { title: t("tutorial.auth.country.title"), description: t("tutorial.auth.signup.country.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-signup-password",
+          popover: { title: t("tutorial.auth.password.title"), description: t("tutorial.auth.signup.password.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-signup-confirm-password",
+          popover: { title: t("tutorial.auth.confirm_password.title"), description: t("tutorial.auth.signup.confirm_password.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-signup-submit",
+          popover: { title: t("tutorial.auth.submit.title"), description: t("tutorial.auth.signup.submit.desc"), side: "top", align: "start" },
+        },
+      ],
+      "auth.forgot_password": [
+        {
+          element: "#auth-forgot-email",
+          popover: { title: t("tutorial.auth.email.title"), description: t("tutorial.auth.forgot.email.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-forgot-submit",
+          popover: { title: t("tutorial.auth.submit.title"), description: t("tutorial.auth.forgot.submit.desc"), side: "top", align: "start" },
+        },
+      ],
+      "auth.reset_password": [
+        {
+          element: "#auth-reset-password",
+          popover: { title: t("tutorial.auth.new_password.title"), description: t("tutorial.auth.reset.password.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-reset-confirm-password",
+          popover: { title: t("tutorial.auth.confirm_password.title"), description: t("tutorial.auth.reset.confirm_password.desc"), side: "bottom", align: "start" },
+        },
+        {
+          element: "#auth-reset-submit",
+          popover: { title: t("tutorial.auth.submit.title"), description: t("tutorial.auth.reset.submit.desc"), side: "top", align: "start" },
+        },
+      ],
     };
 
     const steps = [];

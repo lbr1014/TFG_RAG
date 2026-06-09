@@ -11,7 +11,12 @@ from app.main.code.model.job_state import State
 
 class RAGEvaluationState(State):
     """
-    Estado persistido de una ejecucion de evaluacion del RAG.
+    Estado persistido de una ejecución de evaluación del RAG.
+    Guarda progreso y rutas a los resultados generados (resúmenes/resultados).
+    
+    Args:
+        JobStateMixin: Mezcla común para estados de jobs, con campos como status, progress, message, cancel_requested y error.
+        db.Model: Modelo base de SQLAlchemy para persistencia en la base de datos.
     """
 
     __tablename__ = "rag_evaluation_state"

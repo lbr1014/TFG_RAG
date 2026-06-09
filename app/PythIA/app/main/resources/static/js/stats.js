@@ -842,10 +842,23 @@
 
     const width = chartWidth(container, 640);
     const narrow = isNarrow(width);
-    const height = narrow ? 340 : 280;
-    const chartCenterX = narrow ? width / 2 : width * 0.58;
-    const chartCenterY = narrow ? 220 : height / 2;
-    const radius = Math.min(width * (narrow ? 0.34 : 0.36), height * 0.44) - 10;
+    const legendPaddingX = 16;
+    const legendTop = 18;
+    const legendRowHeight = narrow ? 24 : 26;
+    const legendColumns = narrow
+      ? (width < 380 ? 1 : 2)
+      : Math.min(width >= 760 ? 4 : 3, Math.max(1, data.length));
+    const legendRows = Math.ceil(data.length / legendColumns);
+    const legendHeight = legendTop + legendRows * legendRowHeight;
+    const chartTop = legendHeight + (narrow ? 30 : 34);
+    const chartAreaHeight = narrow ? 220 : 240;
+    const height = Math.max(narrow ? 360 : 320, chartTop + chartAreaHeight);
+    const radius = Math.max(
+      58,
+      Math.min(width * (narrow ? 0.28 : 0.24), chartAreaHeight * 0.46, narrow ? 104 : 118)
+    );
+    const chartCenterX = width / 2;
+    const chartCenterY = chartTop + radius;
     const innerRadius = radius * 0.56;
     const pieData = d3
       .pie()
@@ -903,20 +916,25 @@
       .attr("font-size", 12)
       .text(options.unitLabel || config.labels.unitQueries || "consultas");
 
-    const legend = svg
-      .append("g")
-      .attr("transform", `translate(16, 18)`);
+    const legend = svg.append("g").attr("transform", `translate(${legendPaddingX}, ${legendTop})`);
+    const legendColumnWidth = Math.max(96, (width - legendPaddingX * 2) / legendColumns);
+    const legendMaxChars = Math.max(8, Math.min(22, Math.floor((legendColumnWidth - 30) / 6.4)));
 
     const legendItem = legend
       .selectAll("g")
       .data(data)
       .join("g")
       .attr("transform", (_, index) => {
-        const itemsPerColumn = narrow ? 6 : 4;
-        const column = Math.floor(index / itemsPerColumn);
-        const row = index % itemsPerColumn;
-        const columnWidth = narrow ? Math.max(120, (width - 32) / Math.max(1, Math.ceil(data.length / itemsPerColumn))) : 140;
-        return `translate(${column * columnWidth}, ${row * 24})`;
+        const column = index % legendColumns;
+        const row = Math.floor(index / legendColumns);
+        return `translate(${column * legendColumnWidth}, ${row * legendRowHeight})`;
+      });
+
+    legendItem
+      .append("title")
+      .text((item) => {
+        const label = options.labelFormatter ? options.labelFormatter(item[options.labelKey]) : item[options.labelKey];
+        return `${label} (${item[options.valueKey]})`;
       });
 
     legendItem
@@ -934,7 +952,7 @@
       .attr("font-size", 12)
       .text((item) => {
         const label = options.labelFormatter ? options.labelFormatter(item[options.labelKey]) : item[options.labelKey];
-        return `${truncateLabel(label, narrow ? 13 : 20)} (${item[options.valueKey]})`;
+        return `${truncateLabel(label, legendMaxChars)} (${item[options.valueKey]})`;
       });
   }
 

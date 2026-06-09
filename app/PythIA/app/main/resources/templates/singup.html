@@ -19,13 +19,13 @@
       <div class="auth-container">
         <h1>{{ t("auth.signup_title") }}</h1>
 
-        <form method="POST" action="{{ url_for('auth.singup') }}" novalidate>
+        <form id="auth-signup-form" method="POST" action="{{ url_for('auth.singup') }}" novalidate>
           {{ form.hidden_tag() }}
           {{ render_form_errors(form) }}
 
           <div class="mb-3">
             {{ form.nombre.label(class="form-label") }}
-            {{ form.nombre(class="form-control form-control-lg") }}
+            {{ form.nombre(id="auth-signup-name", class="form-control form-control-lg") }}
             {% for error in form.nombre.errors %}
               <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
@@ -33,7 +33,7 @@
 
           <div class="mb-3">
             {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control form-control-lg", placeholder="email@example.com") }}
+            {{ form.email(id="auth-signup-email", class="form-control form-control-lg", placeholder="email@example.com") }}
             {% for error in form.email.errors %}
               <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
@@ -41,7 +41,7 @@
 
           <div class="mb-3">
             {{ form.country_code.label(class="form-label") }}
-            {{ form.country_code(class="form-select form-select-lg") }}
+            {{ form.country_code(id="auth-signup-country", class="form-select form-select-lg") }}
             {% for error in form.country_code.errors %}
               <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
@@ -49,7 +49,7 @@
 
           <div class="mb-3">
             {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control form-control-lg") }}
+            {{ form.password(id="auth-signup-password", class="form-control form-control-lg") }}
             {% for error in form.password.errors %}
               <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
@@ -57,13 +57,13 @@
 
           <div class="mb-3">
             {{ form.confirm_password.label(class="form-label") }}
-            {{ form.confirm_password(class="form-control form-control-lg") }}
+            {{ form.confirm_password(id="auth-signup-confirm-password", class="form-control form-control-lg") }}
             {% for error in form.confirm_password.errors %}
               <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
           </div>
 
-          {{ form.submit(class="btn btn-primary btn-lg") }}
+          {{ form.submit(id="auth-signup-submit", class="btn btn-primary btn-lg") }}
         </form>
 
         <div class="links">
