@@ -13,6 +13,8 @@
 \usepackage{amssymb}
 \usepackage{multirow}
 \usepackage{titlesec}
+\usepackage{pifont}
+\usepackage{enumitem}
 
 %Cabeceras
 \copypagestyle{capitulo-en-cab}{headings}
@@ -34,6 +36,10 @@
 \hypersetup{
 	allcolors = {red}
 }
+
+% Listas
+\setlist{itemsep=0pt,parsep=0pt,topsep=3pt}
+\raggedbottom
 
 % Ecuaciones
 \usepackage{amsmath}
@@ -383,8 +389,9 @@
   {%
     \noindent\LARGE
     Presentado por \@author{}\\ 
-    en Universidad de Burgos --- \@date{}\\
-    Tutor: \@tutor{}\\
+    en Universidad de Burgos \\
+    \@date{}\\[.5em]
+    Tutores: \@tutor{}\\
   }%
   \end{center}%
   \null
@@ -393,15 +400,15 @@
 \makeatother
 
 \newcommand{\nombre}{Lydia Blanco Ruiz} %%% cambio de comando
-\newcommand{\nombreTutor}{Álvar Arnaiz González}
-\newcommand{\nombreCoTutor}{César Ignacio García Osorio}
+\newcommand{\nombreTutor}{Dr. Álvar Arnaiz González}
+\newcommand{\nombreCoTutor}{Dr. César Ignacio García Osorio}
 \newcommand{\tituloTFG}{Creación de \textit{RAG} para pliegos de la Diputación}
 \newcommand{\nombreArea}{Lenguajes y Sistemas Informáticos}
 
 % Datos de portada
 \title{\tituloTFG}
 \author{\nombre}
-\tutor{\nombreTutor\\y \nombreCoTutor}
+\tutor{\nombreTutor\\[.2em] y \nombreCoTutor}
 \date{\today}
 
 \errorcontextlines=999
@@ -424,7 +431,7 @@
 
 \noindent Exponen:
 
-\noindent Que la alumna Dª. \nombre, ha realizado el Trabajo final de Grado en Ingeniería Informática titulado \tituloTFG. 
+\noindent Que la alumna Dª. \nombre ha realizado el Trabajo final de Grado en Ingeniería Informática titulado \tituloTFG. 
 
 \noindent Y que dicho trabajo ha sido realizado por la alumna bajo la dirección de los que suscriben, en virtud de lo cual se autoriza su presentación y defensa.
 
@@ -438,14 +445,14 @@ En Burgos, {\large \today}
 \begin{minipage}{0.45\textwidth}
 \begin{flushleft} %\large
 Vº. Bº. del Tutor:\\[2cm]
-D. \nombreTutor
+Dr. \nombreTutor
 \end{flushleft}
 \end{minipage}
 \hfill
 \begin{minipage}{0.45\textwidth}
 \begin{flushleft} %\large
 Vº. Bº. del co-tutor:\\[2cm]
-D. \nombreCoTutor
+Dr. \nombreCoTutor
 \end{flushleft}
 \end{minipage}
 \hfill
@@ -470,16 +477,16 @@ D. \nombreCoTutor
 \begin{abstract}
 La contratación pública genera una gran cantidad de documentación técnica y administrativa cuya consulta manual resulta compleja debido a su volumen, heterogeneidad y especialización. En este Trabajo Fin de Grado se presenta PythIA, un sistema basado en la técnica \eng{Retrieval-Augmented Generation} (\eng{RAG}) diseñado para facilitar la consulta inteligente de las licitaciones públicas mediante el uso de modelos de lenguaje de gran tamaño (\eng{LLM}).
 
-El proyecto integra un \eng{pipeline} completo de recuperación semántica capaz de automatizar la obtención de documentos mediante técnicas de \eng{Web Scraping}, convertir los documentos \file{PDF} extraídos a formato \file{Markdown}, fragmentar el contenido en \eng{chunks}, generar \eng{embeddings} y almacenarlos en una base de datos vectorial \file{Qdrant}. A partir de las consultas realizadas por el usuario, el sistema recupera los fragmentos documentales más relevantes y los incorpora al contexto del modelo generativo para mejorar la precisión, actualidad y fiabilidad de las respuestas. Permitiendo analizar la relevancia, fidelidad y precisión de las respuestas generadas mediante la combinación de los \eng{frameworks} \file{RAGAS} y \file{ARES} con métricas de \eng{embeddings}.
+El proyecto integra un \eng{pipeline} completo de recuperación semántica capaz de automatizar la obtención de documentos mediante técnicas de \eng{Web Scraping}, convertir los documentos \file{PDF} extraídos a formato \file{Markdown}, fragmentar el contenido en \eng{chunks}, generar \eng{embeddings} y almacenarlos en una base de datos vectorial \file{Qdrant}. A partir de las consultas realizadas por el usuario, el sistema recupera los fragmentos documentales más relevantes y los incorpora al contexto del modelo generativo para mejorar la precisión, actualidad y fiabilidad de las respuestas. Esto permite analizar la relevancia, fidelidad y precisión de las respuestas generadas mediante la combinación de los \eng{frameworks} \file{RAGAS} y \file{ARES} con métricas de \eng{embeddings}.
 
-Además del diseño e implementación del sistema \eng{RAG}, el proyecto desarrolla una aplicación \eng{web} utilizando \file{Flask}. Incorporando autenticación de usuarios, historial de consultas, gestión documental, internacionalización, visualización de estadísticas y soporte responsive. Desplegada mediante \file{Docker}, \file{Gunicorn} y \file{Nginx}. 
+Además del diseño e implementación del sistema \eng{RAG}, el proyecto desarrolla una aplicación \eng{web} utilizando \file{Flask}, incorporando autenticación de usuarios, historial de consultas, gestión documental, internacionalización, visualización de estadísticas y soporte responsive. Esta aplicación \eng{web} ha sido desplegada mediante \file{Docker}, \file{Gunicorn} y \file{Nginx}. 
 
 El proyecto demuestra la viabilidad de aplicar arquitecturas \eng{RAG} en entornos reales de documentación pública, reduciendo las limitaciones tradicionales de los \eng{LLM} y facilitando el acceso contextualizado a grandes colecciones documentales.
 \end{abstract}
 
 \renewcommand*\abstractname{Descriptores}
 \begin{abstract}
-Modelos de Lenguaje a Gran Escala, Generación Aumnetada por recuperación, evaluación RAG, chunks, embeddings, búsqueda semántica, aplicación web, Flask, Web Scraping, licitaciones públicas, bases de datos vectoriales, Docker.
+Modelos de Lenguaje a Gran Escala, Generación Aumentada por recuperación, evaluación RAG, chunks, embeddings, búsqueda semántica, aplicación web, Flask, Web Scraping, licitaciones públicas, bases de datos vectoriales, Docker.
 \end{abstract}
 
 \clearpage
@@ -498,7 +505,7 @@ The project demonstrates the feasibility of applying \eng{RAG} architectures in 
 
 \renewcommand*\abstractname{Keywords}
 \begin{abstract}
-Large Language Models, Retrieval Augmented Generation, RAG evaluation, chunks, embeddings, semantics search, web application, Flask, Web Scraping, public tenders, vector databases, Docker.
+Large Language Models, Retrieval Augmented Generation, RAG evaluation, chunks, embeddings, semantic search, web application, Flask, Web Scraping, public tenders, vector databases, Docker.
 \end{abstract}
 
 \clearpage

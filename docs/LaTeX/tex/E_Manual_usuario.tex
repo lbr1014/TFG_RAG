@@ -2,10 +2,846 @@
 
 \section{Introducción}
 
+En este manual se incluye una guía destinada a que el usuario final conozca el funcionamiento de la \eng{web} PythIA. Concretamente se van a describir los requisitos que debe cumplir el usuario para utilizar la aplicación (ver sección~\ref{usu:req}) así como el método de instalación de la aplicación para el usuario final (ver sección~\ref{usu:inst}). Finalmente, se incluye un manual explicando todas las funcionalidades de la aplicación (ver sección~\ref{usu:manual}).
+
 \section{Requisitos de usuarios}
+\label{usu:req}
+
+Para utilizar la aplicación PythIA, el usuario únicamente necesita disponer de acceso a Internet y de un navegador \eng{web} moderno compatible con los estándares actuales~\cite{usuario:webStandards}. Se recomienda utilizar un navegador con visor \file{PDF} integrado para visualizar o descargar los documentos \file{PDF} de las licitaciones, 
+
+La aplicación ha sido probada satisfactoriamente en los navegadores \file{Google Chrome}, \file{Mozilla Firefox} y \file{Microsoft Edge}. Concretamente se han probado en las siguientes versiones de los navegadores:
+\begin{itemize}
+	\item \file{Google Chrome} 137.0 a  148.0.
+	\item \file{Mozilla Firefox} 139.0 a 150.0.
+	\item \file{Microsoft Edge} 137.0 a 148.0.
+\end{itemize}
+
+Para acceder a las funcionalidades del sistema es necesario tener una cuenta de usuario registrada y autenticarse mediante correo electrónico y contraseña.
+
+Respecto al \eng{hardware} no existen requisitos específicos, puesto que PythIA ha sido desarrollada siguiendo un diseño \eng{responsive}. Esto permite su utilización desde diferentes tipos de dispositivos, incluyendo ordenadores de sobremesa, ordenadores portátiles, tabletas y teléfonos móviles, adaptando automáticamente la interfaz al tamaño de pantalla disponible. 
 
 \section{Instalación}
+\label{usu:inst}
+
+No es necesario instalar ningún \eng{software} adicional, ya que la aplicación se ejecuta a través del navegador \eng{web}. Solo se tiene que acceder a la dirección \url{https://pythia.es/} e iniciar sesión con sus credenciales. En caso de no disponer de una cuenta, deberá registrarse.
+
+Las actualizaciones de la aplicación se realizan de forma centralizada en el servidor, por lo que los usuarios siempre acceden a la versión más reciente sin necesidad de efectuar ninguna acción adicional en sus dispositivos.
 
 \section{Manual del usuario}
+\label{usu:manual}
+
+En este manual se describen las funcionalidades que pueden llevarse a cabo en la aplicación. Se va a explicar tanto los elementos generales del sistema como cada una de las páginas de la aplicación describiendo sus componentes y funcionalidades. Además se va a explicar la navegabilidad.
+
+\subsection{Página de inicio}
+\label{manual:inicio}
+
+La página de inicio es la primera pantalla que ve cualquier usuario al acceder a la aplicación \eng{web} de \href{https://pythia.es/}{PythIA} (ver imagen~\ref{fig:pagina_inicio})
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Pagina_inicio}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+	\vspace*{0.2cm}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Pagina_inicio}
+        \caption{Vista superior desde el ordenador.}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Pagina_inicio2}
+        \caption{Vista inferior desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Página de inicio de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:pagina_inicio}
+\end{figure}
+
+Esta página tiene carácter informativo y permite al usuario conocer de forma general el propósito de la aplicación antes de autenticarse. En ella se muestra una breve descripción de PythIA, indicando que utiliza un modelo de lenguaje (\eng{LLM}) combinado con un sistema de generación aumentada mediante recuperación (\eng{Retrieval-Augmented Generation}, RAG) para localizar información relevante en los pliegos de contratación pública y responder consultas formuladas en lenguaje natural.
+
+Desde la barra superior de navegación se puede acceder a las siguientes funcionalidades:
+
+\begin{itemize}
+    \item \textbf{Iniciar sesión}: permite acceder al formulario de autenticación de usuarios registrados (ver sección~\ref{manual:inicioSesion}). También se puede acceder desde el botón <<Obtener acceso>>.
+    
+    \item \textbf{Registrarse}: permite crear una nueva cuenta de usuario en la plataforma (ver sección~\ref{manual:registro}).
+\end{itemize}
+
+Además, la página principal incluye un botón <<Más información>> desde e cual se accede al repositorio de \myhref{https://github.com/lbr1014/TFG_RAG}{\file{GitHub}} del proyecto.
 
 
+\subsection{Inicio de sesión}
+\label{manual:inicioSesion}
+
+La página de inicio de sesión permite a los usuarios registrados autenticarse en la aplicación para acceder a sus funcionalidades (ver figura~\ref{fig:iniciar_sesion}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Iniciar_sesion}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+	\vspace*{5.5cm}
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Iniciar_sesion}
+        \caption{Vista desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Página de inicio de sesión de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:iniciar_sesion}
+\end{figure}
+
+Para iniciar sesión, el usuario debe introducir el correo electrónico asociado a su cuenta y la contraseña correspondiente. Una vez completados ambos campos, deberá pulsar el botón <<Iniciar sesión>>. Si las credenciales son correctas, será redirigido a la página principal de la aplicación (ver sección~\ref{manual:pagPrincipal}).
+
+Desde esta página también se puede acceder a las siguientes funcionalidades:
+
+\begin{itemize}
+    \item \textbf{Registro}: pulsando en <<¿No tienes cuenta? Registrate>>. Permite crear una nueva cuenta de usuario en la plataforma (ver sección~\ref{manual:registro}).
+    \item \textbf{Recuperar contraseña}: pulsando <<¿Olvidaste tu contraseña?>>. Permite solicitar el restablecimiento de la contraseña mediante correo electrónico en caso de haberla olvidado (ver sección~\ref{manual:recuperar}).
+    \item \textbf{Volver al inicio}: pulsando en <<Volver al inicio>> o en el logotipo de PythIA de la cabecera. Redirige al usuario a la página de inicio pública de la aplicación (ver sección~\ref{manual:inicio}).
+    \item \textbf{Tutorial interactivo}: pulsando sobre la interrogación que aparece e la parte inferior derecha. Muestra una guía paso a paso con una explicación de los elementos y funcionalidades disponibles en esta página.
+\end{itemize}
+
+Si el usuario introduce credenciales incorrectas, la aplicación mostrará un mensaje de error indicando que el correo electrónico o la contraseña no son válidos, permitiendo el reintento.
+
+
+\subsection{Recuperar contraseña}
+\label{manual:recuperar}
+
+La página de recuperación de contraseña permite restablecer el acceso a una cuenta cuando el usuario ha olvidado su contraseña (ver figura~\ref{fig:recuperar_contraseña}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Recuperar_contraseña}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+	\vspace*{5.5cm}
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Recuperar_contraseña}
+        \caption{Vista desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Página de recuperar contraseña de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:recuperar_contraseña}
+\end{figure}
+
+Para poder cambiar la contraseña el usuario debe introducir la dirección de correo electrónico asociada a su cuenta y pulsar el botón \textit{Recuperar contraseña}. Si el correo electrónico corresponde a una cuenta registrada en la aplicación, PythIA enviará un mensaje a dicha dirección con las instrucciones necesarias para restablecer la contraseña. Este mensaje incluye un enlace seguro que redirige a la página de cambio de contraseña.
+
+Por motivos de seguridad, la aplicación no muestra información sobre la existencia o no de una cuenta asociada al correo electrónico introducido. De esta forma se evita la divulgación de información sobre los usuarios registrados.
+
+Desde esta página también se puede acceder a las siguientes funcionalidades:
+
+\begin{itemize}
+    \item \textbf{Volver al inicio de sesión}: redirige al usuario a la página de autenticación (ver sección~\ref{manual:inicioSesion}).
+    \item \textbf{Tutorial interactivo}: muestra una guía paso a paso con una explicación de los elementos y funcionalidades disponibles en esta página.
+\end{itemize}
+
+\subsection{Registro}
+\label{manual:registro}
+
+La página de registro permite a los nuevos usuarios crear una cuenta en PythIA para acceder a las funcionalidades de la aplicación (ver figura~\ref{fig:registro}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Registro}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+	\vspace*{5.5cm}
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Registro}
+        \caption{Vista desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Página de registro de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:registro}
+\end{figure}
+
+Para completar el proceso de registro, el usuario debe rellenar un formulario donde incluye el nombre con el que será identificado dentro de la aplicación, la dirección de correo electrónico que desea asociar a la cuenta, su país de procedencia, la contraseña para acceder a la aplicación y la verificación de dicha contraseña.
+
+Una vez rellenado el formulario, el usuario debe pulsar el botón <<Registrarse>>. Si los datos introducidos son válidos y el correo electrónico no está asociado previamente a otra cuenta, la aplicación creará el nuevo usuario y permitirá acceder a sus funcionalidades (ver sección~\ref{manual:pagPrincipal}). Los usuarios se crean por defecto sin permisos de adminsitrador, para que un usuario tenga estos privilegios se los debe asignar posteriormente otro administrador.
+
+Desde esta página se puede acceder a las siguientes pantallas:
+\begin{itemize}
+    \item \textbf{Inicio de sesión}: permite acceder a una cuenta ya existente (ver sección~\ref{manual:inicioSesion}).
+    \item \textbf{Volver al inicio}: redirige al usuario a la página principal pública de la aplicación (ver sección~\ref{manual:inicio}).
+    \item \textbf{Tutorial interactivo}: muestra una guía paso a paso con una explicación de los elementos y funcionalidades disponibles en esta página.
+\end{itemize}
+
+\subsection{Página principal}
+\label{manual:pagPrincipal}
+
+La página principal constituye el punto de acceso a las funcionalidades de PythIA una vez que el usuario ha iniciado sesión correctamente (ver figura~\ref{fig:pagina_principal}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Pagina_principal}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Pagina_principal}
+        \caption{Vista superior desde el ordenador.}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Pagina_principal2}
+        \caption{Vista inferior desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Página principal de la aplicación \eng{web} PythIA para un usuario sin permisos de administración en diferentes dispositivos.}
+\label{fig:pagina_principal}
+\end{figure}
+
+Desde esta página el usuario puede acceder a la página de consultas de la aplicación, consultar información resumida sobre su actividad y navegar hacia el resto de módulos disponibles. Esta información se actualiza dinámicamente en función de la actividad registrada por el usuario. Los elementos concretos que contiene son:
+
+\begin{itemize}
+    \item \textbf{Acceso al sistema RAG}: mediante la tarjeta central <<Consulta al modelo>>. Al pulsarla se accede a la pantalla para realizar consultas al modelo sobre las licitación.
+    \item \textbf{Calendario}: muestra el mes actual y permite al usuario ver su uso de la aplicación. Por cada día podrá ver el número de consultas que ha realizado.
+    \item \textbf{Resumen de consultas}: presenta en forma de gráfico de anillo el número de consultas que ha realizado frente al uso global del sistema.
+    \item \textbf{Carrusel}: se muestra un carrusel con información estadística del usuario. Concretamente se muestra la racha actual, el numero de consultas realizadas, el número de modelos utilizados, los días con actividad y el tiempo medio de respuesta del modelo para su usuario.
+\end{itemize}
+
+La estructura general de la página principal es común para todos los usuarios. Sin embargo, existen diferencias en la información estadística mostrada a los usuarios dependiendo de sus permisos. Los usuarios normales solo pueden ver información relacionada con su propia actividad dentro de la aplicación. Mientras que los administradores pueden ver información global correspondiente al conjunto de usuarios del sistema, permitiendo supervisar el uso global de la aplicación (ver figura~\ref{fig:Manual_usuario/administrador/Pagina_principal}).
+
+\imagendiagram{Manual_usuario/administrador/Pagina_principal}{Página principal de la aplicación \eng{web} PythIA para un usuario con permisos de administración}{1}
+
+Además, desde esta página se puede acceder a las funcionalidades de la cabecera. La cual muestra información básica sobre la cuenta autenticada, incluyendo el nombre del usuario, su rol dentro de la aplicación y la fecha y hora del último inicio de sesión. Además, incluye un menú lateral desplegable accesible mediante el botón situado en la esquina superior derecha (ver figura~\ref{fig:menu}). El cual contiene las opciones de navegación y personalización de la aplicación. Los usuarios estándar pueden acceder a la página principal (ver sección~\ref{manual:pagPrincipal}), al historial de consultas (ver sección~\ref{manual:historial}), al perfil de usuario (ver sección~\ref{manual:perfil}) y a las estadísticas (ver sección~\ref{manual:estad}). Los administradores además, pueden acceder a la páginas de administrar documentos (ver sección~\ref{manual:documentos}) y administrar usuarios (ver sección~\ref{manual:usuarios}). Desde el apartado de apariencia del menú se puede cambiar el tema de la aplicación entre el modo oscuro y el claro (ver figura~\ref{fig:Manual_usuario/Modo_claro}). Por defecto se mostrará  la aplicación con el tema configurado en el navegador donde se abra la aplicación. La aplicación dispone de soporte de internacionalización, permitiendo seleccionar entre español e inglés desde la sección \textit{Internacionalización} del menú lateral. Al seleccionar un idioma, todos los textos de la interfaz son traducidos automáticamente (ver figura~\ref{fig:Manual_usuario/Modo_ingles}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Menu}
+        \caption{Menú usuario estándar desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Menu}
+        \caption{Menú usuario estándar desde el ordenador.}
+    \end{subfigure}
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Menu}
+        \caption{Menú administrador desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Menú de la aplicación \eng{web} PythIA en diferentes dispositivos y con distintos permisos.}
+\label{fig:menu}
+\end{figure}
+
+\imagendiagram{Manual_usuario/Modo_claro}{Interfaz de PythIA utilizando el modo claro.}{1}
+
+\imagendiagram{Manual_usuario/Modo_ingles}{Interfaz de PythIA configurada en inglés.}{1}
+
+Todas las páginas de la aplicación incorporan tutoriales interactivos para facilitar la utilización de la interfaz (ver figura~\ref{fig:tutorial}). Estos tutoriales se inicializan desde el botón de ayuda de la esquina inferior derecha de la pantalla. Además, hay un tutorial en el menú lateral que se activa pulsando el botón <<Tutorial>>. Una vez iniciado, guía al usuario paso a paso mostrando explicaciones sobre los elementos de la interfaz. Durante la ejecución del tutorial el usuario puede avanzar entre los distintos pasos, retroceder o finalizar la guía en cualquier momento.
+
+\begin{figure}
+\centering
+	\begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Tutorial}
+        \caption{Tutorial general.}
+    \end{subfigure}    
+    \hfill
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Tutorial3}
+        \caption{Tutorial del menú \mbox{lateral}.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Tutorial2}
+        \caption{Mensajes del tutorial.}
+    \end{subfigure}
+\caption{Tutorial de la aplicación \eng{web} PythIA.}
+\label{fig:tutorial}
+\end{figure}
+
+\subsection{Página de consultas}
+\label{manual:pagConsulta}
+
+La página de consultas constituye la funcionalidad principal de PythIA, ya que permite al usuario interactuar con el sistema \eng{RAG} (\eng{Retrieval-Augmented Generation}) para obtener información contenida en los expedientes de licitación almacenados en la plataforma (ver figura~\ref{fig:pagina_consulta}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Consulta}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta}
+        \caption{Vista superior desde el ordenador.}
+    \end{subfigure}
+
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta2}
+        \caption{Vista inferior desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Página de consulta de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:pagina_consulta}
+\end{figure}
+
+En la parte superior de la página se muestran diferentes indicadores y estadísticas relacionadas con el funcionamiento del sistema. Entre ellos se incluyen las métricas globales de evaluación del sistema \eng{RAG}, obtenidas mediante herramientas como \eng{RAGAS}, que permiten conocer aspectos como la fidelidad de las respuestas, la relevancia de la información recuperada o la cobertura del contexto utilizado. Pulsando el botón <<Ver detalles>> se puede acceder a la pantalla de \textbf{Evaluar modelos} (ver sección~\ref{manual:evaluar}). También se presentan estadísticas de uso de los distintos \eng{LLM} (\eng{Long Large Models}) disponibles en la aplicación, así como un selector que permite elegir el modelo con el que se desea realizar las consultas. Pulsando el botón <<Comparar los modelos>> que se muestra debajo del selector se puede acceder a la página de \textbf{Comparar modelos} (ver sección~\ref{manual:compararModelos}).
+
+La página dispone de dos modos diferentes de consulta, \texttt{Chat} (ver figura~\ref{fig:Manual_usuario/Consulta_chat}) y \texttt{Formulario}(ver figura~\ref{fig:Manual_usuario/Consulta_formulario}). El \texttt{Chat} permite realizar consultas en lenguaje natural de forma libre. Para ello, el usuario únicamente debe introducir su pregunta en el cuadro de texto y pulsar el botón <<Preguntar>>. El sistema procesará la consulta, recuperará los fragmentos documentales más relevantes y generará una respuesta utilizando el modelo de lenguaje seleccionado. Por su parte el \texttt{Formulario} está orientado a usuarios que desean realizar consultas guiadas sin necesidad de redactar preguntas manualmente. En primer lugar, se debe seleccionar el expediente sobre el que desea realizar la consulta mediante la lista desplegable disponible. Se puede cribar entre documentos administrativos o técnicos desde el desplegable inferior. También existe la posibilidad de realizar una consulta global sobre todos los expedientes seleccionando la opción correspondiente. A continuación, el usuario puede indicar el tipo de consulta que desea realizar. Es posible activar la opción <<Solicitar resumen del documento>>, mediante la cual el sistema genera automáticamente un resumen completo del expediente seleccionado sin necesidad de seleccionar una pregunta específica (ver figura~\ref{fig:formulario_opciones}). Una vez configurados los parámetros deseados, el usuario debe pulsar el botón <<Preguntar>>. 
+
+\imagendiagram{Manual_usuario/Consulta_chat}{\textit{Chat} para realizar consultas al modelo.}{1}
+
+\imagendiagram{Manual_usuario/Consulta_formulario}{Indicador para informar del esatdo de generación de la respuesta desde el formulario.}{1}
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.48\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_formulario_despegable_expediente}
+        \caption{Despegable para seleccionar el \mbox{expediente}.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_formulario_tipo_documento}
+        \caption{Despegable para seleccionar el tipo de documento.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.48\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_formulario_resumen}
+        \caption{Selector para solicitar resumen de un \mbox{documento}.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_formulario_tipo_pregunta}
+        \caption{Preguntas por defecto del \mbox{formulario}.}
+    \end{subfigure}
+\end{minipage}
+\caption{Opciones del formulario de consultas de la aplicación \eng{web} PythIA.}
+\label{fig:formulario_opciones}
+\end{figure}
+
+Una vez que se envía la consulta, desde cualquiera de los dos modos (ver figura~\ref{fig:preguntas}), comienza el procesamiento del sistema. Se muestra un indicador para informar del estado de generación de la respuesta (ver figura~\ref{fig:Manual_usuario/Consulta_formulario_generando}). Cuando el proceso finaliza, la respuesta generada se muestra en la sección inferior de la página. Además, se proporciona información sobre los fragmentos documentales utilizados durante el proceso de recuperación, indicando el archivo de origen, el título del documento y el segmento concreto empleado para construir la respuesta. Pulsando el botón <<Ver todos>> el usuario puede acceder a una ventana adicional que muestra el conjunto de fragmentos utilizados por el sistema, ordenados según su grado de similitud con la consulta realizada (ver figura~\ref{fig:fragmentos}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.48\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_chat_pregunta}
+        \caption{Pregunta desde el \mbox{chat}.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.48\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_formulario_pregunta}
+        \caption{Pregunta desde el \mbox{formulario}.}
+    \end{subfigure}
+\end{minipage}
+\caption{Consultas enviadas a la aplicación \eng{web} PythIA desde el \eng{chat} y el formulario.}
+\label{fig:preguntas}
+\end{figure}
+
+\imagendiagram{Manual_usuario/Consulta_formulario_generando}{Formulario para realizar consultas al modelo.}{1}
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.48\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_fragmentos}
+        \caption{Fragmento más similar utilizado para generar la \mbox{pregunta}.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.48\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Consulta_detallesChunk}
+        \caption{Vista con los 10 fragmentos más similares a la \mbox{pregunta}.}
+    \end{subfigure}
+\end{minipage}
+\caption{Trazabilidad de la respuesta del modelo de la aplicación \eng{web} PythIA.}
+\label{fig:fragmentos}
+\end{figure}
+
+\subsection{Comparar modelos}
+\label{manual:compararModelos}
+
+La página de comparativa de modelos permite analizar el comportamiento de los distintos modelos de lenguaje (\eng{LLM}) disponibles en PythIA a partir de estadísticas reales de uso obtenidas durante el funcionamiento de la aplicación (ver figura~\ref{fig:Manual_usuario/Comparar_modelos}).
+
+\imagendiagram{Manual_usuario/Comparar_modelos}{Pantalla con gráficas para comparar los modelos \eng{LLM} disponibles en la aplicación \eng{web} PythIA.}{1}
+
+En la parte superior se muestran diferentes indicadores globales, entre los que se incluyen el número total de modelos disponibles, el número de consultas realizadas, la cantidad total de \eng{tokens} procesados y el tiempo medio de respuesta registrado. Estos indicadores ofrecen una visión general del rendimiento global del sistema.
+
+A continuación, la página presenta diversas gráficas comparativas que permiten analizar el comportamiento de cada modelo desde diferentes perspectivas. Entre ellas se incluyen el número de veces que ha sido utilizado cada modelo, el volumen de \eng{tokens} procesados, los tiempos medios de respuesta y el dispositivo usado por \file{Ollama} para responder (\file{GPU/CPU}). Esta información sirven para identificar qué modelos ofrecen mejores prestaciones en términos de velocidad, coste computacional o frecuencia de uso.
+
+Pulsando el botón <<Volver a consultar>>, situado en la parte superior derecha de la página, el usuario puede regresar directamente a la \textbf{Página de consultas} (ver sección~\ref{manual:pagConsulta}).
+
+
+\subsection{Evaluar modelos}
+\label{manual:evaluar}
+
+Los resultados más relevantes de la última evaluación se muestran en la página de consultas mediante gráficas de anillos que resumen las métricas de manera visual. Concretamente representan la fidelidad, la relevancia de la respuesta, la corrección de la respuesta, la precisión del contexto, la cobertura del contexto y la relevancia del contexto. Solo los administradores pueden ejecutar una nueva evaluación. Para ello disponen del botón <<Evaluar RAG>>, que inicia la ejecución completa del \eng{pipeline} de evaluación (ver ~\ref{fig:evaluacion}). Durante el proceso se muestra una barra de progreso que informa del porcentaje completado y del estado actual de la evaluación (ver figura~\ref{fig:Manual_usuario/administrador/Evaluacion_rag2}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.48\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Evaluacion_rag}
+        \caption{Pantalla con las métricas de la última evaluación del sistema \eng{RAG} del usuario estándar.}
+    \end{subfigure}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.48\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Evaluacion_rag}
+        \caption{Pantalla con las métricas de la última evaluación del sistema \eng{RAG} del administrador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Diferencias entre las vistas del usuario estándar y el administrador en la Evaluación del \eng{RAG}.}
+\label{fig:evaluacion}
+\end{figure}
+
+\imagendiagram{Manual_usuario/administrador/Evaluacion_rag2}{Barra de progreso de la ejecución de la evaluación del sistema \eng{RAG} en la aplicación \eng{web} PythIA.}{1}
+
+Tanto los usuarios normales como los administradores pueden acceder al detalle de los resultados pulsando el botón <<Ver detalle>> disponible en la página de consultas. Esta acción abre una vista específica donde se muestran en detalle las métricas obtenidas. En la parte superior de esta página se presenta una tabla con las métricas globales obtenidas durante la evaluación. Para cada métrica se muestran los valores calculados mediante \eng{RAGAS}, los obtenidos mediante similitud por \eng{embeddings} y la puntuación final resultante de la combinación de ambos enfoques (ver figura~\ref{fig:Manual_usuario/Detalles_evalaucion}). 
+También, se pueden descargar los resultados completos de la evaluación en formato \file{JSON}. Pulsando el botón <<Anterior>> se puede volver a la \textbf{Página de consultas} (ver sección~\ref{manual:pagConsulta}).
+
+\imagendiagram{Manual_usuario/Detalles_evalaucion}{Tabla de evaluación desglosando resultas de \file{RAGAS} y \eng{embeddings}.}{1}
+
+Además, la sección <<Detalle por pregunta>> ofrece un análisis individual para cada una de las preguntas utilizadas durante la evaluación (ver figura~\ref{fig:Manual_usuario/Detalles_evalaucion2}). Mediante un sistema desplegable, el usuario puede consultar la pregunta evaluada, la respuesta generada por el sistema, la respuesta de referencia (\eng{ground truth}), la evidencia utilizada para la evaluación, los fragmentos recuperados como contexto y las métricas obtenidas específicamente para dicha consulta (ver figura~\ref{fig:detalles_evaluacion_pregunta}).
+
+\imagendiagram{Manual_usuario/Detalles_evalaucion2}{Sección <<Detalle por pregunta>> de la pantalla de Evaluación del \eng{RAG}.}{1}
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.8\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Detalles_evalaucion_pregunta}
+        \caption{I. Desplegable de la primera pregunta (pregunta y respuesta).}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Detalles_evalaucion_pregunta2}
+        \caption{II. Desplegable de la primera pregunta (respuesta correcta, evidencia y contexto).}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Detalles_evalaucion_pregunta3}
+        \caption{III. Desplegable de la primera pregunta (tabla de resultados mostrando los resultados \file{RAGAS}, \eng{embeddings} y agregado).}
+    \end{subfigure}
+\end{minipage}
+\caption{Desplegable de la Evaluación del sistema \eng{RAG} para una pregunta.}
+\label{fig:detalles_evaluacion_pregunta}
+\end{figure}
+
+\subsection{Historial de consultas}
+\label{manual:historial}
+
+El historial permite al usuario consultar las interacciones realizadas previamente con el sistema \eng{RAG}. Cuando no existen consultas registradas se mustra un mensaje informativo indicándolo (ver figura~\ref{fig:historial}). Los usuarios con permisos de administración pueden ver las consultas de todos los usuarios del sistema, mientras que los usuarios estándar solo pueden ver sus consultas.
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+	\begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Historial}
+        \caption{Pantalla del historial desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\centering
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Historial}
+        \caption{Pantalla del historial para un usuario estándar con consultas desde el ordenador.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Historial_vacio}
+        \caption{Pantalla del historial para un usuario estándar sin consultas desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Pantallas del historial de la aplicación \eng{web} PythIA para un usuario estándar en diferentes dispositivos.}
+\label{fig:historial}
+\end{figure}
+
+Por cada consulta realizada se muestra una tarjeta, donde se incluye la pregunta realizada junto con la información relevante de la ejecución, como la fecha y hora de realización, el tiempo de respuesta obtenido, el \eng{LLM} utilizado y si la consulta se ejecutó mediante \file{GPU} o \file{CPU}. Además, por cada consulta se puede ver la respuesta generada por el sistema y los detalles de los \eng{chunk} recuperados (ver figura~\ref{fig:tarjeta}).
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.8\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Historial_tarjeta}
+        \caption{Tarjeta para mostrar una consulta.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Historial_respuesta}
+        \caption{Modal con la respuesta que del modelo para la consulta.}
+    \end{subfigure}
+        \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Historial_detalles}
+        \caption{Modal con los detalles de los fragmentos usados para la generación de la respuesta.}
+    \end{subfigure}
+\end{minipage}
+\caption{Tarjeta para mostrar una consulta en el historial y sus diferentes vistas.}
+\label{fig:tarjeta}
+\end{figure}
+
+La interfaz incorpora un sistema de filtrado que facilita la localización de consultas concretas dentro del historial. Se permiten distintos criterios de filtrado, como la fecha de ejecución, el \eng{LLM} utilizado para generar la respuesta o el tipo de procesamiento (\file{CPU/GPU}). Los administradores además pueden filtrar por usuario (ver figura~\ref{fig:filtro_historial}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.8\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Historial_filtro}
+        \caption{Filtro del historial para un usuario estándar.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Historial_filtro}
+        \caption{Filtro del historial para un administrador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Diferencias entre el filtro del historial de un administrador y un usuario estándar.}
+\label{fig:filtro_historial}
+\end{figure}
+
+Se pueden eliminar una o varias consultas del historial. Para ello se dispone de un modo de selección múltiple que permite marcar una o varias consultas y eliminarlas de forma conjunta. Antes de completar la operación, el sistema solicita una confirmación explícita mediante una ventana emergente para evitar borrados accidentales (ver figura~\ref{fig:Manual_usuario/Historial_borrar}).
+
+\imagendiagram{Manual_usuario/Historial_borrar}{Modal para borrar una consulta del historial de la aplicación \eng{web} PythIA.}{1}
+
+
+\subsection{Perfil de usuario}
+\label{manual:perfil}
+ 
+El perfil de usuario permite consultar y modificar la información de la cuenta. Desde esta pantalla se puede visualizar y modificar los datos personales y configurar las preferencias de uso (ver figura~\ref{fig:perfil}).
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Perfil_usuario}
+        \caption{Perfil del usuario de la aplicación \eng{web} PythIA \mbox{desde} el móvil.}
+    \end{subfigure}
+\end{minipage}
+\centering
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \vspace*{5.3cm}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Perfil_usuario}
+        \caption{Perfil del usuario de la aplicación \eng{web} PythIA desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Pantalla del perfil de usuario de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:perfil}
+\end{figure}
+
+En la parte izquierda de la pantalla se muestra el resumen de la información básica del usuario (ver figura~\ref{fig:Manual_usuario/Perfil_usuario_datos}) incluyendo su fotografía de perfil, nombre, dirección de correo electrónico, país de residencia y fecha del último inicio de sesión. En la parte derecha se muestra el formulario para editar el perfil (ver figura~\ref{fig:Manual_usuario/Perfil_usuario_editar}). Desde este formulario se puede modificar la fotografía de perfil, el nombre de usuario, el correo electrónico, el país y la contraseña. Además, el usuario puede configurar distintas preferencias como la apariencia de la aplicación, el modelo o el idioma. Para almacenar los cambios hay que pulsar el botón <<Guardar cambios>>. Para descartar los cambios hay que pulsar el botón <<Cancelar>> (ver figura~\ref{fig:editar_perfil}).
+
+\imagendiagram{Manual_usuario/Perfil_usuario_datos}{Sección para visualizar los datos de perfil en la aplicación \eng{web} PythIA.}{0.35}
+
+\imagendiagram{Manual_usuario/Perfil_usuario_editar}{Sección para editar los datos de perfil en la aplicación \eng{web} PythIA.}{0.7}
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.46\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Perfil_usuario_cargar_imagen}
+        \caption{Actualización de la imagen de perfil.}
+    \end{subfigure}
+\end{minipage}
+\centering
+\begin{minipage}[c]{0.46\textwidth}
+    \centering
+        \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Perfil_usuario_actualizacion}
+        \caption{Confirmación de actualización del perfil.}
+    \end{subfigure}
+\end{minipage}
+\caption{Actualización de imagen de perfil en la aplicación \eng{web} PythIA con mensaje de confirmación.}
+\label{fig:editar_perfil}
+\end{figure}
+
+La pantalla incluye la opción <<Eliminar cuenta>>, que permite eliminar de forma permanente la cuenta de usuario. Cuando se solicita el borrado de la cuenta el sistema solicita una confirmación antes de proceder con el borrado para evitar eliminaciones accidentales (ver figura~\ref{fig:Manual_usuario/Perfil_usuario_borrar_cuenta}).
+
+\imagendiagram{Manual_usuario/Perfil_usuario_borrar_cuenta}{Mensaje de confirmación de borrado de cuenta en la aplicación \eng{web} PythIA.}{1}
+
+ 
+\subsection{Estadísticas}
+\label{manual:estad}
+
+La página de estadísticas permite analizar el uso de la plataforma, facilitando la identificación de patrones de uso, tiempos de respuesta y distribución de consultas (ver figura~\ref{fig:estadisticas}). En la parte superior de la página se muestran indicadores generales para ofrecer una visión rápida del nivel de utilización de la plataforma.
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Estadisticas}
+        \caption{Estadísticas de uso desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\centering
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \vspace*{5.2cm}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Estadisticas}
+        \caption{Estadísticas de uso desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Pantalla de estadísticas de uso de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:estadisticas}
+\end{figure}
+
+Los usuarios normales pueden consultar sus propias estadísticas mediante la opción <<Tu uso>> o visualizar estadísticas globales de toda la plataforma <<Uso global>>. Por el contrario, los administradores disponen de funcionalidades adicionales que les permiten seleccionar cualquier usuario registrado (ver figuras~\ref{fig:selector_estadisticas}).
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Estadisticas_selector}
+        \caption{Selector para ver estadísticas de un usuario estándar.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Estadisticas_selector}
+        \caption{Selector para ver estadísticas de un administrador.}
+    \end{subfigure}
+\caption{Comparación del selector de visualización de un usuario estándar y un administrador.}
+\label{fig:selector_estadisticas}
+\end{figure}
+
+
+La sección <<Consultas por mes>> (ver figura ~\ref{fig:Manual_usuario/Estadisticas_mes}) muestra la evolución temporal de las consultas realizadas durante los últimos doce meses. Para ellos se muestra una gráfica de barras y un calendario.La gráfica es interactiva y permite navegar entre distintos niveles de detalle. Al pulsar sobre un mes concreto se muestran las estadísticas correspondientes a las semanas de dicho mes. Al seleccionar una semana se visualizan los datos diarios asociados y, finalmente, al pulsar sobre un día concreto se obtiene la distribución horaria de las consultas realizadas. El calendario es interactivo y permite seleccionar fechas específicas y visualizar los días con actividad registrada.
+
+\imagendiagram{Manual_usuario/Estadisticas_mes}{Gráficas para mostrar la evolución temporal de las consultas.}{1}
+
+La página también incorpora una gráfica de <<Tiempo medio de respuesta>> (ver figura~\ref{fig:Manual_usuario/Estadisticas_tiempo_medio}), que representa la evolución del tiempo necesario para generar las respuestas. Al igual que ocurre con las consultas, esta gráfica es interactiva permitiendo una navegación interactiva por meses, semanas, días y horas.
+
+\imagendiagram{Manual_usuario/Estadisticas_tiempo_medio}{Gráfica para mostrar la evolución temporal del tiempo medio de generación de respuestas.}{1}
+
+La sección de <<Consultas por día de la semana>> (ver figura~\ref{fig:Manual_usuario/Estadisticas_consultas_dia}) muestra la distribución de consultas según el día en que fueron realizadas.
+
+\imagendiagram{Manual_usuario/Estadisticas_consultas_dia}{Gráfica para mostrar la evolución temporal del tiempo medio de generación de respuestas.}{1}
+
+La sección <<Consultas por franja horaria>> (ver figura~\ref{fig:franja_horaria}) permite analizar las horas de mayor utilización del sistema. La información puede visualizarse mediante una gráfica de barras y mediante un mapa de calor. En ambos casos se representa el número de consultas realizadas en cada intervalo horario.
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Estadisticas_franja_horaria_barras}
+        \caption{Gráfica de barras para ver las consultas por franja horaria.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Estadisticas_franja_horaria_calor}
+        \caption{Mapa de calor para ver las consultas por franja horaria.}
+    \end{subfigure}
+\caption{Gráficas que muestran las consultas por franja horaria.}
+\label{fig:franja_horaria}
+\end{figure}
+
+También se incluye una sección <<Comparativa>> donde los usuarios estándares pueden ver su uso de la aplicación frente al global del sistema. En esta vista se representan indicadores estadísticos como la media, la mediana y la varianza del número de consultas. Los administradores además pueden seleccionar varios usuarios simultáneamente para comparar su actividad (ver figura~\ref{fig:estadistica_comparativa}).
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/Estadisticas_comparativa}
+        \caption{Gráfica comparativa sin permisos de adminsitracio.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Estadisticas_comparativa}
+        \caption{Gráfica comparativa con permisos de adminsitracio.}
+    \end{subfigure}
+\caption{Gráficas comparativas entre usuarios con permisos de administración y sin ellos.}
+\label{fig:estadistica_comparativa}
+\end{figure}
+
+También, se incluye una representación geográfica de los países de los usuarios registrados mediante un mapa mundial (ver figura~\ref{fig:Manual_usuario/Estadisticas_geografica}).
+
+\imagendiagram{Manual_usuario/Estadisticas_geografica}{Gráfica para mostrar la distribución geográfica de los usuarios.}{1}
+
+Los administradores pueden ver gráficas exclusivas orientadas al análisis comparativo incluidas en la sección <<Ranking>>, donde se muestran los usuarios con mayor número de consultas y accesos realizados (ver figura~\ref{fig:Manual_usuario/administrador/Estadisticas_ranking}). 
+
+\imagendiagram{Manual_usuario/administrador/Estadisticas_ranking}{Gráficas exclusivas para los administradores de la sección <<Ranking>>.}{1}
+
+\subsection{Administrar documentos}
+\label{manual:documentos}
+
+La página de administración de documentos es una funcionalidad exclusiva para usuarios con rol de administrador (ver figura~\ref{fig:administrar_documentos}). Desde esta sección se gestionan los documentos que alimentan la base de conocimiento del sistema \eng{RAG}, incluyendo la carga de nuevos expedientes, la ejecución de procesos de conversión, la indexación de contenido y las tareas de recopilación automática de información mediante \eng{web scraping}.
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Administrar_documentos}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\centering
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \vspace*{5.2cm}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Administrar_documentos}
+        \caption{Vista desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Pantalla de administración documental de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:administrar_documentos}
+\end{figure}
+
+En la parte izquierda de la pantalla se encuentra el panel de acciones (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_cargar}). Desde este panel el administrador puede seleccionar uno o varios archivos \file{PDF} almacenados localmente y cargarlos en la plataforma mediante el botón <<Subir documentos>>. Una vez completada la carga, los documentos quedan registrados en el sistema y pasan a estar disponibles para su posterior procesamiento. Además de la carga manual de documentos, la página incorpora el botón <<Web Scraping>> para recopilar de forma automática los documentos. Por su parte, la opción <<Convertir pendientes a Markdown>> procesa aquellos documentos que todavía no han sido convertidos. La opción <<Actualizar base vectorial>> genera los \eng{embeddings} y los almacena en la base de datos vectorial, permitiendo que los nuevos documentos puedan ser utilizados por el sistema \eng{RAG} durante las consultas.
+
+\imagendiagram{Manual_usuario/administrador/Administrar_documentos_cargar}{Panel de acciones de administración documental de la aplicación \eng{web} PythIA.}{0.4}
+
+La parte derecha de la pantalla muestra el listado de documentos almacenados (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_tabla}). Para cada documento se muestra su nombre, tipo, tamaño, fecha de incorporación, número de fragmentos (\eng{chunks}) generados y estado de procesamiento. Los estados indican si el documento ha sido convertido a \file{Markdown}, si se encuentra indexado en la base vectorial, si aún está pendiente o si ha fallado su indexación. Además, se permite visualizar el archivo \file{PDF} original desde el navegador pulsando el botón <<Ver PDF>> y descargarlo desde <<Descargar PDF>>. También, se puede consultar la versión convertida a \file{Markdown} mediante <<Ver Markdown>> o descargarlo con <<Descargar Markdown>> (ver figura~\ref{fig:archivos}). Para mejorar la visualización de la tabla se incluye un sistema de filtrado. El cual permite buscar documentos por nombre, por tipo de documento, por estado de procesamiento o si ha sido convertido a \file{Markdown} (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_filtro}).
+
+\imagendiagram{Manual_usuario/administrador/Administrar_documentos_tabla}{Tabla con el listado de documentos cargados en la aplicación \eng{web} PythIA.}{1}
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Administrar_documentos_verpdf}
+        \caption{Visualización de un documento \file{PDF}.}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Administrar_documentos_vermarkdown}
+        \caption{Visualización de un documento \file{Markdown}.}
+    \end{subfigure}
+\caption{Visualización de los documentos cargados en el sistema.}
+\label{fig:archivos}
+\end{figure}
+
+\imagendiagram{Manual_usuario/administrador/Administrar_documentos_filtro}{Filtro aplicable a la colección documental de la aplicación \eng{web} PythIA.}{1}
+
+\subsection{Administrar usuarios}
+\label{manual:usuarios}
+
+La administración de usuarios es una funcionalidad exclusiva para usuarios con rol de administrador (ver figura~\ref{fig:administrar_usuarios}). Esta sección permite gestionar las cuentas registradas en la plataforma, crear nuevos usuarios, modificar sus privilegios y eliminar cuentas.
+
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.33\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/responsive/Administrar_usuarios}
+        \caption{Vista desde el móvil.}
+    \end{subfigure}
+\end{minipage}
+\centering
+\hfill
+\begin{minipage}[c]{0.63\textwidth}
+    \centering
+    \vspace*{5.2cm}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Manual_usuario/administrador/Administrar_usuarios}
+        \caption{Vista desde el ordenador.}
+    \end{subfigure}
+\end{minipage}
+\caption{Pantalla de administración de usuarios de la aplicación \eng{web} PythIA en diferentes dispositivos.}
+\label{fig:administrar_usuarios}
+\end{figure}
+
+En la parte izquierda de la página se encuentra el formulario de creación de usuarios, mientras que en la parte derecha se muestra el listado completo de cuentas registradas en el sistema. Para crear un nuevo usuario, el administrador debe introducir los datos del nuevo usuario, pudiendo marcar la opción <<Administrador>> para otorgarle permisos de administración. Una vez completados los datos, la cuenta se crea pulsando el botón <<Crear usuario>>. Desde la tabla de usuarios se puede ver la información relevante de cada cuenta registrada. También, se pueden seleccionar una o varias cuentas a las que se les puede modificar los privilegios pulsando el botón <<Cambiar tipo>>. Pulsando la opción <<Borrar>> se pueden eliminar las cuentas seleccionadas. Mediante el botón de filtros es posible realizar búsquedas por nombre y aplicar criterios adicionales relacionados con el país de procedencia o el tipo de usuario (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_usuarios_filtro}). 
+
+\imagendiagram{Manual_usuario/administrador/Administrar_usuarios_filtro}{Filtro aplicable a la tabla de usuarios de la aplicación \eng{web} PythIA.}{1}

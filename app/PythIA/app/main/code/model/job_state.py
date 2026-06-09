@@ -8,6 +8,8 @@ from __future__ import annotations
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from app.main.code.extensions import db
+
 MADRID_TZ = ZoneInfo("Europe/Madrid")
 JOB_MESSAGE_MAX_LENGTH = 255
 
@@ -127,3 +129,28 @@ class JobStateMixin:
         self.error = str(error)
         self.set_message(message)
         self.finished_at = self.now()
+
+
+class State(JobStateMixin, db.Model):
+    """
+    Clase base abstracta para estados persistidos de procesos.
+    """
+
+    __abstract__ = True
+
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(20), nullable=False, default="queued", index=True)
+    progress = db.Column(db.Integer, nullable=False, default=0)
+    cancel_requested = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    error = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
+    started_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    finished_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+
+    def __init__(self, **kwargs) -> None:
+        """
+        Inicializa el estado con fecha de creacion por defecto.
+        """
+        super().__init__(**kwargs)
+        if not self.created_at:
+            self.created_at = self.now()

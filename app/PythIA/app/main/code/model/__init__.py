@@ -8,6 +8,7 @@ from .consulta import Consulta
 from .consulta_chunk import ConsultaChunk
 from .documento import Documento
 from .embedding import Embedding
+from .job_state import State
 from .markdown_conversion_state import MarkdownConversionState
 from .rag_evaluation_state import RAGEvaluationState
 from .rag_query_state import RAGQueryState
@@ -24,6 +25,7 @@ __all__ = [
     "MarkdownConversionState",
     "RAGEvaluationState",
     "RAGQueryState",
+    "State",
     "User",
     "VectorUpdateState",
     "WebScrapingSate",

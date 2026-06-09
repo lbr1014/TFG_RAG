@@ -730,20 +730,32 @@ Estas variables se definen mediante archivos \texttt{.env} y \texttt{secret.env}
 ]
 	{\footnotesize
 		\noindent
-		\texttt{SECRET\_KEY}\\
-		\texttt{FLASK\_SESSION\_SIGNER}\\
-		\texttt{POSTGRES\_PASSWORD}\\
+		\texttt{SECRET\_KEY} $\rightarrow$ clave secreta utilizada por Flask para firmar sesiones y proteger información sensible. Debe generarse aleatoriamente (por ejemplo, con \texttt{openssl rand -hex 32}).\\
+		
+		\texttt{FLASK\_SESSION\_SIGNER} $\rightarrow$ clave empleada para la firma criptográfica de las cookies de sesión. Se recomienda generar una cadena aleatoria segura similar a \texttt{SECRET\_KEY}.\\
+		
+		\texttt{POSTGRES\_PASSWORD} $\rightarrow$ contraseña del usuario administrador de PostgreSQL. Debe ser definida por el administrador durante el despliegue.\\
 		\\
-		\texttt{MAIL\_SERVER}\\
-		\texttt{MAIL\_PORT}\\
-		\texttt{MAIL\_USE\_TLS}\\
-		\texttt{MAIL\_USE\_SSL}\\
-		\texttt{MAIL\_USERNAME}\\
-		\texttt{MAIL\_PASSWORD}\\
-		\texttt{MAIL\_DEFAULT\_SENDER}\\
-		\texttt{EMAILABLE\_API\_KEY}
+		
+		\texttt{MAIL\_SERVER} $\rightarrow$ dirección del servidor SMTP utilizado para el envío de correos electrónicos (por ejemplo, \texttt{smtp.gmail.com}). Proporcionada por el proveedor de correo.\\
+		
+		\texttt{MAIL\_PORT} $\rightarrow$ puerto de conexión al servidor SMTP (habitualmente 587 para TLS o 465 para SSL). Indicado por el proveedor de correo.\\
+		
+		\texttt{MAIL\_USE\_TLS} $\rightarrow$ indica si se utiliza cifrado TLS (\texttt{True}/\texttt{False}). Depende de la configuración del servidor SMTP.\\
+		
+		\texttt{MAIL\_USE\_SSL} $\rightarrow$ indica si se utiliza cifrado SSL (\texttt{True}/\texttt{False}). Depende de la configuración del servidor SMTP.\\
+		
+		\texttt{MAIL\_USERNAME} $\rightarrow$ dirección de correo empleada para autenticarse en el servidor SMTP.\\
+		
+		\texttt{MAIL\_PASSWORD} $\rightarrow$ contraseña asociada a la cuenta de correo utilizada para el envío de mensajes.\\
+		
+		\texttt{MAIL\_DEFAULT\_SENDER} $\rightarrow$ dirección de correo que aparecerá como remitente de los mensajes enviados por la aplicación.\\
+		
+		\texttt{EMAILABLE\_API\_KEY} $\rightarrow$ clave de acceso a la API de Emailable para la validación de direcciones de correo electrónico.
 	}
 \end{tcolorbox}
+
+Para que la aplicación pueda desplegarse y funcionar correctamente, únicamente es necesario configurar las variables \file{SECRET\_KEY}, \file{FLASK\_SESSION\_SIGNER} y \file{POSTGRES\_PASSWORD}. El resto de variables son opcionales y únicamente se necesitan para funciones adicionales como el envío de correos electrónicos para la recuperación de contraseñas o la validación automática de direcciones de correo mediante la \file{API} de \file{Emailable}.
 
 Una vez instalado \file{Docker} y \file{Git}, descargado el repositorio y generado el archivo \file{sencret.env} se puede ejecutar la aplicación. Para ello deben generarse las imágenes \file{Docker}. Esta construcción es automática gracias a los archivos \file{docker-compose.yml} y \file{Dockerfile}.
 
@@ -1220,6 +1232,6 @@ La ejecución completa de la batería de pruebas puede realizarse mediante el si
 	}
 \end{tcolorbox}
 
-En la imagen~\ref{img:Anexos/informe_coverage_terminal} se puede observar el resultado de ejecutar el comando \file{docker compose --profile test up test}.
+En la imagen~\ref{fig:Anexos/informe_coverage_terminal} se puede observar el resultado de ejecutar el comando \file{docker compose --profile test up test}.
 
 \imagendiagram{Anexos/informe_coverage_terminal}{Informe de \eng{coverage} de la aplicación mostrado en la terminal tras ejecución de los \eng{test}.}{1.2}

@@ -10,12 +10,15 @@
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{titlesec}
+\usepackage{subcaption}
+\usepackage{enumitem}
 
 %Cabeceras
 \copypagestyle{capitulo-en-cab}{headings}
 \makeoddhead{capitulo-en-cab}{\itshape\leftmark}{}{\thepage}
 \makeevenhead{capitulo-en-cab}{\thepage}{}{\itshape\leftmark} 
 \pagestyle{capitulo-en-cab}
+
 
 
 % Castellano
@@ -31,12 +34,17 @@
 \RequirePackage[table]{xcolor}
 \RequirePackage{xtab}
 \RequirePackage{multirow}
+\usepackage{subcaption}
 
 % Links
 \PassOptionsToPackage{hyphens}{url}\usepackage[colorlinks]{hyperref}
 \hypersetup{
 	allcolors = {red}
 }
+
+% Listas
+\setlist{itemsep=0pt,parsep=0pt,topsep=3pt}
+\raggedbottom
 
 % Hipervínculos 
 \newcommand{\req}[1]{
@@ -370,6 +378,8 @@ S    \rowcolors {2}{gray!35}{}
 
 % Formato de portada
 \makeatletter
+\counterwithout{footnote}{chapter}
+\counterwithout{footnote}{section}
 \usepackage{xcolor}
 \newcommand{\tutor}[1]{\def\@tutor{#1}}
 \newcommand{\course}[1]{\def\@course{#1}}
@@ -414,7 +424,7 @@ S    \rowcolors {2}{gray!35}{}
 % Datos de portada
 \title{Creación de \textit{RAG} para pliegos de la Diputación \\Documentación Técnica}
 \author{Lydia Blanco Ruiz}
-\tutor{Álvar Arnaiz González y César Ignacio García Osorio}
+\tutor{Dr. Álvar Arnaiz González y Dr. César Ignacio García Osorio}
 \date{\today}
 
 \begin{document}

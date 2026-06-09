@@ -16,6 +16,7 @@ from .keys import (
 COMPARE_MODELS_EN = "Compare models"
 APPLY_FILTERS_EN = "Apply filters"
 BULK_DELETE_EN = "Bulk delete"
+NEW_PASSWORD_LABEL_EN = "New password"
 
 TRANSLATIONS_EN={
     "app.default_title": "My site",
@@ -100,10 +101,10 @@ TRANSLATIONS_EN={
     "auth.forgot_password_submit": "Recover password",
     "auth.back_login": "Back to login",
     "auth.reset_password_title": "Reset password",
-    "auth.new_password_title": "New password",
+    "auth.new_password_title": NEW_PASSWORD_LABEL_EN,
     "auth.reset_password_submit": "Change password",
     "auth.repeat_password": "Repeat password",
-    "auth.new_password": "New password",
+    "auth.new_password": NEW_PASSWORD_LABEL_EN,
     "auth.password_mismatch": "Passwords do not match",
     "auth.login_required": "You must log in to access this page.",
     "auth.invalid_credentials": "Incorrect email or password.",
@@ -637,6 +638,27 @@ TRANSLATIONS_EN={
     "tutorial.users.bulk_toggle.desc": "Change the role (admin/user) of the selected users.",
     "tutorial.users.bulk_delete.title": BULK_DELETE_EN,
     "tutorial.users.bulk_delete.desc": "Delete the selected users (if any are checked).",
+    "tutorial.auth.name.title": "Name",
+    "tutorial.auth.email.title": "Email address",
+    "tutorial.auth.country.title": "Country",
+    "tutorial.auth.password.title": "Password",
+    "tutorial.auth.confirm_password.title": "Confirm password",
+    "tutorial.auth.submit.title": "Submit form",
+    "tutorial.auth.login.email.desc": "Enter the email address you registered with, using a valid format such as name@domain.com.",
+    "tutorial.auth.login.password.desc": "Type your password with uppercase letters, lowercase letters, and numbers exactly as you created it.",
+    "tutorial.auth.login.submit.desc": "Click here once the email and password are complete to log in.",
+    "tutorial.auth.signup.name.desc": "Enter your name with at least two characters so your account can be identified.",
+    "tutorial.auth.signup.email.desc": "Use a real, valid email address, for example name@domain.com. You will need it to recover your account.",
+    "tutorial.auth.signup.country.desc": "Select your country to associate the account with the correct location.",
+    "tutorial.auth.signup.password.desc": "Create a password of at least 8 characters with one uppercase letter, one lowercase letter, and at least one number.",
+    "tutorial.auth.signup.confirm_password.desc": "Repeat the exact same password to confirm there are no typing mistakes.",
+    "tutorial.auth.signup.submit.desc": "Click here once all fields are complete and valid to create your account.",
+    "tutorial.auth.forgot.email.desc": "Enter the email address linked to your account to receive the recovery link.",
+    "tutorial.auth.forgot.submit.desc": "Click here to request the password recovery link.",
+    "tutorial.auth.new_password.title": NEW_PASSWORD_LABEL_EN,
+    "tutorial.auth.reset.password.desc": "Enter a new password of at least 8 characters with one uppercase letter, one lowercase letter, and at least one number.",
+    "tutorial.auth.reset.confirm_password.desc": "Type the exact same password again to confirm the change without mistakes.",
+    "tutorial.auth.reset.submit.desc": "Click here when the new password and its confirmation match to save the change.",
     "tutorial.error.no_driver": "Could not load the tutorial (Driver.js not available). Check your connection or content blockers.",
     "tutorial.error.no_steps": "No tutorial steps are available for this screen.",
     "tutorial.fab_tooltip": "View an interactive tutorial on how to use this page",
