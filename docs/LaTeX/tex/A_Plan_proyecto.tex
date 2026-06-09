@@ -649,22 +649,47 @@ Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone
 	\item Añadir evaluación \eng{RAG}.
 \end{itemize}
 
-Para realizar el \eng{sprint} se estimaron 42 horas de trabajo.
+Para realizar el \eng{sprint} se estimaron 42 horas de trabajo. Al finalizar el \eng{sprint} se invirtieron más o menos esa cantidad de horas, pero no se consiguió terminar todas las tareas planificadas. El principal problema en el retraso temporal fueron los \eng{test}. Como parte de la corrección de los mismos se tuvieron que documentar. El problema fue que no se había tenido en cuenta la documentación de los mismos a la hora de planificar las tareas del \eng{sprint}. Por lo cual, las tareas que no se han acabado, es decir, añadir la evaluación RAG y terminar los anexos, concretamente el apartado de diseño se realizarán en el próximo \eng{sprint} priorizandolas frente al resto de cosas pendientes. 
 
-%El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint28}.
-%\imagenflotante{Burndown/Sprint28}{\eng{Burndown chart} del \eng{sprint} 28.}
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint28}.
+\imagenflotante{Burndown/Sprint28}{\eng{Burndown chart} del \eng{sprint} 28.}
 
 \subsection{\eng{Sprint} 29 (21/05/2026 -- 28/05/2026)}
-%Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/29?closed=1}{Sprint 29}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/29?closed=1}{Sprint 29} se fijó terminar de completar las tareas que se dejaron incompletas en el \eng{sprint} anterior. Es decir, se planificó seguir redactando los anexos e incluir la evaluación RAG en la \eng{web}. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+\begin{itemize}
+	\item Añadir la evaluación RAG.
+	\item Redactar apartados de los anexos.
+	\begin{itemize}
+		\item Terminar el apartado de diseño de los anexos.
+	\end{itemize}
+	\item Arreglos de detalles en la GUI.
+\end{itemize}
 
-%Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
+Para realizar el \eng{sprint} se estimaron 18 horas de trabajo, pero finalmente se invirtieron más de 25 ya que durante la planificación no se contó con tener que adaptar el código de la evaluación RAG para que fuese asíncrono. Además, el apartado de diseño de los anexos estaba bastante desactualizado ya que no incluía ninguno de los cambios del código de los últimos \eng{sprints} por lo cual a parte de acabarlo hubo que mejorar lo que ya estaba hecho.
 
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint29}.
+\imagenflotante{Burndown/Sprint29}{\eng{Burndown chart} del \eng{sprint} 29.}
 
-%Para realizar el \eng{sprint} se estimaron horas de trabajo
+\subsection{\eng{Sprint} 30 (28/05/2026 -- 11/06/2026)}
 
-%El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint29}.
-%\imagenflotante{Burndown/Sprint29}{\eng{Burndown chart} del \eng{sprint} 29.}
+Como objetivo principal del \myhref{https://github.com/lbr1014/TFG_RAG/milestone/30?closed=1}{Sprint 30} se fijó incluir las últimas correcciones en la memoria y los anexos, así como completar los \eng{test} de la aplicación \eng{web} completando el \eng{coverage} e incluyendo pruebas de interfaz. También, se planificó resolver las \eng{issues} abiertas en SonarCloud. Para llevar a cabo estos objetivos se plantearon las siguientes tareas:
 
+\begin{itemize}
+	\item Incluir explicación de las tareas asíncronas en los aspectos relevantes de la memoria.
+	\item Terminar los anexos
+	\begin{itemize}
+		\item Incluir aspectos relevantes faltantes en el manual del programador.
+		\item Terminar de explicar el manual del usuario.
+		\item Redactar la información que se buscó sobre el apartado de sostenibilidad en \eng{sprints} anteriores.
+	\end{itemize}
+	\item Completar el \eng{coverage} del código.
+	\item Resolver \eng{issues} de SonarCloud.
+\end{itemize}
+
+Para realizar el \eng{sprint} se estimaron 22 horas de trabajo, pero finalmente se invirtieron más de 30 ya que se han realizado más correcciones de las previstas tanto en la memoria como en los anexos.
+
+El \eng{burndown} de este \eng{sprint} se ilustra en la figura~\ref{fig:Burndown/Sprint30}.
+\imagenflotante{Burndown/Sprint30}{\eng{Burndown chart} del \eng{sprint} 30.}
 
 \section{Estudio de viabilidad} \label{plan:viab}
 El estudio de viabilidad es un análisis detallado que se realiza antes de iniciar un proyecto. Sirve para determinar la rentabilidad de ese proyecto, es decir, si se pude hacer realidad. Para ello se analiza si es económicamente rentable (ver subsección~\hyperref[viabilidad_economica]{A.3.1}) y legalmente viable (ver subsección~\hyperref[viabilidad_legal]{A.3.2}). 
@@ -695,18 +720,18 @@ Para analizar la viabilidad económica se ha seguido el coste total de propiedad
 	\label{tabla:explicacion_TCO}
 \end{table}
 
-Para llevar a cabo el estudio de la viabilidad económica se va a considerar que el trabajo llevado a cabo por la alumna lo ha realizado un desarrollador contratado durante los 9 meses que ha durado el proyecto. Si se supone un escenario empresarial real en España y se toma como referencia el \myhref{https://www.boe.es/buscar/doc.php?id=BOE-A-2024-2251}{Salario Mínimo Interprofesional (SMI) de 2024}, el salario mínimo anual es de 15\,876\,€, es decir, 1\,134\,€ al mes (se divide en 14 pagas). Además, a este salario hay que añadirle los gastos por la cotización a la \myhref{https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/36537}{Seguridad Social}. Normalmente la cotización es del 28,30\%, de los cuales 23,60\% se corresponden con gastos de la empresa. Este impuesto se conoce como contingencias comunes. Además, debe sumarse la tasa de desempleo, de la cual la empresa debe pagar un 5,5\% (el empleado paga el otro 1,55\% para completar el 7,05\% de la tasa total). Por último debe pagarse un 0,2\% de FOGASA. Por lo cual el gasto mensual final por la contratación del desarrollado sería:
+Para llevar a cabo el estudio de la viabilidad económica se va a considerar que el trabajo llevado a cabo por la alumna lo ha realizado un desarrollador contratado durante los 9 meses que ha durado el proyecto. Si se supone un escenario empresarial real en España y se toma como referencia el \myhref{https://www.ufv.es/cuanto-cobra-un-ingeniero-informatico-por-mes-preguntas-grados/}{Salario Medio de un Graduado en Ingeniería Informática}, que se corresponde a unos 25\,000\,€ al año, es decir, 1\,785\,€ al mes (se divide en 14 pagas). Además, a este salario hay que añadirle los gastos por la cotización a la \myhref{https://www.seg-social.es/wps/portal/wss/internet/Trabajadores/CotizacionRecaudacionTrabajadores/36537}{Seguridad Social}. Normalmente la cotización es del 28,30\%, de los cuales 23,60\% se corresponden con gastos de la empresa. Este impuesto se conoce como contingencias comunes. Además, debe sumarse la tasa de desempleo, de la cual la empresa debe pagar un 5,5\% (el empleado paga el otro 1,55\% para completar el 7,05\% de la tasa total). Por último debe pagarse un 0,2\% de FOGASA. Por lo cual el gasto mensual final por la contratación del desarrollado sería:
 
 $$
-1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 
-= 1\,481,97\,\text{\texteuro}
+1\,785\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 
+= 2\,332,26\,\text{\texteuro}
 $$
 
 El gasto total tras los 9 meses que ha durado el desarrollo sería:
 
 $$
-1\,134\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 \cdot 9\,\text{meses}
-= 13\,335,04\,\text{\texteuro}
+1\,785\frac{\,\text{\texteuro}}{\,\text{meses}} \cdot 1,236 \cdot 1,055 \cdot 1,002 \cdot 9\,\text{meses}
+= 20\,990,34\,\text{\texteuro}
 $$
 
 
@@ -775,7 +800,7 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
 		\toprule
 		\textbf{Componentes}    & \textbf{Estimación (\texteuro)}\\
 		\midrule
-		Empleados & 13\,335,04\\
+		Empleados & 20\,990,34\\
 		Adquisición \eng{hardware} & 180  \\
 		Adquisición \eng{software} & 21,75  \\
 		Instalación & 2\,522,92  \\
@@ -785,7 +810,7 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
 		Infraestructura & 0 \\
 		Tiempo inactivo & 0 \\
 		Espacio y energía & 720 \\
-		Coste total del proyecto & 24\,564,10 \\
+		Coste total del proyecto & 32\,219,40 \\
 		\bottomrule
 	\end{tabularx}
 	\caption{Coste total del proyecto.}
@@ -796,7 +821,7 @@ Los costes totales del proyecto vienen desglosados en la tabla~\ref{tabla:coste}
 
 El desarrollo del proyecto PythIA tiene una viabilidad legal favorable, ya que las tecnologías empleadas, la recopilación de datos y el despliegue del sistema pueden realizarse respetando la normativa vigente. No obstante, debido a que el sistema utiliza técnicas de \eng{Web Scraping}, almacenamiento documental, autenticación de usuarios y modelos de inteligencia artificial, es necesario considerar distintos aspectos legales relacionados con la protección de datos (ver sección~\hyperref[subsec:proctdatos]{A.4.1}), la propiedad intelectual (ver sección~\hyperref[subsec:propiedad]{A.4.2}), el uso ético de la información pública (ver sección~\hyperref[subsec:webScraping]{A.4.3}), la licencias de \eng{software} (ver sección~\hyperref[subsec:IA]{A.4.4}) y la seguridad informática (ver sección~\hyperref[subsec:seg]{A.4.5}).
 
-\textbf{Protección de datos personales}\label{subsec:proctdatos}
+\subsubsection{Protección de datos personales}\label{subsec:proctdatos}
 
 La aplicación permite la gestión de usuarios mediante registro, autenticación e historial de consultas. Por ello, el sistema debe cumplir el Reglamento General de Protección de Datos (RGPD)~\cite{legal:procdatos} de la Unión Europea y la legislación española complementaria (LOPDGDD)~\cite{legal:procdatoses}. Concretamente el proyecto debe respetar el principio de minimización de datos, el almacenamiento seguro de contraseñas utilizando \file{hash}, la confidencialidad de las consultas realizadas por los usuarios, la protección de las variables sensibles mediante ficheros de entorno, el uso de conexiones cifradas mediante \file{HTTPS} y certificados \file{SSL/TLS}.
 
@@ -804,7 +829,7 @@ La aplicación cumple estos requisitos debido a que únicamente almacena los dat
 
 Por otra parte, el despliegue de la aplicación utiliza \file{HTTPS} y certificados \file{SSL/TLS}, lo que garantiza el cifrado de las comunicaciones entre el cliente y el servidor. Esto evita ataques de interceptación de tráfico y protege tanto las credenciales de los usuarios como las consultas realizadas al sistema RAG.
  
-\textbf{Propiedad intelectual y derechos de autor}\label{subsec:propiedad}
+\subsubsection{Propiedad intelectual y derechos de autor}\label{subsec:propiedad}
 
 El código fuente desarrollado en el proyecto está protegido por la legislación de propiedad intelectual. Se conservan los derechos sobre el \eng{software} desarrollado, salvo por las condiciones establecidas por la universidad para los Trabajos Fin de Grado, cuya normativa se basa en el Real Decreto Legislativo 1/1996, por el que se aprueba la Ley de Propiedad Intelectual~\cite{legal:propintelect}.
 
@@ -895,7 +920,7 @@ El uso de \eng{software open source} aporta además ventajas importantes al proy
 
 Tras analizar las licencias de todas las herramientas y bibliotecas empleadas en el desarrollo de la aplicación (ver tabla~\ref{tab:licencias}), se ha optado por distribuir el código desarrollado bajo la \myhref{https://www.licen.cc/es/licencias/mit/}{\file{licencia MIT}}. Ya que es compatible con las licencias que utilizan las dependencias del proyecto como \myhref{https://appmaster.io/es/blog/que-es-la-licencia-bsd}{\file{BSD}}, \myhref{https://www.apache.org/licenses/LICENSE-2.0}{\file{Apache 2.0}} o \myhref{https://www.postgresql.org/about/licence/}{\file{PostgreSQL License}}. Además, esta licencia permite a terceros usar, copiar, modificar, publicar, distribuir y reutilizar el \eng{software} con pocas restricciones, pero manteniendo el aviso del \eng{copyright} y el texto de la licencia original. Esto favorece la difusión del trabajo, facilitando su reutilización en entornos académicos o de investigación, mientras se mantiene el reconocimiento de la autoria del \eng{software} desarrollado. 
 
-\textbf{Legalidad del \eng{Web Scraping}}\label{subsec:webScraping}
+\subsubsection{Legalidad del \eng{Web Scraping}}\label{subsec:webScraping}
 
 El proyecto incorpora técnicas de \eng{Web Scraping} para recopilar licitaciones públicas desde la Plataforma de \contsec{}~\cite{legal:contratosSecPub}. La información extraída es documentación pública accesible libremente por cualquier ciudadano, por lo que su utilización con fines académicos y de investigación resulta compatible con la normativa vigente.
 
@@ -905,7 +930,7 @@ También se ha tenido en cuenta el archivo \file{robots.txt}~\cite{legal:robots}
 
 En el caso de la Plataforma de \contsec{}, el archivo \myhref{https://contrataciondelestado.es/robots.txt}{robots.txt} restringe el uso de \eng{bots} automatizados para rastrear el contenido del sitio \eng{web}. Sin embargo, este mecanismo no constituye una medida de protección técnica ni un sistema de autenticación, sino una directriz ética orientada principalmente a motores de búsqueda y sistemas automáticos de indexación. Por lo cual, la aplicación desarrollada cumple con estas restricciones debido a que el sistema únicamente accede a información pública accesible manualmente desde el navegador por cualquier usuario. Además, el \eng{scraper} implementado en el proyecto evita realizar peticiones masivas agresivas, incorpora esperas entre solicitudes y limita la frecuencia de acceso para no sobrecargar los servidores del portal público. Esto permite que el comportamiento automatizado sea equivalente al de un usuario humano navegando por la página.
 
-\textbf{Uso de modelos de Inteligencia Artificial}\label{subsec:IA}
+\subsubsection{Uso de modelos de Inteligencia Artificial}\label{subsec:IA}
 
 El sistema usa modelos LLM y sistemas RAG para generar respuestas contextualizadas. Actualmente, la regulación europea sobre inteligencia artificial se encuentra definida por el Reglamento Europeo de Inteligencia Artificial (AI Act)~\cite{legal:IA}, el cual clasifica los sistemas IA según su nivel de riesgo. Dado que el sistema tiene fines académicos, no toma decisiones automatizadas con efectos legales, no realiza perfilado sensible de usuarios y funciona como sistemas de apoyo documental, puede considerarse un sistema de riesgo limitado. 
 
@@ -913,7 +938,7 @@ Asimismo, el proyecto mantiene transparencia respecto al uso de inteligencia art
 
 Por otro lado, el despliegue local de los modelos de lenguaje mediante Ollama permite reducir la dependencia de servicios externos y limita la transferencia de información a terceros, mejorando así la privacidad y el control sobre los datos procesados.
 
-\textbf{Seguridad Informática}\label{subsec:seg}
+\subsubsection{Seguridad Informática}\label{subsec:seg}
 
 La aplicación implementa diversas medidas destinadas a garantizar la seguridad del sistema y de la información almacenada, cumpliendo así con el Esquema Nacional de Seguridad (ENS)~\cite{legal:ENS}. Entre ellas destacan el uso de \file{HTTPS}, la autenticación de usuarios, la separación de secretos mediante variables de entorno, el despliegue mediante Docker, el aislamiento de servicios y el uso de certificados \file{SSL/TLS}.
 
