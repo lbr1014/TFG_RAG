@@ -75,6 +75,7 @@ WTForms==3.2.1
 gunicorn==22.0.0
 Flask-Mail
 itsdangerous
+selenium==3.141.0
 
 # Dependencias de evaluación RAG (ARES/RAGAS)
 -r ../app/main/code/services/evaluation/requirements.txt
