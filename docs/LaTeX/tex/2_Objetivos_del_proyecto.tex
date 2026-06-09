@@ -1,6 +1,6 @@
 \capitulo{2}{Objetivos del proyecto}
 
-El objetivo principal del proyecto es diseñar e implementar un sistema de \eng{Retrieval-Augmented Generation} (\eng{RAG}) que permita enriquecer las respuestas de un modelo de lenguaje mediante la recuperación y utilización de información contextual proveniente de una colección documental. 
+El objetivo principal del proyecto es diseñar e implementar un sistema de \eng{Retrieval-Augmented Generation} (RAG) que permita enriquecer las respuestas de un modelo de lenguaje mediante la recuperación y utilización de información contextual proveniente de una colección documental. 
 
 \section{Objetivos específicos}
 Los objetivos identificados en el presente trabajo fin de grado son los siguientes:
@@ -14,8 +14,8 @@ Los objetivos identificados en el presente trabajo fin de grado son los siguient
 	\item Preprocesar la colección documental.
 	\begin{itemize}
 	\tightlist 
-		\item Convertir la colección documenta (recopilada en \file{PDF}) a \file{Markdown}.
-		\item Normalizar y limpiar el texto eliminando ruido, caracteres no deseados y formatos inconsistentes..
+		\item Convertir la colección documental (recopilada inicialmente en \file{PDF}) a \file{Markdown}.
+		\item Normalizar y limpiar el texto eliminando ruido, caracteres no deseados y formatos inconsistentes.
 		\item Segmentar los documentos en fragmentos (\eng{chunks}).
 		\item Generar \eng{embeddings} para representar semánticamente los fragmentos.
 		\item Incorporar metadatos asociados a cada \eng{chunk}.
@@ -28,14 +28,14 @@ Los objetivos identificados en el presente trabajo fin de grado son los siguient
 		\item Implementar mecanismos de búsqueda semántica mediante similitud coseno.
 		\item Gestionar la persistencia y actualización de los \eng{embeddings} conforme se incorporen nuevos documentos.
 	\end{itemize}
-	\item Incluir mecanismos de evaluación automática del sistema \eng{RAG}.
+	\item Incluir mecanismos de evaluación automática del sistema RAG.
 	\item Desarrollar la capa de interacción con el usuario
 	\begin{itemize}
 	\tightlist
 		\item Transformar la consulta del usuario en su representación vectorial.
 		\item Recuperar los fragmentos más relevantes de la base de datos vectorial.
 		\item Utilizar los fragmentos recuperados para enriquecer el \eng{prompt} del usuario y así construir el \eng{prompt} aumentado que finalmente se pasa al \eng{Large Language Model} (\eng{LLM}).
-		\item Integrar distintos modelos \eng{LLM} y evaluar su comportamiento dentro del sistema \eng{RAG}.
+		\item Integrar distintos modelos \eng{LLM} y evaluar su comportamiento dentro del sistema RAG.
 		\item Mostrar la trazabilidad de la respuesta al usuario.
 		\item Implementar un historial de consultas. 
 	\end{itemize}
@@ -51,7 +51,7 @@ Los objetivos identificados en el presente trabajo fin de grado son los siguient
 		\item Incorporar gráficos interactivos y estadísticas mediante D3.js.
 		\item Implementar tutoriales interactivos para mejorar la experiencia de usuario.
 	\end{itemize}
-	\item Desplegar y mantener la aplicaicón
+	\item Desplegar y mantener la aplicación
 	\begin{itemize}
 	\tightlist
 		\item Levantar la aplicación \eng{Flask} con \eng{Docker} para la reproducibilidad y el correcto funcionamiento en distintos entornos.
@@ -66,9 +66,9 @@ Los objetivos identificados en el presente trabajo fin de grado son los siguient
 
 \begin{itemize}
 \tightlist
-\item Adquirir conocimientos sobre los sistemas \eng{RAG}, comprendiendo sus fundamentos, componentes y aplicaciones en el ámbito de la inteligencia artificial.
-\item Profundizar en el estudio de los modelos de lenguaje de gran tamaño (\eng{LLM}).
-\item Desarrollar habilidades prácticas en la implementación de sistemas basados en \eng{RAG} y \eng{LLM}.
-\item Aprender a aplicar los sistemas \eng{RAG} y los \eng{LLM} en la resolución de problemas reales.
+\item Adquirir conocimientos sobre los sistemas RAG, comprendiendo sus fundamentos, componentes y aplicaciones en el ámbito de la inteligencia artificial.
+\item Profundizar en el estudio de los modelos de lenguaje de gran tamaño (LLM).
+\item Desarrollar habilidades prácticas en la implementación de sistemas basados en RAG y LLM.
+\item Aprender a aplicar los sistemas RAG y los LLM en la resolución de problemas reales.
 \item Aplicar los conocimientos adquiridos durante la carrera.
 \end{itemize}
