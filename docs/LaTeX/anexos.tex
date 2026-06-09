@@ -378,6 +378,8 @@ S    \rowcolors {2}{gray!35}{}
 
 % Formato de portada
 \makeatletter
+\counterwithout{footnote}{chapter}
+\counterwithout{footnote}{section}
 \usepackage{xcolor}
 \newcommand{\tutor}[1]{\def\@tutor{#1}}
 \newcommand{\course}[1]{\def\@course{#1}}
