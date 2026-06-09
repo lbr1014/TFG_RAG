@@ -16,6 +16,7 @@ from .keys import (
 COMPARE_MODELS_EN = "Compare models"
 APPLY_FILTERS_EN = "Apply filters"
 BULK_DELETE_EN = "Bulk delete"
+NEW_PASSWORD_LABEL_EN = "New password"
 
 TRANSLATIONS_EN={
     "app.default_title": "My site",
@@ -100,10 +101,10 @@ TRANSLATIONS_EN={
     "auth.forgot_password_submit": "Recover password",
     "auth.back_login": "Back to login",
     "auth.reset_password_title": "Reset password",
-    "auth.new_password_title": "New password",
+    "auth.new_password_title": NEW_PASSWORD_LABEL_EN,
     "auth.reset_password_submit": "Change password",
     "auth.repeat_password": "Repeat password",
-    "auth.new_password": "New password",
+    "auth.new_password": NEW_PASSWORD_LABEL_EN,
     "auth.password_mismatch": "Passwords do not match",
     "auth.login_required": "You must log in to access this page.",
     "auth.invalid_credentials": "Incorrect email or password.",
@@ -654,7 +655,7 @@ TRANSLATIONS_EN={
     "tutorial.auth.signup.submit.desc": "Click here once all fields are complete and valid to create your account.",
     "tutorial.auth.forgot.email.desc": "Enter the email address linked to your account to receive the recovery link.",
     "tutorial.auth.forgot.submit.desc": "Click here to request the password recovery link.",
-    "tutorial.auth.new_password.title": "New password",
+    "tutorial.auth.new_password.title": NEW_PASSWORD_LABEL_EN,
     "tutorial.auth.reset.password.desc": "Enter a new password of at least 8 characters with one uppercase letter, one lowercase letter, and at least one number.",
     "tutorial.auth.reset.confirm_password.desc": "Type the exact same password again to confirm the change without mistakes.",
     "tutorial.auth.reset.submit.desc": "Click here when the new password and its confirmation match to save the change.",
