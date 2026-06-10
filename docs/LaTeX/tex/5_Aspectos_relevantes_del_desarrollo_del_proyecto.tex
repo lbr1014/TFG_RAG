@@ -4,228 +4,544 @@ En este apartado se van a explicar los aspectos más importantes del proyecto. S
 
 \section{Inicio del proyecto}
 
-Actualmente la mayor parte de las personas utilizan grandes modelos de lenguaje, ya bien sea a través de~\myhref{https://chat.openai.com}{\file{ChatGPT}},~\myhref{https://claude.ai}{\file{Claude}},~\myhref{https://gemini.google.com/app}{\file{Gemini}} o~\myhref{https://notebooklm.google.com/}{\file{NotbookLM}}, pero la mayor parte de los usuarios no conocen lo suficiente de su funcionamiento como para sacarle el máximo partido. Generalmente los \eng{prompts} de estos usuarios son escuetos, sin el contexto adecuado, lo que permite que el modelo alucine en sus respuestas dándoles información errónea que generalmente no contrastan. En este contexto surgió la idea del proyecto, generar un \eng{LLM} especializado en licitaciones del estado, concretamente en las de la Junta de Gobierno de la Diputación Provincial de Burgos.
+Actualmente la mayor parte de las personas utilizan grandes modelos de lenguaje (LLM), ya bien sea a través de~\myhref{https://chat.openai.com}{ChatGPT},~\myhref{https://claude.ai}{Claude},~\myhref{https://gemini.google.com/app}{Gemini} o~\myhref{https://notebooklm.google.com/}{NotbookLM}, pero la mayor parte de los usuarios no conocen lo suficiente de su funcionamiento como para sacarle el máximo partido. Generalmente los \eng{prompts} de estos usuarios son escuetos, sin el contexto adecuado, lo que permite que el modelo alucine en sus respuestas dándoles información errónea que generalmente no contrastan. En este contexto surgió la idea del proyecto, construir un \textbf{sistema RAG especializado en licitaciones del estado}, concretamente en las de la Junta de Gobierno de la Diputación Provincial de Burgos.
 
-Para evitar que fuese el usuario el que le tuviera que otorgar el contexto al modelo se decidió implementar un \eng{RAG} que contuviera todos las licitaciones de la Junta de Gobierno de la Diputación Provincial de Burgos publicadas en la página de \contsec{}. Además, para evitar alucinaciones del modelo se decidió limitar sus respuestas a la información que le proporciona el \eng{RAG}.
+Gracias a este sistema RAG se evita que sea el usuario el que le tenga que otorgar el contexto al modelo LLM. Ya que el sistema tiene todos los documentos de las licitaciones publicadas en la página de \contsec{}. Además, para \textbf{evitar alucinaciones} se decidió limitar las respuestas de LLM a la información que le proporciona el sistema RAG. En caso de que la pregunta no esté alineada con la colección documental se informa al usuario.
 
-Otro problema típico de los \eng{LLM} es la fecha de entrenamiento, ya que no son capaces de contestar preguntas posteriores a esta fecha, ya que no conocen su respuesta. Para evitar este problema de desactulización se decidió incluir un programa de \eng{web scraping} para que se pueda extraer de forma periódica las nuevas licitaciones y volver a descargar aquellas que hayan sido actualizadas. 
+Otro problema típico de los LLM es la fecha de entrenamiento, ya que no son capaces de contestar preguntas posteriores a esta fecha, ya que no conocen su respuesta. Para evitar este problema de desactualización se decidió incluir un programa de \eng{Web Scraping} para que se pueda extraer de forma periódica las nuevas licitaciones y volver a descargar aquellas que hayan sido actualizadas. 
 
 \section{Web Scraping}
 
-Tras formalizar la idea se comenzó con el proyecto realizando la aplicación de \eng{Web Scraping} para extraer las licitaciones de la página de \contsec{} de manera automática. Se desarrollaron diferentes soluciones utilizando \file{Selenium} y \file{Playwright}, optando finalmente por el uso de \file{Playwright} en modo asíncrono, ya que permite gestionar de forma automática las esperas y la interacción con elementos dinámicos, haciendo que el sistema sea más robusto frente a fallos y \eng{timeouts} que con los programas realizados con \file{Selenium}. Además, al usar \file{Playwright} asíncrono (\eng{asyncio}) se pudo incorporar procesamiento concurrente, ya que permite procesar varias tareas en paralelo, para optimizar el tiempo de extracción y descarga de datos. 
+Tras formalizar la idea se comenzó con el proyecto realizando la aplicación de \eng{Web Scraping} para \textbf{extraer las licitaciones} de la página de \contsec{} de \textbf{manera automática}. Se desarrollaron diferentes soluciones utilizando Selenium y Playwright, optando finalmente por el uso de Playwright en modo asíncrono, ya que permite gestionar de forma automática las esperas y la interacción con elementos dinámicos, haciendo que el sistema sea más robusto frente a fallos y \eng{timeouts} que con los programas realizados con Selenium. Además, al usar Playwright asíncrono (\eng{asyncio}) se pudo incorporar procesamiento concurrente, ya que permite procesar varias tareas en paralelo, para optimizar el tiempo de extracción y descarga de datos. 
 
-La elevada complejidad de la página debido al uso de contenido dinámico e \eng{iframes} supuso un reto. Para solventarlo se tuvieron que desarrollar mecanismos específicos para la localización de elementos y la navegación entre distintos contextos. Finalmente, los datos obtenidos se normalizan y almacenan en un archivo \file{JSON}. Este archivo se usa para descargar los pliegos finales.
+La elevada complejidad de la página debido al uso de contenido dinámico e \eng{iframes} supuso un reto. Para solventarlo se tuvieron que desarrollar mecanismos específicos para la localización de elementos y la navegación entre distintos contextos. Finalmente, los datos obtenidos se normalizan y almacenan en un archivo JSON. Este archivo se usa para descargar los pliegos finales. En la Tabla~\ref{tabla:webscraping_resultados} se pueden observar los datos globales obtenidos del proceso de \eng{Web Scraping}.
+
+\begin{table}[p]
+\centering
+\begin{tabularx}{\linewidth}{p{0.75\columnwidth} r}
+\toprule
+\textbf{Métrica} & \textbf{Valor} \\
+\midrule
+Licitaciones localizadas & 175 \\
+Registros documentales extraídos & 734 \\
+Enlaces a documentos detectados & 2.094 \\
+Expedientes procesados para el RAG & 165 \\
+Documentos PDF descargados & 330 \\
+Promedio de documentos descargados por expediente & 2 \\
+Promedio de documentos detectados por licitación & 4,19 \\
+\bottomrule
+\end{tabularx}
+\caption{Resumen de resultados obtenidos mediante el proceso de \eng{Web Scraping}.}
+\label{tabla:webscraping_resultados}
+\end{table}
 
 Cabe destacar que durante el desarrollo del proyecto se actualizó la página \contsec{}, por lo cual hubo que realizar cambios en el programa ya desarrollado, modificando selectores y flujos de navegación para mantener su funcionamiento.
 
-\section{\eng{Retrieval Augmented Generation} (\eng{RAG})}
+\section{\eng{Retrieval Augmented Generation} (RAG)}
 
-Durante el desarrollo del sistema \eng{RAG} se han evaluado distintos enfoques para cada uno de sus componentes principales, con el objetivo de optimizar la calidad de las respuestas, la eficiencia del sistema y su facilidad de despliegue. A continuación, se describen los elementos más relevantes analizados, las pruebas realizadas y la justificación de las decisiones finales adoptadas.
+Durante el desarrollo del sistema RAG se han evaluado distintos enfoques para cada uno de sus componentes principales, con el objetivo de optimizar la calidad de las respuestas, la eficiencia del sistema y su facilidad de despliegue. A continuación, se describen los elementos más relevantes analizados, las pruebas realizadas y la justificación de las decisiones finales adoptadas.
 
 \subsection{\eng{Tokenizer}}
 
-Uno de los primeros aspectos analizados fue el uso del \eng{tokenizer}, ya que es el encargado de transformar el texto en unidades básicas (\eng{tokens}) que son la entrada real de los modelos de lenguaje (\eng{LLM}). Su correcto funcionamiento es clave tanto para el procesamiento del texto como para el control del tamaño de los fragmentos (\eng{chunks}).
+Uno de los primeros aspectos analizados fue el uso del \eng{tokenizer}, ya que es el encargado de \textbf{transformar el texto en unidades básicas} (\eng{tokens}) que son la entrada real de los modelos de lenguaje (LLM). Su correcto funcionamiento es clave tanto para el procesamiento del texto como para el control del tamaño de los fragmentos (\eng{chunks}).
 
-Se realizaron pruebas con diversos \eng{tokenizers} asociados a distintos modelos de lenguaje (como \file{LLaMA} o \file{Mistral}), así como con el \eng{tokenizer} incluido en los modelos de \eng{embeddings}. Se observó que utilizar el \eng{tokenizer} del propio modelo de \eng{embeddings} simplifica el \eng{pipeline} y evita inconsistencias entre la representación del texto y su vectorización semántica. Además, permite conocer directamente el número máximo de \eng{tokens} admitido por el modelo, facilitando el control del tamaño de entrada y evitando superar la ventana máxima soportada.
+Se realizaron pruebas con diversos \eng{tokenizers} asociados a distintos modelos de lenguaje (como LLaMA o Mistral), así como con el \eng{tokenizer} incluido en los modelos de \eng{embeddings}. Se observó que utilizar el \eng{tokenizer} del propio modelo de \eng{embeddings} simplifica el \eng{pipeline} y evita inconsistencias entre la representación del texto y su vectorización semántica. Además, permite conocer directamente el número máximo de \eng{tokens} admitido por el modelo, facilitando el control del tamaño de entrada y evitando superar la ventana máxima soportada.
 
 Por este motivo, se optó por utilizar el \eng{tokenizer} del modelo de \eng{embeddings} (\file{SentenceTransformer}), garantizando coherencia entre el proceso de \eng{chunking} y la generación de \eng{embeddings}.
 
-En la implementación final, el sistema obtiene automáticamente tanto el \eng{tokenizer} como el tamaño máximo de secuencia directamente desde el modelo cargado, permitiendo adaptar dinámicamente el sistema si se cambia de modelo de \eng{embeddings}. Esto facilita la reutilización del \eng{pipeline} con distintos modelos sin necesidad de modificar manualmente los parámetros de tokenización.
+En la implementación final, el sistema  \textbf{obtiene automáticamente} tanto el  \textbf{\eng{tokenizer}} como el  \textbf{tamaño máximo de secuencia} directamente desde el modelo cargado, permitiendo adaptar dinámicamente el sistema si se cambia de modelo de \eng{embeddings}. Esto facilita la reutilización del \eng{pipeline} con distintos modelos sin necesidad de modificar manualmente los parámetros de tokenización.
 
 \subsection{\eng{Chunking}}
 
-El \eng{chunking} consiste en dividir los documentos en fragmentos manejables. Es fundamental para ajustarse a la ventana de contexto del modelo y para mejorar la recuperación semántica. El texto se puede segmentar por longitud fija (\eng{tokens}), por secciones o párrafos o por significado semántico.
+El \eng{chunking} consiste en \textbf{dividir los documentos en fragmentos manejables}. Es fundamental para ajustarse a la ventana de contexto del modelo y para mejorar la recuperación semántica. El texto se puede segmentar por longitud fija (\eng{tokens}), por secciones o párrafos o por significado semántico.
 
-Este proceso fue uno de los procesos más experimentados, probándose diferentes estrategias como el \eng{chunking} por tamaño fijo de caracteres, por \eng{tokens} con \eng{overloap} (solapamiento) para mantener el contexto o basado en secciones o frases. Durante las pruebas se  comprobó que el uso exclusivo de \eng{chunks} por tamaño fijo generaba fragmentos poco naturales, afectando negativamente a la recuperación. Por otro lado, el \eng{chunking} semántico puro resultaba más complejo y costoso.
+En este proceso se probaron diferentes estrategias como el \eng{chunking} por tamaño fijo de caracteres, por \eng{tokens} con \eng{overlap} (solapamiento) para mantener el contexto o basado en secciones o frases. Durante las pruebas se  comprobó que el uso exclusivo de \eng{chunks} por tamaño fijo generaba fragmentos poco naturales, afectando negativamente a la recuperación. Por otro lado, el \eng{chunking} semántico puro resultaba más complejo y costoso.
 
-Por ello se optó por una estrategia híbrida, en la cual primero se realiza una agrupación lógica del texto utilizando frases y separadores naturales del documento y posteriormente se divide en \eng{chunks} controlados por número de \eng{tokens}, incorporando solapamiento entre fragmentos consecutivos. Este solapamiento permite conservar información contextual relevante entre fragmentos cercanos, reduciendo la pérdida de información cuando una explicación queda dividida entre dos \eng{chunks}.
+Con el objetivo de determinar la estrategia de fragmentación más adecuada, se realizaron diferentes pruebas variando tanto el criterio de división como el tamaño de los fragmentos y el porcentaje de solapamiento. Las evaluaciones se llevaron a cabo sobre documentos reales del dominio de contratación pública, analizando la coherencia de los fragmentos generados, la capacidad de recuperación de información relevante y el número de fragmentos almacenados en la base de datos vectorial (ver Tabla~\ref{tabla:experimentos_chunking}).
 
-Además, durante el desarrollo se realizaron pruebas variando tanto el tamaño de los \eng{chunks} como el porcentaje de solapamiento. Se observó que \eng{chunks} demasiado pequeños reducían la capacidad contextual del modelo, mientras que fragmentos demasiado grandes empeoraban la precisión de la recuperación y aumentaban el número de \eng{tokens} enviados al \eng{LLM}. La estrategia híbrida seleccionada consiguió un equilibrio entre coherencia semántica, precisión en la recuperación y eficiencia computacional.
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{p{0.18\linewidth} p{0.14\linewidth} >{\centering\arraybackslash}p{0.12\linewidth} X}
+		\toprule
+		\textbf{Estrategia} & \textbf{Tamaño} & \textbf{Overlap (\%)} & \textbf{Observaciones} \\
+		\midrule
+		Caracteres \mbox{fijos} &
+		1000 \mbox{caracteres} &
+		0 &
+		Genera cortes artificiales en mitad de párrafos y tablas. \mbox{Recuperación poco precisa.} \\
+		
+		Tokens \mbox{fijos} &
+		512 \mbox{tokens} &
+		0 &
+		Fragmentos demasiado pequeños. Se pierde contexto entre apartados relacionados. \\
+		
+		Tokens \mbox{fijos} &
+		1024 \mbox{tokens} &
+		5 &
+		Mejora la coherencia respecto a la configuración anterior, aunque todavía aparecen pérdidas de contexto en documentos extensos. \\
+		
+		Tokens \mbox{fijos} &
+		1536 \mbox{tokens} &
+		5 &
+		Buen equilibrio entre cantidad de contexto y precisión de recuperación. Menor número de fragmentos por documento. \\
+		
+		\mbox{Frases y} \mbox{tokens} &
+		1536 \mbox{tokens} &
+		5 &
+		Mantiene la coherencia semántica de los textos y evita cortes en mitad de frases. Resultados de recuperación más consistentes. \\
+		
+		\mbox{Secciones,} \mbox{frases y} \mbox{tokens} &
+		1536 \mbox{tokens} &
+		5 &
+		Mejor comportamiento global. Conserva la estructura documental y facilita la recuperación de información contextual relevante. \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Pruebas realizadas para la selección de la estrategia de \eng{chunking}.}
+	\label{tabla:experimentos_chunking}
+\end{table}
+
+Las pruebas realizadas permitieron observar que los \eng{chunks} demasiado pequeños reducían la capacidad contextual del sistema, obligando al recuperador a combinar un mayor número de fragmentos para responder correctamente a determinadas consultas. Por el contrario, los fragmentos excesivamente grandes disminuían la granularidad de la recuperación, incrementaban el número de \eng{tokens} enviados al modelo generativo y aumentaban el coste computacional asociado a cada consulta. También, se comprobó que la ausencia de solapamiento provocaba pérdidas de información cuando una explicación quedaba dividida entre dos fragmentos consecutivos, mientras que porcentajes elevados introducían redundancia innecesaria en la base vectorial.
+
+Por ello se optó por una \textbf{estrategia híbrida}, en la cual
+los documentos se procesan identificando títulos y secciones para preservar su estructura lógica. Posteriormente, el contenido se agrupa utilizando límites naturales de frase y, finalmente, se divide en fragmentos controlados por número de \eng{tokens}. La configuración seleccionada utiliza fragmentos de 1500 tokens con un solapamiento de 60 \eng{tokens} entre fragmentos consecutivos. 
 
 \subsection{\eng{Embeddings}}
 
-Los \eng{embeddings} son representaciones vectoriales del texto que capturas su significado semántico. Permiten comparar las consultas de los usuarios con los fragmentos de los documentos y realizar búsquedas por similitud. Son la base del funcionamiento del sistema de recuperación del \eng{RAG}. Por lo cual para elegir el modelo final se probaron varios comparando su calidad semántica, la velocidad de ejecución y el consumo de recursos. Finalmente, se seleccionó el modelo \file{sentence-transformers/all-MiniLM-L6-v2} debido a que ofrece buen equilibrio entre rendimiento y coste computacional. Además, su integración mediante \file{SentenceTransformer} es sencilla y su dimensión de \eng{embedding} es suficiente para tareas de recuperación semántica sobre documentos administrativos.
+Los \eng{embeddings} son \textbf{representaciones vectoriales del texto} que capturan su significado semántico. Permiten comparar las consultas de los usuarios con los fragmentos de los documentos y realizar \textbf{búsquedas por similitud}. Son la base del funcionamiento del sistema de recuperación del RAG. Por lo cual para elegir el modelo final se analizaron distintos modelos comparando sus características en términos de calidad semántica, velocidad de ejecución y consumo de recursos (ver Tabla~\ref{tabla:experimentos_chunking}). La calidad semántica se evaluó mediante pruebas de recuperación sobre los documentos administrativos, analizando la relevancia de los fragmentos recuperados. Además, se tuvo en cuenta el tamaño de los vectores producidos por cada modelo, ya que cuanto mayor sea más memoria va a ocupar en la base de datos vectorial Qdrant. Finalmente, se seleccionó el modelo \file{sentence-transformers/all-MiniLM-L6-v2} debido a que proporciona vectores de 384 dimensiones, suficientes para representar adecuadamente el contenido semántico de los documentos procesados por PythIA. Además, ofrece tiempos de inferencia reducidos, un bajo consumo de memoria y una integración sencilla mediante la biblioteca \file{SentenceTransformer}. Estas características permiten mantener un buen equilibrio entre calidad de recuperación, velocidad de indexación y eficiencia computacional.
 
-Durante las pruebas también se evaluó el comportamiento del sistema en \file{CPU} y \file{GPU}. La implementación final permite detectar automáticamente el dispositivo disponible y ejecutar el cálculo de \eng{embeddings} utilizando aceleración por \file{GPU} cuando está disponible. Además, se incorporaron mecanismos de recuperación ante errores de memoria en \file{CUDA}, permitiendo continuar automáticamente la generación de \eng{embeddings} en \file{CPU} si la memoria de la \file{GPU} resulta insuficiente.
+\begin{landscape}
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{p{0.26\linewidth} p{0.10\linewidth} p{0.10\linewidth} p{0.10\linewidth} p{0.10\linewidth} X}
+		\toprule
+		\textbf{Modelo} & \textbf{Dimensión} & \textbf{Parámetros (M)} & \textbf{Velocidad} & \textbf{Consumo} & \textbf{Observaciones} \\
+		\midrule
+		\myhref{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}{\file{all-MiniLM-L6-v2}} &
+		384 &
+		22,7 &
+		Muy alta &
+		Bajo &
+		Buen equilibrio entre calidad semántica y coste computacional. \\
+		
+		\myhref{https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2}{\file{all-MiniLM-L12-v2}} &
+		384 &
+		33,4 &
+		Alta &
+		Medio &
+		Ligera mejora semántica, pero mayor tiempo de inferencia. \\
+		
+		\myhref{https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1}{\file{multi-qa-MiniLM-L6-cos-v1}} &
+		384 &
+		22,7 &
+		Muy alta &
+		Bajo &
+		Optimizado para recuperación, aunque menos robusto en documentos extensos. \\
+		
+		\myhref{https://huggingface.co/sentence-transformers/all-mpnet-base-v2}{\file{all-mpnet-base-v2}} &
+		768 &
+		109 &
+		Media &
+		Alto &
+		Excelente representación semántica, pero elevado consumo de memoria. \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Comparación de los modelos de \eng{embeddings} evaluados durante el desarrollo.}
+	\label{tabla:experimentos_chunking}
+\end{table}
+\end{landscape}
 
-Otra mejora relevante implementada fue el procesamiento por lotes (\eng{batch processing}) durante la generación de \eng{embeddings}. En lugar de vectorizar cada \eng{chunk} individualmente, el sistema procesa múltiples fragmentos simultáneamente, reduciendo significativamente el tiempo de indexación. 
+Durante el desarrollo también se optimizó el proceso de generación de \eng{embeddings} para mejorar el rendimiento durante la indexación documental. La implementación final detecta automáticamente el dispositivo de ejecución disponible y utiliza \textbf{aceleración mediante GPU} cuando existe soporte CUDA, recurriendo a CPU únicamente cuando no se dispone de \eng{hardware} gráfico compatible. Esta estrategia permite aprovechar los recursos disponibles sin requerir configuración adicional por parte del usuario. Además, se incorporaron mecanismos de tolerancia a fallos para garantizar la robustez del proceso de indexación. En caso de que la memoria de CUDA sea insuficiente, el sistema libera la memoria reservada en la GPU y reintenta la operación usando la CPU.
+
+Otra mejora relevante fue el procesamiento por lotes (\eng{batch processing}) durante la generación de \eng{embeddings}. En lugar de calcular los vectores de cada fragmente de forma individual, el sistema procesa los \eng{chunks} agrupados en lotes de hasta 32 elementos, reduciendo el número de llamadas al modelo y mejorando el rendimiento global de la indexación. Por otra parte, el modelo de \eng{embeddings} se mantiene cargado en memoria mediante un patrón \eng{Singleton}, evitando recargas innecesarias y disminuyendo el tiempo requerido para procesar grandes volúmenes documentales.
 
 \subsection{Base de datos vectorial}
 
-La base de datos vectorial es la encargada de almacena los \eng{embeddings} y permitir realizar búsquedas en espacios de alta dimensión. Tras estudiar diversas opciones (ver sección~\hyperref[basedatos_vectorial]{4.8.1}) se eligió \file{Qdrant} ya que, al tener soporte nativo para la búsqueda vectorial simplifica mucho su uso eficiente. Además, permite almacenar metadatos junto con los \eng{chunks} y \eng{embeddings}, lo que se consideró de utilidad para aumentar el contexto durante la recuperación. Como metadatos se incluyen los \eng{hashes SHA-256} de los documentos originales para detectar automáticamente cuándo un documento ha cambiado y reindexarlo sin duplicar información.
+La base de datos vectorial es la encargada de \textbf{almacenar los \eng{embeddings}} y permitir \textbf{realizar búsquedas vectoriales} en espacios de alta dimensión. Tras estudiar diversas opciones (ver sección~\hyperref[basedatos_vectorial]{4.8.1}) se eligió Qdrant ya que, al tener soporte nativo para la búsqueda vectorial simplifica mucho su uso eficiente. Además, permite almacenar metadatos junto con los \eng{chunks} y \eng{embeddings}, lo que se consideró de utilidad para aumentar el contexto durante la recuperación. Como metadatos se incluyen los \eng{hashes SHA-256} de los documentos originales para detectar automáticamente cuándo un documento ha cambiado y reindexarlo sin duplicar información.
 
-Durante el desarrollo se implementó un sistema de creación automática de colecciones en \file{Qdrant}. Estas colecciones están configuradas con búsqueda por similitud coseno y una dimensión de vector ajustada dinámicamente al modelo de \eng{embeddings} empleado. Para optimizar el rendimiento, los \eng{chunks} se almacenan mediante operaciones \file{bulk upsert}, reduciendo significativamente el tiempo de indexación frente a inserciones individuales. Además, se utiliza una capa de abstracción (similar a un \eng{Object-Vector Mapping}) para encapsular la lógica de conexión, serialiación y recuperación de datos desde \file{Qdrant}. Esta capa permite desacoplar parcialmente el sistema del motor vectorial.
+Durante el desarrollo se implementó un sistema de creación automática de colecciones en Qdrant. Estas colecciones están configuradas con búsqueda por \textbf{similitud coseno} y una dimensión de vector ajustada dinámicamente al modelo de \eng{embeddings} empleado. Para optimizar el rendimiento, los \eng{chunks} se almacenan mediante operaciones \eng{bulk upsert}, reduciendo significativamente el tiempo de indexación frente a inserciones individuales. Además, se utiliza una capa de abstracción (similar a un \eng{Object-Vector Mapping}) para encapsular la lógica de conexión, serialización y recuperación de datos desde Qdrant. Esta capa permite desacoplar parcialmente el sistema del motor vectorial.
 
 \subsection{\eng{Retriever} (mecanismo de recuperación)}
 
-Es el componente encargado de buscar en la base vectorial los fragmentos más relevantes para responder a una consulta. Su calidad es crítica, ya que determina el contexto que se proporcionará al modelo. Por lo tanto, la calidad de la respuesta depende directamente de la capacidad del \eng{retriever} para recuperar información relacionada con la pregunta del usuario. Se basa en la búsqueda por similitud vectorial, principalmente por similitud coseno. 
+Es el componente encargado de \textbf{buscar} en la base vectorial los \textbf{fragmentos más relevantes} para responder a una consulta. Su calidad es crítica, ya que determina el contexto que se proporcionará al modelo. Por lo tanto, la calidad de la respuesta depende directamente de la capacidad del \eng{retriever} para recuperar información relacionada con la pregunta del usuario. Se basa en la búsqueda por similitud vectorial, principalmente por similitud coseno. 
 
-En los primeros prototipos del proyecto, el sistema solo recuperaba el \eng{chunk} más parecido a la consulta del usuario. Para ello, primero se convertía la pregunta en un \eng{embedding} (utilizando el mismo modelo que el que se usa para indexar los documentos). Posteriormente, se calculaba la similitud entre dicho \eng{embedding} y los almacenados en la base de datos vectorial. Finalmente, se seleccionaba el fragmento con mayor similitud y este se incorporaba directamente al \eng{prompt} enviado al \eng{LLM}. Este enfoque se planteó como punto de partida para validar el funcionamiento básico del \eng{RAG} pero presentaba limitaciones importantes en la generación de la respuesta, haciendo que la mayoría de las preguntas no las pudiese contestar.
+En los primeros prototipos del proyecto, el sistema solo recuperaba el \eng{chunk} más parecido a la consulta del usuario. Para ello, primero se convertía la pregunta en un \eng{embedding} (utilizando el mismo modelo que el que se usa para indexar los documentos). Posteriormente, se calculaba la similitud entre dicho \eng{embedding} y los almacenados en la base de datos vectorial. Finalmente, se seleccionaba el fragmento con mayor similitud y este se incorporaba directamente al \eng{prompt} enviado al LLM. Este enfoque se planteó como punto de partida para validar el funcionamiento básico del RAG pero presentaba limitaciones importantes en la generación de la respuesta, haciendo que la mayoría de las preguntas no las pudiese contestar.
 
 Después, se probó a cambiar el número de \eng{chunks} recuperados (\file{top-k retrieval}). Se observó que recuperar pocos \eng{chunks} produce respuestas demasiado limitadas, llevando a generalizaciones que no se cumplen en todos los documentos. En cambio, recuperar demasiados introduce ruido al modelo haciendo que responda con información irrelevante. Además, se vio que los contextos demasiado grandes hacen que el modelo utilice más \eng{tokens} para contestar, empeorando la latencia de generación.
 
-Otro aspecto relevante fue al evolución del propio \eng{chunking}. Al principio los documentos se dividían utilizando tamaños fijos de texto. Sin embargo, se comprobó que esta estrategia fragmentaba información relacionada y afectaba negativamente a la recuperación semántica. Posteriormente, se introdujo el uso de solapamiento entre los \eng{chunks}, permitiendo compartir parte del contenido entre fragmentos consecutivos. Esta mejora incrementó significativamente la coherencia del contexto recuperado y redujo la pérdida de información relevante entre fragmentos contiguos.
+Otro aspecto relevante fue la evolución del propio \eng{chunking}. Al principio los documentos se dividían utilizando tamaños fijos de texto. Sin embargo, se comprobó que esta estrategia fragmentaba información relacionada y afectaba negativamente a la recuperación semántica. Posteriormente, se introdujo el uso de solapamiento entre los \eng{chunks}, permitiendo compartir parte del contenido entre fragmentos consecutivos. Esta mejora incrementó significativamente la coherencia del contexto recuperado y redujo la pérdida de información relevante entre fragmentos contiguos.
 
-Además, del contenido textual, también se añadieron metadatos asociados a cada \eng{chunk} como el nombre del documento, el título de la licitación, el identificados del fragmento, la posición dentro del documento y la información estructural obtenida durante el preprocesado. Utilizar metadatos mejoró la trazabilidad de las respuestas generadas.
+Además del contenido textual, también se añadieron metadatos asociados a cada \eng{chunk} como el nombre del documento, el título de la licitación, el identificador del fragmento, la posición dentro del documento y la información estructural obtenida durante el preprocesado. Utilizar metadatos mejoró la trazabilidad de las respuestas generadas.
 
-Finalmente el sistema utiliza una estrategia de recuperación dinámica basada en búsqueda vectorial por similitud coseno sobre \file{Qdrant}. Para cada consulta, la pregunta del usuario se transforma en un \eng{embedding} y posteriormente se calcula la similitud con todos los \eng{embedding} almacenados en la base vectorial. Pero, ahora el sistema recupera un conjunto de \eng{chunks} los cuales deben tener una similitud con la pregunta de al menos 0'5 para descartar fragmentos poco relacionados con la consulta. El número de \eng{chunks} recuperados depende del tipo de pregunta realizada, las consultas generales utilizan hasta 20 fragmentos, mientras que las consultas guiadas tienen configuraciones específicas optimizadas para cada caso. Por ejemplo, preguntas orientadas a resúmenes globales pueden recuperar hasta 80 \eng{chunks} para proporcionar una visión completa del documento, mientras que consultas más concretas, como solvencia, garantías o duración contractual, utilizan entre 12 y 18 fragmentos para reducir el ruido y mantener la precisión. Además, de la recuperación semántica se aplican filtros por metadatos, como número de expediente o tipo de documento (administrativo/técnico) para limitar la búsqueda únicamente a los documentos relevantes. Este enfoque híbrido permite equilibrar cobertura contextual, precisión semántica y eficiencia en el consumo de \eng{tokens} del \eng{LLM}.
+Finalmente el sistema utiliza una estrategia de recuperación dinámica basada en búsqueda vectorial por similitud coseno sobre Qdrant. Para cada consulta, la pregunta del usuario se proyecta en el \eng{embedding} y se consulta Qdrant para \textbf{recuperar los vectores más similares mediante similitud coseno}. De esta forma el sistema recupera un conjunto de \eng{chunks} los cuales deben tener una \textbf{similitud con la pregunta de al menos 0'5} para descartar fragmentos poco relacionados con la consulta. El número de \eng{chunks} recuperados depende del tipo de pregunta realizada, las consultas generales utilizan hasta 20 fragmentos, mientras que las consultas guiadas tienen configuraciones específicas optimizadas para cada caso. Por ejemplo, preguntas orientadas a resúmenes globales pueden recuperar hasta 80 \eng{chunks} para proporcionar una visión completa del documento, mientras que consultas más concretas, como solvencia, garantías o duración contractual, utilizan entre 12 y 18 fragmentos para reducir el ruido y mantener la precisión. Además, de la recuperación semántica se \textbf{aplican filtros por metadatos}, como número de expediente o tipo de documento (administrativo/técnico) para limitar la búsqueda únicamente a los documentos relevantes. Este enfoque híbrido permite equilibrar cobertura contextual, precisión semántica y eficiencia en el consumo de \eng{tokens} del LLM.
 
 \subsection{\eng{Augmentation}}
 
-Este proceso consiste en combinar la consulta del usuario con los fragmentos recuperados para construir un \eng{prompt} enriquecido. Esta fase incluye técnicas de ingeniería de \eng{prompts} para mejorar la calidad de la respuesta. En el desarrollo del \eng{RAG} se probaron distintas estrategias, observándose diferencias significativas en el comportamiento del sistema. 
+Este proceso consiste en \textbf{combinar la consulta del usuario con los fragmentos recuperados} para construir un \eng{prompt} enriquecido. Esta fase incluye técnicas de ingeniería de \eng{prompts} para mejorar la calidad de la respuesta. En el desarrollo del RAG se probaron distintas estrategias, observándose diferencias significativas en el comportamiento del sistema. 
 
 En las estrategias más simples, los \eng{chunks} recuperados se concatenaban junto con la pregunta del usuario. Aunque este enfoque era sencillo, el modelo tendía a mezclar información o a ignorar parte del contexto recuperado. 
 
 Observadas estas limitaciones se decidió utilizar \eng{prompts} estructurados. En los cuales se separa el contexto recuperado, la pregunta del usuario, las instrucciones del sistema y las restricciones sobre como responder. 
 
-Con este enfoque el \eng{LLM} interpreta mejor el contexto recuperado y disminuye las alucinaciones. Además, se añadieron instrucciones específicas indicando que la respuesta deben basarse únicamente en la información proporcionada por los \eng{chunks} recuperados.
+Con este enfoque el LLM interpreta mejor el contexto recuperado y disminuye las alucinaciones. Además, se añadieron instrucciones específicas indicando que la respuesta deben basarse únicamente en la información proporcionada por los \eng{chunks} recuperados.
 
 También, se han realizado pruebas modificando el orden de los fragmentos recuperados dentro del \eng{prompt}. Se observó que colocar primero los \eng{chunks} con mayor similitud mejora la precisión de las respuestas, especialmente en consultas complejas o ambiguas.
 
 Otra mejora importante fue la incorporación de referencias documentales dentro del \eng{prompt}. En lugar de proporcionar únicamente texto plano, cada fragmento incluye información sobre el documento de origen. Esto ayuda al modelo a contextualizar mejor la información y facilita mostrar al usuario la procedencia de la respuesta generada.
 
-Finalmente, el sistema incorpora distintos \eng{prompts} para contestar dependiendo del tipo de consulta que haga el usuario. Se ha diseñado un \eng{prompt} general utilizado para preguntas abiertas, pero, además, se han definido plantillas específicas para tareas concretas como resúmenes globales del documento, extracción de importes económicos, plazos, solvencia, criterios de adjudicación, garantías, presupuestos, duración contractual, penalizaciones o presentación de ofertas. Cada plantilla incluye instrucciones adaptadas al tipo de información buscada y define una estructura concreta para la respuesta esperada. Por ejemplo, los \eng{prompts} de tipo resumen solicitan una explicación global y estructurada del pliego, mientras que los orientados a criterios de adjudicación fuerzan al modelo a identificar ponderaciones, fórmulas y subcriterios. Además, el sistema utiliza un \eng{system prompt} por defecto que obliga al modelo a responder en español de forma breve y precisa. Esta combinación de \eng{prompts} especializados y selección dinámica del contexto permite adaptar el comportamiento del \eng{LLM} al tipo de consulta realizada, mejorando la precisión, consistencia y utilidad de las respuestas generadas.
+Finalmente, el sistema incorpora distintos \eng{prompts} para contestar dependiendo del tipo de consulta que haga el usuario. Se ha diseñado \textbf{un \eng{prompt} general} utilizado para preguntas abiertas, pero, además, se han definido \textbf{plantillas específicas para tareas concretas} como resúmenes globales del documento, extracción de importes económicos, plazos, solvencia, criterios de adjudicación, garantías, presupuestos, duración contractual, penalizaciones o presentación de ofertas. Cada plantilla incluye instrucciones adaptadas al tipo de información buscada y define una estructura concreta para la respuesta esperada. Por ejemplo, los \eng{prompts} de tipo resumen solicitan una explicación global y estructurada del pliego, mientras que los orientados a criterios de adjudicación fuerzan al modelo a identificar ponderaciones, fórmulas y subcriterios. Además, el sistema utiliza un \eng{system prompt} por defecto que obliga al modelo a responder en español de forma breve y precisa. Esta combinación de \eng{prompts} especializados y selección dinámica del contexto permite adaptar el comportamiento del LLM al tipo de consulta realizada, mejorando la precisión, consistencia y utilidad de las respuestas generadas.
 
-\subsection{\eng{LLM}}
+\subsection{LLM}
 
-Es el encargado de generar la respuesta final utilizando el contexto proporcionado por el sistema \eng{RAG}. La elección del modelo (tamaño, arquitectura, si es local o una \ext{API}) afecta directamente a la calidad, latencia y coste del sistema.
+Es el encargado de \textbf{generar la respuesta final} utilizando el contexto proporcionado por el sistema RAG. La elección del modelo (tamaño, arquitectura, si es local o una API) afecta directamente a la calidad, latencia y coste del sistema.
 
-Durante el desarrollo del proyecto, la integración de los modelos de lenguaje fue evolucionando progresivamente. Se comenzó realizando pruebas utilizando modelos locales (obtenidos de \file{Hugging Face}) ejecutados mediante \file{Ollama}. Estas pruebas permitieron comprobar la viabilidad de ejecutar modelos localmente sin depender de ninguna \ext{API} externa, lo que aporta un mayor control sobre el sistema y evita costes asociados al uso de servicios comerciales.
+Durante el desarrollo del proyecto, la integración de los modelos de lenguaje fue evolucionando progresivamente. Se comenzó realizando pruebas utilizando modelos locales (obtenidos de Hugging Face) ejecutados mediante Ollama. Estas pruebas permitieron comprobar la viabilidad de ejecutar modelos localmente sin depender de ninguna API externa, lo que aporta un mayor control sobre el sistema y evita costes asociados al uso de servicios comerciales.
 
-Inicialmente se realizaron pruebas con diversos modelos locales como \eng{Mistral} o \file{LLaMA} para probar distintas arquitecturas y tamaños. Gracias a estas pruebas se puedo ver como afecta el tamaño a la respuesta generada y al tiempo invertido. Se vio que los modelos más pequeños tardaban menos en generar las respuestas, pero dichas respuestas eran de menor calidad. Tendían a ser breves y menos precisas. Mientras que los modelos más grandes generaban mejores respuestas, pero con mayor consumo de recursos y latencias. Finalmente, se seleccionó como modelo principal del sistema \file{LLaMA 3.1-8B}, ya que tiene buen rendimiento en tareas de comprensión y generación. Este modelo ofrece un buen equilibrio entre la claridad de la respuesta generada, la utilización del contexto recuperado y los requisitos de \eng{hadrware}. Otro aspecto que se tuvo en cuenta a la hora de elegir el modelo fue que permite la ejecución en local usando \file{Ollama}. Lo que permite mantener el control total sobre el sistema sin dependencias externas. 
+Se realizaron pruebas con diversos modelos locales como Mistral o LLaMA para probar distintas arquitecturas y tamaños. Gracias a estas pruebas se pudo ver como afecta el tamaño a la respuesta generada y al tiempo invertido. Se vio que los modelos más pequeños tardaban menos en generar las respuestas, pero dichas respuestas eran de menor calidad. Tendían a ser breves y menos precisas. Mientras que los modelos más grandes generaban mejores respuestas, pero con mayor consumo de recursos y latencias. Finalmente, se seleccionó como modelo principal del sistema \file{LLaMA 3.1-8B}, ya que tiene buen rendimiento en tareas de comprensión y generación. Este modelo ofrece un buen equilibrio entre la claridad de la respuesta generada, la utilización del contexto recuperado y los requisitos de \eng{hardware}. Otro aspecto que se tuvo en cuenta a la hora de elegir el modelo fue que se pudiera \textbf{ejecutar en local usando Ollama}, para mantener el control total sobre el sistema sin dependencias externas. 
  
-Finalmente, se decidió incluir soporte para múltiples modelos configurables desde la propia aplicación \eng{web}. De tal forma que la arquitectura final permite seleccionar dinámicamente entre tres modelos distintos (\file{LLaMA 3.1-8B}, \file{gemma-4B} y \file{qwen3-4B}, cargados desde \file{Ollama}) integrados dentro del sistema \eng{RAG}. Esta evolución surgió debido a la necesidad de comparar comportamientos y ofrecer mayor flexibilidad dependiendo del tipo de consulta realizada.  
+Finalmente, se decidió incluir \textbf{soporte para múltiples modelos} configurables desde la propia aplicación \eng{web}. De tal forma que la arquitectura final permite seleccionar dinámicamente entre tres modelos distintos (\file{LLaMA 3.1-8B}, \file{gemma-4B} y \file{qwen3-4B}, cargados desde Ollama) integrados dentro del sistema RAG. Esta evolución surgió debido a la necesidad de comparar comportamientos y ofrecer mayor flexibilidad dependiendo del tipo de consulta realizada.  
  
 Para soportar esta funcionalidad fue necesario desacoplar la lógica de generación del resto del \eng{pipeline RAG}, implementando una capa de abstracción que permitiese cargar dinámicamente los distintos modelos y modificar sus parámetros. Además, se añadieron funciones auxiliares para gestionar las configuraciones disponibles y mostrar automáticamente las opciones en la interfaz \eng{web}.
  
- Además, se han ajustado parámetros de generación como el número máximo de \eng{tokens} generados, la longitud máxima de entrada, la temperatura, el formato del \eng{prompt} y el número de \eng{chunks} recuperados. Lo que permitió mejorar la calidad de las respuestas, reduciendo alucinaciones y adaptandolas al contexto del sistema.
+Además, se han ajustado parámetros de generación como el número máximo de \eng{tokens} generados, la longitud máxima de entrada, la temperatura, el formato del \eng{prompt} y el número de \eng{chunks} recuperados. Lo que permitió mejorar la calidad de las respuestas, reduciendo alucinaciones y adaptándolas al contexto del sistema.
 
 
-\section{Conversión a \file{Markdown}}
+\section{Conversión a Markdown}
 
-La conversión de los documentos \file{PDF} a \file{Markdown} permite transformar documentos administrativos complejos en texto estructurado apto para el proceso de \eng{chunking}, generación de \eng{embeddings} y recuperación semántica. Inicialmente, los documentos \file{PDF} se procesaban extrayendo texto plano. Este enfoque presentaba limitaciones como la pérdida de la estructura del documento, lo que provocaba que el sistema no pudiese diferenciar los títulos, subtítulos, tablas o las secciones. Por este motivo, durante el desarrollo se comenzó a investigar la posibilidad de convertir los \file{PDF} a \file{Markdown} de forma automática.
+La conversión de los documentos PDF a Markdown permite \textbf{transformar documentos administrativos complejos en texto estructurado} apto para el proceso de \eng{chunking}, generación de \eng{embeddings} y recuperación semántica. Inicialmente, los documentos PDF se procesaban extrayendo texto plano. Este enfoque presentaba limitaciones como la pérdida de la estructura del documento, lo que provocaba que el sistema no pudiese diferenciar los títulos, subtítulos, tablas o las secciones. Por este motivo, durante el desarrollo se comenzó a investigar la posibilidad de convertir los PDF a Markdown de forma automática.
 
-Las primeras aproximaciones consistieron en utilizar bibliotecas tradicionales de extracción de texto en \file{Python}. Estas herramientas permitían obtener el contenido textual de los \file{PDF}, pero perdían gran parte del formato original. Uno de los principales problemas encontrados fue que los documentos de licitaciones públicas presentan formatos extremadamente heterogéneos. Debido a esto se comenzaron a realizar pruebas utilizando \file{OCR} (\textit{Optical Character Recognition}). Sin embargo, aunque el \file{OCR} permitía recuperar texto que anteriormente no podía extraerse, seguía presentando problemas. No se reconocían correctamente todos los caracteres, se seguía perdiendo parte del formato, las tablas no siempre se construían bien. Además,el uso de \file{OCR} supuso un incremento considerable del tiempo de procesamiento. 
+Las primeras aproximaciones consistieron en utilizar bibliotecas tradicionales de extracción de texto en Python. Estas herramientas permitían obtener el contenido textual de los PDF, pero perdían gran parte del formato original. Uno de los principales problemas encontrados fue que los documentos de licitaciones públicas presentan formatos extremadamente heterogéneos. Debido a esto se comenzaron a realizar pruebas utilizando OCR (\eng{Optical Character Recognition}). Sin embargo, aunque el OCR permitía recuperar texto que anteriormente no podía extraerse, seguía presentando problemas.:
+\begin{itemize}
+	\item No se reconocían correctamente todos los caracteres.
+	\item Se seguía perdiendo parte del formato.
+	\item Las tablas no siempre se construían bien
+	\item El uso de OCR supuso un incremento considerable del tiempo de procesamiento.
+\end{itemize}
 
-La implementación final se basa en un sistema de \file{OCR} multimodal que utiliza modelos visuales ejecutados mediante \file{Ollama}, concretamente el modelo \file{blaifa/Nanonets-OCR-s}. Este modelo recibe imágenes de las páginas del \file{PDF} junto con un \eng{prompt} especializado que fuerza la generación de \file{Markdown} estructurado, incluyendo títulos jerárquicos, tablas \file{HTML}, ecuaciones en \LaTeX{}, listas y otros elementos relevantes del documento original.
+La implementación final se basa en un sistema de \textbf{OCR multimodal} que utiliza \textbf{modelos visuales} ejecutados mediante Ollama, concretamente el modelo \file{blaifa/Nanonets-OCR-s}. Este modelo recibe imágenes de las páginas del PDF junto con un \eng{prompt} especializado que fuerza la generación de Markdown estructurado, incluyendo títulos jerárquicos, tablas HTML, ecuaciones en \LaTeX{}, listas y otros elementos relevantes del documento original.
 
-El procesamiento se realiza de forma asíncrona página a página. Primero, cada página del \file{PDF} se convierte individualmente en una imagen utilizando \file{pdf2image}, evitando cargar el documento completo en memoria y reduciendo así el consumo de recursos. Posteriormente, las páginas se procesan concurrentemente mediante tareas asíncronas controladas con semáforos, permitiendo paralelizar parcialmente el \file{OCR} y mejorar el rendimiento global del sistema. Esta arquitectura resulta especialmente importante debido al elevado tiempo de procesamiento de los documentos administrativos extensos.
+El procesamiento se realiza de forma \textbf{asíncrona página a página}. Primero, cada página del PDF se convierte individualmente en una imagen utilizando \file{pdf2image}, evitando cargar el documento completo en memoria y reduciendo así el consumo de recursos. Posteriormente, las páginas se procesan concurrentemente mediante tareas asíncronas controladas con semáforos, permitiendo paralelizar parcialmente el OCR y mejorar el rendimiento global del sistema. Esta arquitectura resulta especialmente importante debido al elevado tiempo de procesamiento de los documentos administrativos extensos.
 
-Además, la implementación está preparada para utilizar aceleración por \file{GPU} cuando está disponible. El sistema detecta automáticamente la configuración de \file{GPU} y solicita a \file{Ollama} la ejecución del modelo visual utilizando todas las capas posibles en \file{GPU}. También se incorporaron mecanismos de \eng{fallback} a \file{CPU} en caso de error, así como reintentos automáticos reduciendo progresivamente la resolución de las imágenes cuando el modelo produce fallos de memoria o errores internos. Estas optimizaciones fueron necesarias debido al elevado consumo computacional del \file{OCR} multimodal, especialmente en documentos con muchas páginas o tablas complejas.
+Además, la implementación está preparada para utilizar aceleración por GPU cuando está disponible. El sistema detecta automáticamente la configuración de GPU y solicita a Ollama la ejecución del modelo visual utilizando todas las capas posibles en GPU. También se incorporaron mecanismos de \eng{fallback} a CPU en caso de error, así como reintentos automáticos reduciendo progresivamente la resolución de las imágenes cuando el modelo produce fallos de memoria o errores internos. Estas optimizaciones fueron necesarias debido al elevado consumo computacional del OCR multimodal (ver Tabla~\ref{tabla:consumoOCR}), especialmente en documentos con muchas páginas o tablas complejas.
 
-Tras la conversión inicial, el \file{Markdown} generado pasa por una fase adicional de normalización automática. En esta etapa se corrigen índices con puntos suspensivos, se detectan encabezados numerados y se transforman en títulos \file{Markdown} jerárquicos, incluso cuando el modelo \file{OCR} no los reconoce correctamente. Para ello se desarrollaron reglas específicas adaptadas a la estructura habitual de los pliegos.
+\begin{longtable}{p{0.22\linewidth} p{0.16\linewidth} p{0.12\linewidth} p{0.45\linewidth}}
+\caption{Fuentes de consumo computacional durante la conversión de PDF a Markdown mediante OCR multimodal.}
+\label{tabla:consumoOCR}\\
 
-Durante el desarrollo se observó que esta aproximación mejora considerablemente la calidad del texto utilizado posteriormente por el sistema \eng{RAG}, especialmente frente a \file{OCR} tradicionales basados únicamente en extracción plana de texto. Sin embargo, también se detectaron varias limitaciones importantes. La principal es el elevado tiempo de procesamiento, ya que cada página debe renderizarse como imagen y posteriormente analizarse mediante un modelo multimodal. Además, aunque el sistema consigue detectar correctamente gran parte de la estructura documental, no siempre identifica de forma precisa todas las secciones, tablas o jerarquías debido a que los formatos de los documentos son poco homogéneos. 
+\toprule
+\textbf{Etapa} &
+\textbf{Recurso principal} &
+\textbf{Impacto} &
+\textbf{Motivo del consumo computacional} \\
+\midrule
+\endfirsthead
 
-\section{Evaluación \eng{RAG}}
+\multicolumn{4}{l}{Continúa desde la página anterior}\\
+\toprule
+\textbf{Etapa} &
+\textbf{Recurso principal} &
+\textbf{Impacto} &
+\textbf{Motivo del consumo computacional} \\
+\midrule
+\endhead
 
-Un aspecto relevante del proyecto fue incluir una evaluación del sistema \eng{RAG} implementado. Para dicha evaluación se ha utilizado un \eng{pipeline} de evaluación \eng {RAG} propio. El cual se inspira en \eng{frameworks} existentes como \file{ARES} (\eng{Automated RAG Evaluation System}) y \file{RAGAS} (\eng{Retrieval-Augmented Generation Assessment}). El objetivo principal era construir un sistema de evaluación reproducible, automatizable y completamente local, evitando dependencias de \file{API} externas y garantizando la confidencialidad de los documentos utilizados.
+\midrule
+\multicolumn{4}{r}{Continúa en la siguiente página}\\
+\endfoot
 
-La arquitectura implementada combina distintos enfoques de evaluación con la generación automática de \eng{datasets} de evaluación. Para la generación de dichos \eng{datatsets} se utiliza \file{ARES}, el cual genera de manera automática preguntas, respuestas y evidencias documentales a partir de los propios \eng{chunks} almacenados en la base de datos vectorial.
+\bottomrule
+\endlastfoot
 
-Respecto a la evaluación, por un lado, se utiliza \eng{RAGAS} para calcular métricas semánticas relacionadas con la calidad de la recuperación y de la generación utilizando un enfoque \eng{LLM-as-a-judge}. Las métricas utilizadas son \eng{Faithfulness}, \eng{Answer relevance}, \eng{Answer correctness}, \eng{Context precision y recall} y \eng{Context relevance}. Las cuales permiten analizar si la respuesta realmente está fundamentada en el contexto recuperado y si dicho contexto es adecuado para responder la consulta. Esta evaluación se combina con métricas de respaldo basadas en \eng{embeddings} y similitud coseno. Estas métricas permiten calcular automáticamente el grado de similitud semántica entre preguntas, respuestas, contexto recuperado y \eng{ground truth} utilizando representaciones vectoriales. Finalmente, ambas métricas se combinan mediante medias ponderadas. Consiguiendo una evaluación híbrida más robusta y estable. Esta combinación permitió reducir la variabilidad típica de los sistemas basados únicamente en \eng{LLM-as-a-judge} y mejorar la reproducibilidad de los resultados.
+Conversión PDF a imagen &
+CPU y memoria RAM &
+Alto &
+Cada página del documento debe renderizarse individualmente a 200 DPI antes de poder ser procesada por el modelo OCR multimodal. Cuanto mayor es el número de páginas, mayor es el tiempo de renderizado y el uso de memoria. \\
 
+Almacenamiento temporal de imágenes &
+Memoria RAM y disco &
+Medio &
+Las páginas renderizadas se almacenan temporalmente como imágenes PNG, lo que incrementa el consumo de memoria y espacio durante el procesamiento. \\
+
+Redimensionado de imágenes &
+CPU y memoria RAM &
+Medio &
+Las imágenes se redimensionan para limitar su tamaño máximo a 1600 píxeles por lado y evitar errores de memoria en el modelo visual. \\
+
+Inferencia OCR multimodal &
+GPU (o CPU) y VRAM &
+Muy alto &
+Cada página se analiza mediante el modelo visual \file{Nanonets-OCR-s}, que debe interpretar simultáneamente texto, tablas, imágenes y estructura documental para generar Markdown estructurado. Es la fase más costosa del proceso. \\
+
+Codificación y envío a Ollama &
+CPU y memoria &
+Medio &
+Las imágenes deben convertirse a formato Base64 y enviarse al servicio Ollama para su procesamiento, incrementando el volumen de datos transferidos. \\
+
+Reintentos automáticos &
+CPU, GPU y tiempo de ejecución &
+Variable &
+Cuando se producen errores de memoria o fallos internos del modelo, el sistema vuelve a procesar la página utilizando resoluciones progresivamente menores (1600, 1280, 1024, 896 y 768 píxeles). \\
+
+Postprocesado del Markdown &
+CPU &
+Bajo &
+Se aplican reglas para normalizar encabezados, corregir índices y mejorar la estructura del Markdown generado por el modelo OCR. \\
+
+\end{longtable}
+
+Tras la conversión inicial, el Markdown generado pasa por una fase adicional de \textbf{normalización automática} para corregir errores frecuentes del OCR multimodal. Se aplican diversas reglas heurísticas diseñadas específicamente para los documentos de licitación pública:
+\begin{itemize}
+	\item Corrección de índices: se detectan las entradas del índice que contienen secuencias de puntos suspensivos utilizadas como separadores visuales entre el título y el número de página, eliminando dichos caracteres para conservar únicamente la información relevante.
+	\item Eliminación de líneas de relleno: se descartan líneas formadas exclusivamente por puntos u otros caracteres utilizados para maquetar los índices.
+	\item Detección de secciones principales: las líneas con numeración del tipo \texttt{1. TÍTULO} se convierten automáticamente en encabezados Markdown de primer nivel cuando el texto asociado aparece mayoritariamente en mayúsculas.
+	\item Detección de subsecciones: las estructuras numeradas del tipo \texttt{1.1. Título} se transforman en encabezados Markdown de segundo nivel.
+	\item Detección de subsubsecciones: las estructuras del tipo \texttt{1.1.1. Título} se convierten en encabezados Markdown de tercer nivel.
+	\item Reconocimiento de códigos alfanuméricos: se detectan identificadores frecuentes en los pliegos administrativos, como \texttt{G.2.2.} o \texttt{A.1.3.}, transformándolos también en encabezados jerárquicos.
+	\item Preservación de elementos Markdown válidos: las líneas que ya han sido reconocidas correctamente por el modelo OCR como títulos Markdown, listas, tablas, citas o elementos HTML no se modifican durante el proceso de normalización.
+	\item Conservación de la estructura documental: las transformaciones se aplican únicamente sobre líneas situadas al nivel principal del documento, evitando alterar el contenido interno de listas, tablas o bloques especiales.
+\end{itemize}
+
+Durante el desarrollo se observó que esta aproximación mejora considerablemente la calidad del texto utilizado posteriormente por el sistema RAG, especialmente frente a OCR tradicionales basados únicamente en extracción plana de texto. Sin embargo, también se detectaron varias limitaciones importantes. La principal es el elevado tiempo de procesamiento, ya que cada página debe renderizarse como imagen y posteriormente analizarse mediante un modelo multimodal. Para cuantificar este coste computacional se analizaron los datos reales obtenidos durante la utilización de la aplicación PythIA. En total se convirtieron 132 documentos que sumaban un total de 22.544 páginas. La conversión a Markdown estuvo activa durante 244.030,29 minutos, por lo cual cada página tardó 244.030,29 minutos $/$ 22.544 páginas = 10,82 minutos (ver figura~\ref{fig:datos_conversion}). Este valor incluye tanto la generación de la imagen a partir del PDF como la inferencia realizada por el modelo OCR multimodal y las fases posteriores de normalización del Markdown.
+
+\begin{tcolorbox}[
+	colback=black!3,
+	colframe=black!30,
+	boxrule=0.5pt,
+	arc=2mm,
+	title=Terminal,
+	fonttitle=\bfseries,
+	breakable
+]
+{\footnotesize
+\noindent
+\texttt{SELECT}\\
+	\hspace*{1em}\texttt{ROUND(}\\
+		\hspace*{2em}\texttt{SUM(EXTRACT(EPOCH FROM (finished\_at - started\_at))) / 60,}\\
+		\hspace*{2em}\texttt{2}\\
+	\hspace*{1em}\texttt{) AS minutos\_totales}\\
+\texttt{FROM markdown\_conversion\_state}\\
+\texttt{WHERE progress > 0}\\
+	\hspace*{1em}\texttt{AND started\_at IS NOT NULL}\\
+	\hspace*{1em}\texttt{AND finished\_at IS NOT NULL;}\\
+	\\
+\texttt{\# Comando SQL utilizado para conocer el número total}\\
+\texttt{\# de documentos convertidos a Markdown}\\
+\texttt{SELECT COUNT(*) AS documentos\_convertidos}\\
+\texttt{FROM documents}\\
+\texttt{WHERE markdown\_content IS NOT NULL}\\
+	\hspace*{1em}\texttt{AND length(markdown\_content) > 0;}\\
+	\\
+\texttt{\# Script Python utilizado para obtener el número total}\\
+\texttt{\# de páginas de los documentos convertidos}\\
+\texttt{from pathlib import Path}\\
+\texttt{from pypdf import PdfReader}\\
+\texttt{total\_pages = 0}\\
+\texttt{for pdf in Path('/data/pliegos').glob('*.pdf'):}\\
+	\hspace*{1em}\texttt{try:}\\
+		\hspace*{2em}\texttt{pages = len(PdfReader(str(pdf)).pages)}\\
+		\hspace*{2em}\texttt{total\_pages += pages}\\
+	\hspace*{1em}\texttt{except Exception as e:}\\
+		\hspace*{2em}\texttt{print(f'ERROR \{pdf.name\}: \{e\}') }\\
+\texttt{print('TOTAL PAGINAS:', total\_pages)}
+}
+\end{tcolorbox}
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Memoria/Conversion_markdown_paginas_total}
+        \caption{Total de páginas convertidas a Markdown.}
+    \end{subfigure}
+	
+	\vspace{0.5cm}	
+	
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Memoria/Conversion_markdown_minutos}
+        \caption{Datos temporales totales de la conversión y número de expedientes convertidos.}
+    \end{subfigure}
+\caption{Datos obtenidos de la conversión a Markdown del sistema.}
+\label{fig:datos_conversion}
+\end{figure}
+
+Además, aunque el sistema consigue detectar correctamente gran parte de la estructura documental, no siempre identifica de forma precisa todas las secciones, tablas o jerarquías debido a que los formatos de los documentos son poco homogéneos. 
+
+\section{Evaluación RAG}
+
+Un aspecto relevante del proyecto fue incluir una evaluación del sistema RAG implementado. Para dicha evaluación se ha utilizado un \textbf{\eng{pipeline} de evaluación RAG propio}. El cual se inspira en \eng{frameworks} existentes como ARES (\eng{Automated RAG Evaluation System}) y RAGAS (\eng{Retrieval-Augmented Generation Assessment}). El objetivo principal era construir un \textbf{sistema de evaluación reproducible, automatizable y completamente local}, evitando dependencias de API externas y garantizando la confidencialidad de los documentos utilizados.
+
+La arquitectura implementada combina distintos enfoques de evaluación con la generación automática de \eng{datasets} de evaluación. Para la generación de dichos \eng{datatsets} se utiliza ARES, el cual genera de manera automática preguntas, respuestas y evidencias documentales a partir de los propios \eng{chunks} almacenados en la base de datos vectorial.
+
+Respecto a la evaluación, por un lado, se utiliza RAGAS para calcular métricas semánticas relacionadas con la calidad de la recuperación y de la generación utilizando un enfoque \eng{LLM-as-a-judge}. Las métricas utilizadas son:
+\begin{itemize}
+ 	\item \eng{Faithfulness}
+ 	\item \eng{Answer relevance}
+ 	\item \eng{Answer correctness}
+ 	\item \eng{Context precision y recall} 
+ 	\item \eng{Context relevance}
+\end{itemize}
+Las cuales permiten analizar si la respuesta realmente está fundamentada en el contexto recuperado y si dicho contexto es adecuado para responder la consulta. Esta evaluación se combina con métricas de respaldo basadas en \eng{embeddings} y similitud coseno. Estas métricas permiten calcular automáticamente el grado de similitud semántica entre preguntas, respuestas, contexto recuperado y \eng{ground truth} utilizando representaciones vectoriales. Finalmente, \textbf{ambas métricas se combinan mediante medias ponderadas}. Consiguiendo una evaluación híbrida más robusta y estable. Esta combinación permitió reducir la variabilidad típica de los sistemas basados únicamente en \eng{LLM-as-a-judge} y mejorar la reproducibilidad de los resultados.
 
 \section{Tareas asíncronas}
 \label{rel:asinc}
 
-Para que se realicen las tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el \file{Web Scraping}, la conversión de documentos \file{PDF} a \file{Markdown}, la actualización de la base de datos vectorial y la evaluación del \eng{RAG}. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \eng{web}.
+Para \textbf{evitar el bloqueo de la aplicación} mientras se realizan tareas largas del proyecto se ha decidido ejecutarlas de manera asíncrona. Concretamente se ha usado este sistema para el Web Scraping, la conversión de documentos PDF a Markdown, la actualización de la base de datos vectorial y la evaluación del RAG. Permitiendo que estas tareas largas se ejecuten en segundo plano, sin bloquear el uso de la interfaz \eng{web}.
 
-Para implementarlo se han usado ejecutores basados en \file{ThreadPoolExecutor}. Se ha separado el ejecutor de las tareas de \file{Markdown} del resto de tareas del sistema. Esta separación permite controlar de forma independiente 
-el número máximo de tareas concurrentes y evitar que procesos intensivos consuman todos los recursos disponibles. Además,se asocia un objeto \file{Future} a cada una de las tareas que se envían al ejecutor, de tal forma que se pueda realizar un seguimiento de su estado, cancelando trabajos que aún no hayan comenzado y liberando los recursos cuando finalizan.
+Para implementarlo se han usado ejecutores basados en \file{ThreadPoolExecutor}. Se ha separado el ejecutor de las tareas de Markdown del resto de tareas del sistema. Esta separación permite controlar de forma independiente el número máximo de tareas concurrentes y evitar que procesos intensivos consuman todos los recursos disponibles. Además, se asocia un objeto \file{Future} a cada una de las tareas que se envían al ejecutor, de tal forma que se pueda realizar un seguimiento de su estado, cancelando trabajos que aún no hayan comenzado y liberando los recursos cuando finalizan.
 
-Un reto que se planteó fue que la ejecución de las tareas largas (como la conversión a \file{Markdown}) no aumentasen la latencia en las respuestas del sistema \eng{RAG}. Para solventar este problema se ha implementado un sistema de prioridades basado en un indicador global de actividad del \eng{RAG}. Cuando un usuario realiza una consulta, el sistema activa una marca de prioridad que indica que existe una generación \eng{RAG} en curso. Mientras la marca este activa, el resto de tareas asíncronas que también estén activas esperan antes de lanzar nuevas peticiones al modelo. 
+Un reto que se planteó fue que la ejecución de las tareas largas (como la conversión a Markdown) no aumentasen la latencia en las respuestas del sistema RAG. Para solventar este problema se ha implementado un \textbf{sistema de prioridades} basado en un indicador global de actividad del RAG. Cuando un usuario realiza una consulta, el sistema activa una marca de prioridad que indica que existe una generación RAG en curso. Mientras la marca esté activa, el resto de tareas asíncronas que también estén activas esperan antes de lanzar nuevas peticiones al modelo. 
 
-Cuando un proceso largo finaliza se envía por correo electrónico una notificación para evitar que el usuario tenga que estar esperando en la aplicación hasta que el proceso finalice. Por ejemplo, se envía cuando finaliza la conversión a \file{Markdown}, la actualización vectorial o el \eng{web scraping}. En el correo que se envía al usuario se  indica el resultado de la operación, incluyendo el número de documentos convertidos, indexados o extraídos, respectivamente. 
+Cuando un proceso largo finaliza se envía por correo electrónico una notificación para evitar que el usuario tenga que estar esperando en la aplicación hasta que el proceso finalice. Por ejemplo, se envía cuando finaliza la conversión a Markdown, la actualización vectorial o el \eng{Web Scraping}. En el correo que se envía al usuario se  indica el resultado de la operación, incluyendo el número de documentos convertidos, indexados o extraídos, respectivamente. 
 
 \section{Desarrollo \eng{web}}
 
-Tras realizar un primer prototipo \eng{RAG} se comenzó el diseño de una aplicación \eng{web} para permitir a los usuarios interactuar con el sistema de manera sencilla y visual. Para ello se decidió utilizar \file{Flask} como \eng{framework} de desarrollo \eng{web}. 
+Tras realizar un primer prototipo RAG, el cual se ejecutaba desde a terminal, se comenzó el diseño de una aplicación \eng{web} para permitir a los usuarios \textbf{interactuar con el sistema de manera sencilla y visual}. Para ello se decidió utilizar Flask como \eng{framework} de desarrollo \eng{web}. 
 
-\file{Flask} es un \eng{framework} ligero para \file{Python} basado en la arquitectura \file{WSGI} que permite desarrollar aplicaciones web de manera modular y escalable. Una de las razones principales para su elección fue su flexibilidad, ya que facilita integrar distintos componentes del sistema \eng{RAG}, como el \eng{retriever}, el procesamiento documental o los modelos \eng{LLM}, dentro de una misma aplicación. Además, \file{Flask} permite estructurar el proyecto utilizando \eng{blueprints}, lo que facilitó dividir la aplicación en módulos independientes y mejorar su mantenibilidad.
+Flask es un \eng{framework} ligero para Python basado en la arquitectura WSGI que permite desarrollar aplicaciones web de manera modular y escalable. Una de las razones principales para su elección fue su flexibilidad, ya que facilita integrar distintos componentes del sistema RAG, como el \eng{retriever}, el procesamiento documental o los modelos LLM, dentro de una misma aplicación. Además, Flask permite estructurar el proyecto utilizando \eng{blueprints}, lo que facilitó dividir la aplicación en módulos independientes y mejorar su mantenibilidad.
 
-Durante las primeras fases del desarrollo \eng{web} se realizaron prototipos muy simples cuyo objetivo principal era únicamente permitir realizar consultas al sistema \eng{RAG} desde una interfaz básica. Estas primeras versiones consistían en páginas \file{HTML} estáticas con formularios mínimos para introducir preguntas y mostrar respuestas del modelo. Conforme el proyecto evolucionó, la aplicación fue creciendo progresivamente hasta convertirse en una plataforma \eng{web} completa con autenticación, gestión documental, historial de consultas, paneles administrativos y procesamiento asíncrono de tareas.
+Durante las primeras fases del desarrollo \eng{web} se realizaron prototipos muy simples cuyo objetivo principal era únicamente permitir realizar consultas al sistema RAG desde una interfaz básica. Estas primeras versiones consistían en páginas HTML estáticas con formularios mínimos para introducir preguntas y mostrar respuestas del modelo. Conforme el proyecto evolucionó, la aplicación fue creciendo progresivamente hasta convertirse en una plataforma \eng{web} completa con autenticación, gestión documental, historial de consultas, paneles administrativos y procesamiento asíncrono de tareas.
 
-Desde el punto de vista arquitectónico, la aplicación se divide en \eng{frontend} y \eng{backend}. El \eng{frontend} se encarga de la interacción visual con el usuario y el \eng{backend} se encarga de la lógica de negocio, procesamiento documental, acceso a bases de datos y comunicación con el sistema \eng{RAG}.
+Desde el punto de vista arquitectónico, la aplicación se divide en \eng{frontend} y \eng{backend}. El \eng{frontend} se encarga de la interacción visual con el usuario y el \eng{backend} se encarga de la lógica de negocio, procesamiento documental, acceso a bases de datos y comunicación con el sistema RAG.
 
 \subsection{\eng{Frontend}}
 
-El \eng{frontend} de PythIA ha evolucionado respecto a los primeros prototipos desarrollados durante el proyecto. Las primeras interfaces eran simples y estaban centradas en validar el funcionamiento técnico del sistema \eng{RAG}. Sin embargo, conforme el proyecto avanzó, se comenzó a trabajar en el diseño de una interfaz más moderna, usable y adaptada a distintos tipos de usuarios. En la cual la complejidad del sistema \eng{RAG} es transparente para el usuario.
+El \eng{frontend} de PythIA ha evolucionado respecto a los primeros prototipos desarrollados durante el proyecto (ver figura~\ref{fig:evolucion_interfaz}). Las primeras interfaces eran simples y estaban centradas en validar el funcionamiento técnico del sistema RAG. Sin embargo, conforme el proyecto avanzó, se comenzó a trabajar en el diseño de una interfaz más moderna, usable y adaptada a distintos tipos de usuarios. En la cual la \textbf{complejidad} del sistema RAG es \textbf{transparente para el usuario}.
 
-El diseño visual de la aplicación se ha ido desarrollando a lo largo de todo el proyecto mediante distintas iteraciones de las páginas. Uno de los cambios más importantes respecto a los primeros prototipos fue la incorporación de soporte completo para modo claro y modo oscuro (dejando por defecto el modo del sistema salvo que el usuario indique otra cosa en su perfil) mejorando así la accesibilidad y la experiencia de usuario. 
+\begin{figure}
+\centering
+\begin{minipage}[c]{0.45\textwidth}
+	\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Memoria/Interfaz/Pagina_inicio_prototipo_inicial}
+		
+		\vspace{1cm}
+        
+        \includegraphics[width=\textwidth]{Memoria/Interfaz/Historial_prototipo_inicial}
+        \caption{Diseño de los prototipos iniciales de la aplicación.}
+    \end{subfigure}
 
-Para implementar la interfaz se utilizó \file{Bootstrap} como \eng{framework} \file{CSS} principal. \file{Bootstrap} permitió acelerar el desarrollo del \eng{frontend} gracias a su sistema de componentes reutilizables, facilitando mantener una coherencia visual entre todas las páginas de la aplicación. La utilización de \file{Bootstrap} también permitió implementar un diseño \eng{responsive} para que los usuarios puedan usar la aplicación desde distintos dispositivos. 
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.45\textwidth}
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Memoria/Interfaz/Cabecera_prototipo}
+        
+		\vspace{0.1cm}	        
+        
+        \includegraphics[width=\textwidth]{Memoria/Interfaz/Historial_prototipo}
+        \caption{Primeras iteraciones en el diseño de la interfaz.}
+    \end{subfigure}
+	
+\end{minipage}
 
-Otro aspecto importante del \eng{frontend} fue la internacionalización de la aplicación. Para esto se ha desarrollado un sistema de traducción basado en diccionarios de claves y funciones auxiliares que permiten traducir los textos de la interfaz, los formularios, los mensajes de error, las validaciones, las notificaciones y los componentes dinámicos del \file{JavaScript}. Esto permitió desacoplar completamente los textos de la interfaz del código \file{HTML} y \file{Python}.
+	\vspace{0.5cm}
+	
+\begin{subfigure}[t]{\textwidth}
+   	\centering
+    \includegraphics[width=0.45\textwidth]{Memoria/Interfaz/Pagina_inicio_final}
+	\hfill
+    \includegraphics[width=0.45\textwidth]{Memoria/Interfaz/Pagina_principal_final}
+	\caption{Interfaz final de la aplicación.}
+\end{subfigure}
 
-Además del diseño visual, también se incorporaron componentes gráficos interactivos utilizando \file{D3.js}. Lo que permitió generar visualizaciones mucho más dinámicas y personalizables. Además, facilitó adaptar las gráficas al diseño visual de la aplicación y a los distintos temas claro y oscuro.
+\caption{Evolución de la interfaz desde los prototipos iniciales hasta el diseño final.}
+\label{fig:evolucion_interfaz}
+\end{figure}
 
-Por otro lado, conforme el sistema fue incorporando más funcionalidades, se observó que algunos usuarios podían tener dificultades para comprender ciertos flujos de uso. Para mejorar la experiencia de usuario se han incorporado \file{Driver.js} como sistema de tutoriales interactivos guiados. Facilitando el aprendizaje inicial de la plataforma y mejorando la accesibilidad del sistema.
+
+El diseño visual de la aplicación se ha ido desarrollando a lo largo de todo el proyecto mediante distintas iteraciones de las páginas. Uno de los cambios más importantes respecto a los primeros prototipos fue la incorporación de soporte completo para modo claro y modo oscuro (dejando por defecto el modo del sistema salvo que el usuario indique otra preferencia en su perfil) mejorando así la accesibilidad y la experiencia de usuario. 
+
+Para implementar la interfaz se utilizó Bootstrap como \eng{framework} CSS principal. Bootstrap permitió acelerar el desarrollo del \eng{frontend} gracias a su sistema de componentes reutilizables, facilitando mantener una coherencia visual entre todas las páginas de la aplicación. La utilización de Bootstrap también permitió implementar un \textbf{diseño \eng{responsive}} para que los usuarios puedan usar la aplicación desde distintos dispositivos (ver figura~\ref{}). 
+
+\begin{figure}
+\centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering      
+        \includegraphics[width=0.22\textwidth]{Memoria/Interfaz/Pagina_inicio_responsive}
+        \hfill
+		\includegraphics[width=0.22\textwidth]{Memoria/Interfaz/Pagina_principal_responsive}
+		\hfill
+		\includegraphics[width=0.22\textwidth]{Memoria/Interfaz/Historial_responsive}
+		\hfill
+		\includegraphics[width=0.22\textwidth]{Memoria/Interfaz/Consulta_responsive}
+    \end{subfigure}
+\caption{Distintas pantallas de la aplicación vistas desde un teléfono móvil.}
+\label{fig:interfaz_responsive}
+\end{figure}
+
+Otro aspecto importante del \eng{frontend} fue la \textbf{internacionalización} de la aplicación. Para esto se ha desarrollado un sistema de traducción basado en diccionarios de claves y funciones auxiliares que permiten traducir los textos de la interfaz, los formularios, los mensajes de error, las validaciones, las notificaciones y los componentes dinámicos del JavaScript. Esto permitió desacoplar completamente los textos de la interfaz del código HTML y Python.
+
+Además del diseño visual, también se incorporaron componentes \textbf{gráficos interactivos} utilizando D3.js. Lo que permitió generar visualizaciones mucho más dinámicas y personalizables. Además, facilitó adaptar las gráficas al diseño visual de la aplicación y a los distintos temas claro y oscuro.
+
+Por otro lado, conforme el sistema fue incorporando más funcionalidades, se observó que algunos usuarios podían tener dificultades para comprender ciertos flujos de uso. Para mejorar la experiencia de usuario se han incorporado Driver.js como sistema de \textbf{tutoriales interactivos guiados}. Facilitando el aprendizaje inicial de la plataforma y mejorando la accesibilidad del sistema.
 
 \subsection{\eng{Backend}}
 
-El \eng{backend} de PythIA es el núcleo funcional de la aplicación y el encargado de integrar todas las partes del sistema \eng{RAG}. Durante el desarrollo ha ido evolucionando desde \eng{scripts} independientes hasta una arquitectura modular basada en \file{Flask}  y organizada mediante \eng{blueprints}, servicios y capas desacopladas.
+El \eng{backend} de PythIA es el \textbf{núcleo funcional de la aplicación} y el encargado de integrar todas las partes del sistema RAG. Durante el desarrollo ha ido evolucionando desde \eng{scripts} independientes hasta una arquitectura modular basada en Flask  y organizada mediante \eng{blueprints}, servicios y capas desacopladas.
 
-La aplicación se organizó utilizando controladores \file{Flask} agrupados mediante \eng{blueprints}. Cada \eng{blueprint} encapsula un conjunto concreto de funcionalidades, como autenticación, administración, consultas \eng{RAG}, gestión documental y páginas principales. Esta organización ha permitido desacoplar las distintas partes del sistema y mejorar la escalabilidad del proyecto.
+La aplicación se organizó utilizando \textbf{controladores} Flask agrupados mediante \eng{blueprints}. Cada \eng{blueprint} encapsula un conjunto concreto de funcionalidades, como autenticación, administración, consultas RAG, gestión documental y páginas principales. Esta organización ha permitido desacoplar las distintas partes del sistema y mejorar la escalabilidad del proyecto.
 
-Por debajo de los controladores se implementó una capa de servicios encargada de la lógica de negocio. Esta separación fue especialmente importante conforme el proyecto fue creciendo, ya que evita sobrecargar los controladores \file{Flask} con lógica de negocio. Permitiendo reutilizar código entre distintas partes de la aplicación y facilitando el mantenimiento. 
+Por debajo de los controladores se implementó una \textbf{capa de servicios} encargada de la lógica de negocio. Esta separación fue especialmente importante conforme el proyecto fue creciendo, ya que evita sobrecargar los controladores Flask con lógica de negocio. Permitiendo reutilizar código entre distintas partes de la aplicación y facilitando el mantenimiento. 
 
-En cuanto a los modelos de datos, la aplicación utiliza \file{SQLAlchemy} como \file{ORM} principal. 
+En cuanto a los modelos de datos, la aplicación utiliza SQLAlchemy como ORM principal. 
 
-Además de la base de datos relacional utilizada para la gestión general de la aplicación, el \eng{backend} también integra \file{Qdrant} como base de datos vectorial para almacenar los \eng{embeddings} utilizados por el sistema \eng{RAG}.
+Además de la base de datos relacional utilizada para la gestión general de la aplicación, el \eng{backend} también integra Qdrant como base de datos vectorial para almacenar los \eng{embeddings} utilizados por el sistema RAG.
 
 La comunicación entre las distintas capas de la aplicación sigue una arquitectura multicapa donde el usuario interactúa con el \eng{frontend}. A continuación los controladores reciben las peticiones y los servicios ejecutan la lógica de negocio. Los modelos gestionan el acceso a los datos y los resultados se devuelven al \eng{frontend}.
 
-Otro aspecto importante fue la seguridad y el control de acceso. La aplicación implementa autenticación mediante \file{Flask-Login} y utiliza distintos roles de usuario para restringir determinadas funcionalidades administrativas. 
+Otro aspecto importante fue la seguridad y el control de acceso. La aplicación implementa \textbf{autenticación} mediante Flask-Login y utiliza distintos roles de usuario para restringir determinadas funcionalidades administrativas. 
 
-También se ha desarrollado un sistema centralizado de control de excepciones para evitar errores no controlados dentro de la aplicación y evitar así caídas del sistema. Concretamente se registran los errores ( mediante \eng{loggers}) mostrándose mensajes de error amigables.
+También se ha desarrollado un sistema centralizado de \textbf{control de excepciones} para evitar errores no controlados dentro de la aplicación y evitar así caídas del sistema. Concretamente se registran los errores ( mediante \eng{loggers}) mostrándose mensajes de error amigables.
 
-Debido al elevado coste computacional de algunas operaciones, se incorporó soporte para tareas asíncronas. Esto fue especialmente importante en procesos como la conversión de \file{PDF} a \file{Markdown}, el \eng{web scraping}, la generación de \eng{embeddings}, la indexación documental y la generación de la respuesta. Permite evitar bloqueos en la interfaz web, ya que los procesos pesados pueden ejecutarse en segundo plano mientras el usuario continua usando la aplicación (ver sección~\ref{rel:asinc}). 
+Debido al elevado coste computacional de algunas operaciones, se incorporó soporte para \textbf{tareas asíncronas}. Esto fue especialmente importante en procesos como la conversión de PDF a Markdown, el \eng{Web Scraping}, la generación de \eng{embeddings}, la indexación documental y la generación de la respuesta. Permite evitar bloqueos en la interfaz web, ya que los procesos pesados pueden ejecutarse en segundo plano mientras el usuario continua usando la aplicación (ver sección~\ref{rel:asinc}). 
 
-Otro aspecto relevante fue la validación de las direcciones de correo electrónico durante el proceso de registro y edición de usuarios. Inicialmente se valoró realizar comprobaciones de formato mediante expresiones regulares, pero este enfoque no permite detectar direcciones inexistentes o dominios incapaces de recibir mensajes. Para solucionar esta limitación se integró la \file{API} de \file{Emailable}. De tal forma que antes de completar el registro de usuario o la actualización del perfil, el servidor consulta la \file{API} para verificar que la dirección introducida posee una sintaxis válida, un dominio existente y que puede recibir correos electrónicos.
+Otro aspecto relevante fue la \textbf{validación de las direcciones de correo electrónico} durante el proceso de registro y edición de usuarios. Inicialmente se valoró realizar comprobaciones de formato mediante expresiones regulares, pero este enfoque no permite detectar direcciones inexistentes o dominios incapaces de recibir mensajes. Para solucionar esta limitación se integró la API de Emailable. De tal forma que antes de completar el registro de usuario o la actualización del perfil, el servidor consulta la API para verificar que la dirección introducida posee una sintaxis válida, un dominio existente y que puede recibir correos electrónicos.
 
 \section{Evaluación de la calidad del código}
 
 A medida que el proyecto fue creciendo y la aplicación pasó de estar formada por pequeños prototipos experimentales a convertirse en un sistema \eng{web} completo surgió la necesidad de incorporar mecanismos que permitiesen evaluar y controlar la calidad de código desarrollado.
 
-Durante las primeras fases del proyecto, la prioridad principal era desarrollar \eng{scripts} funcionales sin tener en cuenta el código duplicado, las funcione demasiado complejas, la escasa modularización, la baja reutilización o las dependencias acopladas. Para facilitar la mantebilidad y la escalabilidad se decidió incorporar herramientas automáticas de análisis estático de código.
+Durante las primeras fases del proyecto, la prioridad principal era desarrollar \eng{scripts} funcionales sin tener en cuenta el código duplicado, las funcione demasiado complejas, la escasa modularización, la baja reutilización o las dependencias acopladas. Para facilitar la mantenibilidad y la escalabilidad se decidió incorporar herramientas automáticas de análisis estático de código.
 
-Concretamente se decidió usar \myhref{https://sonarcloud.io/project/overview?id=lbr1014_TFG_RAG}{\file{SonarCloud}}. La cual se integró directamente con el repositorio \file{GitHub} del proyecto, para analizar automáticamente distintos indicadores relacionados con la calidad del software. Su uso permitió detectar y solucionar \eng{bugs}, vulnerabilidades de seguridad, código duplicado, funciones extremadamente complejas, funciones demasiado largas, variables sin utilizar, problemas de mantenibilidad, incumplimientos de estándares de calidad y problemas con tipado y control de excepciones.
+Concretamente se decidió usar \myhref{https://sonarcloud.io/project/overview?id=lbr1014_TFG_RAG}{SonarCloud}. La cual se integró directamente con el repositorio \file{GitHub} del proyecto, para \textbf{analizar automáticamente} distintos indicadores relacionados con \textbf{la calidad del \eng{software}}. Su uso permitió detectar y solucionar \eng{bugs}, vulnerabilidades de seguridad, código duplicado, funciones extremadamente complejas, funciones demasiado largas, variables sin utilizar, problemas de mantenibilidad, incumplimientos de estándares de calidad y problemas con tipado y control de excepciones.
 
-Como consecuencia de estos análisis, se realizaron diversas refactorizaciones importantes dentro del proyecto. Por ejemplo se realizó una separación más estricta entre los controladores y los servicios, se modularizaron las funciones más complejas, se reutilizó la lógica común reduciendo el código duplicado y se mejoró el control de excepciones.
+Como consecuencia de estos análisis, se realizaron diversas refactorizaciones importantes dentro del proyecto. Por ejemplo, se realizó una separación más estricta entre los controladores y los servicios, se modularizaron las funciones más complejas, se reutilizó la lógica común reduciendo el código duplicado y se mejoró el control de excepciones.
 
-Además, de \file{SonarCloud} también se utilizó \myhref{https://docs.astral.sh/ruff/}{\file{Ruff}} como herramienta complementaria para el análisis estático y mejora de la calidad del código. \file{Ruff} se integró dentro del flujo de desarrollo para realizar comprobaciones rápidas relacionadas con el estilo, complejidad y consistencia del código. Su principal ventaja es su gran velocidad de ejecución que permitió utilizarlo frecuentemente durante el desarrollo sin afectar significativamente al tiempo de trabajo. Gracias a \file{Ruff} se detectaron automáticamente problemas como \eng{imports} no utilizados, variables redundantes, código muerto, errores de estilo, complejidad innecesaria y diversas malas prácticas de programación en \file{Python}. Además, se empleó para mantener una estructura homogénea en todo el proyecto, como por ejemplo, en los nombres de las funciones y variables. Esto ayudó a mejorar la legibilidad, consistencia y mantenibilidad del código, especialmente en un proyecto grande y modular como PythIA, donde coexistían múltiples componentes relacionados con \file{Flask}, el sistema \eng{RAG}, el procesamiento documental y las tareas asíncronas.
+Además, de SonarCloud también se utilizó \myhref{https://docs.astral.sh/ruff/}{Ruff} como herramienta complementaria para el análisis estático y mejora de la calidad del código. Ruff se integró dentro del flujo de desarrollo para realizar comprobaciones rápidas relacionadas con el estilo, complejidad y consistencia del código. Su principal ventaja es su gran velocidad de ejecución que permitió utilizarlo frecuentemente durante el desarrollo sin afectar significativamente al tiempo de trabajo. Gracias a Ruff se detectaron automáticamente problemas como \eng{imports} no utilizados, variables redundantes, código muerto, errores de estilo, complejidad innecesaria y diversas malas prácticas de programación en Python. Además, se empleó para mantener una estructura homogénea en todo el proyecto, como por ejemplo, en los nombres de las funciones y variables. Esto ayudó a mejorar la legibilidad, consistencia y mantenibilidad del código, especialmente en un proyecto grande y modular como PythIA, donde coexistían múltiples componentes relacionados con Flask, el sistema RAG, el procesamiento documental y las tareas asíncronas.
 
  Para mejorar la legibilidad también se añadieron comentarios y documentación y se realizó separación de responsabilidades.
 
-Además del análisis estático, la calidad del código también se complementó con pruebas unitarias y pruebas funcionales desarrolladas durante distintas fases del proyecto. Estas pruebas permitieron verificar el correcto funcionamiento de los formularios, la gestión de usuarios, las validaciones, los servicios principales, la integración del sistema \eng{RAG} y el procesamiento documental. 
+Además del análisis estático, la calidad del código también se complementó con \textbf{pruebas unitarias, pruebas funcionales y pruebas de interfaz} desarrolladas durante distintas fases del proyecto. Estas pruebas permitieron verificar el correcto funcionamiento de los formularios, la gestión de usuarios, las validaciones, los servicios principales, la integración del sistema RAG y el procesamiento documental. 
 
 \section{Despliegue}
 
-Uno de los aspectos más importantes durante el desarrollo de PythIA fue el diseño de un entorno de despliegue estable, reproducible y preparado para producción.
+Uno de los aspectos más importantes durante el desarrollo de PythIA fue el diseño de un \textbf{entorno de despliegue estable, reproducible y preparado para producción}.
 
-En las primeras fases del proyecto, la aplicación se ejecutaba en entornos locales de desarrollo utilizando el servidor integrado de \file{Flask}. Aunque esta aproximación era suficiente para validar prototipos y desarrollar funcionalidades, presentaba importantes limitaciones relacionadas con el rendimiento, la escalabilidad, la seguridad y la reproducibilidad del entorno.
+En las primeras fases del proyecto, la aplicación se ejecutaba en entornos locales de desarrollo utilizando el servidor integrado de Flask. Aunque esta aproximación era suficiente para validar prototipos y desarrollar funcionalidades, presentaba importantes limitaciones relacionadas con el rendimiento, la escalabilidad, la seguridad y la reproducibilidad del entorno.
 
-Para resolver estos problemas se decidió utilizar \file{Docker}. Lo que permitió encapsular los componentes necesarios de la aplicación dentro de contenedores independientes, garantizando que el sistema se ejecute de manera consistente independientemente del entorno donde fuese desplegado. 
+Para resolver estos problemas se decidió utilizar Docker. Lo que permitió encapsular los componentes necesarios de la aplicación dentro de \textbf{contenedores independientes}, garantizando que el sistema se ejecute de manera consistente independientemente del entorno donde fuese desplegado. 
 
-La utilización de \file{Docker} aportó múltiples ventajas al proyecto, por ejemplo permitió aumentar la reproductibilidad del entorno, aislar los servicios y simplificar la gestión de dependencias. Mejorando la mantenibilidad y la portabilidad entre distintos entornos. Además, hizó que el despliegue fuese más fácil. 
+La utilización de Docker aportó múltiples ventajas al proyecto, por ejemplo permitió aumentar la reproducibilidad del entorno, aislar los servicios y simplificar la gestión de dependencias. Mejorando la mantenibilidad y la portabilidad entre distintos entornos. Además, hizo que el despliegue fuese más fácil. 
 
-En las primeras versiones, \file{Flask} seguía ejecutándose utilizando su servidor de desarrollo integrado. Sin embargo, este servidor no está diseñado para entornos productivos, ya que no gestiona adecuadamente múltiples peticiones concurrentes ni ofrece suficiente robustez frente a cargas elevadas. Para solucionar estos problemas se integró \file{Gunicorn} como servidor \file{WSGI} de producción. El cual se encarga de ejecutar múltiples \eng{workers} de \file{Flask} de manera concurrente, mejorando significativamente el rendimiento y la estabilidad del sistema. Permitiendo gestionar mejor las peticiones simultáneas, el tiempo de espera, los procesos bloqueantes y la recuperación frente a fallos.
+En las primeras versiones, Flask seguía ejecutándose utilizando su servidor de desarrollo integrado. Sin embargo, este servidor no está diseñado para entornos productivos, ya que no gestiona adecuadamente múltiples peticiones concurrentes ni ofrece suficiente robustez frente a cargas elevadas. Para solucionar estos problemas se \textbf{integró Gunicorn como servidor WSGI} de producción. El cual se encarga de ejecutar múltiples \eng{workers} de Flask de manera concurrente, mejorando significativamente el rendimiento y la estabilidad del sistema. Permitiendo gestionar mejor las peticiones simultáneas, el tiempo de espera, los procesos bloqueantes y la recuperación frente a fallos.
 
-Otro aspecto importante fue la incorporación de \file{Nginx} como \eng{proxy} inverso. \file{Nginx} se sitúa delante de \file{Gunicorn} y asume la gestión de conexiones \file{HTTP}, el balanceo interno de peticiones, la gestión de cabeceras, la optimización de rendimiento, la seguridad básica de acceso y se encarga de servir los archivos estáticos. Su utilización de manera conjunta con \file{Gunicorn} permitió separar las responsabilidades del sistema \eng{web}, mejorando tanto el rendimiento como la seguridad de la aplicación.
+Otro aspecto importante fue la \textbf{incorporación de Nginx como \eng{proxy} inverso}. Nginx se sitúa delante de Gunicorn y asume la gestión de conexiones HTTP, el balanceo interno de peticiones, la gestión de cabeceras, la optimización de rendimiento, la seguridad básica de acceso y se encarga de servir los archivos estáticos. Su utilización de manera conjunta con Gunicorn permitió separar las responsabilidades del sistema \eng{web}, mejorando tanto el rendimiento como la seguridad de la aplicación.
 
-La configuración de \file{Docker} presento alguna dificulta, por ejemplo, en la integración entre \file{Flask}, \file{Qdrant} y \file{PostgreSQL}, ya que la aplicación dependía simultáneamente de una base de datos relacional y otra vectorial. Lo que obligó a diseñar cuidadosamente la inicialización y configuración de los servicios para evitar errores durante el arranque del sistema.
+La configuración de Docker presento alguna dificultad, por ejemplo, en la integración entre Flask, Qdrant y PostgreSQL, ya que la aplicación dependía simultáneamente de una base de datos relacional y otra vectorial. Lo que obligó a diseñar cuidadosamente la inicialización y configuración de los servicios para evitar errores durante el arranque del sistema.
 
 Otro aspecto relevante fue la gestión de las variables sensibles y claves privadas. Para ello se utilizaron archivos de variables de entorno diferenciados, separando las configuraciones públicas de las credenciales privadas del sistema. Esto permitió mejorar la seguridad y facilitar la configuración en distintos entornos.
 
-La arquitectura final del despliegue está dividida en varios contenedores especializados que se comunican entre sí mediante redes \file{Docker} internas. El sistema se divide principalmente en cinco servicios, un contenedor \file{PostgreSQL} para la persistencia de datos relacionales de la aplicación, un contenedor \file{Qdrant} encargado de la base de datos vectorial, un contenedor \file{Ollama} responsable de ejecutar los modelos de lenguaje y \file{OCR} multimodal utilizando aceleración por \file{GPU}, un contenedor principal con la aplicación \file{Flask} ejecutada mediante \file{Gunicorn} y un contenedor \file{Nginx} utilizado como \eng{proxy} inverso y punto de entrada \file{HTTPS} del sistema. Es decir, la aplicación \eng{web} no se comunica directamente con el exterior, sino que todas las peticiones pasan previamente por \eng{Nginx}. Esto permite mejorar la seguridad y gestionar cetificados \file{TLS} y balanceo de peticiones. Además, se incorporan volúmenes persistentes para almacenar datos de \eng{PostgreSQL}, índices vectoriales de \file{Qdrant}, modelos descargados de \file{Ollama} y cachés de \file{HuggingFace}, evitando perder información al reiniciar los contenedores. La arquitectura también incluye comprobaciones automáticas de estado (\eng{healthchecks}) y dependencias entre servicios para asegurar que cada componente esté disponible antes de iniciar los demás.
+La arquitectura final del despliegue está dividida en varios contenedores especializados que se comunican entre sí mediante redes Docker internas. El sistema se divide principalmente en cinco servicios, un contenedor PostgreSQL para la persistencia de datos relacionales de la aplicación, un contenedor Qdrant encargado de la base de datos vectorial, un contenedor Ollama responsable de ejecutar los modelos de lenguaje y OCR multimodal utilizando aceleración por GPU, un contenedor principal con la aplicación Flask ejecutada mediante Gunicorn y un contenedor Nginx utilizado como \eng{proxy} inverso y punto de entrada HTTPS del sistema. Es decir, la aplicación \eng{web} no se comunica directamente con el exterior, sino que todas las peticiones pasan previamente por \eng{Nginx}. Esto permite mejorar la seguridad y gestionar certificados TLS y balanceo de peticiones. Además, se incorporan volúmenes persistentes para almacenar datos de \eng{PostgreSQL}, índices vectoriales de Qdrant, modelos descargados de Ollama y cachés de HuggingFace, evitando perder información al reiniciar los contenedores. La arquitectura también incluye comprobaciones automáticas de estado (\eng{healthchecks}) y dependencias entre servicios para asegurar que cada componente esté disponible antes de iniciar los demás.
 
 \section{Integración CI/CD}
 
-Durante el desarrollo también se incorporaron mecanismos de integración continua y automatización del flujo de desarrollo mediante \file{GitHub Actions}.
+Durante el desarrollo también se incorporaron mecanismos de \textbf{integración continua y automatización del flujo de desarrollo} mediante GitHub Actions.
 
 En las primeras fases del proyecto, todas las comprobaciones del sistema se realizaban manualmente. Cada modificación requería ejecutar localmente las pruebas, comprobar dependencias y verificar manualmente el correcto funcionamiento de la aplicación. Conforme el proyecto fue creciendo, este enfoque comenzó a resultar poco escalable y propenso a errores.
 
-Para mejorar este proceso se decidió incorporar un \eng{pipeline} CI/CD utilizando \file{GitHub Actions}. La integración se configuró para ejecutarse automáticamente tanto al realizar \eng{commits} sobre la rama principal (\eng{main}) como al abrir o actualizar \eng{pull requests}. De esta forma cada cambio realizado en el repositorio desencadena las comprobaciones de calidad del sistema. 
+Para mejorar este proceso se decidió incorporar un \eng{pipeline} CI/CD utilizando GitHub Actions. La integración se configuró para ejecutarse automáticamente tanto al realizar \eng{commits} sobre la rama principal (\eng{main}) como al abrir o actualizar \eng{pull requests}. De esta forma cada cambio realizado en el repositorio desencadena las comprobaciones de calidad del sistema. 
 
-El \eng{pipeline} CI/CD comienza clonando el repositorio y configurando el entorno \file{Python} utilizado por el proyecto. Luego instala las dependencias definidas para el entorno \file{Docker} de producción. Esto garantiza que las comprobaciones se realicen en un entorno lo más parecido posible al despliegue real. Una vez preparado el entorno, se ejecutan de manera automática los \eng{tests} del proyecto mediante \file{unittest}. Además, durante la ejecución de las pruebas se calcula la cobertura de código utilizando \file{coverage.py}, generándose informes detallados sobre qué partes del sistema están siendo verificadas por los \eng{tests} y cuales no. Tras la ejecución de las pruebas, \file{GitHub Actions} integra automáticamente el proyecto con \file{SonarCloud} para realizar el análisis estático del código. 
+El \eng{pipeline} CI/CD comienza clonando el repositorio y configurando el entorno Python utilizado por el proyecto. Luego instala las dependencias definidas para el entorno Docker de producción. Esto garantiza que las comprobaciones se realicen en un entorno lo más parecido posible al despliegue real. Una vez preparado el entorno, se ejecutan de manera automática los \eng{test} del proyecto mediante \file{unittest}. Además, durante la ejecución de las pruebas se calcula la cobertura de código utilizando \file{coverage.py}, generándose informes detallados sobre qué partes del sistema están siendo verificadas por los \eng{tests} y cuáles no. Tras la ejecución de las pruebas, GitHub Actions integra automáticamente el proyecto con SonarCloud para realizar el análisis estático del código. 
