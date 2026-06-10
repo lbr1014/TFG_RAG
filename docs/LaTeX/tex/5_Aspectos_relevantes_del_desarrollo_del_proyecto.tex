@@ -34,13 +34,57 @@ En la implementación final, el sistema  \textbf{obtiene automáticamente} tanto
 
 \subsection{\eng{Chunking}}
 
-El \eng{chunking} consiste en  \textbf{dividir los documentos en fragmentos manejables}. Es fundamental para ajustarse a la ventana de contexto del modelo y para mejorar la recuperación semántica. El texto se puede segmentar por longitud fija (\eng{tokens}), por secciones o párrafos o por significado semántico.
+El \eng{chunking} consiste en \textbf{dividir los documentos en fragmentos manejables}. Es fundamental para ajustarse a la ventana de contexto del modelo y para mejorar la recuperación semántica. El texto se puede segmentar por longitud fija (\eng{tokens}), por secciones o párrafos o por significado semántico.
 
 En este proceso se probaron diferentes estrategias como el \eng{chunking} por tamaño fijo de caracteres, por \eng{tokens} con \eng{overlap} (solapamiento) para mantener el contexto o basado en secciones o frases. Durante las pruebas se  comprobó que el uso exclusivo de \eng{chunks} por tamaño fijo generaba fragmentos poco naturales, afectando negativamente a la recuperación. Por otro lado, el \eng{chunking} semántico puro resultaba más complejo y costoso.
 
-Por ello se optó por una estrategia híbrida, en la cual primero se realiza una agrupación lógica del texto utilizando frases y separadores naturales del documento y posteriormente se divide en \eng{chunks} controlados por número de \eng{tokens}, incorporando solapamiento entre fragmentos consecutivos. Este solapamiento permite conservar información contextual relevante entre fragmentos cercanos, reduciendo la pérdida de información cuando una explicación queda dividida entre dos \eng{chunks}.
+Con el objetivo de determinar la estrategia de fragmentación más adecuada, se realizaron diferentes pruebas variando tanto el criterio de división como el tamaño de los fragmentos y el porcentaje de solapamiento. Las evaluaciones se llevaron a cabo sobre documentos reales del dominio de contratación pública, analizando la coherencia de los fragmentos generados, la capacidad de recuperación de información relevante y el número de fragmentos almacenados en la base de datos vectorial (ver tabla~\ref{tabla:experimentos_chunking}).
 
-Además, durante el desarrollo se realizaron pruebas variando tanto el tamaño de los \eng{chunks} como el porcentaje de solapamiento. Se observó que \eng{chunks} demasiado pequeños reducían la capacidad contextual del modelo, mientras que fragmentos demasiado grandes empeoraban la precisión de la recuperación y aumentaban el número de \eng{tokens} enviados al LLM. La \textbf{estrategia híbrida} seleccionada consiguió un \textbf{equilibrio entre coherencia semántica, precisión en la recuperación y eficiencia computacional}.
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{p{0.18\linewidth} p{0.14\linewidth} p{0.12\linewidth} X}
+		\toprule
+		\textbf{Estrategia} & \textbf{Tamaño} & \textbf{Overlap (\%)} & \textbf{Observaciones} \\
+		\midrule
+		Caracteres \mbox{fijos} &
+		1000 \mbox{caracteres} &
+		0 &
+		Genera cortes artificiales en mitad de párrafos y tablas. \mbox{Recuperación poco precisa.} \\
+		
+		Tokens \mbox{fijos} &
+		512 \mbox{tokens} &
+		0 &
+		Fragmentos demasiado pequeños. Se pierde contexto entre apartados relacionados. \\
+		
+		Tokens \mbox{fijos} &
+		1024 \mbox{tokens} &
+		5 &
+		Mejora la coherencia respecto a la configuración anterior, aunque todavía aparecen pérdidas de contexto en documentos extensos. \\
+		
+		Tokens \mbox{fijos} &
+		1536 \mbox{tokens} &
+		5 &
+		Buen equilibrio entre cantidad de contexto y precisión de recuperación. Menor número de fragmentos por documento. \\
+		
+		\mbox{Frases y} \mbox{tokens} &
+		1536 \mbox{tokens} &
+		5 &
+		Mantiene la coherencia semántica de los textos y evita cortes en mitad de frases. Resultados de recuperación más consistentes. \\
+		
+		\mbox{Secciones,} \mbox{frases y} \mbox{tokens} &
+		1536 \mbox{tokens} &
+		5 &
+		Mejor comportamiento global. Conserva la estructura documental y facilita la recuperación de información contextual relevante. \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Pruebas realizadas para la selección de la estrategia de \eng{chunking}.}
+	\label{tabla:experimentos_chunking}
+\end{table}
+
+Las pruebas realizadas permitieron observar que los \eng{chunks} demasiado pequeños reducían la capacidad contextual del sistema, obligando al recuperador a combinar un mayor número de fragmentos para responder correctamente a determinadas consultas. Por el contrario, los fragmentos excesivamente grandes disminuían la granularidad de la recuperación, incrementaban el número de \eng{tokens} enviados al modelo generativo y aumentaban el coste computacional asociado a cada consulta. También, se comprobó que la ausencia de solapamiento provocaba pérdidas de información cuando una explicación quedaba dividida entre dos fragmentos consecutivos, mientras que porcentajes elevados introducían redundancia innecesaria en la base vectorial.
+
+Por ello se optó por una \textbf{estrategia híbrida}, en la cual
+los documentos se procesan identificando títulos y secciones para preservar su estructura lógica. Posteriormente, el contenido se agrupa utilizando límites naturales de frase y, finalmente, se divide en fragmentos controlados por número de \eng{tokens}. La configuración seleccionada utiliza fragmentos de 1500 tokens con un solapamiento de 60 \eng{tokens} entre fragmentos consecutivos. 
 
 \subsection{\eng{Embeddings}}
 
