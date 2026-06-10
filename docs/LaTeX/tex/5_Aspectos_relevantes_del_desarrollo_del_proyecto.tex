@@ -38,7 +38,7 @@ El \eng{chunking} consiste en \textbf{dividir los documentos en fragmentos manej
 
 En este proceso se probaron diferentes estrategias como el \eng{chunking} por tamaño fijo de caracteres, por \eng{tokens} con \eng{overlap} (solapamiento) para mantener el contexto o basado en secciones o frases. Durante las pruebas se  comprobó que el uso exclusivo de \eng{chunks} por tamaño fijo generaba fragmentos poco naturales, afectando negativamente a la recuperación. Por otro lado, el \eng{chunking} semántico puro resultaba más complejo y costoso.
 
-Con el objetivo de determinar la estrategia de fragmentación más adecuada, se realizaron diferentes pruebas variando tanto el criterio de división como el tamaño de los fragmentos y el porcentaje de solapamiento. Las evaluaciones se llevaron a cabo sobre documentos reales del dominio de contratación pública, analizando la coherencia de los fragmentos generados, la capacidad de recuperación de información relevante y el número de fragmentos almacenados en la base de datos vectorial (ver tabla~\ref{tabla:experimentos_chunking}).
+Con el objetivo de determinar la estrategia de fragmentación más adecuada, se realizaron diferentes pruebas variando tanto el criterio de división como el tamaño de los fragmentos y el porcentaje de solapamiento. Las evaluaciones se llevaron a cabo sobre documentos reales del dominio de contratación pública, analizando la coherencia de los fragmentos generados, la capacidad de recuperación de información relevante y el número de fragmentos almacenados en la base de datos vectorial (ver Tabla~\ref{tabla:experimentos_chunking}).
 
 \begin{table}[p]
 	\centering
@@ -88,11 +88,52 @@ los documentos se procesan identificando títulos y secciones para preservar su 
 
 \subsection{\eng{Embeddings}}
 
-Los \eng{embeddings} son \textbf{representaciones vectoriales del texto} que capturan su significado semántico. Permiten comparar las consultas de los usuarios con los fragmentos de los documentos y realizar búsquedas por similitud. Son la base del funcionamiento del sistema de recuperación del RAG. Por lo cual para elegir el modelo final se probaron varios comparando su calidad semántica, la velocidad de ejecución y el consumo de recursos. Finalmente, se seleccionó el modelo \file{sentence-transformers/all-MiniLM-L6-v2} debido a que ofrece buen equilibrio entre rendimiento y coste computacional. Además, su integración mediante \file{SentenceTransformer} es sencilla y su dimensión de \eng{embedding} es suficiente para tareas de recuperación semántica sobre documentos administrativos.
+Los \eng{embeddings} son \textbf{representaciones vectoriales del texto} que capturan su significado semántico. Permiten comparar las consultas de los usuarios con los fragmentos de los documentos y realizar \textbf{búsquedas por similitud}. Son la base del funcionamiento del sistema de recuperación del RAG. Por lo cual para elegir el modelo final se analizaron distintos modelos comparando sus características en términos de calidad semántica, velocidad de ejecución y consumo de recursos (ver Tabla~\ref{tabla:experimentos_chunking}). La calidad semántica se evaluó mediante pruebas de recuperación sobre los documentos administrativos, analizando la relevancia de los fragmentos recuperados. Además, se tuvo en cuenta el tamaño de los vectores producidos por cada modelo, ya que cuanto mayor sea más memoria va a ocupar en la base de datos vectorial Qdrant. Finalmente, se seleccionó el modelo \file{sentence-transformers/all-MiniLM-L6-v2} debido a que proporciona vectores de 384 dimensiones, suficientes para representar adecuadamente el contenido semántico de los documentos procesados por PythIA. Además, ofrece tiempos de inferencia reducidos, un bajo consumo de memoria y una integración sencilla mediante la biblioteca \file{SentenceTransformer}. Estas características permiten mantener un buen equilibrio entre calidad de recuperación, velocidad de indexación y eficiencia computacional.
 
-Durante las pruebas también se evaluó el comportamiento del sistema en CPU y GPU. La implementación final permite detectar automáticamente el dispositivo disponible y ejecutar el cálculo de \eng{embeddings} utilizando aceleración por GPU cuando está disponible. Además, se incorporaron mecanismos de recuperación ante errores de memoria en CUDA, permitiendo continuar automáticamente la generación de \eng{embeddings} en CPU si la memoria de la GPU resulta insuficiente.
+\begin{landscape}
+\begin{table}[p]
+	\centering
+	\begin{tabularx}{\linewidth}{p{0.26\linewidth} p{0.10\linewidth} p{0.10\linewidth} p{0.10\linewidth} p{0.10\linewidth} X}
+		\toprule
+		\textbf{Modelo} & \textbf{Dimensión} & \textbf{Parámetros (M)} & \textbf{Velocidad} & \textbf{Consumo} & \textbf{Observaciones} \\
+		\midrule
+		\myhref{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}{\file{all-MiniLM-L6-v2}} &
+		384 &
+		22,7 &
+		Muy alta &
+		Bajo &
+		Buen equilibrio entre calidad semántica y coste computacional. \\
+		
+		\myhref{https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2}{\file{all-MiniLM-L12-v2}} &
+		384 &
+		33,4 &
+		Alta &
+		Medio &
+		Ligera mejora semántica, pero mayor tiempo de inferencia. \\
+		
+		\myhref{https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1}{\file{multi-qa-MiniLM-L6-cos-v1}} &
+		384 &
+		22,7 &
+		Muy alta &
+		Bajo &
+		Optimizado para recuperación, aunque menos robusto en documentos extensos. \\
+		
+		\myhref{https://huggingface.co/sentence-transformers/all-mpnet-base-v2}{\file{all-mpnet-base-v2}} &
+		768 &
+		109 &
+		Media &
+		Alto &
+		Excelente representación semántica, pero elevado consumo de memoria. \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Comparación de los modelos de \eng{embeddings} evaluados durante el desarrollo.}
+	\label{tabla:experimentos_chunking}
+\end{table}
+\end{landscape}
 
-Otra mejora relevante implementada fue el procesamiento por lotes (\eng{batch processing}) durante la generación de \eng{embeddings}. En lugar de vectorizar cada \eng{chunk} individualmente, el sistema procesa múltiples fragmentos simultáneamente, reduciendo significativamente el tiempo de indexación. 
+Durante el desarrollo también se optimizó el proceso de generación de \eng{embeddings} para mejorar el rendimiento durante la indexación documental. La implementación final detecta automáticamente el dispositivo de ejecución disponible y utiliza \textbf{aceleración mediante GPU} cuando existe soporte CUDA, recurriendo a CPU únicamente cuando no se dispone de \eng{hardware} gráfico compatible. Esta estrategia permite aprovechar los recursos disponibles sin requerir configuración adicional por parte del usuario. Además, se incorporaron mecanismos de tolerancia a fallos para garantizar la robustez del proceso de indexación. En caso de que la memoria de CUDA sea insuficiente, el sistema libera la memoria reservada en la GPU y reintenta la operación usando la CPU.
+
+Otra mejora relevante fue el procesamiento por lotes (\eng{batch processing}) durante la generación de \eng{embeddings}. En lugar de calcular los vectores de cada fragmente de forma individual, el sistema procesa los \eng{chunks} agrupados en lotes de hasta 32 elementos, reduciendo el número de llamadas al modelo y mejorando el rendimiento global de la indexación. Por otra parte, el modelo de \eng{embeddings} se mantiene cargado en memoria mediante un patrón \eng{Singleton}, evitando recargas innecesarias y disminuyendo el tiempo requerido para procesar grandes volúmenes documentales.
 
 \subsection{Base de datos vectorial}
 
