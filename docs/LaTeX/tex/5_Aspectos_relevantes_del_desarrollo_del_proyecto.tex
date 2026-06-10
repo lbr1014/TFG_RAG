@@ -14,7 +14,26 @@ Otro problema típico de los LLM es la fecha de entrenamiento, ya que no son cap
 
 Tras formalizar la idea se comenzó con el proyecto realizando la aplicación de \eng{Web Scraping} para \textbf{extraer las licitaciones} de la página de \contsec{} de \textbf{manera automática}. Se desarrollaron diferentes soluciones utilizando Selenium y Playwright, optando finalmente por el uso de Playwright en modo asíncrono, ya que permite gestionar de forma automática las esperas y la interacción con elementos dinámicos, haciendo que el sistema sea más robusto frente a fallos y \eng{timeouts} que con los programas realizados con Selenium. Además, al usar Playwright asíncrono (\eng{asyncio}) se pudo incorporar procesamiento concurrente, ya que permite procesar varias tareas en paralelo, para optimizar el tiempo de extracción y descarga de datos. 
 
-La elevada complejidad de la página debido al uso de contenido dinámico e \eng{iframes} supuso un reto. Para solventarlo se tuvieron que desarrollar mecanismos específicos para la localización de elementos y la navegación entre distintos contextos. Finalmente, los datos obtenidos se normalizan y almacenan en un archivo JSON. Este archivo se usa para descargar los pliegos finales.
+La elevada complejidad de la página debido al uso de contenido dinámico e \eng{iframes} supuso un reto. Para solventarlo se tuvieron que desarrollar mecanismos específicos para la localización de elementos y la navegación entre distintos contextos. Finalmente, los datos obtenidos se normalizan y almacenan en un archivo JSON. Este archivo se usa para descargar los pliegos finales. En la Tabla~\ref{tabla:webscraping_resultados} se pueden observar los datos globales obtenidos del proceso de \eng{Web Scraping}.
+
+\begin{table}[p]
+\centering
+\begin{tabularx}{\linewidth}{p{0.75\columnwidth} r}
+\toprule
+\textbf{Métrica} & \textbf{Valor} \\
+\midrule
+Licitaciones localizadas & 175 \\
+Registros documentales extraídos & 734 \\
+Enlaces a documentos detectados & 2.094 \\
+Expedientes procesados para el RAG & 165 \\
+Documentos PDF descargados & 330 \\
+Promedio de documentos descargados por expediente & 2 \\
+Promedio de documentos detectados por licitación & 4,19 \\
+\bottomrule
+\end{tabularx}
+\caption{Resumen de resultados obtenidos mediante el proceso de \eng{Web Scraping}.}
+\label{tabla:webscraping_resultados}
+\end{table}
 
 Cabe destacar que durante el desarrollo del proyecto se actualizó la página \contsec{}, por lo cual hubo que realizar cambios en el programa ya desarrollado, modificando selectores y flujos de navegación para mantener su funcionamiento.
 
@@ -42,7 +61,7 @@ Con el objetivo de determinar la estrategia de fragmentación más adecuada, se 
 
 \begin{table}[p]
 	\centering
-	\begin{tabularx}{\linewidth}{p{0.18\linewidth} p{0.14\linewidth} p{0.12\linewidth} X}
+	\begin{tabularx}{\linewidth}{p{0.18\linewidth} p{0.14\linewidth} >{\centering\arraybackslash}p{0.12\linewidth} X}
 		\toprule
 		\textbf{Estrategia} & \textbf{Tamaño} & \textbf{Overlap (\%)} & \textbf{Observaciones} \\
 		\midrule
