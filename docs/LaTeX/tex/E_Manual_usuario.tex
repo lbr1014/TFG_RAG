@@ -7,13 +7,13 @@ En este manual se incluye una guía destinada a que el usuario final conozca el 
 \section{Requisitos de usuarios}
 \label{usu:req}
 
-Para utilizar la aplicación PythIA, el usuario únicamente necesita disponer de acceso a Internet y de un navegador \eng{web} moderno compatible con los estándares actuales~\cite{usuario:webStandards}. Se recomienda utilizar un navegador con visor \file{PDF} integrado para visualizar o descargar los documentos \file{PDF} de las licitaciones, 
+Para utilizar la aplicación PythIA, el usuario únicamente necesita disponer de acceso a Internet y de un navegador \eng{web} moderno compatible con los estándares actuales~\cite{usuario:webStandards}. Se recomienda utilizar un navegador con visor PDF integrado para visualizar o descargar los documentos PDF de las licitaciones, 
 
-La aplicación ha sido probada satisfactoriamente en los navegadores \file{Google Chrome}, \file{Mozilla Firefox} y \file{Microsoft Edge}. Concretamente se han probado en las siguientes versiones de los navegadores:
+La aplicación ha sido probada satisfactoriamente en los navegadores Google Chrome, Mozilla Firefox y Microsoft Edge. Concretamente se han probado en las siguientes versiones de los navegadores:
 \begin{itemize}
-	\item \file{Google Chrome} 137.0 a  148.0.
-	\item \file{Mozilla Firefox} 139.0 a 150.0.
-	\item \file{Microsoft Edge} 137.0 a 148.0.
+	\item Google Chrome 137.0 a  148.0.
+	\item Mozilla Firefox 139.0 a 150.0.
+	\item Microsoft Edge 137.0 a 148.0.
 \end{itemize}
 
 Para acceder a las funcionalidades del sistema es necesario tener una cuenta de usuario registrada y autenticarse mediante correo electrónico y contraseña.
@@ -67,7 +67,7 @@ La página de inicio es la primera pantalla que ve cualquier usuario al acceder 
 \label{fig:pagina_inicio}
 \end{figure}
 
-Esta página tiene carácter informativo y permite al usuario conocer de forma general el propósito de la aplicación antes de autenticarse. En ella se muestra una breve descripción de PythIA, indicando que utiliza un modelo de lenguaje (\eng{LLM}) combinado con un sistema de generación aumentada mediante recuperación (\eng{Retrieval-Augmented Generation}, RAG) para localizar información relevante en los pliegos de contratación pública y responder consultas formuladas en lenguaje natural.
+Esta página tiene carácter informativo y permite al usuario conocer de forma general el propósito de la aplicación antes de autenticarse. En ella se muestra una breve descripción de PythIA, indicando que utiliza un modelo de lenguaje (LLM) combinado con un sistema de generación aumentada mediante recuperación (\eng{Retrieval-Augmented Generation}, RAG) para localizar información relevante en los pliegos de contratación pública y responder consultas formuladas en lenguaje natural.
 
 Desde la barra superior de navegación se puede acceder a las siguientes funcionalidades:
 
@@ -77,7 +77,7 @@ Desde la barra superior de navegación se puede acceder a las siguientes funcion
     \item \textbf{Registrarse}: permite crear una nueva cuenta de usuario en la plataforma (ver sección~\ref{manual:registro}).
 \end{itemize}
 
-Además, la página principal incluye un botón <<Más información>> desde e cual se accede al repositorio de \myhref{https://github.com/lbr1014/TFG_RAG}{\file{GitHub}} del proyecto.
+Además, la página principal incluye un botón <<Más información>> desde e cual se accede al repositorio de \myhref{https://github.com/lbr1014/TFG_RAG}{GitHub} del proyecto.
 
 
 \subsection{Inicio de sesión}
@@ -312,7 +312,7 @@ Todas las páginas de la aplicación incorporan tutoriales interactivos para fac
 \subsection{Página de consultas}
 \label{manual:pagConsulta}
 
-La página de consultas constituye la funcionalidad principal de PythIA, ya que permite al usuario interactuar con el sistema \eng{RAG} (\eng{Retrieval-Augmented Generation}) para obtener información contenida en los expedientes de licitación almacenados en la plataforma (ver figura~\ref{fig:pagina_consulta}).
+La página de consultas constituye la funcionalidad principal de PythIA, ya que permite al usuario interactuar con el sistema RAG (\eng{Retrieval-Augmented Generation}) para obtener información contenida en los expedientes de licitación almacenados en la plataforma (ver figura~\ref{fig:pagina_consulta}).
 
 \begin{figure}
 \centering
@@ -343,7 +343,7 @@ La página de consultas constituye la funcionalidad principal de PythIA, ya que 
 \label{fig:pagina_consulta}
 \end{figure}
 
-En la parte superior de la página se muestran diferentes indicadores y estadísticas relacionadas con el funcionamiento del sistema. Entre ellos se incluyen las métricas globales de evaluación del sistema \eng{RAG}, obtenidas mediante herramientas como \eng{RAGAS}, que permiten conocer aspectos como la fidelidad de las respuestas, la relevancia de la información recuperada o la cobertura del contexto utilizado. Pulsando el botón <<Ver detalles>> se puede acceder a la pantalla de <<Evaluar modelos>> (ver sección~\ref{manual:evaluar}). También se presentan estadísticas de uso de los distintos \eng{LLM} (\eng{Long Large Models}) disponibles en la aplicación, así como un selector que permite elegir el modelo con el que se desea realizar las consultas. Pulsando el botón <<Comparar los modelos>> que se muestra debajo del selector se puede acceder a la página de <<Comparar modelos>> (ver sección~\ref{manual:compararModelos}).
+En la parte superior de la página se muestran diferentes indicadores y estadísticas relacionadas con el funcionamiento del sistema. Entre ellos se incluyen las métricas globales de evaluación del sistema RAG, obtenidas mediante herramientas como RAGAS, que permiten conocer aspectos como la fidelidad de las respuestas, la relevancia de la información recuperada o la cobertura del contexto utilizado. Pulsando el botón <<Ver detalles>> se puede acceder a la pantalla de <<Evaluar modelos>> (ver sección~\ref{manual:evaluar}). También se presentan estadísticas de uso de los distintos LLM (\eng{Long Large Models}) disponibles en la aplicación, así como un selector que permite elegir el modelo con el que se desea realizar las consultas. Pulsando el botón <<Comparar los modelos>> que se muestra debajo del selector se puede acceder a la página de <<Comparar modelos>> (ver sección~\ref{manual:compararModelos}).
 
 La página dispone de dos modos diferentes de consulta, \texttt{Chat} (ver figura~\ref{fig:Manual_usuario/Consulta_chat}) y \texttt{Formulario}(ver figura~\ref{fig:Manual_usuario/Consulta_formulario}). El \texttt{Chat} permite realizar consultas en lenguaje natural de forma libre. Para ello, el usuario únicamente debe introducir su pregunta en el cuadro de texto y pulsar el botón <<Preguntar>>. El sistema procesará la consulta, recuperará los fragmentos documentales más relevantes y generará una respuesta utilizando el modelo de lenguaje seleccionado. Por su parte el \texttt{Formulario} está orientado a usuarios que desean realizar consultas guiadas sin necesidad de redactar preguntas manualmente. En primer lugar, se debe seleccionar el expediente sobre el que desea realizar la consulta mediante la lista desplegable disponible. Se puede cribar entre documentos administrativos o técnicos desde el desplegable inferior. También existe la posibilidad de realizar una consulta global sobre todos los expedientes seleccionando la opción correspondiente. A continuación, el usuario puede indicar el tipo de consulta que desea realizar. Es posible activar la opción <<Solicitar resumen del documento>>, mediante la cual el sistema genera automáticamente un resumen completo del expediente seleccionado sin necesidad de seleccionar una pregunta específica (ver figura~\ref{fig:formulario_opciones}). Una vez configurados los parámetros deseados, el usuario debe pulsar el botón <<Preguntar>>. 
 
@@ -441,13 +441,13 @@ Una vez que se envía la consulta, desde cualquiera de los dos modos (ver figura
 \subsection{Comparar modelos}
 \label{manual:compararModelos}
 
-La página de comparativa de modelos permite analizar el comportamiento de los distintos modelos de lenguaje (\eng{LLM}) disponibles en PythIA a partir de estadísticas reales de uso obtenidas durante el funcionamiento de la aplicación (ver figura~\ref{fig:Manual_usuario/Comparar_modelos}).
+La página de comparativa de modelos permite analizar el comportamiento de los distintos modelos de lenguaje (LLM) disponibles en PythIA a partir de estadísticas reales de uso obtenidas durante el funcionamiento de la aplicación (ver figura~\ref{fig:Manual_usuario/Comparar_modelos}).
 
-\imagendiagram{Manual_usuario/Comparar_modelos}{Pantalla con gráficas para comparar los modelos \eng{LLM} disponibles en la aplicación \eng{web} PythIA.}{1}
+\imagendiagram{Manual_usuario/Comparar_modelos}{Pantalla con gráficas para comparar los modelos LLM disponibles en la aplicación \eng{web} PythIA.}{1}
 
 En la parte superior se muestran diferentes indicadores globales, entre los que se incluyen el número total de modelos disponibles, el número de consultas realizadas, la cantidad total de \eng{tokens} procesados y el tiempo medio de respuesta registrado. Estos indicadores ofrecen una visión general del rendimiento global del sistema.
 
-A continuación, la página presenta diversas gráficas comparativas que permiten analizar el comportamiento de cada modelo desde diferentes perspectivas. Entre ellas se incluyen el número de veces que ha sido utilizado cada modelo, el volumen de \eng{tokens} procesados, los tiempos medios de respuesta y el dispositivo usado por \file{Ollama} para responder (\file{GPU/CPU}). Esta información sirven para identificar qué modelos ofrecen mejores prestaciones en términos de velocidad, coste computacional o frecuencia de uso.
+A continuación, la página presenta diversas gráficas comparativas que permiten analizar el comportamiento de cada modelo desde diferentes perspectivas. Entre ellas se incluyen el número de veces que ha sido utilizado cada modelo, el volumen de \eng{tokens} procesados, los tiempos medios de respuesta y el dispositivo usado por Ollama para responder (GPU/CPU). Esta información sirven para identificar qué modelos ofrecen mejores prestaciones en términos de velocidad, coste computacional o frecuencia de uso.
 
 Pulsando el botón <<Volver a consultar>>, situado en la parte superior derecha de la página, el usuario puede regresar directamente a la \textbf{Página de consultas} (ver sección~\ref{manual:pagConsulta}).
 
@@ -464,7 +464,7 @@ Los resultados más relevantes de la última evaluación se muestran en la pági
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Manual_usuario/Evaluacion_rag}
-        \caption{Pantalla con las métricas de la última evaluación del sistema \eng{RAG} del usuario estándar.}
+        \caption{Pantalla con las métricas de la última evaluación del sistema RAG del usuario estándar.}
     \end{subfigure}
 \end{minipage}
 \hfill
@@ -472,23 +472,23 @@ Los resultados más relevantes de la última evaluación se muestran en la pági
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Manual_usuario/administrador/Evaluacion_rag}
-        \caption{Pantalla con las métricas de la última evaluación del sistema \eng{RAG} del administrador.}
+        \caption{Pantalla con las métricas de la última evaluación del sistema RAG del administrador.}
     \end{subfigure}
 \end{minipage}
-\caption{Diferencias entre las vistas del usuario estándar y el administrador en la Evaluación del \eng{RAG}.}
+\caption{Diferencias entre las vistas del usuario estándar y el administrador en la Evaluación del RAG.}
 \label{fig:evaluacion}
 \end{figure}
 
-\imagendiagram{Manual_usuario/administrador/Evaluacion_rag2}{Barra de progreso de la ejecución de la evaluación del sistema \eng{RAG} en la aplicación \eng{web} PythIA.}{1}
+\imagendiagram{Manual_usuario/administrador/Evaluacion_rag2}{Barra de progreso de la ejecución de la evaluación del sistema RAG en la aplicación \eng{web} PythIA.}{1}
 
-Tanto los usuarios normales como los administradores pueden acceder al detalle de los resultados pulsando el botón <<Ver detalle>> disponible en la página de consultas. Esta acción abre una vista específica donde se muestran en detalle las métricas obtenidas. En la parte superior de esta página se presenta una tabla con las métricas globales obtenidas durante la evaluación. Para cada métrica se muestran los valores calculados mediante \eng{RAGAS}, los obtenidos mediante similitud por \eng{embeddings} y la puntuación final resultante de la combinación de ambos enfoques (ver figura~\ref{fig:Manual_usuario/Detalles_evalaucion}). 
-También, se pueden descargar los resultados completos de la evaluación en formato \file{JSON}. Pulsando el botón <<Anterior>> se puede volver a la \textbf{Página de consultas} (ver sección~\ref{manual:pagConsulta}).
+Tanto los usuarios normales como los administradores pueden acceder al detalle de los resultados pulsando el botón <<Ver detalle>> disponible en la página de consultas. Esta acción abre una vista específica donde se muestran en detalle las métricas obtenidas. En la parte superior de esta página se presenta una tabla con las métricas globales obtenidas durante la evaluación. Para cada métrica se muestran los valores calculados mediante RAGAS, los obtenidos mediante similitud por \eng{embeddings} y la puntuación final resultante de la combinación de ambos enfoques (ver figura~\ref{fig:Manual_usuario/Detalles_evalaucion}). 
+También, se pueden descargar los resultados completos de la evaluación en formato JSON. Pulsando el botón <<Anterior>> se puede volver a la \textbf{Página de consultas} (ver sección~\ref{manual:pagConsulta}).
 
-\imagendiagram{Manual_usuario/Detalles_evalaucion}{Tabla de evaluación desglosando resultas de \file{RAGAS} y \eng{embeddings}.}{1}
+\imagendiagram{Manual_usuario/Detalles_evalaucion}{Tabla de evaluación desglosando resultas de RAGAS y \eng{embeddings}.}{1}
 
 Además, la sección <<Detalle por pregunta>> ofrece un análisis individual para cada una de las preguntas utilizadas durante la evaluación (ver figura~\ref{fig:Manual_usuario/Detalles_evalaucion2}). Mediante un sistema desplegable, el usuario puede consultar la pregunta evaluada, la respuesta generada por el sistema, la respuesta de referencia (\eng{ground truth}), la evidencia utilizada para la evaluación, los fragmentos recuperados como contexto y las métricas obtenidas específicamente para dicha consulta (ver figura~\ref{fig:detalles_evaluacion_pregunta}).
 
-\imagendiagram{Manual_usuario/Detalles_evalaucion2}{Sección <<Detalle por pregunta>> de la pantalla de Evaluación del \eng{RAG}.}{1}
+\imagendiagram{Manual_usuario/Detalles_evalaucion2}{Sección <<Detalle por pregunta>> de la pantalla de Evaluación del RAG.}{1}
 
 \begin{figure}
 \centering
@@ -513,17 +513,17 @@ Además, la sección <<Detalle por pregunta>> ofrece un análisis individual par
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Manual_usuario/Detalles_evalaucion_pregunta3}
-        \caption{III. Desplegable de la primera pregunta (tabla de resultados mostrando los resultados \file{RAGAS}, \eng{embeddings} y agregado).}
+        \caption{III. Desplegable de la primera pregunta (tabla de resultados mostrando los resultados RAGAS, \eng{embeddings} y agregado).}
     \end{subfigure}
 \end{minipage}
-\caption{Desplegable de la Evaluación del sistema \eng{RAG} para una pregunta.}
+\caption{Desplegable de la Evaluación del sistema RAG para una pregunta.}
 \label{fig:detalles_evaluacion_pregunta}
 \end{figure}
 
 \subsection{Historial de consultas}
 \label{manual:historial}
 
-El historial permite al usuario consultar las interacciones realizadas previamente con el sistema \eng{RAG}. Cuando no existen consultas registradas se muestra un mensaje informativo indicándolo (ver figura~\ref{fig:historial}). Los usuarios con permisos de administración pueden ver las consultas de todos los usuarios del sistema, mientras que los usuarios estándar solo pueden ver sus consultas.
+El historial permite al usuario consultar las interacciones realizadas previamente con el sistema RAG. Cuando no existen consultas registradas se muestra un mensaje informativo indicándolo (ver figura~\ref{fig:historial}). Los usuarios con permisos de administración pueden ver las consultas de todos los usuarios del sistema, mientras que los usuarios estándar solo pueden ver sus consultas.
 
 \begin{figure}
 \centering
@@ -553,7 +553,7 @@ El historial permite al usuario consultar las interacciones realizadas previamen
 \label{fig:historial}
 \end{figure}
 
-Por cada consulta realizada se muestra una tarjeta, donde se incluye la pregunta realizada junto con la información relevante de la ejecución, como la fecha y hora de realización, el tiempo de respuesta obtenido, el \eng{LLM} utilizado y si la consulta se ejecutó mediante \file{GPU} o \file{CPU}. Además, por cada consulta se puede ver la respuesta generada por el sistema y los detalles de los \eng{chunk} recuperados (ver figura~\ref{fig:tarjeta}).
+Por cada consulta realizada se muestra una tarjeta, donde se incluye la pregunta realizada junto con la información relevante de la ejecución, como la fecha y hora de realización, el tiempo de respuesta obtenido, el LLM utilizado y si la consulta se ejecutó mediante GPU o CPU. Además, por cada consulta se puede ver la respuesta generada por el sistema y los detalles de los \eng{chunk} recuperados (ver figura~\ref{fig:tarjeta}).
 \begin{figure}
 \centering
 \begin{minipage}[c]{0.8\textwidth}
@@ -584,7 +584,7 @@ Por cada consulta realizada se muestra una tarjeta, donde se incluye la pregunta
 \label{fig:tarjeta}
 \end{figure}
 
-La interfaz incorpora un sistema de filtrado que facilita la localización de consultas concretas dentro del historial. Se permiten distintos criterios de filtrado, como la fecha de ejecución, el \eng{LLM} utilizado para generar la respuesta o el tipo de procesamiento (\file{CPU/GPU}). Los administradores además pueden filtrar por usuario (ver figura~\ref{fig:filtro_historial}).
+La interfaz incorpora un sistema de filtrado que facilita la localización de consultas concretas dentro del historial. Se permiten distintos criterios de filtrado, como la fecha de ejecución, el LLM utilizado para generar la respuesta o el tipo de procesamiento (CPU/GPU). Los administradores además pueden filtrar por usuario (ver figura~\ref{fig:filtro_historial}).
 
 \begin{figure}
 \centering
@@ -783,7 +783,7 @@ Los administradores pueden ver gráficas exclusivas orientadas al análisis comp
 \subsection{Administrar documentos}
 \label{manual:documentos}
 
-La página de administración de documentos es una funcionalidad exclusiva para usuarios con rol de administrador (ver figura~\ref{fig:administrar_documentos}). Desde esta sección se gestionan los documentos que alimentan la base de conocimiento del sistema \eng{RAG}, incluyendo la carga de nuevos expedientes, la ejecución de procesos de conversión, la indexación de contenido y las tareas de recopilación automática de información mediante \eng{web scraping}.
+La página de administración de documentos es una funcionalidad exclusiva para usuarios con rol de administrador (ver figura~\ref{fig:administrar_documentos}). Desde esta sección se gestionan los documentos que alimentan la base de conocimiento del sistema RAG, incluyendo la carga de nuevos expedientes, la ejecución de procesos de conversión, la indexación de contenido y las tareas de recopilación automática de información mediante \eng{web scraping}.
 
 \begin{figure}
 \centering
@@ -809,11 +809,11 @@ La página de administración de documentos es una funcionalidad exclusiva para 
 \label{fig:administrar_documentos}
 \end{figure}
 
-En la parte izquierda de la pantalla se encuentra el panel de acciones (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_cargar}). Desde este panel el administrador puede seleccionar uno o varios archivos \file{PDF} almacenados localmente y cargarlos en la plataforma mediante el botón <<Subir documentos>>. Una vez completada la carga, los documentos quedan registrados en el sistema y pasan a estar disponibles para su posterior procesamiento. Además de la carga manual de documentos, la página incorpora el botón <<Web Scraping>> para recopilar de forma automática los documentos. Por su parte, la opción <<Convertir pendientes a Markdown>> procesa aquellos documentos que todavía no han sido convertidos. La opción <<Actualizar base vectorial>> genera los \eng{embeddings} y los almacena en la base de datos vectorial, permitiendo que los nuevos documentos puedan ser utilizados por el sistema \eng{RAG} durante las consultas.
+En la parte izquierda de la pantalla se encuentra el panel de acciones (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_cargar}). Desde este panel el administrador puede seleccionar uno o varios archivos PDF almacenados localmente y cargarlos en la plataforma mediante el botón <<Subir documentos>>. Una vez completada la carga, los documentos quedan registrados en el sistema y pasan a estar disponibles para su posterior procesamiento. Además de la carga manual de documentos, la página incorpora el botón <<Web Scraping>> para recopilar de forma automática los documentos. Por su parte, la opción <<Convertir pendientes a Markdown>> procesa aquellos documentos que todavía no han sido convertidos. La opción <<Actualizar base vectorial>> genera los \eng{embeddings} y los almacena en la base de datos vectorial, permitiendo que los nuevos documentos puedan ser utilizados por el sistema RAG durante las consultas.
 
 \imagendiagram{Manual_usuario/administrador/Administrar_documentos_cargar}{Panel de acciones de administración documental de la aplicación \eng{web} PythIA.}{0.4}
 
-La parte derecha de la pantalla muestra el listado de documentos almacenados (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_tabla}). Para cada documento se muestra su nombre, tipo, tamaño, fecha de incorporación, número de fragmentos (\eng{chunks}) generados y estado de procesamiento. Los estados indican si el documento ha sido convertido a \file{Markdown}, si se encuentra indexado en la base vectorial, si aún está pendiente o si ha fallado su indexación. Además, se permite visualizar el archivo \file{PDF} original desde el navegador pulsando el botón <<Ver PDF>> y descargarlo desde <<Descargar PDF>>. También, se puede consultar la versión convertida a \file{Markdown} mediante <<Ver Markdown>> o descargarlo con <<Descargar Markdown>> (ver figura~\ref{fig:archivos}). Para mejorar la visualización de la tabla se incluye un sistema de filtrado. El cual permite buscar documentos por nombre, por tipo de documento, por estado de procesamiento o si ha sido convertido a \file{Markdown} (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_filtro}).
+La parte derecha de la pantalla muestra el listado de documentos almacenados (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_tabla}). Para cada documento se muestra su nombre, tipo, tamaño, fecha de incorporación, número de fragmentos (\eng{chunks}) generados y estado de procesamiento. Los estados indican si el documento ha sido convertido a Markdown, si se encuentra indexado en la base vectorial, si aún está pendiente o si ha fallado su indexación. Además, se permite visualizar el archivo PDF original desde el navegador pulsando el botón <<Ver PDF>> y descargarlo desde <<Descargar PDF>>. También, se puede consultar la versión convertida a Markdown mediante <<Ver Markdown>> o descargarlo con <<Descargar Markdown>> (ver figura~\ref{fig:archivos}). Para mejorar la visualización de la tabla se incluye un sistema de filtrado. El cual permite buscar documentos por nombre, por tipo de documento, por estado de procesamiento o si ha sido convertido a Markdown (ver figura~\ref{fig:Manual_usuario/administrador/Administrar_documentos_filtro}).
 
 \imagendiagram{Manual_usuario/administrador/Administrar_documentos_tabla}{Tabla con el listado de documentos cargados en la aplicación \eng{web} PythIA.}{1}
 
@@ -822,12 +822,12 @@ La parte derecha de la pantalla muestra el listado de documentos almacenados (ve
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Manual_usuario/administrador/Administrar_documentos_verpdf}
-        \caption{Visualización de un documento \file{PDF}.}
+        \caption{Visualización de un documento PDF.}
     \end{subfigure}
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Manual_usuario/administrador/Administrar_documentos_vermarkdown}
-        \caption{Visualización de un documento \file{Markdown}.}
+        \caption{Visualización de un documento Markdown.}
     \end{subfigure}
 \caption{Visualización de los documentos cargados en el sistema.}
 \label{fig:archivos}
