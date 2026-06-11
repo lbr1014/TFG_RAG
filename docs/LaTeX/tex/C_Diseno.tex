@@ -14,10 +14,10 @@ Este diseño busca facilitar tanto el desarrollo y mantenimiento de la aplicaci�
 
 \section{Diseño de datos} \label{dis:dtos}
 
-Para llevar a cabo la aplicación se han definido las siguientes entidades principales (ver figura~\ref{fig:Diagramas/Entidades})\footnote{Esta figura se ha generado utilizando la aplicación DBeaver (\href{https://dbeaver.io/}{https://dbeaver.io/})}
+Para llevar a cabo la aplicación se han definido las siguientes entidades principales (ver figura~\ref{fig:Diagramas/Entidades})\footnote{Esta figura se ha generado utilizando la aplicación DBeaver (\href{https://dbeaver.io/}{https://dbeaver.io/}).}
 \begin{itemize}
 	\item \textbf{Usuario}: esta entidad representa a cada persona registrada en la aplicación. Distingue entre usuario normal y administrador, al cual se le permite realizar la gestión de documentos y usuarios. Esta entidad maneja un identificador (id) que es la clave primaria, un nombre, un \eng{email} que debe ser único, una contraseña que se almacena cifrada, el último inicio de sesión, el rol, el número de inicios de sesión realizados, el país, el idioma preferido, el modelo de lenguaje seleccionado por defecto y el modo visual de la interfaz.
-	\item \textbf{Consulta}: esta entidad guarda las preguntas que realizan los usuarios, así como las respuestas que da el \eng{LLM} alimentado por el \eng{RAG}. Es la base para el historial de consultas. Cada consulta registra la pregunta formulada, la respuesta obtenida, los fragmentos documentales utilizados como contexto, el tiempo de respuesta, el dispositivo empleado para la ejecución y la fecha de realización de la consulta.
+	\item \textbf{Consulta}: esta entidad guarda las preguntas que realizan los usuarios, así como las respuestas que da el LLM alimentado por el RAG. Es la base para el historial de consultas. Cada consulta registra la pregunta formulada, la respuesta obtenida, los fragmentos documentales utilizados como contexto, el tiempo de respuesta, el dispositivo empleado para la ejecución y la fecha de realización de la consulta.
 	\item \textbf{Documento}: esta entidad representa un PDF cargado en la aplicación. Su función es mantener la trazabilidad completa del ciclo de vida documental, desde su carga inicial hasta su conversión e indexación. Además de almacenar el nombre del fichero, la ruta y el tamaño, registra el \eng{hash}, el estado de procesamiento, el contenido Markdown generado y diversos metadatos asociados como el número de expediente o el tipo documental. En caso de que sucedan, también almacena los errores ocurridos durante el procesamiento. 
 	\item \textbf{Chunk}: esta entidad representa cada trozo de texto en el que se dividen los documentos para poder generar los \eng{embeddings}. Cada fragmento almacena información sobre el documento al que pertenece, su posición dentro del mismo, el identificador asociado en la base de datos vectorial, el \eng{hash} de la versión del documento, el número de expediente, el tipo documental y otros metadatos necesarios para la recuperación semántica de información.
 	\item \textbf{Embedding}: esta entidad almacena los metadatos asociados a la respresentación vectorial de un fragmento (\eng{chunks}). A diferencia del vector numérico propiamente dicho, que se almacena en Qdrant, esta entidad conserva información de trazabilidad necesaria para gestionar el proceso de indexación. Concretamente almacena el modelo utilizado para generar el \eng{embedding}, la dimensionalidad del vector, la métrica de similitud empleada y la fecha de creación.
@@ -26,27 +26,27 @@ Para llevar a cabo la aplicación se han definido las siguientes entidades princ
 
 \imagendiagram{Diagramas/Entidades}{Diagrama Entidad/Relación de las entidades principales generado por DBeaver.}{1.1}
 
-Además de las entidades principales del sistema, se han definido varias entidades destinadas a gestionar y monitorizar la ejecución de tareas realizadas de forma asíncrona (ver figura~\ref{fig:Diagramas/Entidades_asincronas})\footnote{Esta figura se ha generado utilizando la aplicación DBeaver (\href{https://dbeaver.io/}{https://dbeaver.io/})}. La mayoría de ellas heredan de la clase abstracta \textbf{State}, mientras que la entidad \textbf{RAGQueryState} implementa una estructura equivalente mediante la clase auxiliar \textbf{JobStateMixin}. En ambos casos se reutiliza un conjunto común de atributos y métodos destinados a registrar el estado de ejecución de una tarea:
+Además de las entidades principales del sistema, se han definido varias entidades destinadas a gestionar y monitorizar la ejecución de tareas realizadas de forma asíncrona (ver figura~\ref{fig:Diagramas/Entidades_asincronas})\footnote{Esta figura se ha generado utilizando la aplicación DBeaver (\href{https://dbeaver.io/}{https://dbeaver.io/})}. La mayoría de ellas heredan de la clase abstracta <<State>>, mientras que la entidad <<RAGQueryState>> implementa una estructura equivalente mediante la clase auxiliar <<JobStateMixin>>. En ambos casos se reutiliza un conjunto común de atributos y métodos destinados a registrar el estado de ejecución de una tarea:
 
 \begin{itemize}
 	\item \textbf{RAGQueryState}: esta entidad permite gestionar las consultas en ejecución de forma asíncrona. Almacena la pregunta enviada, el modelo seleccionado,  el estado de ejecución, los resultados obtenidos y los errores producidos (si los hubiese). 
 	\item \textbf{MarkdownConversionState}: esta entidad registra el estado de los procesos de conversión de documentos PDF a Markdown. Permite conocer el proceso de la tarea, los mensajes informativos generados y los posibles errores.
 	\item \textbf{VectorUpdateState}: esta entidad controla los procesos de actualización de la base de datos vectorial. Almacena información sobre el documento que se está procesando en cada momento y los posibles errores producidos.
-	\item \textbf{WebScrapingState}: esta entidad registra el estado de los procesos de \eng{web scraping}. Esta entidad permite monitorizar la ejecución, conocer le progreso alcanzado y registrar incidencias durante la descarga de documentos.
-	\item \textbf{RAGEvaluationState}: esta entidad almacena la información asociada a las evaluaciones automáticas del sistema \eng{RAG}. Registra el progreso de la evaluación, los resultados obtenidos y las rutas de los distintos archivos generados durante el proceso, incluyendo configuraciones, conjuntos de datos y métricas calculadas.
+	\item \textbf{WebScrapingState}: esta entidad registra el estado de los procesos de \eng{Web Scraping}. Esta entidad permite monitorizar la ejecución, conocer le progreso alcanzado y registrar incidencias durante la descarga de documentos.
+	\item \textbf{RAGEvaluationState}: esta entidad almacena la información asociada a las evaluaciones automáticas del sistema RAG. Registra el progreso de la evaluación, los resultados obtenidos y las rutas de los distintos archivos generados durante el proceso, incluyendo configuraciones, conjuntos de datos y métricas calculadas.
 \end{itemize}
 
-\imagendiagram{Diagramas/Entidades_asincronas}{Diagrama Entidad/Relación de las entidades asíncronas generado por DBeaver.}{1.1}
+\imagendiagram{Diagramas/Entidades_asincronas}{Diagrama de las entidades asíncronas generado por DBeaver.}{1.1}
 
 
 Las relaciones entre las entidades del sistema son (ver figura~\ref{fig:entidad_relacion}):
 
 \begin{itemize}
-	\item Un \textbf{usuario} puede realizar cero o muchas \textbf{consultas}, mientras que cada consulta pertenece a un único usuario. Esta relación permite mantener el historial de consultas asociado a cada cuenta.
-	\item Un \textbf{usuario} puede tener cero o muchas instancias de \textbf{RAGQueryState}, utilizadas para gestionar consultas ejecutadas de forma asíncrona. Cada estado de consulta pertenece a un único usuario.
-	\item Un \textbf{documento} puede contener cero o muchos \textbf{chunks}. La cardinalidad mínima es cero porque un documento puede encontrarse cargado en el sistema pero todavía no haber sido procesado ni fragmentado. Cada \eng{chunk} pertenece a un único documento.
-	\item Cada \textbf{chunk} tiene asociado un único \textbf{embedding}, que almacena la información necesaria para gestionar su representación vectorial. Del mismo modo, cada \eng{embedding} pertenece a un único \eng{chunk}.
-	\item La relación entre \textbf{consultas} y \textbf{chunks} es de muchos a muchos. Una consulta puede utilizar múltiples fragmentos documentales para generar una respuesta, mientras que un mismo fragmento puede participar en diferentes consultas realizadas por distintos usuarios. Esta relación se implementa mediante la entidad intermedia \textbf{ConsultaChunk}.
+	\item Un <<usuario>> puede realizar cero o muchas <<consultas>>, mientras que cada <<consulta>> pertenece a un único <<usuario>>. Esta relación permite mantener el historial de consultas asociado a cada cuenta.
+	\item Un <<usuario>> puede tener cero o muchas instancias de  <<RAGQueryState>>, utilizadas para gestionar consultas ejecutadas de forma asíncrona. Cada estado de consulta (<<RAGQueryState>>) pertenece a un único <<usuario>>.
+	\item Un <<documento>> puede contener cero o muchos <<chunks>>. La cardinalidad mínima es cero porque un documento puede encontrarse cargado en el sistema pero todavía no haber sido procesado ni fragmentado. Cada <<chunk>> pertenece a un único <<documento>>.
+	\item Cada <<chunk>> tiene asociado un único <<embedding>>, que almacena la información necesaria para gestionar su representación vectorial. Del mismo modo, cada <<embedding>> pertenece a un único <<chunk>>.
+	\item La relación entre <<consultas>> y <<chunks>> es de muchos a muchos. Una <<consulta>> puede utilizar múltiples fragmentos documentales (<<chunks>>) para generar una respuesta, mientras que un mismo fragmento (<<chunk>>) puede participar en diferentes <<consultas>> realizadas por distintos usuarios. Esta relación se implementa mediante una entidad intermedia <<ConsultaChunk>>.
 \end{itemize}
 
 \begin{figure}
@@ -55,17 +55,19 @@ Las relaciones entre las entidades del sistema son (ver figura~\ref{fig:entidad_
     \centering
     \begin{subfigure}[t]{\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Diagramas/Entidad_Relacion}
+        \includegraphics[width=\textwidth]{Diagramas/Entidad_Relacion.pdf}
         \caption{Diagrama Entidad/Relación simplificado.}
     \end{subfigure}
 \end{minipage}
-\hfill
+
+\vspace{0.5cm}
+
 \begin{minipage}[c]{\textwidth}
     \centering
-	\vspace*{0.2cm}
+	\vspace{0.2cm}
     \begin{subfigure}[t]{\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{Diagramas/herencia_tareas_asincronas}
+        \includegraphics[width=\textwidth]{Diagramas/herencia_tareas_asincronas.pdf}
         \caption{Diagrama Entidad/Relación de las tareas asíncronas.}
     \end{subfigure}
 \end{minipage}
@@ -74,35 +76,35 @@ Las relaciones entre las entidades del sistema son (ver figura~\ref{fig:entidad_
 \end{figure}
 
 \section{Diseño arquitectónico} \label{dis:arc}
-El objetivo del diseño arquitectónico es garantizar la modularidad, la escalabilidad, la mantenibilidad, la portabilidad y la reproducibilidad del sistema desarrollado. Es decir, se busca tener una separación clara de responsabilidades entre la interfaz, la lógica, la persistencia y los servicios de Inteligencia Artificial con una organización del código en componentes cohesivos (\eng{Blueprints}, servicios y modelos), pudiendo replicarse los servicios de manera sencilla. Además, sustituir los componentes debe tener un impacto mínimo en el resto del código. 
+El objetivo del diseño arquitectónico es garantizar la modularidad, la escalabilidad, la mantenibilidad, la portabilidad y la reproducibilidad del sistema desarrollado. Es decir, se busca tener una separación clara de responsabilidades entre la interfaz, la lógica, la persistencia y los servicios de Inteligencia Artificial con una organización del código en componentes cohesivos (Blueprints, servicios y modelos), pudiendo replicarse los servicios de manera sencilla. Además, sustituir los componentes debe tener un impacto mínimo en el resto del código. 
 
-Este sistema se basa en una arquitectura cliente–servidor multicapa, combinada con una arquitectura \eng{RAG} (\eng{Retrieval-Augmented Generation}), en la capa de aplicación, estructurada en dos \eng{pipelines} diferenciados, el de indexación y el de generación. El despliegue se lleva a cabo utilizando contenedores \eng{Docker} para almacenar el código junto con sus dependencias.
+Este sistema se basa en una arquitectura cliente–servidor multicapa, combinada con una arquitectura RAG (\eng{Retrieval-Augmented Generation}), en la capa de aplicación, estructurada en dos \eng{pipelines} diferenciados, el de indexación y el de generación. El despliegue se lleva a cabo utilizando contenedores Docker para almacenar el código junto con sus dependencias.
 
 \subsection{Arquitectura general del sistema y despliegue}
 PythIA se ha diseñado como un sistema distribuido basado en servicios (\eng{service-oriented}~\cite{diseño:SOA}), donde cada componente desempeña una función específica dentro de la arquitectura global. Esta separación de responsabilidades facilita el mantenimiento, la escalabilidad y la sustitución de componentes sin afectar al resto del sistema. La arquitectura se compone de los siguientes elementos principales:
 \begin{itemize}
 	\item \textbf{Cliente \eng{web}}: se corresponde con el navegador utilizado por el usuario para acceder a la aplicaicón y realizar consultas.
 	\item \textbf{Servidor Nginx}: actúa como punto de entrada al sistema (\eng{proxy} inverso), gestionando el protocolo de seguridad HTTPS a través del certificado SSL/TLS, y reenviando las peticiones hacia la aplicación.		
-	\item \textbf{Capa de aplicación}: aplicación \eng{web} implementada mediante \eng{Flask} y desplegada sobre el servidor WSGI \eng{Gunicorn}. Constituye el núcleo del sistema y coordina la interacción entre los distintos servicios internos.
+	\item \textbf{Capa de aplicación}: aplicación \eng{web} implementada mediante Flask y desplegada sobre el servidor WSGI Gunicorn. Constituye el núcleo del sistema y coordina la interacción entre los distintos servicios internos.
 	\item \textbf{Base de datos relacional PostgreSQL}: almacena la información persistente de la aplicación, incluyendo usuarios, consultas, documentos y estados de las tareas asíncronas. 
 	\item \textbf{Base de datos vectorial Qdrant}: almacena las representaciones vectoriales (\eng{embeddings}) utilizadas durante la recuperación semántica de información.	
-	\item \textbf{Servicio de modelos \eng{LLM}}: implementado mediante Ollama, proporciona acceso a los modelos de lenguaje empleados para la generación de respuestas y la creación de \eng{embeddings}.
+	\item \textbf{Servicio de modelos LLM}: implementado mediante Ollama, proporciona acceso a los modelos de lenguaje empleados para la generación de respuestas y la creación de \eng{embeddings}.
 	\item \textbf{Contenedor de pruebas}: se utiliza para la ejecución automatizada de pruebas funcionales y de cobertura del sistema.
 \end{itemize}
 
-La figura~\ref{fig:Arquitectura/ComunicacionArquitectura.pdf}) muestra la organización general de los componentes y las comunicaciones existentes entre ellos. Todos los servicios se despliegan mediante contenedores Docker, lo que permite aislar dependencias, simplificar la instalación y garantizar la reproducibilidad del entorno de ejecución. El despliegue se define en el archivo \file{Docker Compose}. Este archivo coordina los seis contenedores que forman parte del sistema,  haciendo que cada componente puede evolucionar de manera independiente manteniendo una arquitectura modular y fácilmente portable entre distintos entornos de ejecución.
+La figura~\ref{fig:Arquitectura/ComunicacionArquitectura.pdf}) muestra la organización general de los componentes y las comunicaciones existentes entre ellos. Todos los servicios se despliegan mediante contenedores Docker, lo que permite aislar dependencias, simplificar la instalación y garantizar la reproducibilidad del entorno de ejecución. El despliegue se define en el archivo Docker Compose. Este archivo coordina los seis contenedores que forman parte del sistema,  haciendo que cada componente puede evolucionar de manera independiente manteniendo una arquitectura modular y fácilmente portable entre distintos entornos de ejecución.
 
-Los contenedores definidos en le archivo \file{Docker Compose} son:
+Los contenedores definidos en le archivo Docker Compose son:
 \begin{enumerate}
 	\item \file{db} $\to$ base de datos relacional.
 	\item \file{qdrant} $\to$ base de datos vectorial.
-	\item \file{ollama}, \file{ollama\_ocr} y \file{ollama-init} $\to$ servicio \eng{LLM}.
+	\item \file{ollama}, \file{ollama\_ocr} y \file{ollama-init} $\to$ servicio LLM.
 	\item \file{web} $\to$ aplicación \eng{web} Flask levantada usando Gunicorn.
 	\item \file{nginx} $\to$ \eng{proxy} inverso y punto de terminación TLS\footnote{TLS es un protocolo que asegura la privacidad y la seguridad de los datos}~\cite{diseño:TLS} de la aplicación.
 	\item \file{test} $\to$ ejecución de pruebas.
 \end{enumerate}
 
-Gracias a esta separación se garantiza la seguridad ya que no se expone directamente la aplicación \eng{Flask}, únicamente el servidor Nginx se encuentra expuesto al exterior. Por lo cual la comunicación entre componentes se realiza principalmente dentro de al red interna. Para llevar acabo esta comunicación los servicios se comunican entre sí mediante el nombre de servicio,es decir, el DNS interno, y se conectan a través de los puertos expuestos internamente.
+Gracias a esta separación se garantiza la seguridad ya que no se expone directamente la aplicación Flask, únicamente el servidor Nginx se encuentra expuesto al exterior. Por lo cual la comunicación entre componentes se realiza principalmente dentro de al red interna. Para llevar acabo esta comunicación los servicios se comunican entre sí mediante el nombre de servicio,es decir, el DNS interno, y se conectan a través de los puertos expuestos internamente.
  
 El flujo general de una petición al sistema se muestra en la figura~\ref{fig:Arquitectura/Peticiones.pdf}. Cuando un usuario accede a la aplicación, la petición es recibida por Nginx y redirigida a la aplicación Flask ejecutada sobre Gunicorn. A partir de ese momento, la lógica de negocio interactúa con PostgreSQL, Qdrant y Ollama según las necesidades de cada operación, devolviendo finalmente la respuesta generada al usuario. 
  
@@ -119,19 +121,19 @@ La organización general de estas capas puede observarse en la figura~\ref{fig:A
 
 \begin{itemize}
 	\item \textbf{Capa de presentación}: constituye la interfaz de usuario (IU). Está formada por las plantillas HTML generadas mediante Jinja2 y presentadas en el navegador. La aplicación sigue un enfoque SSR (\eng{Server-Side Rendering}), donde las páginas se renderizan en el servidor antes de enviarse al cliente. Este enfoque reduce la complejidad en el cliente, simplifica el control de acceso, mejora la trazabilidad y simplifica la integración de la lógica del sistema.
-	\item \textbf{Capa de aplicación}: contiene la lógica funcional de la aplicación. Está formada por los controladores organizados mediante \eng{Blueprints}, los servicios de negocio y los procesos asociados al sistema \eng{RAG}. Esta capa recibe las peticiones procedentes de la interfaz, ejecuta las operaciones necesarias y coordina la comunicación con los sistemas de almacenamiento y los servicios de inteligencia artificial.
-	\item \textbf{Capa de persistencia}: agrupa los mecanismos encargados del almacenamiento y recuperación de la información. Incluye tanto la base de datos relacional PostgreSQL, utilizada para la persistencia de usuarios, consultas, documentos y estados, como la base de datos vectorial Qdrant, empleada para almacenar los vectores utilizados durante la recuperación semántica. Asimismo, esta capa integra los servicios externos necesarios para el funcionamiento del sistema \eng{RAG}, como los modelos de lenguaje y generación de \eng{embeddings}.	
+	\item \textbf{Capa de aplicación}: contiene la lógica funcional de la aplicación. Está formada por los controladores organizados mediante Blueprints, los servicios de negocio y los procesos asociados al sistema RAG. Esta capa recibe las peticiones procedentes de la interfaz, ejecuta las operaciones necesarias y coordina la comunicación con los sistemas de almacenamiento y los servicios de inteligencia artificial.
+	\item \textbf{Capa de persistencia}: agrupa los mecanismos encargados del almacenamiento y recuperación de la información. Incluye tanto la base de datos relacional PostgreSQL, utilizada para la persistencia de usuarios, consultas, documentos y estados, como la base de datos vectorial Qdrant, empleada para almacenar los vectores utilizados durante la recuperación semántica. Asimismo, esta capa integra los servicios externos necesarios para el funcionamiento del sistema RAG, como los modelos de lenguaje y generación de \eng{embeddings}.	
 \end{itemize}
 
 \subsection{Arquitectura de cuatro capas de la aplicación}
 
-Aunque la arquitectura cliente-servidor permite comprender la organización general del sistema, resulta conveniente detallar con mayor precisión la estructura interna de la aplicación. Para ello, PythIA se ha diseñado siguiendo una arquitectura de cuatro capas (ver figura~\ref{fig:Arquitectura/Arquitectura_4capas.pdf})), en la que se separan claramente las responsabilidades asociadas a la interacción con el usuario, la lógica de negocio, la persistencia de la información y la integración con servicios externos. Esta organización facilita el mantenimiento y la evolución del sistema, ya que cada capa puede modificarse de forma relativamente independiente sin afectar significativamente al resto de componentes.
+Aunque la arquitectura cliente-servidor permite comprender la organización general del sistema, resulta conveniente detallar con mayor precisión la estructura interna de la aplicación. Para ello, PythIA se ha diseñado siguiendo una arquitectura de cuatro capas (ver figura~\ref{fig:Arquitectura/Arquitectura_4capas.pdf}), en la que se separan claramente las responsabilidades asociadas a la interacción con el usuario, la lógica de negocio, la persistencia de la información y la integración con servicios externos. Esta organización facilita el mantenimiento y la evolución del sistema, ya que cada capa puede modificarse de forma relativamente independiente sin afectar significativamente al resto de componentes.
 
-\imagendiagram{Arquitectura/Arquitectura_4capas.pdf}{Arquitectura de 4 capas de la aplicación PythIA detallando la interacción entre los controladores, servicios y entidades.}{1}
+\imagendiagram{Arquitectura/Arquitectura_4capas.pdf}{Arquitectura de cuatro capas de la aplicación PythIA detallando la interacción entre los controladores, servicios y entidades.}{1}
 
 \begin{itemize}
-	\item \textbf{Capa de presentación}: es el punto de interacción entre los usuarios y el sistema. Está formada por los controladores implementados mediante \eng{Blueprints} de Flask y por las plantillas HTML generadas mediante Jinja2. Los controladores se encuentran organizados según las funcionalidades de la aplicación. Reciben las peticiones HTTP procedentes del navegador, validan la información recibida y delegan el procesamiento en los servicios correspondientes de la capa de negocio.
-	\item \textbf{Capa de negocio}: implementa la lógica funcional de la aplicación. Está formada por un conjunto de servicios especializados que encapsulan las operaciones principales del sistema. Muchos de los servicios colaboran entre sí. Por ejemplo, el servicio RAG utiliza el servicio de \eng{retrieval} para recuperar los fragmentos relevantes antes de generar una respuesta, mientras que el servicio de gestión documental puede invocar los servicios de Markdown, indexación o \eng{web scraping} durante el procesamiento de documentos.
+	\item \textbf{Capa de presentación}: es el punto de interacción entre los usuarios y el sistema. Está formada por los controladores implementados mediante Blueprints de Flask y por las plantillas HTML generadas mediante Jinja2. Los controladores se encuentran organizados según las funcionalidades de la aplicación. Reciben las peticiones HTTP procedentes del navegador, validan la información recibida y delegan el procesamiento en los servicios correspondientes de la capa de negocio.
+	\item \textbf{Capa de negocio}: implementa la lógica funcional de la aplicación. Está formada por un conjunto de servicios especializados que encapsulan las operaciones principales del sistema. Muchos de los servicios colaboran entre sí. Por ejemplo, el servicio RAG utiliza el servicio de \eng{retrieval} para recuperar los fragmentos relevantes antes de generar una respuesta, mientras que el servicio de gestión documental puede invocar los servicios de Markdown, indexación o \eng{Web Scraping} durante el procesamiento de documentos.
 	\item \textbf{Capa de datos}: proporciona los mecanismos de persistencia empleados por la aplicación. PostgreSQL almacena toda la información relacional del sistema, mientras que Qdrant almacena las representaciones vectoriales utilizadas durante la recuperación semántica.
 	\item \textbf{Servicios externos}: la aplicación integra diversos servicios externos especializados que amplían sus capacidades.
 \end{itemize}
@@ -150,25 +152,25 @@ La figura~\ref{fig:Arquitectura/ModeloVistaControlador.pdf} muestra la organizac
 Los elementos principales de esta arquitectura son:
 
 \begin{itemize}
-	\item La \textbf{vista}: está compuesta por las platillas \file{HTML} renderizadas mediante el motor de plantillas \file{Jinja2}. Además, incorpora los recursos estáticos CSS y JavaScript. Se encarga de presentar la información a los usuarios y recoger sus acciones. Aunque, la aplicación incorpora JavaScript para mejorar la experiencia del usuario, la generación principal del contenido se realiza en el servidor, manteniendo una arquitectura fundamentalmente SSR.
-	\item El \textbf{controlador}: se implementa mediante rutas \eng{Flask} organizadas en \eng{Blueprints}.	Los controladores reciben las peticiones HTTP, realizan validaciones básicas, comprueban los permisos de acceso y coordinan la ejecución de las funcionalidades solicitadas. Para ello delegan la lógica de negocio en los distintos servicios de la aplicación y finalmente generan la respuesta HTTP correspondiente. 
+	\item La \textbf{vista}: está compuesta por las platillas HTML renderizadas mediante el motor de plantillas Jinja2. Además, incorpora los recursos estáticos CSS y JavaScript. Se encarga de presentar la información a los usuarios y recoger sus acciones. Aunque, la aplicación incorpora JavaScript para mejorar la experiencia del usuario, la generación principal del contenido se realiza en el servidor, manteniendo una arquitectura fundamentalmente SSR.
+	\item El \textbf{controlador}: se implementa mediante rutas Flask organizadas en Blueprints.	Los controladores reciben las peticiones HTTP, realizan validaciones básicas, comprueban los permisos de acceso y coordinan la ejecución de las funcionalidades solicitadas. Para ello delegan la lógica de negocio en los distintos servicios de la aplicación y finalmente generan la respuesta HTTP correspondiente. 
 	\item El \textbf{modelo}: está compuesto por las entidades de datos persistentes del sistema y sus relaciones, incluyendo usuarios, consultas, documentos, fragmentos documentales, metadatos de \eng{embeddings} y estados de tareas asíncronas. Estas entidades representan la estructura de los datos almacenados y permiten abstraer el acceso a las bases de datos utilizadas por la aplicación.
-	\item Los \textbf{servicios}: encapsulan la lógica de negocio de la aplicación. En esta capa se implementan funcionalidades como la gestión documental, la autenticación, la recuperación semántica de información, la generación de respuestas mediante modelos de lenguaje, la indexación documental, el OCR, el \eng{web scraping}, la evaluación del sistema RAG y la gestión de tareas asíncronas. Esta separación evita que los controladores incorporen lógica compleja y favorece la reutilización del código.
+	\item Los \textbf{servicios}: encapsulan la lógica de negocio de la aplicación. En esta capa se implementan funcionalidades como la gestión documental, la autenticación, la recuperación semántica de información, la generación de respuestas mediante modelos de lenguaje, la indexación documental, el OCR, el \eng{Web Scraping}, la evaluación del sistema RAG y la gestión de tareas asíncronas. Esta separación evita que los controladores incorporen lógica compleja y favorece la reutilización del código.
 	\end{itemize} 
 
 La combinación de MVC con una capa de servicios permite mantener un bajo acoplamiento entre componentes y una alta cohesión funcional. De este modo, la interfaz de usuario permanece desacoplada de la lógica de negocio y de los mecanismos de persistencia, facilitando la mantenibilidad, escalabilidad y evolución futura de la aplicación.
 Con estas capas se mantiene el desacoplamiento de la aplicación \eng{web}, haciendo que los controladores organicen el flujo para que la interfaz de usuario no implemente reglas de negocio y sea el modelo el que encapsule los datos y los procesos del domino. 
 
-\subsection{Arquitectura del sistema \eng{RAG}}
-El sistema \eng{RAG} es le núcleo funcional de la aplicaicón. Es el responsable de proporcionar respuestas fundamentadas en la documentación almacenada por la aplicación. Su funcionamiento se basa en la combinación de técnicas de recuperación semántica de información y modelos de lenguaje de gran tamaño (\eng{LLM}), permitiendo generar respuestas contextualizadas a partir de los documentos indexados en el sistema.
+\subsection{Arquitectura del sistema RAG}
+El sistema RAG es le núcleo funcional de la aplicaicón. Es el responsable de proporcionar respuestas fundamentadas en la documentación almacenada por la aplicación. Su funcionamiento se basa en la combinación de técnicas de recuperación semántica de información y modelos de lenguaje de gran tamaño (LLM), permitiendo generar respuestas contextualizadas a partir de los documentos indexados en el sistema.
 
 A nivel de arquitectura el sistema se divide en dos \eng{pipelines} complementarios~\cite{book:RAG_SimpleGuide}, el de indexación y el de generación (ver figura~\ref{fig:Arquitectura/ArquitecturaRAG.pdf}).
 
-\imagendiagram{Arquitectura/ArquitecturaRAG.pdf}{Arquitectura general del sistema \eng{RAG}.}{1.1}
+\imagendiagram{Arquitectura/ArquitecturaRAG.pdf}{Arquitectura general del sistema RAG.}{1.1}
 
-El \textbf{\eng{pipeline} de indexación} es el encargado de preparar la documentación para que pueda ser utilizada posteriormente durante las consultas. Se ejecuta cuando se cargan los documentos en la aplicación, ya bien sea de manera manual o mediante \eng{web scraping}. Se permite convertir los documentos a formato \file{Markdown} para que todos tengan una estructura similar que el \eng{LLM} entienda fácilmente. Para indexar los documentos en el sistema se extrae, limpia y normaliza su texto, posteriormente se segmenta en \eng{chunks} con solapamiento y se generar sus \eng{embeddings}. Los cuales se van a almacenar en la base de datos vectorial (\eng{Qdrant}) junto con sus metadatos asociados. Este proceso se ejecuta de forma asíncrona para evitar bloquear la interfaz \eng{web}. Cuando acaba la indexación de los documentos se envía un correo electrónico al usuario para notificárselo.
+El \textbf{\eng{pipeline} de indexación} es el encargado de preparar la documentación para que pueda ser utilizada posteriormente durante las consultas. Se ejecuta cuando se cargan los documentos en la aplicación, ya bien sea de manera manual o mediante \eng{Web Scraping}. Se permite convertir los documentos a formato \file{Markdown} para que todos tengan una estructura similar que el LLM entienda fácilmente. Para indexar los documentos en el sistema se extrae, limpia y normaliza su texto, posteriormente se segmenta en \eng{chunks} con solapamiento y se generar sus \eng{embeddings}. Los cuales se van a almacenar en la base de datos vectorial (Qdrant) junto con sus metadatos asociados. Este proceso se ejecuta de forma asíncrona para evitar bloquear la interfaz \eng{web}. Cuando acaba la indexación de los documentos se envía un correo electrónico al usuario para notificárselo.
 
-El \textbf{\eng{pipeline} de generación} se ejecuta cuando el usuario hace una consulta. Su objetivo es dar una respuesta contextualizada utilizando los \eng{chunks} ya indexados en el sistema. Para ello se genera el \eng{embedding} de la consulta y se utiliza para realizar una búsqueda semántica en la base de datos vectorial. Como resultado se recuperan los \eng{chunks} más relevantes según su similitud vectorial con la consulta. Estos fragmentos se incorporan como contexto dentro de un \eng{prompt} aumentado que posteriormente se envía al modelo de lenguaje. Finalmente, el \eng{LLM} genera la respuesta utilizando tanto la consulta del usuario como la información recuperada de los documentos, la muestra al usuario y la registra en la base de datos.
+El \textbf{\eng{pipeline} de generación} se ejecuta cuando el usuario hace una consulta. Su objetivo es dar una respuesta contextualizada utilizando los \eng{chunks} ya indexados en el sistema. Para ello se genera el \eng{embedding} de la consulta y se utiliza para realizar una búsqueda semántica en la base de datos vectorial. Como resultado se recuperan los \eng{chunks} más relevantes según su similitud vectorial con la consulta. Estos fragmentos se incorporan como contexto dentro de un \eng{prompt} aumentado que posteriormente se envía al modelo de lenguaje. Finalmente, el LLM genera la respuesta utilizando tanto la consulta del usuario como la información recuperada de los documentos, la muestra al usuario y la registra en la base de datos.
 
 \section{Diseño procedimental} \label{dis:proc}
 
@@ -183,8 +185,8 @@ Durante el desarrollo de PythIA se han utilizado diversos patrones de diseño co
 \begin{itemize}
 	\item \textbf{Patrón Singleton}: se utiliza para gestionar la conexión con la base de datos vectorial Qdrant. Este patrón garantiza que exista una única instancia del cliente encargada de comunicarse con el servidor vectorial durante toda la ejecución de la aplicación. Gracias a esta aproximación se evita la creación repetida de conexiones, se reduce el consumo de recursos y se centraliza la configuración de acceso a Qdrant. Además, cualquier componente de la aplicación que necesite realizar operaciones de recuperación o indexación utiliza la misma instancia compartida.
 	\item \textbf{Patrón Service Layer}: la lógica de negocio se encuentra encapsulada en una capa de servicios independiente de los controladores \eng{web}. Permite separar las responsabilidades asociadas a la gestión de usuarios, documentos, consultas RAG, indexación documental, evaluación y tareas asíncronas. De esta forma, los controladores se limitan a gestionar las peticiones HTTP y delegan el procesamiento en los servicios correspondientes. Esta separación favorece la reutilización del código y reduce el acoplamiento entre la interfaz \eng{web} y la lógica de negocio.
-	\item \textbf{Herencia para la gestión de tareas asíncronas}: todas las entidades encargadas de monitorizar procesos de larga duración derivan de la clase abstracta \eng{State}, que define los atributos y comportamientos comunes necesarios para gestionar el ciclo de vida de una tarea. De esta clase abstracta heredan las entidades \eng{RAGQueryState}, \eng{MarkdownConversionState}, \eng{VectorUpdateState}, \eng{WebScrapingState} y \eng{RAGEvaluationState}. Permitiendo reducir la duplicación de código y facilita la incorporación de nuevos tipos de tareas asíncronas en el futuro.
-\item \textbf{Patrón MVC}: como se ha explicado anteriormente (ver sección~\ref{dis:MVC}) la aplicación \eng{web} sigue una arquitectura basada en el patrón Modelo--Vista--Controlador (MVC). Las vistas se implementan mediante plantillas HTML renderizadas con Jinja2, los controladores se organizan mediante \eng{Blueprints} de Flask y los modelos representan las entidades persistentes almacenadas en la base de datos.
+	\item \textbf{Herencia para la gestión de tareas asíncronas}: todas las entidades encargadas de monitorizar procesos de larga duración derivan de la clase abstracta \file{State}, que define los atributos y comportamientos comunes necesarios para gestionar el ciclo de vida de una tarea. De esta clase abstracta heredan las entidades RAGQueryState, MarkdownConversionState, VectorUpdateState, WebScrapingState y RAGEvaluationState. Permitiendo reducir la duplicación de código y facilita la incorporación de nuevos tipos de tareas asíncronas en el futuro.
+\item \textbf{Patrón MVC}: como se ha explicado anteriormente (ver sección~\ref{dis:MVC}) la aplicación \eng{web} sigue una arquitectura basada en el patrón Modelo--Vista--Controlador (MVC). Las vistas se implementan mediante plantillas HTML renderizadas con Jinja2, los controladores se organizan mediante Blueprints de Flask y los modelos representan las entidades persistentes almacenadas en la base de datos.
 \end{itemize}
 
 \subsection{Gestión de la consistencia y lógica de dominio}
@@ -195,11 +197,11 @@ Uno de los principales mecanismos de consistencia implementados es la sincroniza
 
 Además, la aplicación mantiene la trazabilidad completa de las respuestas generadas por el sistema RAG. Cada consulta realizada por un usuario almacena la pregunta original, la respuesta generada, los fragmentos documentales utilizados durante la recuperación y los metadatos asociados a dichos fragmentos. Gracias a ello es posible identificar posteriormente el origen de la información utilizada para construir cada respuesta.
 
-Otra regla importante de negocio es la gestión de permisos basada en roles. El sistema distingue entre usuarios estándar y administradores. Determinadas operaciones, como la gestión documental, la administración de usuarios, la ejecución de procesos de evaluación o el lanzamiento de tareas de \eng{web scraping}, únicamente pueden ser realizadas por usuarios con privilegios de administrador.
+Otra regla importante de negocio es la gestión de permisos basada en roles. El sistema distingue entre usuarios estándar y administradores. Determinadas operaciones, como la gestión documental, la administración de usuarios, la ejecución de procesos de evaluación o el lanzamiento de tareas de \eng{Web Scraping}, únicamente pueden ser realizadas por usuarios con privilegios de administrador.
 
 La ejecución de tareas asíncronas incorpora también mecanismos específicos para garantizar la consistencia del sistema. Cada proceso mantiene un estado persistente que registra su progreso, resultado y posibles errores. Esto permite recuperar información sobre tareas interrumpidas y evita que se produzcan inconsistencias cuando varias operaciones se ejecutan simultáneamente.
 
-La aplicación incorpora un mecanismo de priorización de consultas que otorga preferencia a las peticiones realizadas por los usuarios frente a procesos de mantenimiento como la indexación documental, la conversión a Markdown, el \eng{web scraping} o la evaluación automática. De esta forma se garantiza una experiencia de uso fluida sin comprometer la integridad de los datos ni el correcto funcionamiento de los procesos internos.
+La aplicación incorpora un mecanismo de priorización de consultas que otorga preferencia a las peticiones realizadas por los usuarios frente a procesos de mantenimiento como la indexación documental, la conversión a Markdown, el \eng{Web Scraping} o la evaluación automática. De esta forma se garantiza una experiencia de uso fluida sin comprometer la integridad de los datos ni el correcto funcionamiento de los procesos internos.
 
 \subsection{Interacción entre los elementos del sistema}
 
@@ -230,9 +232,9 @@ Los pasos para iniciar sesión son:
 
 En la figura ~\ref{fig:Diagramas/secuencia/Inicio_sesion} se puede observar el diagrama de secuencia correspondiente al proceso de inicio de sesión en la aplicación.
 
-\imagendiagram{Diagramas/secuencia/Inicio_sesion}{Diagrama de secuencia del proceso inicio de sesión en la aplicación PythIA.}{1}
+\imagendiagram{Diagramas/secuencia/Inicio_sesion}{Diagrama de secuencia del proceso inicio de sesión.}{1}
 
-Además del inicio de sesión, el sistema permite el registro de nuevos usuarios, aplicando la validación del correo electrónico mediante servicios externos (Emailable).
+Además del inicio de sesión, el sistema permite el registro de nuevos usuarios, aplicando la validación del correo electrónico mediante servicios externos~\footnote{Se utiliza la API de la herramienta Emailable(~\url{https://emailable.com/es/})}.
 
 Los pasos para el registro de un nuevo usuario son:
 \begin{enumerate}
@@ -262,7 +264,7 @@ Los pasos para el registro de un nuevo usuario son:
 
 En la figura~\ref{fig:Diagramas/secuencia/Registro} se puede observar el diagrama de secuencia correspondiente al proceso de registro de usuarios en la aplicación.
 
-\imagendiagram{Diagramas/secuencia/Registro}{Diagrama de secuencia del proceso de registrar un usuario nuevo en la aplicación PythIA (con validación de correo electrónico).}{1}
+\imagendiagram{Diagramas/secuencia/Registro}{Diagrama de secuencia del proceso de registrar un usuario nuevo (con validación de correo electrónico).}{1}
 
 \subsubsection{Proceso de consulta RAG}
 
@@ -284,7 +286,7 @@ Este procedimiento permite combinar la capacidad de razonamiento y generación d
 
 En la figura~\ref{fig:Diagramas/secuencia/Consulta_rag} se puede observar el diagrama de secuencia correspondiente al proceso de consulta mediante el sistema RAG.
 
-\imagendiagram{Diagramas/secuencia/Consulta_rag}{Diagrama de secuencia del proceso de realizar una consulta en la aplicación PythIA.}{1}
+\imagendiagram{Diagramas/secuencia/Consulta_rag}{Diagrama de secuencia del proceso de realizar una consulta.}{1}
 
 \subsubsection{Proceso de carga e indexación documental}
 
@@ -309,7 +311,7 @@ Una vez completado este procedimiento, los documentos quedan disponibles para se
 
 En la figura~\ref{fig:Diagramas/secuencia/Indexar} se puede observar el diagrama de secuencia correspondiente al proceso de cargar e indexar un nuevo documento en la base de conocimiento de la aplicación.
 
-\imagendiagram{Diagramas/secuencia/Indexar}{Diagrama de secuencia del proceso de cargar e indexar un nuevo documento en la aplicación PythIA.}{1}
+\imagendiagram{Diagramas/secuencia/Indexar}{Diagrama de secuencia del proceso de cargar e indexar un nuevo documento.}{1}
 
 \subsubsection{Proceso de actualización de la base documental}
 
@@ -342,16 +344,16 @@ Este procedimiento garantiza la consistencia entre los documentos almacenados, l
 
 En la figura~\ref{fig:Diagramas/secuencia/Actualizar} se puede observar el diagrama de secuencia correspondiente al proceso de actualización de la base documental.
 
-\imagendiagram{Diagramas/secuencia/Actualizar}{Diagrama de secuencia del proceso de actualizar la base documental de la aplicación PythIA.}{1}
+\imagendiagram{Diagramas/secuencia/Actualizar}{Diagrama de secuencia del proceso de actualizar la base documental.}{1}
 
 \subsubsection{Proceso de web scraping}
 
-El proceso de \eng{web scraping} permite automatizar la obtención de documentación desde la plataforma \contsec{}. Esta funcionalidad facilita la incorporación masiva de expedientes al sistema sin necesidad de realizar cargas manuales.
+El proceso de \eng{Web Scraping} permite automatizar la obtención de documentación desde la plataforma \contsec{}. Esta funcionalidad facilita la incorporación masiva de expedientes al sistema sin necesidad de realizar cargas manuales.
 
-Los pasos para cargar los documentos de manera automática mediante el \eng{web scraping} son:
+Los pasos para cargar los documentos de manera automática mediante el \eng{Web Scraping} son:
 \begin{enumerate}
-	\item El administrador accede a la página de gestión documental e inicia un nuevo proceso de \eng{web scraping}.	
-	\item El controlador de administración crea una tarea asíncrona de descarga y delega su ejecución al servicio de \eng{web scraping}.
+	\item El administrador accede a la página de gestión documental e inicia un nuevo proceso de \eng{Web Scraping}.	
+	\item El controlador de administración crea una tarea asíncrona de descarga y delega su ejecución al servicio de \eng{Web Scraping}.
 	\item El servicio accede al portal de contratación configurado y obtiene el listado de expedientes disponibles.
 	\item Para cada expediente encontrado se extraen los metadatos disponibles y las referencias a los documentos asociados.
 	\item El sistema descarga los documentos vinculados a cada expediente.
@@ -364,9 +366,9 @@ Los pasos para cargar los documentos de manera automática mediante el \eng{web 
 
 Este procedimiento permite mantener actualizada la colección documental de forma automática y constituye una de las principales vías de incorporación de información al sistema. 
 
-En la figura~\ref{fig:Diagramas/secuencia/Web_scraping} se puede observar el diagrama de secuencia correspondiente al proceso de obtención de licitaciones a través de \eng{web scraping}.
+En la figura~\ref{fig:Diagramas/secuencia/Web_scraping} se puede observar el diagrama de secuencia correspondiente al proceso de obtención de licitaciones a través de \eng{Web Scraping}.
 
-\imagendiagram{Diagramas/secuencia/Web_scraping}{Diagrama de secuencia del proceso de \eng{web scraping} de la aplicación PythIA.}{1}
+\imagendiagram{Diagramas/secuencia/Web_scraping}{Diagrama de secuencia del proceso de \eng{Web Scraping}.}{1}
 
 \subsubsection{Proceso de evaluación del sistema RAG}
 
@@ -390,7 +392,7 @@ Este procedimiento permite evaluar de forma sistemática la calidad del sistema 
 
 En la figura~\ref{fig:Diagramas/secuencia/Evaluacion} se puede observar el diagrama de secuencia correspondiente al proceso de evaluación del sistema RAG.
 
-\imagendiagram{Diagramas/secuencia/Evaluacion}{Diagrama de secuencia del proceso de evaluación del sistema RAG de la aplicación PythIA.}{1}
+\imagendiagram{Diagramas/secuencia/Evaluacion}{Diagrama de secuencia del proceso de evaluación del sistema RAG.}{1}
 
 \subsubsection{Gestión de tareas asíncronas}
 
@@ -400,7 +402,7 @@ Los pasos para la gestión de tareas asíncronas son:
 \begin{enumerate}
 	\item El usuario o administrador inicia una operación que requiere ejecución asíncrona.
 	\item El controlador correspondiente delega la petición en el servicio de tareas asíncronas.
-	\item El sistema crea una nueva entidad de estado asociada al proceso (\eng{RAGQueryState}, \eng{MarkdownConversionState}, \eng{VectorUpdateState}, \eng{WebScrapingState} o \eng{RAGEvaluationState}).
+	\item El sistema crea una nueva entidad de estado asociada al proceso (RAGQueryState, MarkdownConversionState, VectorUpdateState, WebScrapingState o RAGEvaluationState).
 	\item Se registra la información inicial de la tarea y se almacena en la base de datos relacional.
 	\item El servicio de tareas asíncronas crea un nuevo hilo de ejecución y lanza el proceso solicitado.
 	\item Durante la ejecución, el proceso actualiza periódicamente su progreso, mensajes informativos y posibles errores.
@@ -413,7 +415,7 @@ Este mecanismo permite mejorar significativamente la experiencia de usuario, evi
 
 En la figura~\ref{fig:Diagramas/secuencia/Asincronas} se puede observar el diagrama de secuencia genérico correspondiente a los procesos de las tareas asíncronas del sistema.
 
-\imagendiagram{Diagramas/secuencia/Asincronas}{Diagrama de secuencia del proceso de las tareas asíncronas de la aplicación PythIA.}{1}
+\imagendiagram{Diagramas/secuencia/Asincronas}{Diagrama de secuencia del proceso de las tareas asíncronas.}{1}
 
 Las consultas realizadas por los usuarios constituyen la funcionalidad principal de la aplicación y, por tanto, tienen prioridad sobre el resto de tareas asíncronas del sistema.Se pretende minimizar el tiempo de espera del usuario hasta obtener una respuesta incluso cuando hay procesos largos en segundo plano. 
 
@@ -427,7 +429,7 @@ En la figura~\ref{fig:Diagramas/secuencia/Prioridad_consulta} se muestra el diag
 
 El diseño de las interfaces se ha desarrollado de manera incremental. Inicialmente se hicieron bocetos genéricos para plasmar las principales funcionalidades de la aplicación. Posteriormente se fue iterando sobre esos diseños hasta llegar a las interfaces finales de la \eng{web}.
 
-Los prototipos iniciales que se crearon se ilustran en las figuras ~\ref{fig:Diseño_interfaces/prototipos/Inicio}, ~\ref{fig:Diseño_interfaces/prototipos/Login}, ~\ref{fig:Diseño_interfaces/prototipos/Singup}, ~\ref{fig:Diseño_interfaces/prototipos/Main}, ~\ref{fig:Diseño_interfaces/prototipos/Historial}, ~\ref{fig:Diseño_interfaces/prototipos/Main_details}, ~\ref{fig:Diseño_interfaces/prototipos/RAG}, ~\ref{fig:Diseño_interfaces/prototipos/Users}, ~\ref{fig:Diseño_interfaces/prototipos/Add_user}, ~\ref{fig:Diseño_interfaces/prototipos/Edit_user} y ~\ref{fig:Diseño_interfaces/prototipos/Documents}.
+Los prototipos iniciales que se crearon se ilustran en las figuras~\ref{fig:Diseño_interfaces/prototipos/Inicio}, \ref{fig:Diseño_interfaces/prototipos/Login}, \ref{fig:Diseño_interfaces/prototipos/Singup}, \ref{fig:Diseño_interfaces/prototipos/Main}, \ref{fig:Diseño_interfaces/prototipos/Historial}, \ref{fig:Diseño_interfaces/prototipos/Main_details}, \ref{fig:Diseño_interfaces/prototipos/RAG}, \ref{fig:Diseño_interfaces/prototipos/Users}, \ref{fig:Diseño_interfaces/prototipos/Add_user}, \ref{fig:Diseño_interfaces/prototipos/Edit_user} y~\ref{fig:Diseño_interfaces/prototipos/Documents}.
 
 \imagenflotante{Diseño_interfaces/prototipos/Inicio}{Prototipo de la página de inicio.}
 \imagenflotante{Diseño_interfaces/prototipos/Login}{Prototipo de la página de inicio de sesión.}
@@ -461,11 +463,17 @@ Se definieron dos paletas cromáticas basadas en tonalidades azules, una orienta
         \includegraphics[width=\textwidth]{Diseño_interfaces/Cabecera}
         \caption{Diseño preliminar de la cabecera con nueva información de usuario.}
     \end{subfigure}
+
+	\vspace{0.6cm}    
+    
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Diseño_interfaces/Cabecera_final}
         \caption{Cabecera final de la aplicación PythIA modo oscuro.}
     \end{subfigure}
+
+	\vspace{0.6cm}     
+    
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Diseño_interfaces/Cabecera_final2}
@@ -482,11 +490,17 @@ Se definieron dos paletas cromáticas basadas en tonalidades azules, una orienta
         \includegraphics[width=\textwidth]{Diseño_interfaces/Table_asks}
         \caption{Diseño preliminar del historial en formato tabla.}
     \end{subfigure}
+
+	\vspace{0.5cm}     
+    
     \begin{subfigure}[t]{0.85\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Diseño_interfaces/Historial}
         \caption{Tarjeta final de consulta de la aplicación PythIA modo oscuro.}
     \end{subfigure}
+
+	\vspace{0.5cm}     
+    
     \begin{subfigure}[t]{0.85\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Diseño_interfaces/Historial2}
@@ -503,6 +517,9 @@ Se definieron dos paletas cromáticas basadas en tonalidades azules, una orienta
         \includegraphics[width=\textwidth]{Diseño_interfaces/Table_documents}
         \caption{Diseño preliminar de la tabla documentos.}
     \end{subfigure}
+    
+	\vspace{0.5cm}     
+    
     \begin{minipage}[c]{0.43\textwidth}
     \centering
     \begin{subfigure}[t]{\textwidth}
@@ -510,7 +527,8 @@ Se definieron dos paletas cromáticas basadas en tonalidades azules, una orienta
         \includegraphics[width=\textwidth]{Diseño_interfaces/Table_documents2}
         \caption{Diseño final de la tabla \mbox{documentos} modo oscuro.}
     \end{subfigure}
-    \end{minipage}
+    \end{minipage} 
+    \hfill
     \begin{minipage}[c]{0.43\textwidth}
     \centering
     \begin{subfigure}[t]{\textwidth}
@@ -533,14 +551,16 @@ Se definieron dos paletas cromáticas basadas en tonalidades azules, una orienta
         \caption{Diseño preliminar de la interfaz de consulta.}
     \end{subfigure}
 \end{minipage}
+\hfill
 \begin{minipage}[c]{0.43\textwidth}
     \centering
-	\vspace*{0.2cm}
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Diseño_interfaces/RAG_def2}
         \caption{Diseño final de la interfaz de consulta en modo oscuro.}
     \end{subfigure}
+    
+    \vspace{0.5cm} 
 
     \begin{subfigure}[t]{\textwidth}
         \centering
@@ -561,9 +581,10 @@ Se definieron dos paletas cromáticas basadas en tonalidades azules, una orienta
         \includegraphics[width=\textwidth]{Diseño_interfaces/PythIA_letras}
         \caption{Letrero con el nombre de la palicaicón.}
     \end{subfigure}
-    \begin{subfigure}[t]{\textwidth}
+    \hfill
+    \begin{subfigure}[t]{0.43\textwidth}
         \centering
-        \includegraphics[width=0.43\textwidth]{Diseño_interfaces/PythIA_logo}
+        \includegraphics[width=\textwidth]{Diseño_interfaces/PythIA_logo}
         \caption{Logotipo completo.}
     \end{subfigure}
 \caption{Diseño de interfaz -- Logotipos de la aplicación PythIA.}

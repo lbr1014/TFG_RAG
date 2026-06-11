@@ -1,10 +1,37 @@
 # PythIA 
 `Autora: Lydia Blanco Ruiz.`
+
+[![Build](https://github.com/lbr1014/TFG_RAG/actions/workflows/build.yml/badge.svg)](https://github.com/lbr1014/TFG_RAG/actions/workflows/build.yml)
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Flask](https://img.shields.io/badge/Flask-3.x-black?logo=flask)
+![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
+![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20DB-red)
+
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=security_rating&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=coverage&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=alert_status&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=bugs&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=code_smells&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=coverage&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=duplicated_lines_density&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=lbr1014_TFG_RAG&metric=sqale_rating&token=adefdd0a9fe6e7c41ada92a0208e968f13dbf23f)](https://sonarcloud.io/summary/new_code?id=lbr1014_TFG_RAG)
+
+
+
+
+
+
 <p align="center">
   <img width="300" height="300" alt="PythIA_def" src="https://github.com/user-attachments/assets/6e44a4d9-eb22-4aba-a984-b625981c8ded" />
 </p>
 
 **PythIA** es una aplicación que permite realizar consultas sobre las licitaciones del estado, concretamente de la **Junta de Gobierno de la Diputación Provincial de Burgos**. Las respuestas se generan usando un ***LLM***  (*Large Lenguaje Model*) alimentado por un modelo ***RAG*** (*Retrieval-Augmented Generation*) que busca información concreta de los pliegos de la Junta.
+
+En la siguiente imagen se puede ibservar la arquitectura general del sistema RAG:
+
+<img width="1024" height="744" alt="ArquitecturaRAG" src="https://github.com/user-attachments/assets/e3f1335d-5501-487a-b3dd-ed9efc298ece" />
+
 
 Se puede **acceder a la aplicación** desde cualquier navegador accediendo a la dirección:
 > [https://pythia.es](https://pythia.es/)

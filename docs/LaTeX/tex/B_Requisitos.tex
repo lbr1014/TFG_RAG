@@ -13,12 +13,12 @@ La organización de este apartado se ha realizado tomando como referencia las re
 Los objetivos generales que se buscan cumplir con este proyecto son:
 \begin{itemize}
 \tightlist
-	\item Desarrollar un sistema basado en Generación Aumentada por Recuperación (\eng{RAG}) que permita realizar consultas sobre licitaciones del sector público, enriqueciendo las respuestas mediante información documental relevante.
+	\item Desarrollar un sistema basado en Generación Aumentada por Recuperación (RAG) que permita realizar consultas sobre licitaciones del sector público, enriqueciendo las respuestas mediante información documental relevante.
 	\item Automatizar la recopilación, procesamiento e indexación de documentos de licitaciones, de forma que puedan ser integrados eficientemente en una base de datos vectorial.
 	\item Facilitar la consulta de la información de las licitaciones mediante una aplicación web intuitiva y accesible para usuarios autentificados.
 	\item Mejorar la comprensión y análisis de la información administrativa y técnica contenida en las licitaciones.
-	\item Proporcionar la trazabilidad de la respuesta del modelo, mostrando la información documental con la que se alimenta al \eng{LLM}. 
-	\item Incorporar mecanismos automáticos de evaluación que permitan analizar la calidad de las respuestas generadas por el sistema \eng{RAG}.
+	\item Proporcionar la trazabilidad de la respuesta del modelo, mostrando la información documental con la que se alimenta al LLM. 
+	\item Incorporar mecanismos automáticos de evaluación que permitan analizar la calidad de las respuestas generadas por el sistema RAG.
 \end{itemize}
 
 \section{Catálogo de requisitos} \label{req:req}
@@ -37,11 +37,11 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 		\item \req{RF-1.3} Borrado de documentos: el sistema debe permitir borrar los documentos cargados.
 		\item \req{RF-1.4} Descarga de documentos: el sistema debe permitir descargar los documentos cargados.
 	\end{itemize}
-	\item \req{RF-2} Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el \eng{RAG} pueda usarlos.
+	\item \req{RF-2} Procesado de los documentos: el sistema debe procesar de manera automática los documentos introducidos para prepararlos para que el RAG pueda usarlos.
 	\begin{itemize}
 	\tightlist
 		\item \req{RF-2.1} Extracción de información: el sistema debe extraer automáticamente el contenido textual de los documentos introducidos, ignorando páginas o documentos sin texto extraíble.
-		\item \req{RF-2.2} Conversión del contenido: el sistema debe transformar el texto extraído a un formato homogéneo, concretamente a \eng{markdown} para que sea más fácil su procesamiento.
+		\item \req{RF-2.2} Conversión del contenido: el sistema debe transformar el texto extraído a un formato homogéneo, concretamente a Markdown para que sea más fácil su procesamiento.
 		\begin{itemize}
 		\tightlist
 			\item \req{RF-2.2.1} Conservar estructura básica: el sistema debe conservar la estructura básica del texto siempre que sea posible (secciones, títulos, saltos de línea, párrafos, etc).
@@ -77,11 +77,11 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 		\item \req{RF-6.2} Búsqueda por similitud: el sistema debe realizar una búsqueda por similitud en la base de datos vectorial.
 		\item \req{RF-6.3} Filtrado por metadatos: el sistema debe permitir filtrar al recuperación utilizando los metadatos asociados a los documentos.
 	\end{itemize}
-	\item \req{RF-7} Construcción del \eng{prompt} con contexto: el sistema debe construir un \eng{prompt}, para alimentar al \eng{LLM}, que incluya los \eng{chunks} recuperados, la pregunta del usuario e instrucciones de uso del contexto.
-	\item \req{RF-8} Generación de respuestas mediante un \eng{LLM}: el sistema debe enviar el \eng{prompt} generado a un modelo \eng{LLM} y mostrar la respuesta de dicho modelo al usuario.
+	\item \req{RF-7} Construcción del \eng{prompt} con contexto: el sistema debe construir un \eng{prompt}, para alimentar al LLM, que incluya los \eng{chunks} recuperados, la pregunta del usuario e instrucciones de uso del contexto.
+	\item \req{RF-8} Generación de respuestas mediante un LLM: el sistema debe enviar el \eng{prompt} generado a un modelo LLM y mostrar la respuesta de dicho modelo al usuario.
 	\begin{itemize}
 	\tightlist
-		\item \req{RF-8.1} Selección de modelo: el sistema debe permitir utilizar distintos modelos \eng{LLM}.
+		\item \req{RF-8.1} Selección de modelo: el sistema debe permitir utilizar distintos modelos LLM.
 		\item \req{RF-8.2} Control de alucinaciones: el sistema debe indicar cuando no existe suficiente información relevante para responder. 
 	\end{itemize}
 	\item \req{RF-9} Trazabilidad de respuesta: el sistema debe devolver junto con la respuesta los metadatos del documento origen y los \eng{chunks} empleados para la generación de la respuesta, así como su similitud. 
@@ -109,7 +109,7 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 		\item \req{RF-12.2} Gestión de errores y duplicados: el sistema debe continuar aunque la descarga de algún documento falle. Debe registrar los errores y evitar duplicados.
 	\end{itemize}
 	\item \req{RF-13} Mostrar estadísticas: el sistema debe permitir ver estadísticas y gráficos de uso y de comparación de modelos.
-	\item \req{RF-14} Evaluación del sistema \eng{RAG}: el sistema debe permitir evaluar automáticamente la calidad de las respuestas generadas. 
+	\item \req{RF-14} Evaluación del sistema RAG: el sistema debe permitir evaluar automáticamente la calidad de las respuestas generadas. 
 	\begin{itemize}
 	\tightlist
 		\item \req{RF-14.1} Generación de \eng{datasets}: el sistema debe permitir generar \eng{dtasets} de evaluación automáticos.
@@ -125,7 +125,7 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 	\begin{itemize}
 	\tightlist
 		\item \req{RNF-3.1} Documentos corruptos: el sistema debe saltarse los documentos corruptos o sin texto extraíble y continuar con el resto de documentos.
-		\item \req{RNF-3.2} \eng{Timeouts}: el sistema debe manejar los \eng{timeouts} del \eng{LLM} devolviendo mensajes controlados al usuario.
+		\item \req{RNF-3.2} \eng{Timeouts}: el sistema debe manejar los \eng{timeouts} del LLM devolviendo mensajes controlados al usuario.
 	\end{itemize}
 	\item \req{RNF-4} Trazabilidad técnica: el sistema debe realizar \eng{logs} de carga de modelo, lectura de los PDF, \eng{chunking}, \eng{embeddings}, guardado y consulta.
 	\item \req{RNF-5} Seguridad: el sistema debe gestionar de forma segura la información sensible de los usuarios y el acceso a la aplicación.
@@ -140,10 +140,10 @@ A continuación se van a definir los requisitos del proyecto, tanto los funciona
 	\item \req{RNF-8} Disponibilidad: la web debe garantizar un nivel de disponibilidad adecuado que permita a los usuarios acceder a la aplicación y realizar consultas.
 	\item \req{RNF-9} Recuperación y tolerancia a fallos: el sistema debe disponer de mecanismos que permitan la recuperación de información y la restauración del servicio tras fallos, garantizando la integridad de los datos.
 	\item \req{RNF-10} Evitar alucinaciones: el sistema no debe responder cuando no haya contexto relevante suficiente.
-	\item \req{RNF-11} Calidad de las respuestas del \eng{LLM}: el sistema debe llevar a cabo un control de calidad de las respuestas que da el \eng{LLM} a las consultas del usuario.
+	\item \req{RNF-11} Calidad de las respuestas del LLM: el sistema debe llevar a cabo un control de calidad de las respuestas que da el LLM a las consultas del usuario.
 	\item \req{RNF-12} Escalabilidad: el sistema debe permitir incorporar nuevos documentos sin necesidad de reconstruir la aplicación.
-	\item \req{RNF-13} Modularidad: el sistema debe permitir sustituir componentes como el \eng{LLM}, el modelo de \eng{embeddings} o la base de datos vectorial con cambios mínimos.
-	\item \req{RNF-14} Portabilidad: la aplicación debe poder desplegarse en distintos entornos utilizando contenedores \file{Docker}.
+	\item \req{RNF-13} Modularidad: el sistema debe permitir sustituir componentes como el LLM, el modelo de \eng{embeddings} o la base de datos vectorial con cambios mínimos.
+	\item \req{RNF-14} Portabilidad: la aplicación debe poder desplegarse en distintos entornos utilizando contenedores Docker.
 	\item \req{RNF-15} Mantenibilidad: el sistema debe seguir una arquitectura modular y debe estar correctamente documentado para que se facilite su mantenimiento.
 	\item \req{RNF-16} Internacionalización: el sistema debe traducirse de manera automática al inglés.
 	\item \req{RNF-17} Compatibilidad \eng{responsive}: la interfaz debe adaptarse a distintos tamaños de pantalla.
@@ -159,7 +159,7 @@ Los actores del sistema son:
 	\item \textbf{Usuario autentificado}: usuario que puede acceder a la aplicación sus acciones en al aplicación cambiarán dependiendo de su rol. 
 	\begin{itemize}
 	\tightlist
-	 	\item \textbf{Usuario normal}: usuario autentificado que puede consultar el \eng{RAG} y ver su historial
+	 	\item \textbf{Usuario normal}: usuario autentificado que puede consultar el RAG y ver su historial
 	 	\item \textbf{Usuario administrador}: usuario autentificado con permisos de gestión de usuarios y de carga y actualización documental
 	 \end{itemize}
 	 \item \textbf{Sistema}: es el encargado del procesamiento, \eng{chunking}, \eng{embeddings}, guardado y consulta. 
@@ -172,13 +172,13 @@ Los casos de uso definidos para el proyecto son:
 	\item \textbf{CU-02} Iniciar sesión (ver tabla~\ref{req-02}).
 	\item \textbf{CU-03} Cerrar sesión (ver tabla~\ref{req-03}).
 	\item \textbf{CU-04} Recuperar contraseña (ver tabla~\ref{req-04}).
-	\item \textbf{CU-05} Realizar consulta al \eng{RAG} (ver tabla~\ref{req-05}).
+	\item \textbf{CU-05} Realizar consulta al RAG (ver tabla~\ref{req-05}).
 	\item \textbf{CU-06} Consultar historial de consultas (ver tabla~\ref{req-06}).
 	\item \textbf{CU-07} Borrar consultas del historial (ver tabla~\ref{req-07}).
 	\item \textbf{CU-08} Gestión de documentos (ver tabla~\ref{req-08}).
 	\item \textbf{CU-09} Cargar documentos de licitaciones (ver tabla~\ref{req-09}).
 	\item \textbf{CU-10} Importar licitaciones automáticamente (ver tabla~\ref{req-10}).
-	\item \textbf{CU-11} Convertir los documentos a \eng{Markdown} (ver tabla~\ref{req-11}).
+	\item \textbf{CU-11} Convertir los documentos a Markdown (ver tabla~\ref{req-11}).
 	\item \textbf{CU-12} Indexar documento (ver tabla~\ref{req-12}).
 	\item \textbf{CU-13} Listar documentos (ver tabla~\ref{req-13}).
 	\item \textbf{CU-14} Consultar estado del documento (ver tabla~\ref{req-14}).
@@ -193,9 +193,9 @@ Los casos de uso definidos para el proyecto son:
 	\item \textbf{CU-23} Cambiar idioma (ver tabla~\ref{req-23}).
 	\item \textbf{CU-24} Cambiar tema visual (ver tabla~\ref{req-24}).
 	\item \textbf{CU-25} Visualizar estadísticas (ver tabla~\ref{req-25}).
-	\item \textbf{CU-26} Ejecutar evaluación \eng{RAG} (ver tabla~\ref{req-26}).
+	\item \textbf{CU-26} Ejecutar evaluación RAG (ver tabla~\ref{req-26}).
 \end{itemize}
-El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/CasosUso}.
+El diagrama de los casos de uso general se muestra en la imagen~\ref{fig:Diagramas/CasosUso}.
 
 \imagendiagram{Diagramas/CasosUso}{Diagrama general de casos de uso.}{1.2}
 
@@ -353,7 +353,7 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{\textbf{CU-05}}    & \textbf{Realizar consulta al \eng{RAG}}\\
+		\textbf{\textbf{CU-05}}    & \textbf{Realizar consulta al RAG}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -368,7 +368,7 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 			\item El sistema genera \eng{embeddings} de la consulta.
 			\item El sistema busca por similitud en la base de datos vectorial.
 			\item El sistema construye un \eng{prompt} con los \eng{chunks} y las reglas de uso del contexto.
-			\item El sistema llama al \eng{LLM} y genera respuestas.
+			\item El sistema llama al LLM y genera respuestas.
 			\item El sistema adjunta la trazabilidad de la respuesta, la cual incluye los documentos, metadatos y \eng{chunks} utilizados.
 			\item El sistema guarda la consulta en el historial del consultas del usuario.
 		\end{enumerate}\\
@@ -378,12 +378,12 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item Cuando no hay contexto suficiente $\Rightarrow$ El sistema no responde a la pregunta (para evitar alucinaciones) y muestra un aviso de que falta contexto.
-			\item \eng{Timeout} del \eng{LLM} $\Rightarrow$ Mostrar un mensaje controlado. 	
+			\item \eng{Timeout} del LLM $\Rightarrow$ Mostrar un mensaje controlado. 	
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{\textbf{CU-05} Realizar consulta al \eng{RAG}.}
+	\caption{\textbf{CU-05} Realizar consulta al RAG.}
 	\label{req-05}
 \end{table}
 
@@ -566,7 +566,7 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{\textbf{CU-11}}    & \textbf{Convertir los documentos a \eng{Markdown}}\\
+		\textbf{\textbf{CU-11}}    & \textbf{Convertir los documentos a Markdown}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
@@ -578,11 +578,11 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item El sistema extrae texto descartando páginas y documentos sin texto extraíble.
-			\item Convierte el texto a \eng{Markdown} homogéneo.
+			\item Convierte el texto a Markdown homogéneo.
 			\item Intenta conservar la estructura básica del documento original.
 			\item Limpia caracteres problemáticos y normaliza espacios y saltos de línea.
 		\end{enumerate}\\
-		\textbf{Postcondición}        & Los documentos convertidos a \eng{Markdown} listos para el \eng{chunking}. \\
+		\textbf{Postcondición}        & Los documentos convertidos a Markdown listos para el \eng{chunking}. \\
 		\textbf{Excepciones}          & 
 		\begin{enumerate}
 			\def\labelenumi{\arabic{enumi}.}
@@ -592,7 +592,7 @@ El diagrama de los casos de uso se muestra en la imagen ~\ref{fig:Diagramas/Caso
 		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{\textbf{CU-11} Convertir los documentos a \eng{Markdown}.}
+	\caption{\textbf{CU-11} Convertir los documentos a Markdown.}
 	\label{req-11}
 \end{table}
 
@@ -980,7 +980,7 @@ a través de un mensaje.
 			\item El sistema genera el \eng{embedding} de la consulta.
 			\item El sistema recupera los \eng{chunks} más relevantes.
 			\item El sistema construye el \eng{prompt} aumentado según el perfil seleccionado.
-			\item El sistema envía el \eng{prompt} al \eng{LLM}.
+			\item El sistema envía el \eng{prompt} al LLM.
 			\item El sistema muestra la respuesta generada junto con la trazabilidad.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & El usuario ve la respuesta y se almacena en el historial. \\
@@ -991,7 +991,7 @@ a través de un mensaje.
 			\item No existen documentos indexados $\Rightarrow$ Muestra un mensaje de error.
 			\item La consulta está vacía $\Rightarrow$ Muestra un mensaje indicando que debe introducirse una consulta.
 			\item No se encuentra contexto relevante $\Rightarrow$ El sistema informa de que no dispone de información suficiente.
-			\item El \eng{LLM} no responde o se produce un \eng{timeout} $\Rightarrow$ Muestra un mensaje de error controlado.
+			\item El LLM no responde o se produce un \eng{timeout} $\Rightarrow$ Muestra un mensaje de error controlado.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
@@ -1078,7 +1078,7 @@ a través de un mensaje.
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
 		\textbf{Requisitos asociados} & \refreq{RF-13}, \refreq{RNF-6}\\
-		\textbf{Descripción}          & Permite visualizar estadísticas y gráficas relacionadas con el uso de la aplicación por parte de los usuarios y comparativas entre los modelos \eng{LLM} cargados en el sistema. \\
+		\textbf{Descripción}          & Permite visualizar estadísticas y gráficas relacionadas con el uso de la aplicación por parte de los usuarios y comparativas entre los modelos LLM cargados en el sistema. \\
 		\textbf{Precondición}         & Hay un usuario autentificado y existen datos registrados en el sistema. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
@@ -1086,7 +1086,7 @@ a través de un mensaje.
 			\tightlist
 			\item El usuario accede a la página de estadísticas.
 			\item El sistema recupera los datos almacenados.
-			\item El sistema genera gráficas y métricas mediante \file{D3.js}.
+			\item El sistema genera gráficas y métricas mediante D3.js.
 			\item El usuario ve las gráficas disponibles para su rol.
 		\end{enumerate}\\
 		\textbf{Postcondición}        & La aplicación muestra las gráficas y estadísticas. \\
@@ -1108,12 +1108,12 @@ a través de un mensaje.
 	\centering
 	\begin{tabularx}{\linewidth}{ p{0.21\columnwidth} p{0.71\columnwidth} }
 		\toprule
-		\textbf{\textbf{CU-26}}    & \textbf{ Ejecutar evaluación \eng{RAG}}\\
+		\textbf{\textbf{CU-26}}    & \textbf{ Ejecutar evaluación RAG}\\
 		\toprule
 		\textbf{Versión}              & 1.0    \\
 		\textbf{Autor}                & Lydia Blanco Ruiz \\
 		\textbf{Requisitos asociados} & \refreq{RF-14}, \refreq{RF-14.1}, \refreq{RNF-11} \\
-		\textbf{Descripción}          & Permite al administrador ejecutar evaluaciones automáticas sobre la calidad del \eng{RAG}. \\
+		\textbf{Descripción}          & Permite al administrador ejecutar evaluaciones automáticas sobre la calidad del RAG. \\
 		\textbf{Precondición}         & Hay un administrador autentificado y existen documentos indexados en la base de datos vectorial. \\
 		\textbf{Acciones}             &
 		\begin{enumerate}
@@ -1131,11 +1131,11 @@ a través de un mensaje.
 			\def\labelenumi{\arabic{enumi}.}
 			\tightlist
 			\item Error durante la ejecución de las métricas $\Rightarrow$ El sistema registra el error y detiene la evaluación.
-			\item El modelo \eng{LLM} no responde $\Rightarrow$ Muestra un mensaje de \eng{timeout} o error controlado.
+			\item El modelo LLM no responde $\Rightarrow$ Muestra un mensaje de \eng{timeout} o error controlado.
 		\end{enumerate}\\
 		\textbf{Importancia}          & Alta.  \\
 		\bottomrule
 	\end{tabularx}
-	\caption{\textbf{CU-26} Ejecutar evaluación \eng{RAG}.}
+	\caption{\textbf{CU-26} Ejecutar evaluación RAG.}
 	\label{req-26}
 \end{table}

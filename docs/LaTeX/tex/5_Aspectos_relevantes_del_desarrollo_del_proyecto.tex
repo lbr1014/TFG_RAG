@@ -6,7 +6,7 @@ En este apartado se van a explicar los aspectos más importantes del proyecto. S
 
 Actualmente la mayor parte de las personas utilizan grandes modelos de lenguaje (LLM), ya bien sea a través de~\myhref{https://chat.openai.com}{ChatGPT},~\myhref{https://claude.ai}{Claude},~\myhref{https://gemini.google.com/app}{Gemini} o~\myhref{https://notebooklm.google.com/}{NotbookLM}, pero la mayor parte de los usuarios no conocen lo suficiente de su funcionamiento como para sacarle el máximo partido. Generalmente los \eng{prompts} de estos usuarios son escuetos, sin el contexto adecuado, lo que permite que el modelo alucine en sus respuestas dándoles información errónea que generalmente no contrastan. En este contexto surgió la idea del proyecto, construir un \textbf{sistema RAG especializado en licitaciones del estado}, concretamente en las de la Junta de Gobierno de la Diputación Provincial de Burgos.
 
-Gracias a este sistema RAG se evita que sea el usuario el que le tenga que otorgar el contexto al modelo LLM. Ya que el sistema tiene todos los documentos de las licitaciones publicadas en la página de \contsec{}. Además, para \textbf{evitar alucinaciones} se decidió limitar las respuestas de LLM a la información que le proporciona el sistema RAG. En caso de que la pregunta no esté alineada con la colección documental se informa al usuario.
+Gracias a este sistema RAG se evita que sea el usuario el que le tenga que otorgar el contexto al modelo LLM, ya que el sistema tiene todos los documentos de las licitaciones publicadas en la página de \contsec{}. Además, para \textbf{evitar alucinaciones} se decidió limitar las respuestas de LLM a la información que le proporciona el sistema RAG. En caso de que la pregunta no esté alineada con la colección documental se informa al usuario.
 
 Otro problema típico de los LLM es la fecha de entrenamiento, ya que no son capaces de contestar preguntas posteriores a esta fecha, ya que no conocen su respuesta. Para evitar este problema de desactualización se decidió incluir un programa de \eng{Web Scraping} para que se pueda extraer de forma periódica las nuevas licitaciones y volver a descargar aquellas que hayan sido actualizadas. 
 
@@ -112,32 +112,33 @@ Los \eng{embeddings} son \textbf{representaciones vectoriales del texto} que cap
 \begin{landscape}
 \begin{table}[p]
 	\centering
+	\begin{threeparttable}
 	\begin{tabularx}{\linewidth}{p{0.26\linewidth} p{0.10\linewidth} p{0.10\linewidth} p{0.10\linewidth} p{0.10\linewidth} X}
 		\toprule
 		\textbf{Modelo} & \textbf{Dimensión} & \textbf{Parámetros (M)} & \textbf{Velocidad} & \textbf{Consumo} & \textbf{Observaciones} \\
 		\midrule
-		\myhref{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}{\file{all-MiniLM-L6-v2}} &
+		\href{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}{\file{all-MiniLM-L6-v2}}\tnote{1} &
 		384 &
 		22,7 &
 		Muy alta &
 		Bajo &
 		Buen equilibrio entre calidad semántica y coste computacional. \\
 		
-		\myhref{https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2}{\file{all-MiniLM-L12-v2}} &
+		\href{https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2}{\file{all-MiniLM-L12-v2}}\tnote{2} &
 		384 &
 		33,4 &
 		Alta &
 		Medio &
 		Ligera mejora semántica, pero mayor tiempo de inferencia. \\
 		
-		\myhref{https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1}{\file{multi-qa-MiniLM-L6-cos-v1}} &
+		\href{https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1}{\file{multi-qa-MiniLM-L6-cos-v1}}\tnote{3} &
 		384 &
 		22,7 &
 		Muy alta &
 		Bajo &
 		Optimizado para recuperación, aunque menos robusto en documentos extensos. \\
 		
-		\myhref{https://huggingface.co/sentence-transformers/all-mpnet-base-v2}{\file{all-mpnet-base-v2}} &
+		\href{https://huggingface.co/sentence-transformers/all-mpnet-base-v2}{\file{all-mpnet-base-v2}}\tnote{4} &
 		768 &
 		109 &
 		Media &
@@ -145,8 +146,18 @@ Los \eng{embeddings} son \textbf{representaciones vectoriales del texto} que cap
 		Excelente representación semántica, pero elevado consumo de memoria. \\
 		\bottomrule
 	\end{tabularx}
+	
+	\begin{tablenotes}
+	\footnotesize
+		\item[1] \url{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}
+		\item[2] \url{https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2}
+		\item[3] \url{https://huggingface.co/sentence-transformers/multi-qa-MiniLM-L6-cos-v1}
+		\item[4] \url{https://huggingface.co/sentence-transformers/all-mpnet-base-v2}
+	\end{tablenotes}
+	
 	\caption{Comparación de los modelos de \eng{embeddings} evaluados durante el desarrollo.}
 	\label{tabla:experimentos_chunking}
+	\end{threeparttable}
 \end{table}
 \end{landscape}
 
@@ -209,11 +220,11 @@ Además, se han ajustado parámetros de generación como el número máximo de \
 
 La conversión de los documentos PDF a Markdown permite \textbf{transformar documentos administrativos complejos en texto estructurado} apto para el proceso de \eng{chunking}, generación de \eng{embeddings} y recuperación semántica. Inicialmente, los documentos PDF se procesaban extrayendo texto plano. Este enfoque presentaba limitaciones como la pérdida de la estructura del documento, lo que provocaba que el sistema no pudiese diferenciar los títulos, subtítulos, tablas o las secciones. Por este motivo, durante el desarrollo se comenzó a investigar la posibilidad de convertir los PDF a Markdown de forma automática.
 
-Las primeras aproximaciones consistieron en utilizar bibliotecas tradicionales de extracción de texto en Python. Estas herramientas permitían obtener el contenido textual de los PDF, pero perdían gran parte del formato original. Uno de los principales problemas encontrados fue que los documentos de licitaciones públicas presentan formatos extremadamente heterogéneos. Debido a esto se comenzaron a realizar pruebas utilizando OCR (\eng{Optical Character Recognition}). Sin embargo, aunque el OCR permitía recuperar texto que anteriormente no podía extraerse, seguía presentando problemas.:
+Las primeras aproximaciones consistieron en utilizar bibliotecas tradicionales de extracción de texto en Python. Estas herramientas permitían obtener el contenido textual de los PDF, pero perdían gran parte del formato original. Uno de los principales problemas encontrados fue que los documentos de licitaciones públicas presentan formatos extremadamente heterogéneos. Debido a esto se comenzaron a realizar pruebas utilizando OCR (\eng{Optical Character Recognition}). Sin embargo, aunque el OCR permitía recuperar texto que anteriormente no podía extraerse, seguía presentando problemas:
 \begin{itemize}
 	\item No se reconocían correctamente todos los caracteres.
 	\item Se seguía perdiendo parte del formato.
-	\item Las tablas no siempre se construían bien
+	\item Las tablas no siempre se construían bien.
 	\item El uso de OCR supuso un incremento considerable del tiempo de procesamiento.
 \end{itemize}
 
@@ -252,27 +263,27 @@ Además, la implementación está preparada para utilizar aceleración por GPU c
 \endlastfoot
 
 Conversión PDF a imagen &
-CPU y memoria RAM &
+CPU y RAM &
 Alto &
 Cada página del documento debe renderizarse individualmente a 200 DPI antes de poder ser procesada por el modelo OCR multimodal. Cuanto mayor es el número de páginas, mayor es el tiempo de renderizado y el uso de memoria. \\
 
 Almacenamiento temporal de imágenes &
-Memoria RAM y disco &
+RAM y disco &
 Medio &
 Las páginas renderizadas se almacenan temporalmente como imágenes PNG, lo que incrementa el consumo de memoria y espacio durante el procesamiento. \\
 
 Redimensionado de imágenes &
-CPU y memoria RAM &
+CPU y RAM &
 Medio &
 Las imágenes se redimensionan para limitar su tamaño máximo a 1600 píxeles por lado y evitar errores de memoria en el modelo visual. \\
 
 Inferencia OCR multimodal &
-GPU (o CPU) y VRAM &
+GPU/CPU y VRAM &
 Muy alto &
 Cada página se analiza mediante el modelo visual \file{Nanonets-OCR-s}, que debe interpretar simultáneamente texto, tablas, imágenes y estructura documental para generar Markdown estructurado. Es la fase más costosa del proceso. \\
 
 Codificación y envío a Ollama &
-CPU y memoria &
+\mbox{CPU y} \mbox{memoria} &
 Medio &
 Las imágenes deben convertirse a formato Base64 y enviarse al servicio Ollama para su procesamiento, incrementando el volumen de datos transferidos. \\
 
@@ -300,7 +311,7 @@ Tras la conversión inicial, el Markdown generado pasa por una fase adicional de
 	\item Conservación de la estructura documental: las transformaciones se aplican únicamente sobre líneas situadas al nivel principal del documento, evitando alterar el contenido interno de listas, tablas o bloques especiales.
 \end{itemize}
 
-Durante el desarrollo se observó que esta aproximación mejora considerablemente la calidad del texto utilizado posteriormente por el sistema RAG, especialmente frente a OCR tradicionales basados únicamente en extracción plana de texto. Sin embargo, también se detectaron varias limitaciones importantes. La principal es el elevado tiempo de procesamiento, ya que cada página debe renderizarse como imagen y posteriormente analizarse mediante un modelo multimodal. Para cuantificar este coste computacional se analizaron los datos reales obtenidos durante la utilización de la aplicación PythIA. En total se convirtieron 132 documentos que sumaban un total de 22.544 páginas. La conversión a Markdown estuvo activa durante 244.030,29 minutos, por lo cual cada página tardó 244.030,29 minutos $/$ 22.544 páginas = 10,82 minutos (ver figura~\ref{fig:datos_conversion}). Este valor incluye tanto la generación de la imagen a partir del PDF como la inferencia realizada por el modelo OCR multimodal y las fases posteriores de normalización del Markdown.
+Durante el desarrollo se observó que esta aproximación mejora considerablemente la calidad del texto utilizado posteriormente por el sistema RAG, especialmente frente a OCR tradicionales basados únicamente en extracción plana de texto. Sin embargo, también se detectaron varias limitaciones importantes. La principal es el elevado tiempo de procesamiento, ya que cada página debe renderizarse como imagen y posteriormente analizarse mediante un modelo multimodal. Para cuantificar este coste computacional se analizaron los datos reales obtenidos durante la utilización de la aplicación PythIA (ver comandos en~\ref{fig:comando_conversion}). En total se convirtieron 132 documentos que sumaban un total de 22.544 páginas. La conversión a Markdown estuvo activa durante 244.030,29 minutos, por lo cual cada página tardó 244.030,29 minutos $/$ 22.544 páginas = 10,82 minutos (ver figura~\ref{fig:datos_conversion}). Este valor incluye tanto la generación de la imagen a partir del PDF como la inferencia realizada por el modelo OCR multimodal y las fases posteriores de normalización del Markdown.
 
 \begin{tcolorbox}[
 	colback=black!3,
@@ -344,6 +355,9 @@ Durante el desarrollo se observó que esta aproximación mejora considerablement
 \texttt{print('TOTAL PAGINAS:', total\_pages)}
 }
 \end{tcolorbox}
+\captionof{figure}{Código empleado para realizar la búsqueda de los datos obtenidos de la conversión a Markdown.}
+\label{fig:comando_conversion}
+\vspace{0.5cm}	
 
 \begin{figure}
 \centering
