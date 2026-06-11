@@ -20,6 +20,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
+
+      - name: Free disk space
+        run: |
+          echo "=== Espacio antes ==="
+          df -h
+
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+
+          docker system prune -af || true
+
+          echo "=== Espacio después ==="
+          df -h
       
       - name: Install dependencies
         run: |
