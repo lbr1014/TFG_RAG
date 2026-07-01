@@ -87,9 +87,18 @@ Una vez que este el comando *git* se debe clonar el repositorio del proyecto. Pa
      ```bash
      cd app/PythIA
      ```
+  3) Crear archivo _secret.env_
+     > Este archivo debe tener como mínimo configuradas las siguientes variables:
+     ```
+     SECRET_KEY = 
+     FLASK_SESSION_SIGNER =
+     POSTGRES_PASSWORD = 
+     ```
+     NOTA:
+     > En el apartado <<Documentación técnica de programación>> de la memoria, concretamente en <<Compilación, instalación y ejecución del proyecto>> se deatlla el contenido completo del archivo.
      
 ### 🐳 Levantar el proyecto con *Docker*
-Una vez clonado el repositorio y teniendo *docker* instalado, se puede levantar la aplicaicón utilizando ***Docker-Compose***.
+Una vez clonado el repositorio y teniendo *Docker* instalado, se puede levantar la aplicaicón utilizando ***Docker-Compose***.
   - Este primer comando permite **levantar** la aplicación recostruyendo el código (ideal para la primera ejecución). Va a contruir las imágenes y levantar los contenedores:
     ```bash
     docker compose up --build  
@@ -150,7 +159,7 @@ Una vez desplegada la aplicación en local utilizando un contenedor *Docker* lev
 - `http://IP_del_dispositivo:7000`
 
 NOTA:
-> Los dos primeros solos on accesibles desde el propio dispositivo donde se ejecuta, en cambio, la opción de la IP es accesible por cualqueir dispositivo conectado a la misma red.
+> Los dos primeros solo son accesibles desde el propio dispositivo donde se ejecuta, en cambio, la opción de la IP es accesible por cualqueir dispositivo conectado a la misma red.
 
 IMPORTANTE:
 > Se ha creado un administrador por defecto en la aplicaicón para permitir el aceso con este rol.

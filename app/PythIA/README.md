@@ -76,7 +76,7 @@ Para aceder a la página web ya levantada en el servidor solo se tiene que acced
 
 Si se desea, también es accesible (si se está conectado a Eduroam) desde la IP del servidor:
 
-[PythIA (10.168.168.12)](http://10.168.168.124/) 
+[PythIA (10.168.168.12:7000)](http://10.168.168.124/:7000) 
 
 Si se desea desplegar en local se puede levantar usando los siguienets comandos.
   - Este primer comando permite levantar la aplicación recostruyendo el código (ideal para la primera ejecución). Va a contruir las imágenes y levantar los contenedores:
