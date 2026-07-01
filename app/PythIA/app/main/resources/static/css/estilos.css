@@ -1565,7 +1565,7 @@ body[data-theme="light"] .invalid-feedback.d-block {
 .pythia-help-fab {
   position: fixed;
   right: 1.25rem;
-  bottom: 5rem;
+  top: calc(var(--app-sticky-header-offset) + 0.75rem);
   width: 3.25rem;
   height: 3.25rem;
   display: inline-flex;
